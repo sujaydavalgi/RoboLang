@@ -1,0 +1,30 @@
+import onnx.runtime;
+
+robot SmartRover {
+  sensor lidar: Lidar on "/scan";
+  actuator wheels: DifferentialDrive;
+
+  ai {
+    model nav_policy from onnx.runtime output NavigationPolicy file "models/nav.onJsii" input Lidar;
+    model detector output Detections file "models/yolo.on_jsii" input Lidar;
+  }
+
+  safety {
+    max_speed = 1.0 m/s;
+    stop_if lidar.read().nearest_distance < 0.3 m;
+  }
+
+  behavior ai_avoid() {
+    loop every 50ms {
+      let scan = lidar.read();
+      let detections = infer detector with scan: scan;
+      let cmd = infer nav_policy with scan: scan;
+
+      if detections.nearest_distance < 0.4 m {
+        wheels.stop();
+      } else {
+        wheels.drive(linear: cmd.linear, angular: cmd.angular);
+      }
+    }
+  }
+}

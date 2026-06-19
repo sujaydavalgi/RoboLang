@@ -57,6 +57,7 @@ export type RobotDecl = {
   sensors: SensorDecl[];
   actuators: ActuatorDecl[];
   safety: SafetyBlock | null;
+  ai: AiBlock | null;
   behaviors: BehaviorDecl[];
   span: Span;
 };
@@ -183,6 +184,22 @@ export type SafetyBlock = {
   span: Span;
 };
 
+export type AiBlock = {
+  kind: "AiBlock";
+  models: AiModelDecl[];
+  span: Span;
+};
+
+export type AiModelDecl = {
+  kind: "AiModelDecl";
+  name: string;
+  outputType: string;
+  path: string;
+  library: string | null;
+  inputs: string[];
+  span: Span;
+};
+
 export type SafetyRule =
   | {
       kind: "MaxSpeedRule";
@@ -299,7 +316,15 @@ export type Expr =
   | BinaryExpr
   | UnaryExpr
   | CallExpr
-  | MemberExpr;
+  | MemberExpr
+  | InferExpr;
+
+export type InferExpr = {
+  kind: "InferExpr";
+  modelName: string;
+  namedArgs: NamedArg[];
+  span: Span;
+};
 
 export type LiteralExpr = {
   kind: "LiteralExpr";

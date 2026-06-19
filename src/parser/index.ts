@@ -16,6 +16,8 @@ import type {
   SafetyBlock,
   SafetyRule,
   SafetyZoneDecl,
+  AiBlock,
+  AiModelDecl,
   SensorBinding,
   SensorDecl,
   ServiceDecl,
@@ -137,6 +139,7 @@ class Parser {
     const sensors: SensorDecl[] = [];
     const actuators: ActuatorDecl[] = [];
     let safety: SafetyBlock | null = null;
+    let ai: AiBlock | null = null;
     const behaviors: BehaviorDecl[] = [];
 
     while (!this.check("RBRACE") && !this.check("EOF")) {
@@ -158,6 +161,8 @@ class Parser {
         actuators.push(this.parseActuator());
       } else if (this.check("SAFETY")) {
         safety = this.parseSafety();
+      } else if (this.check("AI")) {
+        ai = this.parseAi();
       } else if (this.check("BEHAVIOR")) {
         behaviors.push(this.parseBehavior());
       } else {
@@ -179,6 +184,7 @@ class Parser {
       sensors,
       actuators,
       safety,
+      ai,
       behaviors,
       span: this.spanFrom(start, end),
     };
@@ -457,6 +463,61 @@ class Parser {
 
     const end = this.expect("RBRACE", "Expected '}' to close safety block");
     return { kind: "SafetyBlock", rules, zones, span: this.spanFrom(start, end) };
+  }
+
+  private parseAi(): AiBlock {
+    const start = this.advance();
+    this.expect("LBRACE", "Expected '{' after ai");
+    const models: AiModelDecl[] = [];
+
+    while (!this.check("RBRACE") && !this.check("EOF")) {
+      if (this.check("MODEL")) {
+        models.push(this.parseAiModel());
+      } else {
+        const t = this.peek();
+        throw new ParseError("Expected ai model declaration", t.line, t.column);
+      }
+    }
+
+    const end = this.expect("RBRACE", "Expected '}' to close ai block");
+    return { kind: "AiBlock", models, span: this.spanFrom(start, end) };
+  }
+
+  private parseAiModel(): AiModelDecl {
+    const start = this.advance();
+    const name = this.expect("IDENT", "Expected model name");
+
+    let library: string | null = null;
+    if (this.match("FROM")) {
+      const vendor = this.expect("IDENT", "Expected library vendor");
+      this.expect("DOT", "Expected '.' in library path");
+      const module = this.expect("IDENT", "Expected library module");
+      library = `${vendor.lexeme}.${module.lexeme}`;
+    }
+
+    this.expect("OUTPUT", "Expected 'output' in ai model declaration");
+    const outputType = this.expect("IDENT", "Expected output type");
+
+    this.expect("FILE", "Expected 'file' in ai model declaration");
+    const pathTok = this.expect("STRING", "Expected model file path");
+
+    const inputs: string[] = [];
+    while (this.match("INPUT")) {
+      const inputType = this.expect("IDENT", "Expected input type after input");
+      inputs.push(inputType.lexeme);
+    }
+
+    this.expect("SEMICOLON", "Expected ';' after ai model declaration");
+    const end = this.previous();
+    return {
+      kind: "AiModelDecl",
+      name: name.lexeme,
+      outputType: outputType.lexeme,
+      path: pathTok.value as string,
+      library,
+      inputs,
+      span: this.spanFrom(start, end),
+    };
   }
 
   private parseSafetyZone(): SafetyZoneDecl {
@@ -897,6 +958,33 @@ class Parser {
   private parsePrimary(): Expr {
     const start = this.peek();
 
+    if (this.match("INFER")) {
+      const modelName = this.expect("IDENT", "Expected model name after infer");
+      this.expect("WITH", "Expected 'with' after model name");
+      const namedArgs: NamedArg[] = [];
+
+      if (!this.check("SEMICOLON") && !this.check("RBRACE") && !this.check("RPAREN") && !this.check("EOF")) {
+        do {
+          const argStart = this.peek();
+          const argName = this.parseNamedArgName();
+          this.advance(); // colon
+          const value = this.parseExpr();
+          namedArgs.push({
+            name: argName,
+            value,
+            span: this.spanFrom(argStart, this.previous()),
+          });
+        } while (this.match("COMMA"));
+      }
+
+      const end = this.previous();
+      return {
+        kind: "InferExpr",
+        modelName: modelName.lexeme,
+        namedArgs,
+        span: this.spanFrom(start, end),
+      };
+    }
     if (this.match("TRUE")) {
       return {
         kind: "LiteralExpr",

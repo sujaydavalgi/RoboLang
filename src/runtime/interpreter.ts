@@ -9,6 +9,7 @@ import type {
 } from "../ast/nodes.js";
 import { createSimHal, halMemberFromDecl, type HalBackend } from "../hal/index.js";
 import { getSensorDriver, readWithDriver } from "../lib/registry.js";
+import { runInference, type AiModelRuntime } from "../ai/index.js";
 import { getSocProfile } from "../soc/index.js";
 import { SafetyMonitor, createSafetyConfigFromRobot, interpolatePoses } from "../safety/index.js";
 import type { SafetyZoneRuntime } from "../safety/index.js";
@@ -109,6 +110,7 @@ export class Interpreter {
   private safetyMonitor: SafetyMonitor | null = null;
   private zones: import("../safety/index.js").SafetyZoneRuntime[] = [];
   private hal: HalBackend | null = null;
+  private aiModels = new Map<string, AiModelRuntime>();
   private currentRobot: RobotDecl | null = null;
   private currentProgram: Program | null = null;
 
@@ -189,6 +191,26 @@ export class Interpreter {
         name: actuator.name,
         actuatorType: actuator.actuatorType,
       });
+    }
+
+    this.aiModels.clear();
+    if (robot.ai) {
+      for (const model of robot.ai.models) {
+        const runtime: AiModelRuntime = {
+          name: model.name,
+          outputType: model.outputType,
+          path: model.path,
+          library: model.library,
+          inputs: model.inputs.map((typeName) => ({
+            name: typeName.toLowerCase(),
+            typeName,
+          })),
+        };
+        this.aiModels.set(model.name, runtime);
+        this.options.onLog?.(
+          `AI model '${model.name}': ${model.outputType} (${model.library ?? "builtin"}) -> ${model.path}`,
+        );
+      }
     }
 
     this.env.define("robot", { kind: "robot" });
@@ -343,6 +365,8 @@ export class Interpreter {
         return this.evalMember(expr);
       case "CallExpr":
         return this.evalCall(expr);
+      case "InferExpr":
+        return this.evalInfer(expr);
       default:
         return { kind: "void" };
     }
@@ -378,6 +402,32 @@ export class Interpreter {
     }
 
     return { kind: "void" };
+  }
+
+  private evalInfer(expr: import("../ast/nodes.js").InferExpr): RuntimeValue {
+    const model = this.aiModels.get(expr.modelName);
+    if (!model) {
+      throw new RuntimeError(`Unknown AI model '${expr.modelName}'`, expr.span.start.line);
+    }
+
+    const inputs: Record<string, RuntimeValue> = {};
+    for (const arg of expr.namedArgs) {
+      inputs[arg.name] = this.evalExpr(arg.value);
+    }
+
+    const state = this.options.backend.getState();
+    const result = runInference(model, {
+      pose: {
+        x: state.pose.x,
+        y: state.pose.y,
+        theta: state.pose.theta,
+        z: state.pose.z ?? 0,
+      },
+      inputs,
+    });
+
+    this.options.onLog?.(`infer ${expr.modelName} -> ${model.outputType}`);
+    return result;
   }
 
   private evalCall(expr: import("../ast/nodes.js").CallExpr): RuntimeValue {

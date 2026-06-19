@@ -124,6 +124,23 @@ export const ACTUATOR_TYPES: Record<string, SynapseType> = {
   Gripper: { kind: "named", name: "Gripper" },
 };
 
+export const AI_OUTPUT_TYPES: Record<string, SynapseType> = {
+  Velocity: { kind: "velocity" },
+  NavigationPolicy: { kind: "named", name: "NavigationPolicy" },
+  Detections: { kind: "named", name: "Detections" },
+  Classification: { kind: "named", name: "Classification" },
+};
+
+/** Maps sensor read types and runtime values to AI input type names. */
+export const AI_INPUT_TYPES: Record<string, SynapseType> = {
+  Scan: { kind: "scan" },
+  Lidar: { kind: "scan" },
+  Camera: { kind: "named", name: "CameraFrame" },
+  IMU: { kind: "named", name: "IMUReading" },
+  AltitudeSensor: { kind: "number", unit: "m" },
+  Image: { kind: "named", name: "CameraFrame" },
+};
+
 export const BUILTIN_FUNCTIONS: Record<
   string,
   { namedParams: Record<string, SynapseType>; returns: SynapseType }
@@ -248,6 +265,19 @@ export const OBJECT_PROPERTIES: Record<string, Record<string, SynapseType>> = {
   IMUReading: { yaw: { kind: "number", unit: "rad" }, roll: { kind: "number", unit: "rad" }, pitch: { kind: "number", unit: "rad" } },
   ForceTorqueReading: { force: { kind: "number", unit: "none" } },
   GPSReading: { lat: { kind: "number", unit: "none" }, lon: { kind: "number", unit: "none" } },
+  NavigationPolicy: {
+    linear: { kind: "number", unit: "m/s" },
+    angular: { kind: "number", unit: "rad/s" },
+  },
+  Detections: {
+    count: { kind: "number", unit: "none" },
+    nearest_distance: { kind: "number", unit: "m" },
+    label: { kind: "string" },
+  },
+  Classification: {
+    label: { kind: "string" },
+    confidence: { kind: "number", unit: "none" },
+  },
 };
 
 export const POSE_PROPERTIES: Record<string, SynapseType> = {

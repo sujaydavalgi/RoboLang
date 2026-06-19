@@ -22,6 +22,12 @@ export type TokenType =
   | "SENSOR"
   | "ACTUATOR"
   | "SAFETY"
+  | "AI"
+  | "MODEL"
+  | "FILE"
+  | "INFER"
+  | "OUTPUT"
+  | "INPUT"
   | "BEHAVIOR"
   | "LOOP"
   | "EVERY"
@@ -119,6 +125,12 @@ const KEYWORDS: Record<string, TokenType> = {
   sensor: "SENSOR",
   actuator: "ACTUATOR",
   safety: "SAFETY",
+  ai: "AI",
+  model: "MODEL",
+  file: "FILE",
+  infer: "INFER",
+  output: "OUTPUT",
+  input: "INPUT",
   behavior: "BEHAVIOR",
   loop: "LOOP",
   every: "EVERY",

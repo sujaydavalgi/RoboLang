@@ -10,10 +10,13 @@ import type {
   SynapseType,
 } from "../ast/nodes.js";
 import { resolveImport } from "../lib/registry.js";
+import { resolveAiImport } from "../ai/registry.js";
 import { getSocProfile, validateHalAgainstSoc } from "../soc/index.js";
 import { halMemberFromDecl } from "../hal/index.js";
 import {
   ACTION_TYPES,
+  AI_INPUT_TYPES,
+  AI_OUTPUT_TYPES,
   ACTUATOR_TYPES,
   BUILTIN_FUNCTIONS,
   BUILTIN_METHODS,
@@ -34,7 +37,7 @@ import {
 type SymbolEntry = {
   name: string;
   roboType: SynapseType;
-  kind: "sensor" | "actuator" | "variable" | "behavior" | "topic" | "service" | "action" | "robot";
+  kind: "sensor" | "actuator" | "variable" | "behavior" | "topic" | "service" | "action" | "robot" | "ai_model";
   sensorType?: string;
   actuatorType?: string;
   messageType?: string;
@@ -58,7 +61,7 @@ class TypeChecker {
   checkProgram(program: Program): void {
     const imported = new Set<string>();
     for (const imp of program.imports) {
-      if (!resolveImport(imp.path)) {
+      if (!resolveImport(imp.path) && !resolveAiImport(imp.path)) {
         this.error(`Unknown library '${imp.path}'`, imp.span.start.line, imp.span.start.column);
       } else {
         imported.add(imp.path);
@@ -181,6 +184,12 @@ class TypeChecker {
       this.symbols = saved;
     }
 
+    if (robot.ai) {
+      for (const model of robot.ai.models) {
+        this.checkAiModel(model, imported);
+      }
+    }
+
     for (const behavior of robot.behaviors) {
       this.symbols.set(behavior.name, {
         name: behavior.name,
@@ -228,6 +237,55 @@ class TypeChecker {
         this.error("Zone size must be numeric", zone.span.start.line, zone.span.start.column);
       }
     }
+  }
+
+  private checkAiModel(
+    model: import("../ast/nodes.js").AiModelDecl,
+    imported: Set<string>,
+  ): void {
+    if (!AI_OUTPUT_TYPES[model.outputType]) {
+      this.error(
+        `Unknown AI output type '${model.outputType}'`,
+        model.span.start.line,
+        model.span.start.column,
+      );
+    }
+    if (model.library) {
+      if (!imported.has(model.library)) {
+        this.error(
+          `AI library '${model.library}' must be imported before use`,
+          model.span.start.line,
+          model.span.start.column,
+        );
+      } else if (!resolveAiImport(model.library)) {
+        this.error(
+          `Unknown AI library '${model.library}'`,
+          model.span.start.line,
+          model.span.start.column,
+        );
+      }
+    }
+    for (const inputType of model.inputs) {
+      if (!AI_INPUT_TYPES[inputType] && !SENSOR_TYPES[inputType]) {
+        this.error(
+          `Unknown AI input type '${inputType}'`,
+          model.span.start.line,
+          model.span.start.column,
+        );
+      }
+    }
+    if (this.symbols.has(model.name)) {
+      this.error(
+        `Duplicate ai model name '${model.name}'`,
+        model.span.start.line,
+        model.span.start.column,
+      );
+    }
+    this.symbols.set(model.name, {
+      name: model.name,
+      roboType: AI_OUTPUT_TYPES[model.outputType] ?? { kind: "void" },
+      kind: "ai_model",
+    });
   }
 
   private checkBehavior(behavior: BehaviorDecl): void {
@@ -360,6 +418,9 @@ class TypeChecker {
 
       case "CallExpr":
         return this.checkCall(expr);
+
+      case "InferExpr":
+        return this.checkInfer(expr);
 
       default:
         return { kind: "void" };
@@ -498,6 +559,61 @@ class TypeChecker {
     }
 
     return method.returns;
+  }
+
+  private checkInfer(expr: import("../ast/nodes.js").InferExpr): SynapseType {
+    const model = this.symbols.get(expr.modelName);
+    if (!model || model.kind !== "ai_model") {
+      this.error(
+        `Unknown AI model '${expr.modelName}'`,
+        expr.span.start.line,
+        expr.span.start.column,
+      );
+      return { kind: "void" };
+    }
+
+    const aiModel = this.currentRobot?.ai?.models.find((m) => m.name === expr.modelName);
+    if (aiModel && aiModel.inputs.length > 0) {
+      for (const arg of expr.namedArgs) {
+        const matchesInput = aiModel.inputs.some((inputType) => {
+          const expected = AI_INPUT_TYPES[inputType] ?? SENSOR_TYPES[inputType];
+          if (!expected) return inputType.toLowerCase() === arg.name.toLowerCase();
+          const actual = this.checkExpr(arg.value);
+          return this.typesCompatible(expected, actual);
+        });
+        if (!matchesInput) {
+          this.error(
+            `Input '${arg.name}' does not match declared model inputs [${aiModel.inputs.join(", ")}]`,
+            arg.span.start.line,
+            arg.span.start.column,
+          );
+        } else {
+          this.checkExpr(arg.value);
+        }
+      }
+    } else {
+      for (const arg of expr.namedArgs) {
+        this.checkExpr(arg.value);
+      }
+    }
+
+    return model.roboType;
+  }
+
+  private typesCompatible(expected: SynapseType, actual: SynapseType): boolean {
+    if (expected.kind === actual.kind) {
+      if (expected.kind === "number" && actual.kind === "number") {
+        return unitsCompatible(expected.unit, actual.unit);
+      }
+      if (expected.kind === "named" && actual.kind === "named") {
+        return expected.name === actual.name || actual.name.includes(expected.name);
+      }
+      return true;
+    }
+    if (expected.kind === "named" && actual.kind === "scan" && expected.name.includes("Lidar")) {
+      return true;
+    }
+    return false;
   }
 
   private assertCompatible(expected: SynapseType, actual: SynapseType, line: number, column: number): void {

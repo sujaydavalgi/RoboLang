@@ -14,6 +14,7 @@ Source files use the **`.syn`** extension.
 - **HAL (Hardware Abstraction Layer)** — `i2c`, `spi`, `gpio`, `pwm`, `uart`, `adc` buses and pins
 - **SoC profiles** — Raspberry Pi, ESP32, STM32, Jetson, Arduino with capability validation
 - **Sensor libraries** — manufacturer drivers (Velodyne, Hokuyo, Bosch, Intel, YDLIDAR, Adafruit, SparkFun, Waveshare)
+- **AI inference** — declare models in an `ai { }` block and run them with `infer`
 - **Motion types** — `pose()`, `velocity()`, `trajectory()`, `transform()`
 - **Safety zones** — circular and rectangular keep-out regions
 - **Emergency stop** — `emergency_stop` and `reset_emergency_stop` statements
@@ -74,6 +75,44 @@ robot PiBot {
 | SparkFun | `lsm9ds1` | LSM9DS1 9-DOF IMU |
 | Waveshare | `uwmf` | Ultrasonic distance module |
 
+### AI runtimes (import `vendor.runtime`)
+
+| Vendor | Module | Description |
+|--------|--------|-------------|
+| ONNX | `onnx.runtime` | ONNX Runtime inference backend |
+| TensorFlow | `tflite.runtime` | TensorFlow Lite inference backend |
+| NVIDIA | `tensorrt.runtime` | TensorRT inference for Jetson |
+
+## AI Models and Inference
+
+Declare models inside an `ai { }` block and call them from behaviors with `infer`:
+
+```synapse
+import onnx.runtime;
+
+robot SmartBot {
+  sensor lidar: Lidar on "/scan";
+  actuator wheels: DifferentialDrive;
+
+  ai {
+    model nav_policy from onnx.runtime output NavigationPolicy file "models/nav.onJsii" input Lidar;
+    model detector output Detections file "models/yolo.on_jsii" input Lidar;
+  }
+
+  behavior navigate() {
+    loop every 50ms {
+      let scan = lidar.read();
+      let cmd = infer nav_policy with scan: scan;
+      wheels.drive(linear: cmd.linear, angular: cmd.angular);
+    }
+  }
+}
+```
+
+Supported output types: `NavigationPolicy`, `Velocity`, `Detections`, `Classification`.
+
+AI-driven motion still passes through safety rules — `max_speed` and `stop_if` apply before actuators move.
+
 ## Language Overview
 
 ```synapse
@@ -131,6 +170,7 @@ src/
   runtime/     Tree-walking interpreter
   simulator/   Physics-lite simulation backend
   safety/      Safety rule evaluation
+  ai/          AI model registry and simulated inference
   hal/         Hardware abstraction (I2C, SPI, GPIO, PWM, UART, ADC)
   soc/         SoC profiles and HAL validation
   lib/         Manufacturer sensor driver registry
@@ -156,6 +196,7 @@ tests/         Lexer, parser, type, safety, interpreter, simulator tests
 | `trajectory()` | Interpolated path between two poses |
 | `transform()` | Coordinate frame transform |
 | `safety` / `zone` | Rules and geometric keep-out regions |
+| `ai` / `model` / `infer` | AI model declarations and inference calls |
 | `emergency_stop` | Immediate halt and safety lockout |
 | `behavior` | Named control loop or task |
 | `loop every Nms` | Deterministic periodic execution |
@@ -171,6 +212,7 @@ tests/         Lexer, parser, type, safety, interpreter, simulator tests
 - `examples/patrol_with_zones.syn` — topics, services, actions, zones, trajectories
 - `examples/raspberry_pi_hal.syn` — Raspberry Pi with HAL and Velodyne/Bosch libraries
 - `examples/esp32_sensors.syn` — ESP32 with multi-vendor I2C sensors
+- `examples/ai_navigation.syn` — AI-driven obstacle avoidance with ONNX runtime
 
 ## Safety Model
 
