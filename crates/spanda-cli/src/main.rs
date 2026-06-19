@@ -22,11 +22,12 @@ struct RunResponse {
 
 fn usage() {
     eprintln!(
-        "Spanda native CLI\n\n\
+        "Spanda Programming Language\n\n\
          Usage:\n\
            spanda check [--json] <file.sd>\n\
            spanda run [--json] [--verbose] <file.sd>\n\
-           spanda sim [--json] <file.sd>\n"
+           spanda sim [--json] <file.sd>\n\n\
+         Legacy .syn files are accepted with a deprecation warning.\n"
     );
 }
 

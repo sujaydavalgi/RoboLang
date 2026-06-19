@@ -9,17 +9,19 @@ import { TypeCheckError } from "../types/index.js";
 import { RuntimeError } from "../runtime/index.js";
 import { warnDeprecatedSourceExtension } from "../source-path.js";
 
-const USAGE = `Spanda — safe, strongly typed language for robot control
+const USAGE = `Spanda Programming Language — the pulse of autonomous intelligence
 
 Usage:
   spanda run <file.sd>   Run program with interpreter (simulated backend)
   spanda sim <file.sd>   Run program in simulation mode with visual output
-  spanda check <file.sd> Type-check a Spanda file
+  spanda check <file.sd> Type-check a Spanda source file
 
 Examples:
   spanda run examples/rover.sd
   spanda sim examples/rover.sd
   spanda check examples/rover.sd
+
+Legacy .syn files are accepted with a deprecation warning.
 `;
 
 function main(): void {
