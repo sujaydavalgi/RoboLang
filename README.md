@@ -107,4 +107,4 @@ The `src/ros2/` module defines a `Ros2Adapter` interface mapping RoboLang concep
 
 ## License
 
-MIT
+Apache-2.0 — see [LICENSE](LICENSE).
