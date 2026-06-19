@@ -22,8 +22,7 @@ fn examples_compile_and_run() {
         let source = std::fs::read_to_string(&path)
             .unwrap_or_else(|e| panic!("read {}: {e}", path.display()));
 
-        compile(&source)
-            .unwrap_or_else(|e| panic!("compile {} failed: {e}", path.display()));
+        compile(&source).unwrap_or_else(|e| panic!("compile {} failed: {e}", path.display()));
 
         run(&source, RunOptions::default())
             .unwrap_or_else(|e| panic!("run {} failed: {e}", path.display()));

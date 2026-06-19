@@ -1,0 +1,36 @@
+import std.ai;
+
+robot GoalDemo {
+  sensor lidar: Lidar on "/scan";
+  actuator wheels: DifferentialDrive;
+  safety { max_speed = 1.0 m/s; }
+
+  ai_model planner: LLM {
+    provider: "mock";
+    model: "goal-demo";
+    temperature: 0.1;
+  }
+
+  agent Navigator {
+    uses planner;
+    tools [lidar, wheels];
+    goal "Reach the loading dock safely";
+    can [ read(lidar), propose_motion, plan ];
+
+    plan {
+      let mission = goal(text: "Reach the loading dock safely");
+      let scan = lidar.read();
+      let proposal = planner.reason(prompt: "Plan motion", input: scan, goal: mission);
+      let trace = proposal.trace;
+      let _ = trace;
+      let action = safety.validate(proposal);
+      wheels.execute(action);
+    }
+  }
+
+  behavior run() {
+    let declared: Goal = "Deliver payload";
+    let _ = declared;
+    Navigator.plan();
+  }
+}

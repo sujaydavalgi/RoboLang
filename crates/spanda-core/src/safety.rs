@@ -58,11 +58,7 @@ impl SafetyMonitor {
         }
     }
 
-    pub fn evaluate_before_motion(
-        &mut self,
-        env: &Environment,
-        pose: &Pose2d,
-    ) -> SafetyEvaluation {
+    pub fn evaluate_before_motion(&mut self, env: &Environment, pose: &Pose2d) -> SafetyEvaluation {
         let peek = self.peek_before_motion(env, pose);
         if !peek.allowed && peek.emergency_stop {
             self.emergency_stop = true;
@@ -135,7 +131,11 @@ impl SafetyMonitor {
     }
 
     pub fn clamp_speed(&self, requested: f64) -> f64 {
-        let sign = if requested == 0.0 { 1.0 } else { requested.signum() };
+        let sign = if requested == 0.0 {
+            1.0
+        } else {
+            requested.signum()
+        };
         requested.abs().min(self.config.max_speed) * sign
     }
 
@@ -240,10 +240,7 @@ mod tests {
     #[test]
     fn blocks_motion_when_stop_if_triggers() {
         let mut env = Environment::new();
-        env.define(
-            "obstacle",
-            RuntimeValue::number(0.3, UnitKind::M),
-        );
+        env.define("obstacle", RuntimeValue::number(0.3, UnitKind::M));
 
         let mut monitor = SafetyMonitor::new(create_safety_config_from_robot(
             1.5,
@@ -264,10 +261,7 @@ mod tests {
     #[test]
     fn allows_motion_when_rules_pass() {
         let mut env = Environment::new();
-        env.define(
-            "obstacle",
-            RuntimeValue::number(2.0, UnitKind::M),
-        );
+        env.define("obstacle", RuntimeValue::number(2.0, UnitKind::M));
 
         let mut monitor = SafetyMonitor::new(create_safety_config_from_robot(
             1.5,

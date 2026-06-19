@@ -180,6 +180,18 @@ export const BUILTIN_FUNCTIONS: Record<
     },
     returns: { kind: "transform" },
   },
+  goal: {
+    namedParams: {
+      text: { kind: "string" },
+    },
+    returns: { kind: "named", name: "Goal" },
+  },
+  recall: {
+    namedParams: {
+      key: { kind: "string" },
+    },
+    returns: { kind: "named", name: "Memory" },
+  },
 };
 
 export const ROBOT_METHODS: Record<string, { params: SpandaType[]; returns: SpandaType }> = {
@@ -274,6 +286,7 @@ export const BUILTIN_METHODS: Record<
       namedParams: {
         prompt: { kind: "string" },
         input: { kind: "scan" },
+        goal: { kind: "named", name: "Goal" },
       },
       returns: { kind: "named", name: "ActionProposal" },
     },
@@ -326,6 +339,9 @@ export const BUILTIN_METHODS: Record<
       returns: { kind: "named", name: "SafeAction" },
     },
   },
+  SensorFusion: {
+    read: { params: [], returns: { kind: "named", name: "FusedObservation" } },
+  },
 };
 
 export const SCAN_PROPERTIES: Record<string, SpandaType> = {
@@ -343,6 +359,13 @@ export const OBJECT_PROPERTIES: Record<string, Record<string, SpandaType>> = {
   ActionProposal: {
     linear: { kind: "number", unit: "m/s" },
     angular: { kind: "number", unit: "rad/s" },
+    trace: { kind: "named", name: "ReasoningTrace" },
+  },
+  Goal: {
+    text: { kind: "string" },
+  },
+  Agent: {
+    goal: { kind: "named", name: "Goal" },
   },
   SafeAction: {
     linear: { kind: "number", unit: "m/s" },
@@ -364,6 +387,10 @@ export const OBJECT_PROPERTIES: Record<string, Record<string, SpandaType>> = {
   },
   Completion: {
     text: { kind: "string" },
+  },
+  FusedObservation: {
+    pose: { kind: "pose" },
+    count: { kind: "number", unit: "none" },
   },
 };
 

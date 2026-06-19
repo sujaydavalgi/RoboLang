@@ -377,6 +377,51 @@ class TypeChecker {
       });
     }
 
+    if (robot.verify) {
+      const saved = new Map(this.symbols);
+      this.symbols.set("robot", {
+        name: "robot",
+        roboType: { kind: "named", name: "Robot" },
+        kind: "robot",
+      });
+      for (const rule of robot.verify.rules) {
+        const t = this.checkExpr(rule);
+        if (t.kind !== "bool") {
+          this.error(
+            "verify rule must be boolean",
+            robot.verify.span.start.line,
+            robot.verify.span.start.column,
+          );
+        }
+      }
+      this.symbols = saved;
+    }
+
+    if (robot.observe) {
+      if (robot.observe.sensors.length === 0) {
+        this.error(
+          "observe block must list at least one sensor",
+          robot.observe.span.start.line,
+          robot.observe.span.start.column,
+        );
+      }
+      for (const sensorName of robot.observe.sensors) {
+        const sym = this.symbols.get(sensorName);
+        if (!sym || sym.kind !== "sensor") {
+          this.error(
+            `observe references unknown sensor '${sensorName}'`,
+            robot.observe.span.start.line,
+            robot.observe.span.start.column,
+          );
+        }
+      }
+      this.symbols.set("fusion", {
+        name: "fusion",
+        roboType: { kind: "named", name: "SensorFusion" },
+        kind: "variable",
+      });
+    }
+
     for (const behavior of robot.behaviors) {
       if (behavior.requires) {
         const t = this.checkExpr(behavior.requires);
@@ -384,8 +429,18 @@ class TypeChecker {
           this.error("requires clause must be boolean", behavior.span.start.line, behavior.span.start.column);
         }
       }
-      if (behavior.ensures) this.checkExpr(behavior.ensures);
-      if (behavior.invariant) this.checkExpr(behavior.invariant);
+      if (behavior.ensures) {
+        const t = this.checkExpr(behavior.ensures);
+        if (t.kind !== "bool") {
+          this.error("ensures clause must be boolean", behavior.span.start.line, behavior.span.start.column);
+        }
+      }
+      if (behavior.invariant) {
+        const t = this.checkExpr(behavior.invariant);
+        if (t.kind !== "bool") {
+          this.error("invariant clause must be boolean", behavior.span.start.line, behavior.span.start.column);
+        }
+      }
       this.symbols.set(behavior.name, {
         name: behavior.name,
         roboType: { kind: "void" },
@@ -400,8 +455,24 @@ class TypeChecker {
       } else if (task.intervalMs < 1) {
         this.error("task interval must be at least 1ms", task.span.start.line, task.span.start.column);
       }
-      if (task.requires) this.checkExpr(task.requires);
-      if (task.ensures) this.checkExpr(task.ensures);
+      if (task.requires) {
+        const t = this.checkExpr(task.requires);
+        if (t.kind !== "bool") {
+          this.error("requires clause must be boolean", task.span.start.line, task.span.start.column);
+        }
+      }
+      if (task.ensures) {
+        const t = this.checkExpr(task.ensures);
+        if (t.kind !== "bool") {
+          this.error("ensures clause must be boolean", task.span.start.line, task.span.start.column);
+        }
+      }
+      if (task.invariant) {
+        const t = this.checkExpr(task.invariant);
+        if (t.kind !== "bool") {
+          this.error("invariant clause must be boolean", task.span.start.line, task.span.start.column);
+        }
+      }
       this.symbols.set(task.name, {
         name: task.name,
         roboType: { kind: "void" },
@@ -715,6 +786,9 @@ class TypeChecker {
             stmt.span.start.column,
           );
         }
+        break;
+      case "RememberStmt":
+        this.checkExpr(stmt.value);
         break;
       case "ExprStmt":
         this.checkExpr(stmt.expr);
@@ -1151,6 +1225,12 @@ class TypeChecker {
         default:
           return false;
       }
+    }
+    if (expected.kind === "named" && actual.kind === "string") {
+      return expected.name === "Goal";
+    }
+    if (expected.kind === "string" && actual.kind === "named") {
+      return actual.name === "Goal";
     }
     return false;
   }

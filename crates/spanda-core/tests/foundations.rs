@@ -81,7 +81,7 @@ robot DeliveryBot {
     memory short_term;
     skill path_planning;
     goal "Deliver safely";
-    can [ read(lidar), propose_motion ];
+    can [ read(lidar), propose_motion, plan ];
 
     plan {
       let scan = lidar.read();
@@ -105,8 +105,14 @@ robot DeliveryBot {
 }
 "#;
     compile(source).expect("compile autonomous primitives");
-    run(source, RunOptions { max_loop_iterations: 3, ..Default::default() })
-        .expect("run autonomous primitives");
+    run(
+        source,
+        RunOptions {
+            max_loop_iterations: 3,
+            ..Default::default()
+        },
+    )
+    .expect("run autonomous primitives");
 }
 
 #[test]
@@ -217,7 +223,10 @@ robot Bot {
     )
     .expect("emit should run");
     assert!(
-        result.logs.iter().any(|l| l.contains("emit ObstacleDetected")),
+        result
+            .logs
+            .iter()
+            .any(|l| l.contains("emit ObstacleDetected")),
         "expected emit log, got: {:?}",
         result.logs
     );

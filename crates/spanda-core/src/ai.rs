@@ -1,4 +1,4 @@
-use crate::ast::{AiModelDecl, AgentDecl, ConfigValue, MemoryKind, Stmt, UnitKind};
+use crate::ast::{AgentDecl, AiModelDecl, ConfigValue, MemoryKind, Stmt, UnitKind};
 use crate::runtime::RuntimeValue;
 use std::collections::HashMap;
 
@@ -67,8 +67,7 @@ fn build_ai_registry() -> HashMap<String, AiLibModule> {
     ])
 }
 
-static AI_REGISTRY: std::sync::OnceLock<HashMap<String, AiLibModule>> =
-    std::sync::OnceLock::new();
+static AI_REGISTRY: std::sync::OnceLock<HashMap<String, AiLibModule>> = std::sync::OnceLock::new();
 
 pub fn ai_lib_registry() -> &'static HashMap<String, AiLibModule> {
     AI_REGISTRY.get_or_init(build_ai_registry)
@@ -130,11 +129,17 @@ fn scan_distance(input: Option<&RuntimeValue>) -> f64 {
     }
 }
 
-fn action_proposal(linear: f64, angular: f64, source: impl Into<String>) -> RuntimeValue {
+fn action_proposal(
+    linear: f64,
+    angular: f64,
+    source: impl Into<String>,
+    trace: Vec<String>,
+) -> RuntimeValue {
     RuntimeValue::ActionProposal {
         linear,
         angular,
         source: source.into(),
+        trace,
     }
 }
 
@@ -142,11 +147,20 @@ pub struct MockAiProvider;
 
 impl AiProvider for MockAiProvider {
     fn complete(&self, request: &CompletionRequest) -> RuntimeValue {
-        let _prompt = build_prompt(&request.prompt, request.input.as_ref());
+        let prompt = request.prompt.clone();
         let dist = scan_distance(request.input.as_ref());
 
         if regex_stop_halt_wait(&request.prompt) {
-            return action_proposal(0.0, 0.0, &request.model);
+            return action_proposal(
+                0.0,
+                0.0,
+                &request.model,
+                vec![
+                    format!("model={}", request.model),
+                    format!("prompt={prompt}"),
+                    "decision=stop".into(),
+                ],
+            );
         }
 
         if regex_turn_avoid_obstacle(&request.prompt) || dist < 0.8 {
@@ -156,11 +170,31 @@ impl AiProvider for MockAiProvider {
             } else {
                 (0.4_f64).min(dist * 0.3)
             };
-            return action_proposal(linear, angular, &request.model);
+            return action_proposal(
+                linear,
+                angular,
+                &request.model,
+                vec![
+                    format!("model={}", request.model),
+                    format!("prompt={prompt}"),
+                    format!("nearest_distance={dist:.2}"),
+                    "decision=avoid_obstacle".into(),
+                ],
+            );
         }
 
         let linear = (0.8_f64).min(dist * 0.45);
-        action_proposal(linear, 0.0, &request.model)
+        action_proposal(
+            linear,
+            0.0,
+            &request.model,
+            vec![
+                format!("model={}", request.model),
+                format!("prompt={prompt}"),
+                format!("nearest_distance={dist:.2}"),
+                "decision=forward".into(),
+            ],
+        )
     }
 
     fn detect(&self, request: &DetectionRequest) -> RuntimeValue {
@@ -266,9 +300,24 @@ pub fn mock_camera_frame() -> RuntimeValue {
     RuntimeValue::object("CameraFrame", fields)
 }
 
-pub fn build_prompt(base: &str, input: Option<&RuntimeValue>) -> String {
+pub fn build_prompt(base: &str, input: Option<&RuntimeValue>, goal: Option<&str>) -> String {
+    let mut header = String::new();
+    if let Some(g) = goal.filter(|s| !s.is_empty()) {
+        header.push_str(&format!("Goal: {g}"));
+    }
+    let base = base.trim();
+    if !base.is_empty() {
+        if !header.is_empty() {
+            header.push_str("\n\n");
+        }
+        header.push_str(base);
+    }
     let input_summary = summarize_input(input);
-    format!("{}\n\nContext:\n{input_summary}", base.trim())
+    if header.is_empty() {
+        format!("Context:\n{input_summary}")
+    } else {
+        format!("{header}\n\nContext:\n{input_summary}")
+    }
 }
 
 fn summarize_input(input: Option<&RuntimeValue>) -> String {
@@ -298,6 +347,7 @@ fn summarize_input(input: Option<&RuntimeValue>) -> String {
         }
         Some(RuntimeValue::Object { type_name, .. }) => format!("{type_name} object"),
         Some(RuntimeValue::Completion { text, .. }) => text.clone(),
+        Some(RuntimeValue::Goal { text }) => format!("Goal — {text}"),
         Some(other) => format!("({} value)", runtime_value_kind(other)),
     }
 }
@@ -329,6 +379,8 @@ fn runtime_value_kind(value: &RuntimeValue) -> &'static str {
         RuntimeValue::SafeAction { .. } => "safe_action",
         RuntimeValue::Completion { .. } => "completion",
         RuntimeValue::Embedding { .. } => "embedding",
+        RuntimeValue::Goal { .. } => "goal",
+        RuntimeValue::SensorFusion { .. } => "sensor_fusion",
     }
 }
 
@@ -361,7 +413,12 @@ impl AiModel {
         }
     }
 
-    pub fn reason(&self, prompt: &str, input: Option<RuntimeValue>) -> Result<RuntimeValue, String> {
+    pub fn reason(
+        &self,
+        prompt: &str,
+        input: Option<RuntimeValue>,
+        goal: Option<&str>,
+    ) -> Result<RuntimeValue, String> {
         if self.model_type != "LLM" {
             return Err(format!(
                 "Model '{}' is {}, not LLM",
@@ -369,7 +426,7 @@ impl AiModel {
             ));
         }
         Ok(self.provider.complete(&CompletionRequest {
-            prompt: build_prompt(prompt, input.as_ref()),
+            prompt: build_prompt(prompt, input.as_ref(), goal),
             input,
             model: self.config.model.clone(),
             provider: self.config.provider.clone(),
@@ -563,6 +620,24 @@ impl MemoryStore {
     pub fn clear(&mut self) {
         self.entries.clear();
     }
+
+    pub fn summary_for_prompt(&self) -> Option<String> {
+        if self.entries.is_empty() {
+            return None;
+        }
+        let kind = match self.kind {
+            AiMemoryKind::ShortTerm => "short_term",
+            AiMemoryKind::LongTerm => "long_term",
+        };
+        let keys: Vec<&str> = self
+            .entries
+            .iter()
+            .rev()
+            .take(5)
+            .map(|e| e.key.as_str())
+            .collect();
+        Some(format!("Agent memory ({kind}): {}", keys.join(", ")))
+    }
 }
 
 pub fn runtime_safe_action(linear: f64, angular: f64) -> RuntimeValue {
@@ -578,6 +653,7 @@ pub fn runtime_action_proposal(
         linear,
         angular,
         source: source.into(),
+        trace: Vec::new(),
     }
 }
 
@@ -602,15 +678,13 @@ pub fn proposal_from_value(value: &RuntimeValue) -> Option<ActionProposalFields>
             linear,
             angular,
             source,
+            trace: _,
         } => Some(ActionProposalFields {
             linear: *linear,
             angular: *angular,
             source: source.clone(),
         }),
-        RuntimeValue::Object {
-            type_name,
-            fields,
-        } if type_name == "ActionProposal" => {
+        RuntimeValue::Object { type_name, fields } if type_name == "ActionProposal" => {
             let linear = match fields.get("linear") {
                 Some(RuntimeValue::Number { value, .. }) => *value,
                 _ => 0.0,
@@ -688,7 +762,10 @@ mod tests {
             temperature: 0.2,
             max_tokens: 512,
         });
-        if let RuntimeValue::ActionProposal { linear, angular, .. } = result {
+        if let RuntimeValue::ActionProposal {
+            linear, angular, ..
+        } = result
+        {
             assert_eq!(linear, 0.0);
             assert_eq!(angular, 0.0);
         } else {

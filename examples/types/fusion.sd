@@ -1,0 +1,23 @@
+robot FusionDemo {
+  sensor camera: Camera on "/camera";
+  sensor lidar: Lidar on "/scan";
+  sensor imu: IMU;
+
+  safety {
+    max_speed = 1.0 m/s;
+  }
+
+  observe {
+    camera;
+    lidar;
+    imu;
+  }
+
+  behavior run() {
+    let fused = fusion.read();
+    let pose = fused.pose;
+    let count = fused.count;
+    let _ = pose;
+    let _ = count;
+  }
+}

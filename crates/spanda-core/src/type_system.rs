@@ -34,10 +34,7 @@ pub struct GenericDef {
 /// Resolve a type name (optionally qualified) to a `SpandaType`.
 pub fn resolve_type_name(name: &str) -> Result<SpandaType, String> {
     let name = name.strip_prefix("std.").unwrap_or(name);
-    let name = name
-        .rsplit('.')
-        .next()
-        .unwrap_or(name);
+    let name = name.rsplit('.').next().unwrap_or(name);
 
     match name {
         // Foundation
@@ -53,9 +50,7 @@ pub fn resolve_type_name(name: &str) -> Result<SpandaType, String> {
         "Time" => Ok(SpandaType::Named {
             name: "Time".into(),
         }),
-        "Duration" => Ok(SpandaType::Number {
-            unit: UnitKind::Ms,
-        }),
+        "Duration" => Ok(SpandaType::Number { unit: UnitKind::Ms }),
         "Timestamp" => Ok(SpandaType::Named {
             name: "Timestamp".into(),
         }),
@@ -63,9 +58,7 @@ pub fn resolve_type_name(name: &str) -> Result<SpandaType, String> {
             name: "Interval".into(),
         }),
         // Physical unit types
-        "Distance" => Ok(SpandaType::Number {
-            unit: UnitKind::M,
-        }),
+        "Distance" => Ok(SpandaType::Number { unit: UnitKind::M }),
         "Velocity" => Ok(SpandaType::Velocity),
         "Acceleration" => Ok(SpandaType::Number {
             unit: UnitKind::MPerS2,
@@ -111,11 +104,15 @@ pub fn resolve_type_name(name: &str) -> Result<SpandaType, String> {
             name: "SafeAction".into(),
         }),
         // HRI
-        "Command" | "Conversation" | "Speech" | "Gesture" | "Emotion" | "Feedback" => {
+        "Command" | "Conversation" | "Speech" | "Gesture" | "Emotion" | "Feedback" | "Approval" => {
             Ok(SpandaType::Named {
                 name: name.to_string(),
             })
         }
+        // Uncertainty
+        "Confidence" | "Prediction" | "Probability" => Ok(SpandaType::Named {
+            name: name.to_string(),
+        }),
         // Safety
         "Risk" | "Hazard" | "SafetyConstraint" | "EmergencyStop" => Ok(SpandaType::Named {
             name: name.to_string(),
@@ -128,7 +125,7 @@ pub fn resolve_type_name(name: &str) -> Result<SpandaType, String> {
         }
         // Advanced
         "KnowledgeGraph" | "Belief" | "Observation" | "WorldModel" | "Policy" | "Reward"
-        | "StateEstimate" => Ok(SpandaType::Named {
+        | "StateEstimate" | "SensorFusion" | "FusedObservation" => Ok(SpandaType::Named {
             name: name.to_string(),
         }),
         // Legacy aliases
@@ -170,14 +167,72 @@ fn is_known_domain_type(name: &str) -> bool {
 }
 
 const KNOWN_DOMAIN_TYPES: &[&str] = &[
-    "Mass", "Force", "Power", "Voltage", "Current", "Temperature", "Pressure", "Time",
-    "Timestamp", "Interval", "Waypoint", "MotionCommand", "ControlSignal", "PIDConfig", "GpsFix",
-    "ImuData", "AudioFrame", "Prompt", "Completion", "Embedding", "Token", "Context", "Memory",
-    "Plan", "ReasoningTrace", "Agent", "Goal", "Task", "Skill", "Capability", "Intent", "Command",
-    "Conversation", "Speech", "Gesture", "Emotion", "Feedback", "Risk", "Hazard",
-    "SafetyConstraint", "Twin", "SimulationState", "Telemetry", "Replay", "Fault", "Scenario",
-    "KnowledgeGraph", "Belief", "Observation", "WorldModel", "Policy", "Reward", "StateEstimate",
-    "LLM", "VisionModel", "EmbeddingModel", "CameraFrame", "Image", "DepthImage", "PointCloud",
+    "Mass",
+    "Force",
+    "Power",
+    "Voltage",
+    "Current",
+    "Temperature",
+    "Pressure",
+    "Time",
+    "Timestamp",
+    "Interval",
+    "Waypoint",
+    "MotionCommand",
+    "ControlSignal",
+    "PIDConfig",
+    "GpsFix",
+    "ImuData",
+    "AudioFrame",
+    "Prompt",
+    "Completion",
+    "Embedding",
+    "Token",
+    "Context",
+    "Memory",
+    "Plan",
+    "ReasoningTrace",
+    "Agent",
+    "Goal",
+    "Task",
+    "Skill",
+    "Capability",
+    "Intent",
+    "Approval",
+    "Command",
+    "Conversation",
+    "Speech",
+    "Gesture",
+    "Emotion",
+    "Feedback",
+    "Confidence",
+    "Prediction",
+    "Probability",
+    "Risk",
+    "Hazard",
+    "SafetyConstraint",
+    "Twin",
+    "SimulationState",
+    "Telemetry",
+    "Replay",
+    "Fault",
+    "Scenario",
+    "KnowledgeGraph",
+    "Belief",
+    "Observation",
+    "WorldModel",
+    "Policy",
+    "Reward",
+    "StateEstimate",
+    "SensorFusion",
+    "FusedObservation",
+    "LLM",
+    "VisionModel",
+    "EmbeddingModel",
+    "CameraFrame",
+    "Image",
+    "DepthImage",
+    "PointCloud",
     "LidarScan",
 ];
 
@@ -345,7 +400,13 @@ pub fn std_namespaces() -> HashMap<&'static str, &'static [&'static str]> {
     );
     m.insert(
         "std.safety",
-        &["Risk", "Hazard", "SafetyConstraint", "EmergencyStop", "SafeAction"][..],
+        &[
+            "Risk",
+            "Hazard",
+            "SafetyConstraint",
+            "EmergencyStop",
+            "SafeAction",
+        ][..],
     );
     m.insert(
         "std.twin",

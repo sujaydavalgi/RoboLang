@@ -60,11 +60,7 @@ mod tests {
 
     #[test]
     fn replay_field_returns_historical_snapshot() {
-        let mut twin = TwinRuntime::new(
-            "T".into(),
-            vec!["pose".into()],
-            true,
-        );
+        let mut twin = TwinRuntime::new("T".into(), vec!["pose".into()], true);
         twin.snapshot(
             "pose",
             RuntimeValue::Pose {

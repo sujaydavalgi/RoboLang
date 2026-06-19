@@ -1,26 +1,26 @@
+pub mod ai;
 pub mod ast;
+mod error;
 pub mod events;
+pub mod format;
 pub mod foundations;
-pub mod state_machine;
-pub mod twin;
+pub mod hal;
 pub mod lexer;
+pub mod lib_registry;
 pub mod parser;
-pub mod types;
 pub mod runtime;
 pub mod safety;
-pub mod ai;
 pub mod simulator;
-pub mod type_system;
-pub mod stdlib;
-pub mod format;
-pub mod hal;
 pub mod soc;
-pub mod lib_registry;
-mod error;
+pub mod state_machine;
+pub mod stdlib;
+pub mod twin;
+pub mod type_system;
+pub mod types;
 
-pub use format::format_source;
 pub use ast::*;
 pub use error::*;
+pub use format::format_source;
 
 use runtime::{Interpreter, InterpreterOptions, RobotBackend};
 use simulator::{create_default_simulator, Obstacle, SimulatorConfig};

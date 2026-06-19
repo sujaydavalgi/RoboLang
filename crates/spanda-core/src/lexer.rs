@@ -82,6 +82,9 @@ pub enum TokenType {
     Size,
     EmergencyStop,
     ResetEmergencyStop,
+    Remember,
+    Verify,
+    Observe,
     On,
     True,
     False,
@@ -272,6 +275,9 @@ fn keywords() -> HashMap<&'static str, TokenType> {
         ("size", TokenType::Size),
         ("emergency_stop", TokenType::EmergencyStop),
         ("reset_emergency_stop", TokenType::ResetEmergencyStop),
+        ("remember", TokenType::Remember),
+        ("verify", TokenType::Verify),
+        ("observe", TokenType::Observe),
         ("on", TokenType::On),
         ("true", TokenType::True),
         ("false", TokenType::False),
@@ -318,57 +324,134 @@ pub fn tokenize(source: &str) -> Result<Vec<Token>, SpandaError> {
 
         match ch {
             '[' => {
-                push_single(&mut tokens, TokenType::Lbracket, "[", start_line, start_column, start_offset);
+                push_single(
+                    &mut tokens,
+                    TokenType::Lbracket,
+                    "[",
+                    start_line,
+                    start_column,
+                    start_offset,
+                );
                 i += 1;
                 column += 1;
             }
             ']' => {
-                push_single(&mut tokens, TokenType::Rbracket, "]", start_line, start_column, start_offset);
+                push_single(
+                    &mut tokens,
+                    TokenType::Rbracket,
+                    "]",
+                    start_line,
+                    start_column,
+                    start_offset,
+                );
                 i += 1;
                 column += 1;
             }
             '{' => {
-                push_single(&mut tokens, TokenType::Lbrace, "{", start_line, start_column, start_offset);
+                push_single(
+                    &mut tokens,
+                    TokenType::Lbrace,
+                    "{",
+                    start_line,
+                    start_column,
+                    start_offset,
+                );
                 i += 1;
                 column += 1;
             }
             '}' => {
-                push_single(&mut tokens, TokenType::Rbrace, "}", start_line, start_column, start_offset);
+                push_single(
+                    &mut tokens,
+                    TokenType::Rbrace,
+                    "}",
+                    start_line,
+                    start_column,
+                    start_offset,
+                );
                 i += 1;
                 column += 1;
             }
             '(' => {
-                push_single(&mut tokens, TokenType::Lparen, "(", start_line, start_column, start_offset);
+                push_single(
+                    &mut tokens,
+                    TokenType::Lparen,
+                    "(",
+                    start_line,
+                    start_column,
+                    start_offset,
+                );
                 i += 1;
                 column += 1;
             }
             ')' => {
-                push_single(&mut tokens, TokenType::Rparen, ")", start_line, start_column, start_offset);
+                push_single(
+                    &mut tokens,
+                    TokenType::Rparen,
+                    ")",
+                    start_line,
+                    start_column,
+                    start_offset,
+                );
                 i += 1;
                 column += 1;
             }
             ';' => {
-                push_single(&mut tokens, TokenType::Semicolon, ";", start_line, start_column, start_offset);
+                push_single(
+                    &mut tokens,
+                    TokenType::Semicolon,
+                    ";",
+                    start_line,
+                    start_column,
+                    start_offset,
+                );
                 i += 1;
                 column += 1;
             }
             ':' => {
-                push_single(&mut tokens, TokenType::Colon, ":", start_line, start_column, start_offset);
+                push_single(
+                    &mut tokens,
+                    TokenType::Colon,
+                    ":",
+                    start_line,
+                    start_column,
+                    start_offset,
+                );
                 i += 1;
                 column += 1;
             }
             ',' => {
-                push_single(&mut tokens, TokenType::Comma, ",", start_line, start_column, start_offset);
+                push_single(
+                    &mut tokens,
+                    TokenType::Comma,
+                    ",",
+                    start_line,
+                    start_column,
+                    start_offset,
+                );
                 i += 1;
                 column += 1;
             }
             '.' => {
-                push_single(&mut tokens, TokenType::Dot, ".", start_line, start_column, start_offset);
+                push_single(
+                    &mut tokens,
+                    TokenType::Dot,
+                    ".",
+                    start_line,
+                    start_column,
+                    start_offset,
+                );
                 i += 1;
                 column += 1;
             }
             '+' => {
-                push_single(&mut tokens, TokenType::Plus, "+", start_line, start_column, start_offset);
+                push_single(
+                    &mut tokens,
+                    TokenType::Plus,
+                    "+",
+                    start_line,
+                    start_column,
+                    start_offset,
+                );
                 i += 1;
                 column += 1;
             }
@@ -386,17 +469,38 @@ pub fn tokenize(source: &str) -> Result<Vec<Token>, SpandaError> {
                 column += 2;
             }
             '-' => {
-                push_single(&mut tokens, TokenType::Minus, "-", start_line, start_column, start_offset);
+                push_single(
+                    &mut tokens,
+                    TokenType::Minus,
+                    "-",
+                    start_line,
+                    start_column,
+                    start_offset,
+                );
                 i += 1;
                 column += 1;
             }
             '*' => {
-                push_single(&mut tokens, TokenType::Star, "*", start_line, start_column, start_offset);
+                push_single(
+                    &mut tokens,
+                    TokenType::Star,
+                    "*",
+                    start_line,
+                    start_column,
+                    start_offset,
+                );
                 i += 1;
                 column += 1;
             }
             '/' => {
-                push_single(&mut tokens, TokenType::Slash, "/", start_line, start_column, start_offset);
+                push_single(
+                    &mut tokens,
+                    TokenType::Slash,
+                    "/",
+                    start_line,
+                    start_column,
+                    start_offset,
+                );
                 i += 1;
                 column += 1;
             }
@@ -414,7 +518,14 @@ pub fn tokenize(source: &str) -> Result<Vec<Token>, SpandaError> {
                 column += 2;
             }
             '<' => {
-                push_single(&mut tokens, TokenType::Lt, "<", start_line, start_column, start_offset);
+                push_single(
+                    &mut tokens,
+                    TokenType::Lt,
+                    "<",
+                    start_line,
+                    start_column,
+                    start_offset,
+                );
                 i += 1;
                 column += 1;
             }
@@ -432,7 +543,14 @@ pub fn tokenize(source: &str) -> Result<Vec<Token>, SpandaError> {
                 column += 2;
             }
             '>' => {
-                push_single(&mut tokens, TokenType::Gt, ">", start_line, start_column, start_offset);
+                push_single(
+                    &mut tokens,
+                    TokenType::Gt,
+                    ">",
+                    start_line,
+                    start_column,
+                    start_offset,
+                );
                 i += 1;
                 column += 1;
             }
@@ -476,7 +594,14 @@ pub fn tokenize(source: &str) -> Result<Vec<Token>, SpandaError> {
                 column += 2;
             }
             '=' => {
-                push_single(&mut tokens, TokenType::Assign, "=", start_line, start_column, start_offset);
+                push_single(
+                    &mut tokens,
+                    TokenType::Assign,
+                    "=",
+                    start_line,
+                    start_column,
+                    start_offset,
+                );
                 i += 1;
                 column += 1;
             }
@@ -687,7 +812,9 @@ mod tests {
     #[test]
     fn tokenizes_unit_literals() {
         let tokens = tokenize("1.5m/s").unwrap();
-        let unit_tok = tokens.iter().find(|t| t.token_type == TokenType::UnitLiteral);
+        let unit_tok = tokens
+            .iter()
+            .find(|t| t.token_type == TokenType::UnitLiteral);
         assert!(unit_tok.is_some());
         let t = unit_tok.unwrap();
         assert_eq!(t.value, TokenValue::Number(1.5));
@@ -697,14 +824,18 @@ mod tests {
     #[test]
     fn tokenizes_spaced_unit_literals() {
         let tokens = tokenize("1.5 m/s").unwrap();
-        let unit_tok = tokens.iter().find(|t| t.token_type == TokenType::UnitLiteral);
+        let unit_tok = tokens
+            .iter()
+            .find(|t| t.token_type == TokenType::UnitLiteral);
         assert!(unit_tok.is_some());
     }
 
     #[test]
     fn tokenizes_duration_units() {
         let tokens = tokenize("loop every 50ms").unwrap();
-        let ms_tok = tokens.iter().find(|t| t.token_type == TokenType::UnitLiteral);
+        let ms_tok = tokens
+            .iter()
+            .find(|t| t.token_type == TokenType::UnitLiteral);
         assert!(ms_tok.is_some());
         assert_eq!(ms_tok.unwrap().unit, Some(UnitLexeme::Ms));
     }

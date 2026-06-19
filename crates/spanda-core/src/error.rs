@@ -32,12 +32,20 @@ pub enum SpandaError {
 impl SpandaError {
     pub fn diagnostics(&self) -> Vec<Diagnostic> {
         match self {
-            SpandaError::Lexer { message, line, column } => vec![Diagnostic {
+            SpandaError::Lexer {
+                message,
+                line,
+                column,
+            } => vec![Diagnostic {
                 message: message.clone(),
                 line: *line,
                 column: *column,
             }],
-            SpandaError::Parse { message, line, column } => vec![Diagnostic {
+            SpandaError::Parse {
+                message,
+                line,
+                column,
+            } => vec![Diagnostic {
                 message: message.clone(),
                 line: *line,
                 column: *column,

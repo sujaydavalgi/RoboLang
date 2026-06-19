@@ -214,8 +214,155 @@ describe("type system", () => {
     );
   });
 
-  it("runs safety example", () => {
-    const source = readFileSync(join(import.meta.dirname, "../examples/types/safety.sd"), "utf-8");
+  it("accepts Goal values and agent goal injection", () => {
+    expect(() =>
+      compile(`
+        robot R {
+          sensor lidar: Lidar on "/scan";
+          actuator wheels: DifferentialDrive;
+          safety { max_speed = 1.0 m/s; }
+          ai_model planner: LLM { provider: "mock"; model: "p"; }
+          agent Navigator {
+            uses planner;
+            tools [lidar, wheels];
+            goal "Reach dock";
+            can [ read(lidar), propose_motion, plan ];
+            plan {
+              let mission: Goal = "Reach dock";
+              let proposal = planner.reason(prompt: "go", input: lidar.read(), goal: mission);
+              let _ = proposal.trace;
+              wheels.stop();
+            }
+          }
+          behavior run() {
+            let g: Goal = goal(text: "Deliver");
+            let _ = Navigator.goal;
+            Navigator.plan();
+          }
+        }
+      `),
+    ).not.toThrow();
+  });
+
+  it("runs goals example", () => {
+    const source = readFileSync(join(import.meta.dirname, "../examples/types/goals.sd"), "utf-8");
+    const { program } = compile(source);
+    expect(() =>
+      run(program, {
+        backend: createDefaultSimulator(),
+        entryBehavior: "run",
+      }),
+    ).not.toThrow();
+  });
+
+  it("accepts remember and recall in agent plan", () => {
+    const source = `
+      robot R {
+        sensor lidar: Lidar on "/scan";
+        actuator wheels: DifferentialDrive;
+        safety { max_speed = 1.0 m/s; }
+        ai_model planner: LLM { provider: "mock"; model: "p"; temperature: 0.1; }
+        agent Navigator {
+          uses planner;
+          tools [lidar, wheels];
+          memory short_term;
+          can [ read(lidar), propose_motion, plan ];
+          plan {
+            let scan = lidar.read();
+            remember "last_scan", scan;
+            let recalled = recall("last_scan");
+            let _ = recalled;
+            let proposal = planner.reason(prompt: "go", input: scan);
+            let action = safety.validate(proposal);
+            wheels.execute(action);
+          }
+        }
+        behavior run() { Navigator.plan(); }
+      }
+    `;
+    const { program } = compile(source);
+    expect(() =>
+      run(program, {
+        backend: createDefaultSimulator(),
+        entryBehavior: "run",
+      }),
+    ).not.toThrow();
+  });
+
+  it("runs memory example", () => {
+    const source = readFileSync(join(import.meta.dirname, "../examples/types/memory.sd"), "utf-8");
+    const { program } = compile(source);
+    expect(() =>
+      run(program, {
+        backend: createDefaultSimulator(),
+        entryBehavior: "run",
+      }),
+    ).not.toThrow();
+  });
+
+  it("accepts verify block and runs assertions after behavior", () => {
+    const source = `
+      robot R {
+        actuator wheels: DifferentialDrive;
+        safety { max_speed = 2.0 m/s; }
+        verify {
+          robot.velocity().linear <= 2.0 m/s;
+        }
+        behavior run() {
+          wheels.drive(linear: 0.5 m/s, angular: 0.0 rad/s);
+        }
+      }
+    `;
+    const { program } = compile(source);
+    expect(() =>
+      run(program, {
+        backend: createDefaultSimulator(),
+        entryBehavior: "run",
+      }),
+    ).not.toThrow();
+  });
+
+  it("runs verify example", () => {
+    const source = readFileSync(join(import.meta.dirname, "../examples/types/verify.sd"), "utf-8");
+    const { program } = compile(source);
+    expect(() =>
+      run(program, {
+        backend: createDefaultSimulator(),
+        entryBehavior: "run",
+      }),
+    ).not.toThrow();
+  });
+
+  it("accepts observe block and fuses sensor readings", () => {
+    const source = `
+      robot R {
+        sensor camera: Camera on "/camera";
+        sensor lidar: Lidar on "/scan";
+        sensor imu: IMU;
+        safety { max_speed = 1.0 m/s; }
+        observe {
+          camera;
+          lidar;
+          imu;
+        }
+        behavior run() {
+          let fused = fusion.read();
+          let _ = fused.pose;
+          let _ = fused.count;
+        }
+      }
+    `;
+    const { program } = compile(source);
+    expect(() =>
+      run(program, {
+        backend: createDefaultSimulator(),
+        entryBehavior: "run",
+      }),
+    ).not.toThrow();
+  });
+
+  it("runs fusion example", () => {
+    const source = readFileSync(join(import.meta.dirname, "../examples/types/fusion.sd"), "utf-8");
     const { program } = compile(source);
     expect(() =>
       run(program, {

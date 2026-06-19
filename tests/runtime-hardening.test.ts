@@ -54,7 +54,7 @@ describe("runtime hardening", () => {
           uses planner;
           tools [lidar, wheels];
           goal "test";
-          can [ propose_motion ];
+          can [ propose_motion, plan ];
           plan {
             let scan = lidar.read();
             let proposal = planner.reason(prompt: "go", input: scan);
@@ -72,6 +72,51 @@ describe("runtime hardening", () => {
     ).toThrow(/lacks capability read\(lidar\)/);
   });
 
+  it("captures ReasoningTrace from ActionProposal", () => {
+    expect(() =>
+      compile(`
+        robot R {
+          sensor lidar: Lidar on "/scan";
+          actuator wheels: DifferentialDrive;
+          ai_model planner: LLM { provider: "mock"; model: "test"; }
+          behavior run() {
+            let proposal = planner.reason(prompt: "go", input: lidar.read());
+            let trace = proposal.trace;
+            let _ = trace;
+            wheels.stop();
+          }
+        }
+      `),
+    ).not.toThrow();
+  });
+
+  it("denies agent summarize without summarize capability", () => {
+    const source = `
+      robot R {
+        sensor lidar: Lidar on "/scan";
+        actuator wheels: DifferentialDrive;
+        ai_model planner: LLM { provider: "mock"; model: "test"; }
+        agent NoSummarize {
+          uses planner;
+          tools [lidar, wheels];
+          goal "test";
+          can [ read(lidar), propose_motion, plan ];
+          plan {
+            let scan = lidar.read();
+            let _ = planner.summarize(input: scan);
+            wheels.stop();
+          }
+        }
+        behavior run() { NoSummarize.plan(); }
+      }
+    `;
+    const { program } = compile(source);
+    const sim = createDefaultSimulator();
+    expect(() =>
+      run(program, { backend: sim, maxLoopIterations: 1 }),
+    ).toThrow(/lacks capability summarize/);
+  });
+
   it("denies agent actuator execute without propose_motion capability", () => {
     const source = `
       robot R {
@@ -87,7 +132,7 @@ describe("runtime hardening", () => {
           uses planner;
           tools [lidar, wheels];
           goal "test";
-          can [ read(lidar) ];
+          can [ read(lidar), plan ];
           plan {
             let scan = lidar.read();
             let proposal = planner.reason(prompt: "go", input: scan);

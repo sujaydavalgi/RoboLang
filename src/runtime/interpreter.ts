@@ -60,8 +60,10 @@ export type RuntimeValue =
   | { kind: "twin"; name: string }
   | { kind: "safety_ctx" }
   | { kind: "ai_model"; name: string; modelType: string; provider: string }
-  | { kind: "action_proposal"; linear: number; angular: number; source: string; trusted: false }
+  | { kind: "action_proposal"; linear: number; angular: number; source: string; trace: string[]; trusted: false }
   | { kind: "safe_action"; linear: number; angular: number; trusted: true }
+  | { kind: "goal"; text: string }
+  | { kind: "sensor_fusion"; sensors: string[] }
   | { kind: "completion"; text: string; model?: string }
   | { kind: "embedding"; dimensions: number; vector: number[] };
 
@@ -154,6 +156,8 @@ export class Interpreter {
     string,
     Map<string, { params: import("../foundations.js").TraitParamDecl[]; body: Stmt[] }>
   >();
+  private verifyRules: Expr[] = [];
+  private fusionSensors: string[] = [];
 
   constructor(private options: InterpreterOptions) {}
 
@@ -162,6 +166,10 @@ export class Interpreter {
     this.loadProgramMetadata(program);
     for (const robot of program.robots) {
       this.setupRobot(robot);
+      if (!entryBehavior && robot.behaviors.length === 0 && robot.tasks.length > 1) {
+        this.executeMultiplexedTasks(robot.tasks);
+        continue;
+      }
       const behaviorName =
         entryBehavior ?? robot.behaviors[0]?.name ?? robot.tasks[0]?.name;
       if (!behaviorName) continue;
@@ -220,6 +228,21 @@ export class Interpreter {
     if (invariant && !this.evalContract(invariant)) {
       throw new RuntimeError("invariant contract failed", 0);
     }
+    this.runVerifyRules();
+  }
+
+  private runVerifyRules(): void {
+    if (this.verifyRules.length === 0) return;
+    for (let i = 0; i < this.verifyRules.length; i++) {
+      const val = this.evalExpr(this.verifyRules[i]!);
+      if (val.kind !== "bool") {
+        throw new RuntimeError(`verify rule ${i + 1} must be boolean`, 0);
+      }
+      if (!val.value) {
+        throw new RuntimeError(`verify rule ${i + 1} failed`, 0);
+      }
+    }
+    this.options.onLog?.(`verify: all ${this.verifyRules.length} rule(s) passed`);
   }
 
   private executeTaskLoop(
@@ -232,17 +255,70 @@ export class Interpreter {
     const maxIter = this.options.maxLoopIterations ?? 10;
     for (let i = 0; i < maxIter; i++) {
       this.options.backend.tick(intervalMs);
-      if (requires && !this.evalContract(requires)) {
-        this.options.onLog?.("task requires contract failed — skipping iteration");
-        continue;
+      if (!this.executeTaskIteration(body, requires, ensures, invariant)) break;
+      this.runVerifyRules();
+      this.updateTwinSnapshot();
+    }
+  }
+
+  private executeTaskIteration(
+    body: Stmt[],
+    requires: Expr | null,
+    ensures: Expr | null,
+    invariant: Expr | null,
+    taskName?: string,
+  ): boolean {
+    if (requires && !this.evalContract(requires)) {
+      const label = taskName ? `task '${taskName}'` : "task";
+      this.options.onLog?.(`${label} requires contract failed — skipping iteration`);
+      return true;
+    }
+    this.executeBlock(body);
+    if (ensures && !this.evalContract(ensures)) {
+      throw new RuntimeError("task ensures contract failed", 0);
+    }
+    if (invariant && !this.evalContract(invariant)) {
+      throw new RuntimeError("task invariant contract failed", 0);
+    }
+    return !this.safetyMonitor?.isEmergencyStop();
+  }
+
+  private executeMultiplexedTasks(tasks: import("../foundations.js").TaskDecl[]): void {
+    if (tasks.length === 0) return;
+    const schedules = tasks.map((task) => ({
+      name: task.name,
+      intervalMs: task.intervalMs,
+      nextDueMs: 0,
+      body: task.body,
+      requires: task.requires,
+      ensures: task.ensures,
+      invariant: task.invariant,
+    }));
+    const baseTick = Math.max(1, Math.min(...schedules.map((task) => task.intervalMs)));
+    this.options.onLog?.(
+      `scheduler: multiplexing ${schedules.length} task(s) with base tick ${baseTick}ms`,
+    );
+    const maxIter = this.options.maxLoopIterations ?? 10;
+    let simTime = 0;
+    for (let i = 0; i < maxIter; i++) {
+      this.options.backend.tick(baseTick);
+      simTime += baseTick;
+      for (const schedule of schedules) {
+        if (schedule.nextDueMs <= simTime) {
+          this.options.onLog?.(`task '${schedule.name}': tick`);
+          if (!this.executeTaskIteration(
+            schedule.body,
+            schedule.requires,
+            schedule.ensures,
+            schedule.invariant,
+            schedule.name,
+          )) {
+            return;
+          }
+          schedule.nextDueMs = simTime + schedule.intervalMs;
+        }
       }
-      this.executeBlock(body);
-      if (ensures && !this.evalContract(ensures)) {
-        throw new RuntimeError("task ensures contract failed", 0);
-      }
-      if (invariant && !this.evalContract(invariant)) {
-        throw new RuntimeError("task invariant contract failed", 0);
-      }
+      this.runVerifyRules();
       this.updateTwinSnapshot();
       if (this.safetyMonitor?.isEmergencyStop()) break;
     }
@@ -405,6 +481,8 @@ export class Interpreter {
     this.twinRuntime = null;
     this.agentCapabilities.clear();
     this.agentTraitImpls.clear();
+    this.verifyRules = [];
+    this.fusionSensors = [];
     this.currentAgent = null;
 
     if (robot.soc) {
@@ -512,6 +590,19 @@ export class Interpreter {
       this.env.define(robot.twin.name, { kind: "twin", name: robot.twin.name });
       this.options.onLog?.(
         `twin ${robot.twin.name}: mirrors [${robot.twin.mirrors.join(", ")}], replay=${robot.twin.replay}`,
+      );
+    }
+
+    if (robot.verify) {
+      this.verifyRules = [...robot.verify.rules];
+      this.options.onLog?.(`verify: ${robot.verify.rules.length} rule(s) registered`);
+    }
+
+    if (robot.observe) {
+      this.fusionSensors = [...robot.observe.sensors];
+      this.env.define("fusion", { kind: "sensor_fusion", sensors: [...robot.observe.sensors] });
+      this.options.onLog?.(
+        `observe: fusing ${robot.observe.sensors.length} sensor(s) [${robot.observe.sensors.join(", ")}]`,
       );
     }
 
@@ -653,6 +744,24 @@ export class Interpreter {
       case "EnterStmt":
         this.executeEnter(stmt.stateName, stmt.span.start.line);
         break;
+      case "RememberStmt": {
+        if (!this.currentAgent) {
+          throw new RuntimeError(
+            "remember requires active agent context (run inside agent plan)",
+            stmt.span.start.line,
+          );
+        }
+        const agent = this.agents.get(this.currentAgent);
+        if (!agent?.memory) {
+          throw new RuntimeError(
+            "Agent has no memory — declare memory short_term or long_term on the agent",
+            stmt.span.start.line,
+          );
+        }
+        agent.memory.remember(stmt.key, this.evalExpr(stmt.value));
+        this.options.onLog?.(`remember '${stmt.key}'`);
+        break;
+      }
       case "ExprStmt":
         this.evalExpr(stmt.expr);
         break;
@@ -774,12 +883,40 @@ export class Interpreter {
       }
     }
 
-    if (obj.kind === "action_proposal" || obj.kind === "safe_action") {
+    if (obj.kind === "action_proposal") {
+      if (expr.property === "trace") {
+        return {
+          kind: "object",
+          typeName: "ReasoningTrace",
+          fields: {
+            source: { kind: "string", value: obj.source },
+            steps: { kind: "string", value: obj.trace.join("\n") },
+            step_count: { kind: "number", value: obj.trace.length, unit: "none" },
+          },
+        };
+      }
       const map: Record<string, RuntimeValue> = {
         linear: { kind: "number", value: obj.linear, unit: "m/s" },
         angular: { kind: "number", value: obj.angular, unit: "rad/s" },
       };
       return map[expr.property] ?? { kind: "void" };
+    }
+
+    if (obj.kind === "safe_action") {
+      const map: Record<string, RuntimeValue> = {
+        linear: { kind: "number", value: obj.linear, unit: "m/s" },
+        angular: { kind: "number", value: obj.angular, unit: "rad/s" },
+      };
+      return map[expr.property] ?? { kind: "void" };
+    }
+
+    if (obj.kind === "goal" && expr.property === "text") {
+      return { kind: "string", value: obj.text };
+    }
+
+    if (obj.kind === "agent" && expr.property === "goal") {
+      const agent = this.agents.get(obj.name);
+      return { kind: "goal", text: agent?.decl.goal ?? "" };
     }
 
     if (obj.kind === "completion" && expr.property === "text") {
@@ -815,6 +952,12 @@ export class Interpreter {
 
     if (target.kind === "twin") {
       return this.evalTwinMethod(method, expr);
+    }
+
+    if (target.kind === "sensor_fusion") {
+      if (method === "read") {
+        return this.readFusedObservation();
+      }
     }
 
     if (target.kind === "sensor") {
@@ -853,6 +996,7 @@ export class Interpreter {
         return { kind: "void" };
       }
       if (method === "plan") {
+        this.checkAgentCapability(targetName, "plan", undefined, expr.span.start.line);
         const agent = this.agents.get(targetName);
         if (!agent) {
           throw new RuntimeError(`Unknown agent '${targetName}'`, expr.span.start.line);
@@ -877,17 +1021,31 @@ export class Interpreter {
       const model = aiModel ?? this.ai_models.get(targetName);
       if (!model) return { kind: "void" };
       if (method === "reason") {
+        if (this.currentAgent) {
+          this.checkAgentCapability(this.currentAgent, "propose_motion", undefined, expr.span.start.line);
+        }
         const prompt = getString(this.getNamedArgValue(expr, "prompt"));
         const input = this.getNamedArgValue(expr, "input");
-        const result = model.reason(prompt, input.kind === "void" ? undefined : input);
+        const goalText = this.enrichReasonGoal(this.resolveReasonGoal(expr));
+        const result = model.reason(
+          prompt,
+          input.kind === "void" ? undefined : input,
+          goalText,
+        );
         this.options.onLog?.(`ai ${targetName}.reason() -> ActionProposal`);
         return result;
       }
       if (method === "summarize") {
+        if (this.currentAgent) {
+          this.checkAgentCapability(this.currentAgent, "summarize", undefined, expr.span.start.line);
+        }
         const input = this.getNamedArgValue(expr, "input");
         return model.summarize(input.kind === "void" ? undefined : input);
       }
       if (method === "detect") {
+        if (this.currentAgent) {
+          this.checkAgentCapability(this.currentAgent, "detect", undefined, expr.span.start.line);
+        }
         const frame = expr.args[0] ? this.evalExpr(expr.args[0]) : this.getNamedArgValue(expr, "frame");
         return model.detect(frame);
       }
@@ -922,6 +1080,21 @@ export class Interpreter {
     return this.options.backend.readSensor(target.name, target.sensorType, target.topic);
   }
 
+  private readFusedObservation(): RuntimeValue {
+    const fields: Record<string, RuntimeValue> = {};
+    for (const sensorName of this.fusionSensors) {
+      const sensorVal = this.env.get(sensorName);
+      if (!sensorVal || sensorVal.kind !== "sensor") {
+        throw new RuntimeError(`Unknown observe sensor '${sensorName}'`, 0);
+      }
+      fields[sensorName] = this.readSensorValue(sensorVal);
+    }
+    const state = this.options.backend.getState();
+    fields.pose = poseFromState(state.pose);
+    fields.count = { kind: "number", value: this.fusionSensors.length, unit: "none" };
+    return { kind: "object", typeName: "FusedObservation", fields };
+  }
+
   private evalBuiltinFunction(name: string, expr: import("../ast/nodes.js").CallExpr): RuntimeValue {
     switch (name) {
       case "pose":
@@ -950,9 +1123,67 @@ export class Interpreter {
         const pose = getPoseFields(this.getNamedArgValue(expr, "pose")) ?? { x: 0, y: 0, theta: 0, z: 0 };
         return { kind: "transform", fromFrame, toFrame, pose };
       }
+      case "goal": {
+        const text =
+          expr.args[0] && expr.args[0].kind === "StringLiteralExpr"
+            ? String(expr.args[0].value)
+            : getString(this.getNamedArgValue(expr, "text"), "");
+        return { kind: "goal", text };
+      }
+      case "recall": {
+        if (!this.currentAgent) {
+          throw new RuntimeError(
+            "recall() requires active agent context (run inside agent plan)",
+            expr.span.start.line,
+          );
+        }
+        const agent = this.agents.get(this.currentAgent);
+        if (!agent?.memory) {
+          throw new RuntimeError(
+            "Agent has no memory — declare memory short_term or long_term on the agent",
+            expr.span.start.line,
+          );
+        }
+        const key =
+          expr.args[0] && expr.args[0].kind === "StringLiteralExpr"
+            ? String(expr.args[0].value)
+            : getString(this.getNamedArgValue(expr, "key"), "");
+        const entry = agent.memory.recall(key);
+        return entry ?? { kind: "void" };
+      }
       default:
         return { kind: "void" };
     }
+  }
+
+  private goalTextFromValue(value: RuntimeValue): string | undefined {
+    if (value.kind === "goal") return value.text;
+    if (value.kind === "string") return value.value;
+    return undefined;
+  }
+
+  private resolveReasonGoal(expr: import("../ast/nodes.js").CallExpr): string | undefined {
+    const explicit = this.getNamedArgValue(expr, "goal");
+    if (explicit.kind !== "void") {
+      return this.goalTextFromValue(explicit);
+    }
+    if (this.currentAgent) {
+      const agent = this.agents.get(this.currentAgent);
+      const text = agent?.decl.goal?.trim();
+      if (text) return text;
+    }
+    return undefined;
+  }
+
+  private enrichReasonGoal(goalText: string | undefined): string | undefined {
+    if (!this.currentAgent) return goalText;
+    const agent = this.agents.get(this.currentAgent);
+    const memorySummary = agent?.memory?.summaryForPrompt();
+    if (!memorySummary) return goalText;
+    if (goalText) {
+      return `${goalText}\n${memorySummary}`;
+    }
+    return memorySummary;
   }
 
   private evalSafetyValidate(expr: import("../ast/nodes.js").CallExpr): RuntimeValue {

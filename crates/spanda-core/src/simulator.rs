@@ -255,8 +255,7 @@ impl RobotBackend for Simulator {
         action_type: &str,
         goal: RuntimeValue,
     ) -> RuntimeValue {
-        self.action_log
-            .push(format!("{action_name}:{action_type}"));
+        self.action_log.push(format!("{action_name}:{action_type}"));
         self.event_log.push(format!("action({action_name})"));
         match goal {
             RuntimeValue::Pose { x, y, theta, z } => {
@@ -286,15 +285,11 @@ impl RobotBackend for Simulator {
 
         match cmd {
             MotionCommand::Drive {
-                linear,
-                angular,
-                ..
+                linear, angular, ..
             } => {
                 self.velocity = VelocityState { linear, angular };
-                self.event_log.push(format!(
-                    "drive({:.2} m/s, {:.2} rad/s)",
-                    linear, angular
-                ));
+                self.event_log
+                    .push(format!("drive({:.2} m/s, {:.2} rad/s)", linear, angular));
             }
             MotionCommand::Follow { waypoints, .. } => {
                 self.follow_queue = waypoints;

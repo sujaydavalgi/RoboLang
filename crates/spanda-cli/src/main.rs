@@ -1,9 +1,9 @@
 use serde::Serialize;
+use spanda_core::{check, format_source, run, RunOptions, SpandaError};
 use std::env;
 use std::fs;
 use std::io::{self, Write};
 use std::process;
-use spanda_core::{check, format_source, run, RunOptions, SpandaError};
 
 #[derive(Serialize)]
 struct CheckResponse {
@@ -181,11 +181,7 @@ fn main() {
             }
         }
         "run" | "sim" => {
-            let max_loop_iterations = if command == "sim" || verbose {
-                20
-            } else {
-                10
-            };
+            let max_loop_iterations = if command == "sim" || verbose { 20 } else { 10 };
             let opts = RunOptions {
                 max_loop_iterations,
                 ..Default::default()

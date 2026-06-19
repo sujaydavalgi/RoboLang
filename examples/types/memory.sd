@@ -1,0 +1,35 @@
+import std.ai;
+
+robot MemoryDemo {
+  sensor lidar: Lidar on "/scan";
+  actuator wheels: DifferentialDrive;
+  safety { max_speed = 1.0 m/s; }
+
+  ai_model planner: LLM {
+    provider: "mock";
+    model: "memory-demo";
+    temperature: 0.1;
+  }
+
+  agent Navigator {
+    uses planner;
+    tools [lidar, wheels];
+    memory short_term;
+    goal "Navigate using remembered scans";
+    can [ read(lidar), propose_motion, plan ];
+
+    plan {
+      let scan = lidar.read();
+      remember "last_scan", scan;
+      let recalled = recall("last_scan");
+      let _ = recalled;
+      let proposal = planner.reason(prompt: "Plan motion", input: scan);
+      let action = safety.validate(proposal);
+      wheels.execute(action);
+    }
+  }
+
+  behavior run() {
+    Navigator.plan();
+  }
+}

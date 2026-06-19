@@ -32,7 +32,7 @@ robot Assistant {
     skill manipulation;
     skill dialogue;
     goal "Assist the operator safely";
-    can [ read(camera), read(lidar), propose_motion ];
+    can [ read(camera), read(lidar), propose_motion, summarize, plan ];
 
     plan {
       let scene = camera.analyze();

@@ -1,16 +1,16 @@
 use crate::ai::resolve_ai_import;
 use crate::ast::*;
+use crate::error::{Diagnostic, SpandaError};
 use crate::foundations::{
     resolve_module_import, resolve_type_alias, CapabilityDecl, EnumDecl, EventDecl,
     EventHandlerDecl, MatchArm, StateMachineDecl, StructDecl, TaskDecl, TraitDecl, TraitImplDecl,
     TwinDecl,
 };
-use crate::stdlib::resolve_std_import;
-use crate::type_system::{binary_physical_op_allowed, is_action_proposal_type, resolve_type_name};
-use crate::error::{Diagnostic, SpandaError};
 use crate::hal::hal_member_from_decl;
 use crate::lib_registry::{all_library_sensor_types, resolve_import};
 use crate::soc::{get_soc_profile, validate_hal_against_soc};
+use crate::stdlib::resolve_std_import;
+use crate::type_system::{binary_physical_op_allowed, is_action_proposal_type, resolve_type_name};
 use std::collections::HashMap;
 
 pub fn type_check(program: &Program) -> Result<(), SpandaError> {
@@ -42,7 +42,11 @@ pub fn units_compatible(a: UnitKind, b: UnitKind) -> bool {
     )
 }
 
-pub fn result_unit_for_binary(op: BinaryOp, left: &SpandaType, right: &SpandaType) -> Option<SpandaType> {
+pub fn result_unit_for_binary(
+    op: BinaryOp,
+    left: &SpandaType,
+    right: &SpandaType,
+) -> Option<SpandaType> {
     match op {
         BinaryOp::And | BinaryOp::Or => {
             if matches!(left, SpandaType::Bool) && matches!(right, SpandaType::Bool) {
@@ -51,10 +55,21 @@ pub fn result_unit_for_binary(op: BinaryOp, left: &SpandaType, right: &SpandaTyp
                 None
             }
         }
-        BinaryOp::Lt | BinaryOp::Lte | BinaryOp::Gt | BinaryOp::Gte | BinaryOp::Eq | BinaryOp::Neq => {
-            if matches!(left, SpandaType::Number { .. }) && matches!(right, SpandaType::Number { .. }) {
-                let SpandaType::Number { unit: lu, .. } = left else { unreachable!() };
-                let SpandaType::Number { unit: ru, .. } = right else { unreachable!() };
+        BinaryOp::Lt
+        | BinaryOp::Lte
+        | BinaryOp::Gt
+        | BinaryOp::Gte
+        | BinaryOp::Eq
+        | BinaryOp::Neq => {
+            if matches!(left, SpandaType::Number { .. })
+                && matches!(right, SpandaType::Number { .. })
+            {
+                let SpandaType::Number { unit: lu, .. } = left else {
+                    unreachable!()
+                };
+                let SpandaType::Number { unit: ru, .. } = right else {
+                    unreachable!()
+                };
                 if units_compatible(*lu, *ru) {
                     return Some(SpandaType::Bool);
                 }
@@ -79,7 +94,9 @@ pub fn result_unit_for_binary(op: BinaryOp, left: &SpandaType, right: &SpandaTyp
             None
         }
         BinaryOp::Mul | BinaryOp::Div => {
-            if matches!(left, SpandaType::Number { .. }) && matches!(right, SpandaType::Number { .. }) {
+            if matches!(left, SpandaType::Number { .. })
+                && matches!(right, SpandaType::Number { .. })
+            {
                 Some(SpandaType::Number {
                     unit: UnitKind::None,
                 })
@@ -230,7 +247,11 @@ impl TypeChecker {
     }
 
     fn check_enum(&mut self, decl: &EnumDecl) {
-        let EnumDecl::EnumDecl { name, variants, span } = decl;
+        let EnumDecl::EnumDecl {
+            name,
+            variants,
+            span,
+        } = decl;
         if variants.is_empty() {
             self.error(
                 format!("Enum '{name}' must declare at least one variant"),
@@ -260,7 +281,11 @@ impl TypeChecker {
     }
 
     fn check_trait(&mut self, decl: &TraitDecl) {
-        let TraitDecl::TraitDecl { name, methods, span } = decl;
+        let TraitDecl::TraitDecl {
+            name,
+            methods,
+            span,
+        } = decl;
         if methods.is_empty() {
             self.error(
                 format!("Trait '{name}' must declare at least one method"),
@@ -310,6 +335,8 @@ impl TypeChecker {
             events,
             event_handlers,
             twin,
+            verify,
+            observe,
             trait_impls,
             ..
         } = robot;
@@ -378,7 +405,9 @@ impl TypeChecker {
             .unwrap_or_default();
 
         for node in nodes {
-            let NodeDecl::NodeDecl { namespace, span, .. } = node;
+            let NodeDecl::NodeDecl {
+                namespace, span, ..
+            } = node;
             if namespace.is_none() {
                 self.error(
                     "Node should specify namespace with 'on \"/namespace\"'".into(),
@@ -491,7 +520,8 @@ impl TypeChecker {
                     span.start.column,
                 );
             }
-            const ALLOWED_MIRROR_FIELDS: &[&str] = &["pose", "velocity", "battery", "status", "scan"];
+            const ALLOWED_MIRROR_FIELDS: &[&str] =
+                &["pose", "velocity", "battery", "status", "scan"];
             for mirror in mirrors {
                 if !ALLOWED_MIRROR_FIELDS.contains(&mirror.as_str()) {
                     self.error(
@@ -506,6 +536,64 @@ impl TypeChecker {
                 SymbolEntry {
                     robo_type: SpandaType::Named {
                         name: "Twin".into(),
+                    },
+                    kind: SymbolKind::Variable,
+                    sensor_type: None,
+                    actuator_type: None,
+                },
+            );
+        }
+
+        if let Some(verify_decl) = verify {
+            let crate::foundations::VerifyDecl::VerifyDecl { rules, span } = verify_decl;
+            let saved = self.symbols.clone();
+            self.symbols.insert(
+                "robot".into(),
+                SymbolEntry {
+                    robo_type: SpandaType::Named {
+                        name: "Robot".into(),
+                    },
+                    kind: SymbolKind::Robot,
+                    sensor_type: None,
+                    actuator_type: None,
+                },
+            );
+            for rule in rules {
+                let t = self.check_expr(rule);
+                if !matches!(t, SpandaType::Bool) {
+                    self.error(
+                        "verify rule must be boolean".into(),
+                        span.start.line,
+                        span.start.column,
+                    );
+                }
+            }
+            self.symbols = saved;
+        }
+
+        if let Some(observe_decl) = observe {
+            let crate::foundations::ObserveDecl::ObserveDecl { sensors, span } = observe_decl;
+            if sensors.is_empty() {
+                self.error(
+                    "observe block must list at least one sensor".into(),
+                    span.start.line,
+                    span.start.column,
+                );
+            }
+            for sensor_name in sensors {
+                if self.symbols.get(sensor_name).map(|s| s.kind) != Some(SymbolKind::Sensor) {
+                    self.error(
+                        format!("observe references unknown sensor '{sensor_name}'"),
+                        span.start.line,
+                        span.start.column,
+                    );
+                }
+            }
+            self.symbols.insert(
+                "fusion".into(),
+                SymbolEntry {
+                    robo_type: SpandaType::Named {
+                        name: "SensorFusion".into(),
                     },
                     kind: SymbolKind::Variable,
                     sensor_type: None,
@@ -530,10 +618,16 @@ impl TypeChecker {
                 }
             }
             if let Some(post) = ensures {
-                self.check_expr(post);
+                let t = self.check_expr(post);
+                if !matches!(t, SpandaType::Bool) {
+                    self.error("ensures clause must be boolean".into(), 0, 0);
+                }
             }
             if let Some(inv) = invariant {
-                self.check_expr(inv);
+                let t = self.check_expr(inv);
+                if !matches!(t, SpandaType::Bool) {
+                    self.error("invariant clause must be boolean".into(), 0, 0);
+                }
             }
             self.symbols.insert(
                 name.clone(),
@@ -553,9 +647,9 @@ impl TypeChecker {
                 interval_ms,
                 requires,
                 ensures,
+                invariant,
                 body,
                 span,
-                ..
             } = task;
             if *interval_ms <= 0.0 {
                 self.error(
@@ -571,10 +665,34 @@ impl TypeChecker {
                 );
             }
             if let Some(req) = requires {
-                self.check_expr(req);
+                let t = self.check_expr(req);
+                if !matches!(t, SpandaType::Bool) {
+                    self.error(
+                        "requires clause must be boolean".into(),
+                        span.start.line,
+                        span.start.column,
+                    );
+                }
             }
             if let Some(post) = ensures {
-                self.check_expr(post);
+                let t = self.check_expr(post);
+                if !matches!(t, SpandaType::Bool) {
+                    self.error(
+                        "ensures clause must be boolean".into(),
+                        span.start.line,
+                        span.start.column,
+                    );
+                }
+            }
+            if let Some(inv) = invariant {
+                let t = self.check_expr(inv);
+                if !matches!(t, SpandaType::Bool) {
+                    self.error(
+                        "invariant clause must be boolean".into(),
+                        span.start.line,
+                        span.start.column,
+                    );
+                }
             }
             self.symbols.insert(
                 name.clone(),
@@ -616,22 +734,22 @@ impl TypeChecker {
             span,
             ..
         } = topic;
-            if message_type_for(message_type).is_none() {
-                self.error(
-                    format!("Unknown message type '{message_type}'"),
-                    span.start.line,
-                    span.start.column,
-                );
-            }
-            self.symbols.insert(
-                name.clone(),
-                SymbolEntry {
-                    robo_type: message_type_for(message_type).unwrap_or(SpandaType::Void),
-                    kind: SymbolKind::Topic,
-                    sensor_type: None,
-                    actuator_type: None,
-                },
+        if message_type_for(message_type).is_none() {
+            self.error(
+                format!("Unknown message type '{message_type}'"),
+                span.start.line,
+                span.start.column,
             );
+        }
+        self.symbols.insert(
+            name.clone(),
+            SymbolEntry {
+                robo_type: message_type_for(message_type).unwrap_or(SpandaType::Void),
+                kind: SymbolKind::Topic,
+                sensor_type: None,
+                actuator_type: None,
+            },
+        );
     }
 
     fn check_service(&mut self, service: &ServiceDecl) {
@@ -641,22 +759,22 @@ impl TypeChecker {
             span,
             ..
         } = service;
-            if service_type_for(service_type).is_none() {
-                self.error(
-                    format!("Unknown service type '{service_type}'"),
-                    span.start.line,
-                    span.start.column,
-                );
-            }
-            self.symbols.insert(
-                name.clone(),
-                SymbolEntry {
-                    robo_type: service_type_for(service_type).unwrap_or(SpandaType::Void),
-                    kind: SymbolKind::Service,
-                    sensor_type: None,
-                    actuator_type: None,
-                },
+        if service_type_for(service_type).is_none() {
+            self.error(
+                format!("Unknown service type '{service_type}'"),
+                span.start.line,
+                span.start.column,
             );
+        }
+        self.symbols.insert(
+            name.clone(),
+            SymbolEntry {
+                robo_type: service_type_for(service_type).unwrap_or(SpandaType::Void),
+                kind: SymbolKind::Service,
+                sensor_type: None,
+                actuator_type: None,
+            },
+        );
     }
 
     fn check_action(&mut self, action: &ActionDecl) {
@@ -666,22 +784,22 @@ impl TypeChecker {
             span,
             ..
         } = action;
-            if action_type_for(action_type).is_none() {
-                self.error(
-                    format!("Unknown action type '{action_type}'"),
-                    span.start.line,
-                    span.start.column,
-                );
-            }
-            self.symbols.insert(
-                name.clone(),
-                SymbolEntry {
-                    robo_type: action_type_for(action_type).unwrap_or(SpandaType::Void),
-                    kind: SymbolKind::Action,
-                    sensor_type: None,
-                    actuator_type: None,
-                },
+        if action_type_for(action_type).is_none() {
+            self.error(
+                format!("Unknown action type '{action_type}'"),
+                span.start.line,
+                span.start.column,
             );
+        }
+        self.symbols.insert(
+            name.clone(),
+            SymbolEntry {
+                robo_type: action_type_for(action_type).unwrap_or(SpandaType::Void),
+                kind: SymbolKind::Action,
+                sensor_type: None,
+                actuator_type: None,
+            },
+        );
     }
 
     fn check_sensor(
@@ -698,51 +816,51 @@ impl TypeChecker {
             span,
             ..
         } = sensor;
-            if sensor_type_for(sensor_type).is_none() {
+        if sensor_type_for(sensor_type).is_none() {
+            self.error(
+                format!("Unknown sensor type '{sensor_type}'"),
+                span.start.line,
+                span.start.column,
+            );
+        }
+        if let Some(lib) = library {
+            if !imported.contains(lib) {
                 self.error(
-                    format!("Unknown sensor type '{sensor_type}'"),
+                    format!("Library '{lib}' must be imported before use"),
                     span.start.line,
                     span.start.column,
                 );
             }
-            if let Some(lib) = library {
-                if !imported.contains(lib) {
+            if let Some(module) = resolve_import(lib) {
+                if !module.sensors.contains_key(sensor_type) {
                     self.error(
-                        format!("Library '{lib}' must be imported before use"),
-                        span.start.line,
-                        span.start.column,
-                    );
-                }
-                if let Some(module) = resolve_import(lib) {
-                    if !module.sensors.contains_key(sensor_type) {
-                        self.error(
-                            format!("Sensor type '{sensor_type}' not provided by library '{lib}'"),
-                            span.start.line,
-                            span.start.column,
-                        );
-                    }
-                }
-            }
-            if let Some(SensorBinding::Hal { bus_name }) = binding {
-                if !hal_bus_names.contains(bus_name) {
-                    self.error(
-                        format!("Unknown HAL bus '{bus_name}'"),
+                        format!("Sensor type '{sensor_type}' not provided by library '{lib}'"),
                         span.start.line,
                         span.start.column,
                     );
                 }
             }
-            self.symbols.insert(
-                name.clone(),
-                SymbolEntry {
-                    robo_type: sensor_type_for(sensor_type).unwrap_or(SpandaType::Named {
-                        name: sensor_type.clone(),
-                    }),
-                    kind: SymbolKind::Sensor,
-                    sensor_type: Some(sensor_type.clone()),
-                    actuator_type: None,
-                },
-            );
+        }
+        if let Some(SensorBinding::Hal { bus_name }) = binding {
+            if !hal_bus_names.contains(bus_name) {
+                self.error(
+                    format!("Unknown HAL bus '{bus_name}'"),
+                    span.start.line,
+                    span.start.column,
+                );
+            }
+        }
+        self.symbols.insert(
+            name.clone(),
+            SymbolEntry {
+                robo_type: sensor_type_for(sensor_type).unwrap_or(SpandaType::Named {
+                    name: sensor_type.clone(),
+                }),
+                kind: SymbolKind::Sensor,
+                sensor_type: Some(sensor_type.clone()),
+                actuator_type: None,
+            },
+        );
     }
 
     fn check_actuator(&mut self, actuator: &ActuatorDecl) {
@@ -752,29 +870,31 @@ impl TypeChecker {
             span,
             ..
         } = actuator;
-            if actuator_type_for(actuator_type).is_none() {
-                self.error(
-                    format!("Unknown actuator type '{actuator_type}'"),
-                    span.start.line,
-                    span.start.column,
-                );
-            }
-            self.symbols.insert(
-                name.clone(),
-                SymbolEntry {
-                    robo_type: actuator_type_for(actuator_type).unwrap_or(SpandaType::Named {
-                        name: actuator_type.clone(),
-                    }),
-                    kind: SymbolKind::Actuator,
-                    sensor_type: None,
-                    actuator_type: Some(actuator_type.clone()),
-                },
+        if actuator_type_for(actuator_type).is_none() {
+            self.error(
+                format!("Unknown actuator type '{actuator_type}'"),
+                span.start.line,
+                span.start.column,
             );
+        }
+        self.symbols.insert(
+            name.clone(),
+            SymbolEntry {
+                robo_type: actuator_type_for(actuator_type).unwrap_or(SpandaType::Named {
+                    name: actuator_type.clone(),
+                }),
+                kind: SymbolKind::Actuator,
+                sensor_type: None,
+                actuator_type: Some(actuator_type.clone()),
+            },
+        );
     }
 
     fn check_safety_rule(&mut self, rule: &SafetyRule) {
         match rule {
-            SafetyRule::MaxSpeedRule { value, unit, span, .. } => {
+            SafetyRule::MaxSpeedRule {
+                value, unit, span, ..
+            } => {
                 let t = self.check_expr(value);
                 if !matches!(t, SpandaType::Number { .. }) || !units_compatible(t.unit(), *unit) {
                     self.error(
@@ -807,46 +927,46 @@ impl TypeChecker {
             span,
             ..
         } = zone;
-            if !matches!(self.check_expr(x), SpandaType::Number { .. })
-                || !matches!(self.check_expr(y), SpandaType::Number { .. })
-            {
-                self.error(
-                    "Zone coordinates must be numeric".into(),
-                    span.start.line,
-                    span.start.column,
-                );
-            }
-            if *shape == ZoneShape::Circle {
-                if let Some(r) = radius {
-                    if !matches!(self.check_expr(r), SpandaType::Number { .. }) {
-                        self.error(
-                            "Zone radius must be numeric".into(),
-                            span.start.line,
-                            span.start.column,
-                        );
-                    }
+        if !matches!(self.check_expr(x), SpandaType::Number { .. })
+            || !matches!(self.check_expr(y), SpandaType::Number { .. })
+        {
+            self.error(
+                "Zone coordinates must be numeric".into(),
+                span.start.line,
+                span.start.column,
+            );
+        }
+        if *shape == ZoneShape::Circle {
+            if let Some(r) = radius {
+                if !matches!(self.check_expr(r), SpandaType::Number { .. }) {
+                    self.error(
+                        "Zone radius must be numeric".into(),
+                        span.start.line,
+                        span.start.column,
+                    );
                 }
             }
-            if *shape == ZoneShape::Rect {
-                if let Some(w) = width {
-                    if !matches!(self.check_expr(w), SpandaType::Number { .. }) {
-                        self.error(
-                            "Zone size must be numeric".into(),
-                            span.start.line,
-                            span.start.column,
-                        );
-                    }
-                }
-                if let Some(h) = height {
-                    if !matches!(self.check_expr(h), SpandaType::Number { .. }) {
-                        self.error(
-                            "Zone size must be numeric".into(),
-                            span.start.line,
-                            span.start.column,
-                        );
-                    }
+        }
+        if *shape == ZoneShape::Rect {
+            if let Some(w) = width {
+                if !matches!(self.check_expr(w), SpandaType::Number { .. }) {
+                    self.error(
+                        "Zone size must be numeric".into(),
+                        span.start.line,
+                        span.start.column,
+                    );
                 }
             }
+            if let Some(h) = height {
+                if !matches!(self.check_expr(h), SpandaType::Number { .. }) {
+                    self.error(
+                        "Zone size must be numeric".into(),
+                        span.start.line,
+                        span.start.column,
+                    );
+                }
+            }
+        }
     }
 
     fn check_trait_impl(&mut self, decl: &TraitImplDecl) {
@@ -864,12 +984,7 @@ impl TypeChecker {
             );
             return;
         };
-        if self
-            .symbols
-            .get(agent_name)
-            .map(|s| s.kind)
-            != Some(SymbolKind::Agent)
-        {
+        if self.symbols.get(agent_name).map(|s| s.kind) != Some(SymbolKind::Agent) {
             self.error(
                 format!("Trait impl target '{agent_name}' is not a declared agent"),
                 span.start.line,
@@ -953,29 +1068,29 @@ impl TypeChecker {
             span,
             ..
         } = model;
-            if ai_model_type_for(model_type).is_none() {
-                self.error(
-                    format!("Unknown AI model type '{model_type}'"),
-                    span.start.line,
-                    span.start.column,
-                );
-            }
-            if self.symbols.contains_key(name) {
-                self.error(
-                    format!("Duplicate ai model name '{name}'"),
-                    span.start.line,
-                    span.start.column,
-                );
-            }
-            self.symbols.insert(
-                name.clone(),
-                SymbolEntry {
-                    robo_type: ai_model_type_for(model_type).unwrap_or(SpandaType::Void),
-                    kind: SymbolKind::AiModel,
-                    sensor_type: None,
-                    actuator_type: None,
-                },
+        if ai_model_type_for(model_type).is_none() {
+            self.error(
+                format!("Unknown AI model type '{model_type}'"),
+                span.start.line,
+                span.start.column,
             );
+        }
+        if self.symbols.contains_key(name) {
+            self.error(
+                format!("Duplicate ai model name '{name}'"),
+                span.start.line,
+                span.start.column,
+            );
+        }
+        self.symbols.insert(
+            name.clone(),
+            SymbolEntry {
+                robo_type: ai_model_type_for(model_type).unwrap_or(SpandaType::Void),
+                kind: SymbolKind::AiModel,
+                sensor_type: None,
+                actuator_type: None,
+            },
+        );
     }
 
     fn check_capability(&mut self, agent_name: &str, cap: &CapabilityDecl) {
@@ -1017,51 +1132,51 @@ impl TypeChecker {
             span,
             ..
         } = agent;
-            if self.symbols.contains_key(name) {
+        if self.symbols.contains_key(name) {
+            self.error(
+                format!("Duplicate agent name '{name}'"),
+                span.start.line,
+                span.start.column,
+            );
+        }
+        for model_name in uses_ai {
+            let sym = self.symbols.get(model_name);
+            if sym.map(|s| s.kind) != Some(SymbolKind::AiModel) {
                 self.error(
-                    format!("Duplicate agent name '{name}'"),
+                    format!("Agent '{name}' references unknown ai model '{model_name}'"),
                     span.start.line,
                     span.start.column,
                 );
             }
-            for model_name in uses_ai {
-                let sym = self.symbols.get(model_name);
-                if sym.map(|s| s.kind) != Some(SymbolKind::AiModel) {
-                    self.error(
-                        format!("Agent '{name}' references unknown ai model '{model_name}'"),
-                        span.start.line,
-                        span.start.column,
-                    );
-                }
+        }
+        for tool in tools {
+            if !self.symbols.contains_key(tool) {
+                self.error(
+                    format!("Agent '{name}' references unknown tool '{tool}'"),
+                    span.start.line,
+                    span.start.column,
+                );
             }
-            for tool in tools {
-                if !self.symbols.contains_key(tool) {
-                    self.error(
-                        format!("Agent '{name}' references unknown tool '{tool}'"),
-                        span.start.line,
-                        span.start.column,
-                    );
-                }
-            }
-            for cap in capabilities {
-                self.check_capability(name, cap);
-            }
-            self.symbols.insert(
-                name.clone(),
-                SymbolEntry {
-                    robo_type: SpandaType::Named {
-                        name: "Agent".into(),
-                    },
-                    kind: SymbolKind::Agent,
-                    sensor_type: None,
-                    actuator_type: None,
+        }
+        for cap in capabilities {
+            self.check_capability(name, cap);
+        }
+        self.symbols.insert(
+            name.clone(),
+            SymbolEntry {
+                robo_type: SpandaType::Named {
+                    name: "Agent".into(),
                 },
-            );
-            let saved = self.symbols.clone();
-            for stmt in plan_body {
-                self.check_stmt(stmt);
-            }
-            self.symbols = saved;
+                kind: SymbolKind::Agent,
+                sensor_type: None,
+                actuator_type: None,
+            },
+        );
+        let saved = self.symbols.clone();
+        for stmt in plan_body {
+            self.check_stmt(stmt);
+        }
+        self.symbols = saved;
     }
 
     fn check_behavior(&mut self, body: &[Stmt]) {
@@ -1174,12 +1289,7 @@ impl TypeChecker {
                 }
             }
             Stmt::ServiceCallStmt { service_name, span } => {
-                if self
-                    .symbols
-                    .get(service_name)
-                    .map(|s| s.kind)
-                    != Some(SymbolKind::Service)
-                {
+                if self.symbols.get(service_name).map(|s| s.kind) != Some(SymbolKind::Service) {
                     self.error(
                         format!("Unknown service '{service_name}'"),
                         span.start.line,
@@ -1192,12 +1302,7 @@ impl TypeChecker {
                 goal,
                 span,
             } => {
-                if self
-                    .symbols
-                    .get(action_name)
-                    .map(|s| s.kind)
-                    != Some(SymbolKind::Action)
-                {
+                if self.symbols.get(action_name).map(|s| s.kind) != Some(SymbolKind::Action) {
                     self.error(
                         format!("Unknown action '{action_name}'"),
                         span.start.line,
@@ -1215,11 +1320,11 @@ impl TypeChecker {
                 }
             }
             Stmt::EmergencyStopStmt { .. } | Stmt::ResetEmergencyStopStmt { .. } => {}
+            Stmt::RememberStmt { value, .. } => {
+                self.check_expr(value);
+            }
             Stmt::EmitStmt { .. } => {}
-            Stmt::EnterStmt {
-                state_name,
-                span,
-            } => {
+            Stmt::EnterStmt { state_name, span } => {
                 if !self.state_machine_states.contains(state_name) {
                     self.error(
                         format!("Unknown state '{state_name}' for enter statement"),
@@ -1268,13 +1373,24 @@ impl TypeChecker {
                     SpandaType::Void
                 }
             }
-            Expr::BinaryExpr { op, left, right, span } => {
+            Expr::BinaryExpr {
+                op,
+                left,
+                right,
+                span,
+            } => {
                 let l = self.check_expr(left);
                 let r = self.check_expr(right);
                 if matches!(
                     op,
-                    BinaryOp::Add | BinaryOp::Sub | BinaryOp::Lt | BinaryOp::Lte | BinaryOp::Gt
-                        | BinaryOp::Gte | BinaryOp::Eq | BinaryOp::Neq
+                    BinaryOp::Add
+                        | BinaryOp::Sub
+                        | BinaryOp::Lt
+                        | BinaryOp::Lte
+                        | BinaryOp::Gt
+                        | BinaryOp::Gte
+                        | BinaryOp::Eq
+                        | BinaryOp::Neq
                 ) && !binary_physical_op_allowed(*op, &l, &r)
                 {
                     self.error(
@@ -1324,7 +1440,11 @@ impl TypeChecker {
                     t
                 }
             }
-            Expr::MemberExpr { object, property, span } => self.check_member(object, property, span),
+            Expr::MemberExpr {
+                object,
+                property,
+                span,
+            } => self.check_member(object, property, span),
             Expr::CallExpr {
                 callee,
                 args,
@@ -1402,12 +1522,7 @@ impl TypeChecker {
         }
     }
 
-    fn check_match(
-        &mut self,
-        scrutinee: &Expr,
-        arms: &[MatchArm],
-        span: &Span,
-    ) -> SpandaType {
+    fn check_match(&mut self, scrutinee: &Expr, arms: &[MatchArm], span: &Span) -> SpandaType {
         let _scrutinee_type = self.check_expr(scrutinee);
         if arms.is_empty() {
             self.error(
@@ -1437,7 +1552,10 @@ impl TypeChecker {
                 if arm_names.len() < variant_set.len() {
                     let missing: Vec<_> = variant_set.difference(&arm_names).cloned().collect();
                     self.error(
-                        format!("Non-exhaustive match: missing variants {}", missing.join(", ")),
+                        format!(
+                            "Non-exhaustive match: missing variants {}",
+                            missing.join(", ")
+                        ),
                         span.start.line,
                         span.start.column,
                     );
@@ -1487,7 +1605,8 @@ impl TypeChecker {
                     }
                 }
                 if let Some(fields) = self.struct_defs.get(name) {
-                    if let Some((_, type_name)) = fields.iter().find(|(field, _)| field == property) {
+                    if let Some((_, type_name)) = fields.iter().find(|(field, _)| field == property)
+                    {
                         return self.type_name_to_spanda(type_name);
                     }
                 }
@@ -1553,12 +1672,26 @@ impl TypeChecker {
             return SpandaType::Void;
         }
 
-        let Expr::MemberExpr { object, property, .. } = callee else {
-            self.error("Invalid call target".into(), span.start.line, span.start.column);
+        let Expr::MemberExpr {
+            object, property, ..
+        } = callee
+        else {
+            self.error(
+                "Invalid call target".into(),
+                span.start.line,
+                span.start.column,
+            );
             return SpandaType::Void;
         };
-        let Expr::IdentExpr { name: target_name, .. } = object.as_ref() else {
-            self.error("Invalid call target".into(), span.start.line, span.start.column);
+        let Expr::IdentExpr {
+            name: target_name, ..
+        } = object.as_ref()
+        else {
+            self.error(
+                "Invalid call target".into(),
+                span.start.line,
+                span.start.column,
+            );
             return SpandaType::Void;
         };
 
@@ -1675,7 +1808,8 @@ impl TypeChecker {
 
         for arg in args {
             let actual = self.check_expr(arg);
-            if type_name == "Safety" && property == "validate" && !is_action_proposal_type(&actual) {
+            if type_name == "Safety" && property == "validate" && !is_action_proposal_type(&actual)
+            {
                 self.error(
                     "safety.validate() expects ActionProposal".into(),
                     span.start.line,
@@ -1730,7 +1864,16 @@ impl TypeChecker {
                 (SpandaType::EnumVariant { enum_name, .. }, SpandaType::Named { name }) => {
                     name == enum_name
                 }
-                (SpandaType::Generic { name: n1, type_args: a1 }, SpandaType::Generic { name: n2, type_args: a2 }) => {
+                (
+                    SpandaType::Generic {
+                        name: n1,
+                        type_args: a1,
+                    },
+                    SpandaType::Generic {
+                        name: n2,
+                        type_args: a2,
+                    },
+                ) => {
                     n1 == n2
                         && a1.len() == a2.len()
                         && a1
@@ -1745,13 +1888,30 @@ impl TypeChecker {
         } else if let (SpandaType::Scan, SpandaType::Named { name }) = (expected, actual) {
             ["Detection", "CameraFrame", "Completion"].contains(&name.as_str())
         } else if matches!(expected, SpandaType::Int)
-            && matches!(actual, SpandaType::Number { unit: UnitKind::None, .. })
-            || matches!(expected, SpandaType::Float)
-                && matches!(actual, SpandaType::Number { .. })
+            && matches!(
+                actual,
+                SpandaType::Number {
+                    unit: UnitKind::None,
+                    ..
+                }
+            )
+            || matches!(expected, SpandaType::Float) && matches!(actual, SpandaType::Number { .. })
             || matches!(expected, SpandaType::Velocity)
-                && matches!(actual, SpandaType::Number { unit: UnitKind::MPerS, .. })
+                && matches!(
+                    actual,
+                    SpandaType::Number {
+                        unit: UnitKind::MPerS,
+                        ..
+                    }
+                )
             || matches!(actual, SpandaType::Velocity)
-                && matches!(expected, SpandaType::Number { unit: UnitKind::MPerS, .. })
+                && matches!(
+                    expected,
+                    SpandaType::Number {
+                        unit: UnitKind::MPerS,
+                        ..
+                    }
+                )
         {
             true
         } else if let (SpandaType::Named { name }, SpandaType::Number { unit, .. }) =
@@ -1765,6 +1925,10 @@ impl TypeChecker {
                 "AngularVelocity" => *unit == UnitKind::RadPerS,
                 _ => false,
             }
+        } else if let (SpandaType::Named { name }, SpandaType::String) = (expected, actual) {
+            name == "Goal"
+        } else if let (SpandaType::String, SpandaType::Named { name }) = (expected, actual) {
+            name == "Goal"
         } else {
             false
         }
@@ -1798,7 +1962,11 @@ impl TypeChecker {
                 (expected, actual)
             {
                 self.error(
-                    format!("Unit mismatch: expected '{}', got '{}'", eu.as_str(), au.as_str()),
+                    format!(
+                        "Unit mismatch: expected '{}', got '{}'",
+                        eu.as_str(),
+                        au.as_str()
+                    ),
                     line,
                     column,
                 );
@@ -1917,18 +2085,16 @@ fn message_type_for(name: &str) -> Option<SpandaType> {
 
 fn service_type_for(name: &str) -> Option<SpandaType> {
     match name {
-        "ResetCostmap" | "ClearCostmap" | "SetPose" => Some(SpandaType::Named {
-            name: name.into(),
-        }),
+        "ResetCostmap" | "ClearCostmap" | "SetPose" => {
+            Some(SpandaType::Named { name: name.into() })
+        }
         _ => None,
     }
 }
 
 fn action_type_for(name: &str) -> Option<SpandaType> {
     match name {
-        "NavigateTo" | "FollowPath" | "PickObject" => Some(SpandaType::Named {
-            name: name.into(),
-        }),
+        "NavigateTo" | "FollowPath" | "PickObject" => Some(SpandaType::Named { name: name.into() }),
         _ => None,
     }
 }
@@ -1952,18 +2118,16 @@ fn sensor_type_for(name: &str) -> Option<SpandaType> {
 
 fn actuator_type_for(name: &str) -> Option<SpandaType> {
     match name {
-        "DifferentialDrive" | "RoboticArm" | "DroneRotors" | "Gripper" => Some(SpandaType::Named {
-            name: name.into(),
-        }),
+        "DifferentialDrive" | "RoboticArm" | "DroneRotors" | "Gripper" => {
+            Some(SpandaType::Named { name: name.into() })
+        }
         _ => None,
     }
 }
 
 fn ai_model_type_for(name: &str) -> Option<SpandaType> {
     match name {
-        "LLM" | "VisionModel" | "EmbeddingModel" => Some(SpandaType::Named {
-            name: name.into(),
-        }),
+        "LLM" | "VisionModel" | "EmbeddingModel" => Some(SpandaType::Named { name: name.into() }),
         _ => None,
     }
 }
@@ -1971,34 +2135,63 @@ fn ai_model_type_for(name: &str) -> Option<SpandaType> {
 fn pose_property(name: &str) -> Option<SpandaType> {
     match name {
         "x" | "y" | "z" => Some(SpandaType::Number { unit: UnitKind::M }),
-        "theta" => Some(SpandaType::Number { unit: UnitKind::Rad }),
+        "theta" => Some(SpandaType::Number {
+            unit: UnitKind::Rad,
+        }),
         _ => None,
     }
 }
 
 fn velocity_property(name: &str) -> Option<SpandaType> {
     match name {
-        "linear" => Some(SpandaType::Number { unit: UnitKind::MPerS }),
-        "angular" => Some(SpandaType::Number { unit: UnitKind::RadPerS }),
+        "linear" => Some(SpandaType::Number {
+            unit: UnitKind::MPerS,
+        }),
+        "angular" => Some(SpandaType::Number {
+            unit: UnitKind::RadPerS,
+        }),
         _ => None,
     }
 }
 
 fn object_property(type_name: &str, property: &str) -> Option<SpandaType> {
     match (type_name, property) {
-        ("IMUReading", "yaw" | "roll" | "pitch") => Some(SpandaType::Number { unit: UnitKind::Rad }),
-        ("ForceTorqueReading", "force") => Some(SpandaType::Number { unit: UnitKind::None }),
-        ("GPSReading", "lat" | "lon") => Some(SpandaType::Number { unit: UnitKind::None }),
+        ("IMUReading", "yaw" | "roll" | "pitch") => Some(SpandaType::Number {
+            unit: UnitKind::Rad,
+        }),
+        ("ForceTorqueReading", "force") => Some(SpandaType::Number {
+            unit: UnitKind::None,
+        }),
+        ("GPSReading", "lat" | "lon") => Some(SpandaType::Number {
+            unit: UnitKind::None,
+        }),
         ("ActionProposal" | "SafeAction" | "NavigationPolicy", "linear") => {
-            Some(SpandaType::Number { unit: UnitKind::MPerS })
+            Some(SpandaType::Number {
+                unit: UnitKind::MPerS,
+            })
         }
         ("ActionProposal" | "SafeAction" | "NavigationPolicy", "angular") => {
-            Some(SpandaType::Number { unit: UnitKind::RadPerS })
+            Some(SpandaType::Number {
+                unit: UnitKind::RadPerS,
+            })
         }
+        ("ActionProposal", "trace") => Some(SpandaType::Named {
+            name: "ReasoningTrace".into(),
+        }),
+        ("Goal", "text") => Some(SpandaType::String),
+        ("Agent", "goal") => Some(SpandaType::Named {
+            name: "Goal".into(),
+        }),
         ("Detection", "label") => Some(SpandaType::String),
-        ("Detection", "confidence") => Some(SpandaType::Number { unit: UnitKind::None }),
+        ("Detection", "confidence") => Some(SpandaType::Number {
+            unit: UnitKind::None,
+        }),
         ("Detection", "nearest_distance") => Some(SpandaType::Number { unit: UnitKind::M }),
         ("Completion", "text") => Some(SpandaType::String),
+        ("FusedObservation", "pose") => Some(SpandaType::Pose),
+        ("FusedObservation", "count") => Some(SpandaType::Number {
+            unit: UnitKind::None,
+        }),
         _ => None,
     }
 }
@@ -2011,7 +2204,12 @@ fn builtin_functions() -> HashMap<&'static str, FnSig> {
                 named_params: HashMap::from([
                     ("x".into(), SpandaType::Number { unit: UnitKind::M }),
                     ("y".into(), SpandaType::Number { unit: UnitKind::M }),
-                    ("theta".into(), SpandaType::Number { unit: UnitKind::Rad }),
+                    (
+                        "theta".into(),
+                        SpandaType::Number {
+                            unit: UnitKind::Rad,
+                        },
+                    ),
                     ("z".into(), SpandaType::Number { unit: UnitKind::M }),
                 ]),
                 returns: SpandaType::Pose,
@@ -2021,8 +2219,18 @@ fn builtin_functions() -> HashMap<&'static str, FnSig> {
             "velocity",
             FnSig {
                 named_params: HashMap::from([
-                    ("linear".into(), SpandaType::Number { unit: UnitKind::MPerS }),
-                    ("angular".into(), SpandaType::Number { unit: UnitKind::RadPerS }),
+                    (
+                        "linear".into(),
+                        SpandaType::Number {
+                            unit: UnitKind::MPerS,
+                        },
+                    ),
+                    (
+                        "angular".into(),
+                        SpandaType::Number {
+                            unit: UnitKind::RadPerS,
+                        },
+                    ),
                 ]),
                 returns: SpandaType::Velocity,
             },
@@ -2033,7 +2241,12 @@ fn builtin_functions() -> HashMap<&'static str, FnSig> {
                 named_params: HashMap::from([
                     ("from".into(), SpandaType::Pose),
                     ("to".into(), SpandaType::Pose),
-                    ("steps".into(), SpandaType::Number { unit: UnitKind::None }),
+                    (
+                        "steps".into(),
+                        SpandaType::Number {
+                            unit: UnitKind::None,
+                        },
+                    ),
                 ]),
                 returns: SpandaType::Trajectory,
             },
@@ -2047,6 +2260,24 @@ fn builtin_functions() -> HashMap<&'static str, FnSig> {
                     ("pose".into(), SpandaType::Pose),
                 ]),
                 returns: SpandaType::Transform,
+            },
+        ),
+        (
+            "goal",
+            FnSig {
+                named_params: HashMap::from([("text".into(), SpandaType::String)]),
+                returns: SpandaType::Named {
+                    name: "Goal".into(),
+                },
+            },
+        ),
+        (
+            "recall",
+            FnSig {
+                named_params: HashMap::from([("key".into(), SpandaType::String)]),
+                returns: SpandaType::Named {
+                    name: "Memory".into(),
+                },
             },
         ),
     ])
@@ -2092,10 +2323,7 @@ fn builtin_methods(type_name: &str) -> Option<HashMap<&'static str, MethodSig>> 
 
     match type_name {
         "Lidar" => Some(HashMap::from([
-            (
-                "read",
-                m(vec![], HashMap::new(), SpandaType::Scan),
-            ),
+            ("read", m(vec![], HashMap::new(), SpandaType::Scan)),
             (
                 "nearest_distance",
                 m(
@@ -2179,8 +2407,18 @@ fn builtin_methods(type_name: &str) -> Option<HashMap<&'static str, MethodSig>> 
                 m(
                     vec![],
                     HashMap::from([
-                        ("linear", SpandaType::Number { unit: UnitKind::MPerS }),
-                        ("angular", SpandaType::Number { unit: UnitKind::RadPerS }),
+                        (
+                            "linear",
+                            SpandaType::Number {
+                                unit: UnitKind::MPerS,
+                            },
+                        ),
+                        (
+                            "angular",
+                            SpandaType::Number {
+                                unit: UnitKind::RadPerS,
+                            },
+                        ),
                     ]),
                     SpandaType::Void,
                 ),
@@ -2228,7 +2466,9 @@ fn builtin_methods(type_name: &str) -> Option<HashMap<&'static str, MethodSig>> 
                     vec![],
                     HashMap::from([(
                         "thrust",
-                        SpandaType::Number { unit: UnitKind::None },
+                        SpandaType::Number {
+                            unit: UnitKind::None,
+                        },
                     )]),
                     SpandaType::Void,
                 ),
@@ -2247,6 +2487,12 @@ fn builtin_methods(type_name: &str) -> Option<HashMap<&'static str, MethodSig>> 
                     HashMap::from([
                         ("prompt", SpandaType::String),
                         ("input", SpandaType::Scan),
+                        (
+                            "goal",
+                            SpandaType::Named {
+                                name: "Goal".into(),
+                            },
+                        ),
                     ]),
                     SpandaType::Named {
                         name: "ActionProposal".into(),
@@ -2312,10 +2558,7 @@ fn builtin_methods(type_name: &str) -> Option<HashMap<&'static str, MethodSig>> 
                 ),
             ),
             ("pose", m(vec![], HashMap::new(), SpandaType::Pose)),
-            (
-                "velocity",
-                m(vec![], HashMap::new(), SpandaType::Velocity),
-            ),
+            ("velocity", m(vec![], HashMap::new(), SpandaType::Velocity)),
         ])),
         "Agent" => Some(HashMap::from([(
             "plan",
@@ -2330,6 +2573,16 @@ fn builtin_methods(type_name: &str) -> Option<HashMap<&'static str, MethodSig>> 
                 HashMap::new(),
                 SpandaType::Named {
                     name: "SafeAction".into(),
+                },
+            ),
+        )])),
+        "SensorFusion" => Some(HashMap::from([(
+            "read",
+            m(
+                vec![],
+                HashMap::new(),
+                SpandaType::Named {
+                    name: "FusedObservation".into(),
                 },
             ),
         )])),
@@ -2360,9 +2613,7 @@ fn infer_read_return(type_name: &str) -> SpandaType {
     SpandaType::Void
 }
 
-pub fn merge_library_methods(
-    methods: &mut HashMap<String, HashMap<String, MethodSig>>,
-) {
+pub fn merge_library_methods(methods: &mut HashMap<String, HashMap<String, MethodSig>>) {
     for (type_name, info) in all_library_sensor_types() {
         methods.entry(type_name).or_insert_with(|| {
             let read_name = match info.robo_type {
@@ -2431,30 +2682,80 @@ pub fn MESSAGE_TYPES() -> HashMap<String, SpandaType> {
 #[allow(non_snake_case)]
 pub fn SERVICE_TYPES() -> HashMap<String, SpandaType> {
     HashMap::from([
-        ("ResetCostmap".into(), SpandaType::Named { name: "ResetCostmap".into() }),
-        ("ClearCostmap".into(), SpandaType::Named { name: "ClearCostmap".into() }),
-        ("SetPose".into(), SpandaType::Named { name: "SetPose".into() }),
+        (
+            "ResetCostmap".into(),
+            SpandaType::Named {
+                name: "ResetCostmap".into(),
+            },
+        ),
+        (
+            "ClearCostmap".into(),
+            SpandaType::Named {
+                name: "ClearCostmap".into(),
+            },
+        ),
+        (
+            "SetPose".into(),
+            SpandaType::Named {
+                name: "SetPose".into(),
+            },
+        ),
     ])
 }
 
 #[allow(non_snake_case)]
 pub fn ACTION_TYPES() -> HashMap<String, SpandaType> {
     HashMap::from([
-        ("NavigateTo".into(), SpandaType::Named { name: "NavigateTo".into() }),
-        ("FollowPath".into(), SpandaType::Named { name: "FollowPath".into() }),
-        ("PickObject".into(), SpandaType::Named { name: "PickObject".into() }),
+        (
+            "NavigateTo".into(),
+            SpandaType::Named {
+                name: "NavigateTo".into(),
+            },
+        ),
+        (
+            "FollowPath".into(),
+            SpandaType::Named {
+                name: "FollowPath".into(),
+            },
+        ),
+        (
+            "PickObject".into(),
+            SpandaType::Named {
+                name: "PickObject".into(),
+            },
+        ),
     ])
 }
 
 #[allow(non_snake_case)]
 pub fn SENSOR_TYPES() -> HashMap<String, SpandaType> {
     let mut map = HashMap::from([
-        ("Lidar".into(), SpandaType::Named { name: "Lidar".into() }),
+        (
+            "Lidar".into(),
+            SpandaType::Named {
+                name: "Lidar".into(),
+            },
+        ),
         ("IMU".into(), SpandaType::Named { name: "IMU".into() }),
         ("GPS".into(), SpandaType::Named { name: "GPS".into() }),
-        ("Camera".into(), SpandaType::Named { name: "Camera".into() }),
-        ("AltitudeSensor".into(), SpandaType::Named { name: "AltitudeSensor".into() }),
-        ("ForceTorque".into(), SpandaType::Named { name: "ForceTorque".into() }),
+        (
+            "Camera".into(),
+            SpandaType::Named {
+                name: "Camera".into(),
+            },
+        ),
+        (
+            "AltitudeSensor".into(),
+            SpandaType::Named {
+                name: "AltitudeSensor".into(),
+            },
+        ),
+        (
+            "ForceTorque".into(),
+            SpandaType::Named {
+                name: "ForceTorque".into(),
+            },
+        ),
     ]);
     for (type_name, info) in all_library_sensor_types() {
         map.insert(type_name, info.robo_type);
@@ -2465,10 +2766,30 @@ pub fn SENSOR_TYPES() -> HashMap<String, SpandaType> {
 #[allow(non_snake_case)]
 pub fn ACTUATOR_TYPES() -> HashMap<String, SpandaType> {
     HashMap::from([
-        ("DifferentialDrive".into(), SpandaType::Named { name: "DifferentialDrive".into() }),
-        ("RoboticArm".into(), SpandaType::Named { name: "RoboticArm".into() }),
-        ("DroneRotors".into(), SpandaType::Named { name: "DroneRotors".into() }),
-        ("Gripper".into(), SpandaType::Named { name: "Gripper".into() }),
+        (
+            "DifferentialDrive".into(),
+            SpandaType::Named {
+                name: "DifferentialDrive".into(),
+            },
+        ),
+        (
+            "RoboticArm".into(),
+            SpandaType::Named {
+                name: "RoboticArm".into(),
+            },
+        ),
+        (
+            "DroneRotors".into(),
+            SpandaType::Named {
+                name: "DroneRotors".into(),
+            },
+        ),
+        (
+            "Gripper".into(),
+            SpandaType::Named {
+                name: "Gripper".into(),
+            },
+        ),
     ])
 }
 
@@ -2476,23 +2797,90 @@ pub fn ACTUATOR_TYPES() -> HashMap<String, SpandaType> {
 pub fn AI_MODEL_TYPES() -> HashMap<String, SpandaType> {
     HashMap::from([
         ("LLM".into(), SpandaType::Named { name: "LLM".into() }),
-        ("VisionModel".into(), SpandaType::Named { name: "VisionModel".into() }),
-        ("EmbeddingModel".into(), SpandaType::Named { name: "EmbeddingModel".into() }),
+        (
+            "VisionModel".into(),
+            SpandaType::Named {
+                name: "VisionModel".into(),
+            },
+        ),
+        (
+            "EmbeddingModel".into(),
+            SpandaType::Named {
+                name: "EmbeddingModel".into(),
+            },
+        ),
     ])
 }
 
 #[allow(non_snake_case)]
 pub fn AI_VALUE_TYPES() -> HashMap<String, SpandaType> {
     HashMap::from([
-        ("ActionProposal".into(), SpandaType::Named { name: "ActionProposal".into() }),
-        ("SafeAction".into(), SpandaType::Named { name: "SafeAction".into() }),
-        ("Completion".into(), SpandaType::Named { name: "Completion".into() }),
-        ("Detection".into(), SpandaType::Named { name: "Detection".into() }),
-        ("Classification".into(), SpandaType::Named { name: "Classification".into() }),
-        ("Plan".into(), SpandaType::Named { name: "Plan".into() }),
-        ("Agent".into(), SpandaType::Named { name: "Agent".into() }),
-        ("CameraFrame".into(), SpandaType::Named { name: "CameraFrame".into() }),
-        ("Memory".into(), SpandaType::Named { name: "Memory".into() }),
+        (
+            "ActionProposal".into(),
+            SpandaType::Named {
+                name: "ActionProposal".into(),
+            },
+        ),
+        (
+            "SafeAction".into(),
+            SpandaType::Named {
+                name: "SafeAction".into(),
+            },
+        ),
+        (
+            "Completion".into(),
+            SpandaType::Named {
+                name: "Completion".into(),
+            },
+        ),
+        (
+            "Detection".into(),
+            SpandaType::Named {
+                name: "Detection".into(),
+            },
+        ),
+        (
+            "Classification".into(),
+            SpandaType::Named {
+                name: "Classification".into(),
+            },
+        ),
+        (
+            "Plan".into(),
+            SpandaType::Named {
+                name: "Plan".into(),
+            },
+        ),
+        (
+            "Agent".into(),
+            SpandaType::Named {
+                name: "Agent".into(),
+            },
+        ),
+        (
+            "CameraFrame".into(),
+            SpandaType::Named {
+                name: "CameraFrame".into(),
+            },
+        ),
+        (
+            "Memory".into(),
+            SpandaType::Named {
+                name: "Memory".into(),
+            },
+        ),
+        (
+            "SensorFusion".into(),
+            SpandaType::Named {
+                name: "SensorFusion".into(),
+            },
+        ),
+        (
+            "FusedObservation".into(),
+            SpandaType::Named {
+                name: "FusedObservation".into(),
+            },
+        ),
         ("Prompt".into(), SpandaType::String),
     ])
 }
@@ -2511,8 +2899,16 @@ pub fn ROBOT_METHODS() -> HashMap<&'static str, MethodSig> {
 pub fn BUILTIN_METHODS() -> HashMap<String, HashMap<String, MethodSig>> {
     let mut map: HashMap<String, HashMap<String, MethodSig>> = HashMap::new();
     for ty in [
-        "Lidar", "Camera", "DifferentialDrive", "RoboticArm", "DroneRotors", "LLM", "VisionModel",
-        "Agent", "Safety", "Twin",
+        "Lidar",
+        "Camera",
+        "DifferentialDrive",
+        "RoboticArm",
+        "DroneRotors",
+        "LLM",
+        "VisionModel",
+        "Agent",
+        "Safety",
+        "Twin",
     ] {
         if let Some(methods) = builtin_methods(ty) {
             map.insert(
@@ -2542,17 +2938,52 @@ pub fn OBJECT_PROPERTIES() -> HashMap<String, HashMap<String, SpandaType>> {
         (
             "IMUReading".into(),
             HashMap::from([
-                ("yaw".into(), SpandaType::Number { unit: UnitKind::Rad }),
-                ("roll".into(), SpandaType::Number { unit: UnitKind::Rad }),
-                ("pitch".into(), SpandaType::Number { unit: UnitKind::Rad }),
+                (
+                    "yaw".into(),
+                    SpandaType::Number {
+                        unit: UnitKind::Rad,
+                    },
+                ),
+                (
+                    "roll".into(),
+                    SpandaType::Number {
+                        unit: UnitKind::Rad,
+                    },
+                ),
+                (
+                    "pitch".into(),
+                    SpandaType::Number {
+                        unit: UnitKind::Rad,
+                    },
+                ),
             ]),
         ),
         (
             "Detection".into(),
             HashMap::from([
                 ("label".into(), SpandaType::String),
-                ("confidence".into(), SpandaType::Number { unit: UnitKind::None }),
-                ("nearest_distance".into(), SpandaType::Number { unit: UnitKind::M }),
+                (
+                    "confidence".into(),
+                    SpandaType::Number {
+                        unit: UnitKind::None,
+                    },
+                ),
+                (
+                    "nearest_distance".into(),
+                    SpandaType::Number { unit: UnitKind::M },
+                ),
+            ]),
+        ),
+        (
+            "FusedObservation".into(),
+            HashMap::from([
+                ("pose".into(), SpandaType::Pose),
+                (
+                    "count".into(),
+                    SpandaType::Number {
+                        unit: UnitKind::None,
+                    },
+                ),
             ]),
         ),
     ])
@@ -2563,7 +2994,12 @@ pub fn POSE_PROPERTIES() -> HashMap<String, SpandaType> {
     HashMap::from([
         ("x".into(), SpandaType::Number { unit: UnitKind::M }),
         ("y".into(), SpandaType::Number { unit: UnitKind::M }),
-        ("theta".into(), SpandaType::Number { unit: UnitKind::Rad }),
+        (
+            "theta".into(),
+            SpandaType::Number {
+                unit: UnitKind::Rad,
+            },
+        ),
         ("z".into(), SpandaType::Number { unit: UnitKind::M }),
     ])
 }
@@ -2571,8 +3007,18 @@ pub fn POSE_PROPERTIES() -> HashMap<String, SpandaType> {
 #[allow(non_snake_case)]
 pub fn VELOCITY_PROPERTIES() -> HashMap<String, SpandaType> {
     HashMap::from([
-        ("linear".into(), SpandaType::Number { unit: UnitKind::MPerS }),
-        ("angular".into(), SpandaType::Number { unit: UnitKind::RadPerS }),
+        (
+            "linear".into(),
+            SpandaType::Number {
+                unit: UnitKind::MPerS,
+            },
+        ),
+        (
+            "angular".into(),
+            SpandaType::Number {
+                unit: UnitKind::RadPerS,
+            },
+        ),
     ])
 }
 
@@ -2614,7 +3060,10 @@ mod tests {
               }
             }
         "#;
-        assert!(matches!(check_source(source), Err(SpandaError::TypeCheck { .. })));
+        assert!(matches!(
+            check_source(source),
+            Err(SpandaError::TypeCheck { .. })
+        ));
     }
 
     #[test]
@@ -2624,7 +3073,10 @@ mod tests {
               sensor cam: UnknownSensor;
             }
         "#;
-        assert!(matches!(check_source(source), Err(SpandaError::TypeCheck { .. })));
+        assert!(matches!(
+            check_source(source),
+            Err(SpandaError::TypeCheck { .. })
+        ));
     }
 
     #[test]
@@ -2634,7 +3086,10 @@ mod tests {
               sensor imu: BoschBNO055 from bosch.bno055 on imu;
             }
         "#;
-        assert!(matches!(check_source(source), Err(SpandaError::TypeCheck { .. })));
+        assert!(matches!(
+            check_source(source),
+            Err(SpandaError::TypeCheck { .. })
+        ));
     }
 
     #[test]

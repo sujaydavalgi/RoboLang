@@ -147,7 +147,10 @@ impl Parser {
         if self.check(TokenType::Module) {
             self.advance();
             module_name = Some(self.parse_label("Expected module name after 'module'")?);
-            self.expect(TokenType::Semicolon, "Expected ';' after module declaration")?;
+            self.expect(
+                TokenType::Semicolon,
+                "Expected ';' after module declaration",
+            )?;
         }
         let mut imports = Vec::new();
         let mut structs = Vec::new();
@@ -202,7 +205,10 @@ impl Parser {
         if self.check(TokenType::Ident) {
             return Ok(self.advance().lexeme);
         }
-        if self.check(TokenType::Eof) || self.check(TokenType::Dot) || self.check(TokenType::Semicolon) {
+        if self.check(TokenType::Eof)
+            || self.check(TokenType::Dot)
+            || self.check(TokenType::Semicolon)
+        {
             let t = self.peek();
             return Err(SpandaError::Parse {
                 message: message.to_string(),
@@ -244,7 +250,10 @@ impl Parser {
         self.expect(TokenType::Lbrace, "Expected '{' after enum name")?;
         let mut variants = Vec::new();
         while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof) {
-            variants.push(self.expect(TokenType::Ident, "Expected enum variant")?.lexeme);
+            variants.push(
+                self.expect(TokenType::Ident, "Expected enum variant")?
+                    .lexeme,
+            );
             if self.match_types(&[TokenType::Comma]) {
                 continue;
             }
@@ -295,7 +304,10 @@ impl Parser {
             }
         }
         self.expect(TokenType::Rparen, "Expected ')' after parameters")?;
-        self.expect(TokenType::Arrow, "Expected '->' after trait method parameters")?;
+        self.expect(
+            TokenType::Arrow,
+            "Expected '->' after trait method parameters",
+        )?;
         let return_type = self.expect(TokenType::Ident, "Expected return type")?;
         self.expect(TokenType::Semicolon, "Expected ';' after trait method")?;
         Ok(TraitMethodDecl {
@@ -327,6 +339,8 @@ impl Parser {
         let mut events = Vec::new();
         let mut event_handlers = Vec::new();
         let mut twin = None;
+        let mut verify = None;
+        let mut observe = None;
         let mut trait_impls = Vec::new();
         while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof) {
             if self.check(TokenType::Soc) {
@@ -363,6 +377,10 @@ impl Parser {
                 event_handlers.push(self.parse_event_handler()?);
             } else if self.check(TokenType::Twin) {
                 twin = Some(self.parse_twin()?);
+            } else if self.check(TokenType::Verify) {
+                verify = Some(self.parse_verify()?);
+            } else if self.check(TokenType::Observe) {
+                observe = Some(self.parse_observe()?);
             } else if self.check(TokenType::Impl) {
                 trait_impls.push(self.parse_trait_impl()?);
             } else {
@@ -394,6 +412,8 @@ impl Parser {
             events,
             event_handlers,
             twin,
+            verify,
+            observe,
             trait_impls,
             span: self.span_from(&start, &end),
         })
@@ -419,7 +439,9 @@ impl Parser {
         })
     }
 
-    fn parse_trait_impl_method(&mut self) -> Result<crate::foundations::TraitImplMethodDecl, SpandaError> {
+    fn parse_trait_impl_method(
+        &mut self,
+    ) -> Result<crate::foundations::TraitImplMethodDecl, SpandaError> {
         use crate::foundations::TraitImplMethodDecl;
         let start = self.expect(TokenType::Fn, "Expected 'fn' in trait impl method")?;
         let name = self.parse_label("Expected method name")?;
@@ -430,7 +452,9 @@ impl Parser {
                 let pstart = self.peek().clone();
                 let pname = self.parse_label("Expected parameter name")?;
                 self.expect(TokenType::Colon, "Expected ':' after parameter name")?;
-                let ptype = self.expect(TokenType::Ident, "Expected parameter type")?.lexeme;
+                let ptype = self
+                    .expect(TokenType::Ident, "Expected parameter type")?
+                    .lexeme;
                 params.push(crate::foundations::TraitParamDecl {
                     name: pname,
                     type_name: ptype,
@@ -442,9 +466,17 @@ impl Parser {
             }
         }
         self.expect(TokenType::Rparen, "Expected ')' after parameters")?;
-        self.expect(TokenType::Arrow, "Expected '->' after trait impl parameters")?;
-        let return_type = self.expect(TokenType::Ident, "Expected return type")?.lexeme;
-        self.expect(TokenType::Lbrace, "Expected '{' after trait impl method signature")?;
+        self.expect(
+            TokenType::Arrow,
+            "Expected '->' after trait impl parameters",
+        )?;
+        let return_type = self
+            .expect(TokenType::Ident, "Expected return type")?
+            .lexeme;
+        self.expect(
+            TokenType::Lbrace,
+            "Expected '{' after trait impl method signature",
+        )?;
         let body = self.parse_block()?;
         let end = self.expect(TokenType::Rbrace, "Expected '}' to close trait impl method")?;
         Ok(TraitImplMethodDecl {
@@ -499,7 +531,9 @@ impl Parser {
             let bus = self.expect(TokenType::Number, "Expected SPI bus number")?;
             let mut cs_pin = None;
             if self.match_types(&[TokenType::Pin]) {
-                cs_pin = Some(num(&self.expect(TokenType::Number, "Expected CS pin number")?));
+                cs_pin = Some(num(
+                    &self.expect(TokenType::Number, "Expected CS pin number")?
+                ));
             }
             self.expect(TokenType::Semicolon, "Expected ';' after SPI declaration")?;
             return Ok(HalMemberDecl::HalSpiDecl {
@@ -601,7 +635,10 @@ impl Parser {
         let start = self.advance();
         let name = self.expect(TokenType::Ident, "Expected node name")?;
         let namespace = if self.match_types(&[TokenType::On]) {
-            Some(str_val(&self.expect(TokenType::String, "Expected namespace string after 'on'")?))
+            Some(str_val(&self.expect(
+                TokenType::String,
+                "Expected namespace string after 'on'",
+            )?))
         } else {
             None
         };
@@ -635,7 +672,10 @@ impl Parser {
         let name = self.expect(TokenType::Ident, "Expected service name")?;
         self.expect(TokenType::Colon, "Expected ':' after service name")?;
         let service_type = self.expect(TokenType::Ident, "Expected service type")?;
-        self.expect(TokenType::Semicolon, "Expected ';' after service declaration")?;
+        self.expect(
+            TokenType::Semicolon,
+            "Expected ';' after service declaration",
+        )?;
         Ok(ServiceDecl::ServiceDecl {
             name: name.lexeme,
             service_type: service_type.lexeme,
@@ -648,7 +688,10 @@ impl Parser {
         let name = self.expect(TokenType::Ident, "Expected action name")?;
         self.expect(TokenType::Colon, "Expected ':' after action name")?;
         let action_type = self.expect(TokenType::Ident, "Expected action type")?;
-        self.expect(TokenType::Semicolon, "Expected ';' after action declaration")?;
+        self.expect(
+            TokenType::Semicolon,
+            "Expected ';' after action declaration",
+        )?;
         Ok(ActionDecl::ActionDecl {
             name: name.lexeme,
             action_type: action_type.lexeme,
@@ -677,14 +720,20 @@ impl Parser {
             } else {
                 Some(SensorBinding::Hal {
                     bus_name: self
-                        .expect(TokenType::Ident, "Expected HAL bus name or topic string after 'on'")?
+                        .expect(
+                            TokenType::Ident,
+                            "Expected HAL bus name or topic string after 'on'",
+                        )?
                         .lexeme,
                 })
             }
         } else {
             None
         };
-        self.expect(TokenType::Semicolon, "Expected ';' after sensor declaration")?;
+        self.expect(
+            TokenType::Semicolon,
+            "Expected ';' after sensor declaration",
+        )?;
         Ok(SensorDecl::SensorDecl {
             name: name.lexeme,
             sensor_type: sensor_type.lexeme,
@@ -699,7 +748,10 @@ impl Parser {
         let name = self.expect(TokenType::Ident, "Expected actuator name")?;
         self.expect(TokenType::Colon, "Expected ':' after actuator name")?;
         let actuator_type = self.expect(TokenType::Ident, "Expected actuator type")?;
-        self.expect(TokenType::Semicolon, "Expected ';' after actuator declaration")?;
+        self.expect(
+            TokenType::Semicolon,
+            "Expected ';' after actuator declaration",
+        )?;
         Ok(ActuatorDecl::ActuatorDecl {
             name: name.lexeme,
             actuator_type: actuator_type.lexeme,
@@ -736,6 +788,39 @@ impl Parser {
         })
     }
 
+    fn parse_verify(&mut self) -> Result<crate::foundations::VerifyDecl, SpandaError> {
+        use crate::foundations::VerifyDecl;
+        let start = self.advance();
+        self.expect(TokenType::Lbrace, "Expected '{' after verify")?;
+        let mut rules = Vec::new();
+        while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof) {
+            rules.push(self.parse_expr()?);
+            self.expect(TokenType::Semicolon, "Expected ';' after verify rule")?;
+        }
+        let end = self.expect(TokenType::Rbrace, "Expected '}' to close verify block")?;
+        Ok(VerifyDecl::VerifyDecl {
+            rules,
+            span: self.span_from(&start, &end),
+        })
+    }
+
+    fn parse_observe(&mut self) -> Result<crate::foundations::ObserveDecl, SpandaError> {
+        use crate::foundations::ObserveDecl;
+        let start = self.advance();
+        self.expect(TokenType::Lbrace, "Expected '{' after observe")?;
+        let mut sensors = Vec::new();
+        while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof) {
+            let sensor = self.expect(TokenType::Ident, "Expected sensor name in observe block")?;
+            sensors.push(sensor.lexeme);
+            self.expect(TokenType::Semicolon, "Expected ';' after observe sensor")?;
+        }
+        let end = self.expect(TokenType::Rbrace, "Expected '}' to close observe block")?;
+        Ok(ObserveDecl::ObserveDecl {
+            sensors,
+            span: self.span_from(&start, &end),
+        })
+    }
+
     fn parse_ai_model(&mut self) -> Result<AiModelDecl, SpandaError> {
         let start = self.advance();
         let name = self.expect(TokenType::Ident, "Expected ai model name")?;
@@ -759,7 +844,10 @@ impl Parser {
             let key = self.parse_config_key_token()?;
             self.expect(TokenType::Colon, "Expected ':' in ai model config")?;
             let value = self.parse_config_value()?;
-            self.expect(TokenType::Semicolon, "Expected ';' after ai model config entry")?;
+            self.expect(
+                TokenType::Semicolon,
+                "Expected ';' after ai model config entry",
+            )?;
             entries.push(AiConfigEntry {
                 key,
                 value,
@@ -814,7 +902,10 @@ impl Parser {
         let mut plan_body = Vec::new();
         while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof) {
             if self.match_types(&[TokenType::Uses]) {
-                uses_ai.push(self.expect(TokenType::Ident, "Expected model name after uses")?.lexeme);
+                uses_ai.push(
+                    self.expect(TokenType::Ident, "Expected model name after uses")?
+                        .lexeme,
+                );
                 self.expect(TokenType::Semicolon, "Expected ';' after uses")?;
             } else if self.match_types(&[TokenType::Memory]) {
                 let kind = self.expect(TokenType::Ident, "Expected memory kind")?;
@@ -889,7 +980,12 @@ impl Parser {
 
     fn parse_capability(&mut self) -> Result<CapabilityDecl, SpandaError> {
         let start = self.peek().clone();
-        let action = self.expect(TokenType::Ident, "Expected capability action")?;
+        let action = if self.match_types(&[TokenType::Plan]) {
+            "plan".to_string()
+        } else {
+            self.expect(TokenType::Ident, "Expected capability action")?
+                .lexeme
+        };
         let target = if self.match_types(&[TokenType::Lparen]) {
             let t = self.expect(TokenType::Ident, "Expected capability target")?;
             self.expect(TokenType::Rparen, "Expected ')' after capability target")?;
@@ -898,7 +994,7 @@ impl Parser {
             None
         };
         Ok(CapabilityDecl {
-            action: action.lexeme,
+            action,
             target,
             span: self.span_from(&start, self.previous()),
         })
@@ -1107,7 +1203,10 @@ impl Parser {
         let mut replay = false;
         while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof) {
             if self.match_types(&[TokenType::Mirror]) {
-                mirrors.push(self.expect(TokenType::Ident, "Expected mirror field")?.lexeme);
+                mirrors.push(
+                    self.expect(TokenType::Ident, "Expected mirror field")?
+                        .lexeme,
+                );
                 self.expect(TokenType::Semicolon, "Expected ';' after mirror")?;
             } else if self.match_types(&[TokenType::Replay]) {
                 replay = self.match_types(&[TokenType::True]);
@@ -1228,7 +1327,10 @@ impl Parser {
             let action = self.expect(TokenType::Ident, "Expected action name after send_goal")?;
             self.expect(TokenType::With, "Expected 'with' after action name")?;
             let goal = self.parse_expr()?;
-            self.expect(TokenType::Semicolon, "Expected ';' after send_goal statement")?;
+            self.expect(
+                TokenType::Semicolon,
+                "Expected ';' after send_goal statement",
+            )?;
             return Ok(Stmt::ActionSendStmt {
                 action_name: action.lexeme,
                 goal,
@@ -1242,7 +1344,10 @@ impl Parser {
             });
         }
         if self.match_types(&[TokenType::ResetEmergencyStop]) {
-            self.expect(TokenType::Semicolon, "Expected ';' after reset_emergency_stop")?;
+            self.expect(
+                TokenType::Semicolon,
+                "Expected ';' after reset_emergency_stop",
+            )?;
             return Ok(Stmt::ResetEmergencyStopStmt {
                 span: self.span_from(&start, self.previous()),
             });
@@ -1260,6 +1365,20 @@ impl Parser {
             self.expect(TokenType::Semicolon, "Expected ';' after enter statement")?;
             return Ok(Stmt::EnterStmt {
                 state_name: state,
+                span: self.span_from(&start, self.previous()),
+            });
+        }
+        if self.match_types(&[TokenType::Remember]) {
+            let key = str_val(&self.expect(TokenType::String, "Expected memory key string")?);
+            self.expect(TokenType::Comma, "Expected ',' after memory key")?;
+            let value = self.parse_expr()?;
+            self.expect(
+                TokenType::Semicolon,
+                "Expected ';' after remember statement",
+            )?;
+            return Ok(Stmt::RememberStmt {
+                key,
+                value,
                 span: self.span_from(&start, self.previous()),
             });
         }
@@ -1311,14 +1430,16 @@ impl Parser {
             let t = self.advance();
             return Some(unit_from_lexeme(t.unit?));
         }
-        if self.check(TokenType::Ident) && self.peek().lexeme == "m"
+        if self.check(TokenType::Ident)
+            && self.peek().lexeme == "m"
             && self.tokens.get(self.pos + 1).map(|t| t.token_type) == Some(TokenType::Slash)
             && self.tokens.get(self.pos + 2).map(|t| t.lexeme.as_str()) == Some("s")
         {
             self.pos += 3;
             return Some(UnitKind::MPerS);
         }
-        if self.check(TokenType::Ident) && self.peek().lexeme == "rad"
+        if self.check(TokenType::Ident)
+            && self.peek().lexeme == "rad"
             && self.tokens.get(self.pos + 1).map(|t| t.token_type) == Some(TokenType::Slash)
             && self.tokens.get(self.pos + 2).map(|t| t.lexeme.as_str()) == Some("s")
         {
@@ -1494,7 +1615,10 @@ impl Parser {
                             loop {
                                 let fstart = self.peek().clone();
                                 let field_name = self.parse_label("Expected struct field name")?;
-                                self.expect(TokenType::Colon, "Expected ':' after struct field name")?;
+                                self.expect(
+                                    TokenType::Colon,
+                                    "Expected ':' after struct field name",
+                                )?;
                                 let value = self.parse_expr()?;
                                 fields.push(StructFieldInit {
                                     name: field_name,
@@ -1506,7 +1630,8 @@ impl Parser {
                                 }
                             }
                         }
-                        let end = self.expect(TokenType::Rbrace, "Expected '}' to close struct literal")?;
+                        let end =
+                            self.expect(TokenType::Rbrace, "Expected '}' to close struct literal")?;
                         let start = expr_span(&expr);
                         expr = Expr::StructLiteralExpr {
                             type_name: name.clone(),
@@ -1632,10 +1757,13 @@ impl Parser {
             let mut expr = self.parse_expr()?;
             let end = self.expect(TokenType::Rparen, "Expected ')' after expression")?;
             let _old = expr_span(&expr);
-            expr = re_span_expr(expr, Span {
-                start: loc(&start),
-                end: loc(&end),
-            });
+            expr = re_span_expr(
+                expr,
+                Span {
+                    start: loc(&start),
+                    end: loc(&end),
+                },
+            );
             return Ok(expr);
         }
         let t = self.peek();
@@ -1674,12 +1802,16 @@ impl Parser {
 
     fn is_named_arg_start(&self) -> bool {
         self.tokens.get(self.pos + 1).map(|t| t.token_type) == Some(TokenType::Colon)
-            && (self.check(TokenType::Ident) || self.check(TokenType::From))
+            && (self.check(TokenType::Ident)
+                || self.check(TokenType::From)
+                || self.check(TokenType::Goal))
     }
 
     fn parse_named_arg_name(&mut self) -> Result<String, SpandaError> {
         if self.match_types(&[TokenType::From]) {
             Ok("from".into())
+        } else if self.match_types(&[TokenType::Goal]) {
+            Ok("goal".into())
         } else {
             Ok(self.advance().lexeme)
         }
@@ -1731,7 +1863,14 @@ fn re_span_expr(expr: Expr, span: Span) -> Expr {
         Expr::LiteralExpr { value, .. } => Expr::LiteralExpr { value, span },
         Expr::UnitLiteralExpr { value, unit, .. } => Expr::UnitLiteralExpr { value, unit, span },
         Expr::IdentExpr { name, .. } => Expr::IdentExpr { name, span },
-        Expr::BinaryExpr { op, left, right, .. } => Expr::BinaryExpr { op, left, right, span },
+        Expr::BinaryExpr {
+            op, left, right, ..
+        } => Expr::BinaryExpr {
+            op,
+            left,
+            right,
+            span,
+        },
         Expr::UnaryExpr { op, operand, .. } => Expr::UnaryExpr { op, operand, span },
         Expr::CallExpr {
             callee,
@@ -1744,20 +1883,22 @@ fn re_span_expr(expr: Expr, span: Span) -> Expr {
             named_args,
             span,
         },
-        Expr::MemberExpr { object, property, .. } => Expr::MemberExpr {
+        Expr::MemberExpr {
+            object, property, ..
+        } => Expr::MemberExpr {
             object,
             property,
             span,
         },
-        Expr::MatchExpr { scrutinee, arms, .. } => Expr::MatchExpr {
+        Expr::MatchExpr {
+            scrutinee, arms, ..
+        } => Expr::MatchExpr {
             scrutinee,
             arms,
             span,
         },
         Expr::StructLiteralExpr {
-            type_name,
-            fields,
-            ..
+            type_name, fields, ..
         } => Expr::StructLiteralExpr {
             type_name,
             fields,
@@ -1813,7 +1954,12 @@ robot Rover {
         } = &sensors[0];
         assert_eq!(name, "lidar");
         assert_eq!(sensor_type, "Lidar");
-        assert_eq!(binding, &Some(SensorBinding::Topic { path: "/scan".into() }));
+        assert_eq!(
+            binding,
+            &Some(SensorBinding::Topic {
+                path: "/scan".into()
+            })
+        );
         assert_eq!(actuators.len(), 1);
         assert!(safety.is_some());
         assert_eq!(behaviors.len(), 1);
@@ -1821,7 +1967,8 @@ robot Rover {
 
     #[test]
     fn parses_loop_every() {
-        let ast = parse(tokenize("robot R { behavior b() { loop every 50ms { } } }").unwrap()).unwrap();
+        let ast =
+            parse(tokenize("robot R { behavior b() { loop every 50ms { } } }").unwrap()).unwrap();
         let RobotDecl::RobotDecl { behaviors, .. } = &ast.robots()[0];
         let BehaviorDecl::BehaviorDecl { body, .. } = &behaviors[0];
         match &body[0] {
@@ -1832,7 +1979,8 @@ robot Rover {
 
     #[test]
     fn parses_if_else() {
-        let ast = parse(tokenize("robot R { behavior b() { if true { } else { } } }").unwrap()).unwrap();
+        let ast =
+            parse(tokenize("robot R { behavior b() { if true { } else { } } }").unwrap()).unwrap();
         let RobotDecl::RobotDecl { behaviors, .. } = &ast.robots()[0];
         let BehaviorDecl::BehaviorDecl { body, .. } = &behaviors[0];
         match &body[0] {

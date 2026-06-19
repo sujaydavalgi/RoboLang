@@ -1,0 +1,16 @@
+robot MultiTaskDemo {
+  sensor lidar: Lidar on "/scan";
+  actuator wheels: DifferentialDrive;
+
+  safety {
+    max_speed = 1.0 m/s;
+  }
+
+  task sense every 50ms {
+    let _ = lidar.read();
+  }
+
+  task drive every 100ms {
+    wheels.drive(linear: 0.2 m/s, angular: 0.0 rad/s);
+  }
+}

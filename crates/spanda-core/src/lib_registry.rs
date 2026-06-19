@@ -72,7 +72,9 @@ pub struct LibrarySensorTypeInfo {
 fn scan_reading(ctx: &DriverContext, range: f64) -> RuntimeValue {
     let x = ctx.sim_state.as_ref().map(|s| s.pose.x).unwrap_or(0.0);
     let nearest = (range - x.abs() * 0.3).max(0.05);
-    RuntimeValue::Scan { nearest_distance: nearest }
+    RuntimeValue::Scan {
+        nearest_distance: nearest,
+    }
 }
 
 fn imu_reading(yaw: f64) -> RuntimeValue {
@@ -122,11 +124,7 @@ fn read_hokuyo_utm30(ctx: &DriverContext) -> RuntimeValue {
 }
 
 fn read_bosch_bno055(ctx: &DriverContext) -> RuntimeValue {
-    let yaw = ctx
-        .sim_state
-        .as_ref()
-        .map(|s| s.pose.theta)
-        .unwrap_or(0.0);
+    let yaw = ctx.sim_state.as_ref().map(|s| s.pose.theta).unwrap_or(0.0);
     if let (Some(hal), Some(binding)) = (ctx.hal, ctx.hal_binding) {
         let data = hal.read_i2c(binding, 0x1a, 2);
         let raw = data.first().copied().unwrap_or(0) as u16
@@ -138,11 +136,7 @@ fn read_bosch_bno055(ctx: &DriverContext) -> RuntimeValue {
 
 fn read_bosch_bmp388(ctx: &DriverContext) -> RuntimeValue {
     use crate::ast::UnitKind;
-    let alt = ctx
-        .sim_state
-        .as_ref()
-        .and_then(|s| s.pose.z)
-        .unwrap_or(0.0);
+    let alt = ctx.sim_state.as_ref().and_then(|s| s.pose.z).unwrap_or(0.0);
     RuntimeValue::Number {
         value: alt,
         unit: UnitKind::M,
@@ -176,11 +170,7 @@ fn read_adafruit_vl53l0x(ctx: &DriverContext) -> RuntimeValue {
 }
 
 fn read_sparkfun_lsm9ds1(ctx: &DriverContext) -> RuntimeValue {
-    let yaw = ctx
-        .sim_state
-        .as_ref()
-        .map(|s| s.pose.theta)
-        .unwrap_or(0.0);
+    let yaw = ctx.sim_state.as_ref().map(|s| s.pose.theta).unwrap_or(0.0);
     imu_reading(yaw)
 }
 

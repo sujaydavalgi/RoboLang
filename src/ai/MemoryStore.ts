@@ -34,4 +34,13 @@ export class MemoryStore {
   clear(): void {
     this.entries = [];
   }
+
+  summaryForPrompt(): string | undefined {
+    if (this.entries.length === 0) return undefined;
+    const keys = this.entries
+      .slice(-5)
+      .map((e) => e.key)
+      .reverse();
+    return `Agent memory (${this.kind}): ${keys.join(", ")}`;
+  }
 }

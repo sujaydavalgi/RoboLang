@@ -76,7 +76,7 @@ robot DeliveryBot {
     memory short_term;
     skill path_planning;
     goal "Deliver safely";
-    can [ read(lidar), propose_motion ];
+    can [ read(lidar), propose_motion, plan ];
 
     plan {
       let scan = lidar.read();

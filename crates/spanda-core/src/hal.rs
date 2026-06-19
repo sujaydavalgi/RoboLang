@@ -12,7 +12,10 @@ pub enum HalBusKind {
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum HalMemberConfig {
-    I2c { name: String, address: f64 },
+    I2c {
+        name: String,
+        address: f64,
+    },
     Spi {
         name: String,
         bus: f64,
@@ -33,7 +36,10 @@ pub enum HalMemberConfig {
         device: String,
         baud: f64,
     },
-    Adc { name: String, channel: f64 },
+    Adc {
+        name: String,
+        channel: f64,
+    },
 }
 
 pub trait HalBackend {
@@ -157,10 +163,7 @@ impl HalBackend for SimHalBackend {
     }
 
     fn write_i2c(&mut self, name: &str, register: u8, data: &[u8]) {
-        let regs = self
-            .i2c_registers
-            .entry(name.to_string())
-            .or_default();
+        let regs = self.i2c_registers.entry(name.to_string()).or_default();
         for (i, &byte) in data.iter().enumerate() {
             regs.insert(register + i as u8, byte);
         }
@@ -203,10 +206,7 @@ pub fn hal_member_from_decl(decl: &HalMemberDecl) -> HalMemberConfig {
             address: *address,
         },
         HalMemberDecl::HalSpiDecl {
-            name,
-            bus,
-            cs_pin,
-            ..
+            name, bus, cs_pin, ..
         } => HalMemberConfig::Spi {
             name: name.clone(),
             bus: *bus,
@@ -233,10 +233,7 @@ pub fn hal_member_from_decl(decl: &HalMemberDecl) -> HalMemberConfig {
             frequency_hz: *frequency_hz,
         },
         HalMemberDecl::HalUartDecl {
-            name,
-            device,
-            baud,
-            ..
+            name, device, baud, ..
         } => HalMemberConfig::Uart {
             name: name.clone(),
             device: device.clone(),

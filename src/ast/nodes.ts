@@ -10,6 +10,8 @@ import type {
   TraitDecl,
   TraitImplDecl,
   TwinDecl,
+  VerifyDecl,
+  ObserveDecl,
 } from "../foundations.js";
 
 export type SourceLocation = {
@@ -91,6 +93,8 @@ export type RobotDecl = {
   events: EventDecl[];
   eventHandlers: EventHandlerDecl[];
   twin: TwinDecl | null;
+  verify: VerifyDecl | null;
+  observe: ObserveDecl | null;
   traitImpls: TraitImplDecl[];
   span: Span;
 };
@@ -292,7 +296,15 @@ export type Stmt =
   | EmergencyStopStmt
   | ResetEmergencyStopStmt
   | EmitStmt
-  | EnterStmt;
+  | EnterStmt
+  | RememberStmt;
+
+export type RememberStmt = {
+  kind: "RememberStmt";
+  key: string;
+  value: Expr;
+  span: Span;
+};
 
 export type VarDecl = {
   kind: "VarDecl";

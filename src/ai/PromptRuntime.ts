@@ -1,8 +1,16 @@
 import type { RuntimeValue } from "../runtime/interpreter.js";
 
-export function buildPrompt(base: string, input?: RuntimeValue): string {
+export function buildPrompt(base: string, input?: RuntimeValue, goal?: string): string {
+  const parts: string[] = [];
+  if (goal?.trim()) {
+    parts.push(`Goal: ${goal.trim()}`);
+  }
+  if (base.trim()) {
+    parts.push(base.trim());
+  }
   const inputSummary = summarizeInput(input);
-  return `${base.trim()}\n\nContext:\n${inputSummary}`;
+  const header = parts.join("\n\n");
+  return header ? `${header}\n\nContext:\n${inputSummary}` : `Context:\n${inputSummary}`;
 }
 
 function summarizeInput(input?: RuntimeValue): string {
@@ -26,6 +34,8 @@ function summarizeInput(input?: RuntimeValue): string {
       return `${input.typeName} object`;
     case "completion":
       return input.text;
+    case "goal":
+      return `Goal — ${input.text}`;
     default:
       return `(${input.kind} value)`;
   }

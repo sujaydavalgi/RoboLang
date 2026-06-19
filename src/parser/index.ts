@@ -46,6 +46,8 @@ import type {
   TraitParamDecl,
   TransitionDecl,
   TwinDecl,
+  VerifyDecl,
+  ObserveDecl,
 } from "../foundations.js";
 
 export class ParseError extends Error {
@@ -358,6 +360,8 @@ class Parser {
     const events: EventDecl[] = [];
     const eventHandlers: EventHandlerDecl[] = [];
     let twin: TwinDecl | null = null;
+    let verify: VerifyDecl | null = null;
+    let observe: ObserveDecl | null = null;
     const traitImpls: TraitImplDecl[] = [];
 
     while (!this.check("RBRACE") && !this.check("EOF")) {
@@ -395,6 +399,10 @@ class Parser {
         eventHandlers.push(this.parseEventHandler());
       } else if (this.check("TWIN")) {
         twin = this.parseTwin();
+      } else if (this.check("VERIFY")) {
+        verify = this.parseVerify();
+      } else if (this.check("OBSERVE")) {
+        observe = this.parseObserve();
       } else if (this.check("IMPL")) {
         traitImpls.push(this.parseTraitImpl());
       } else {
@@ -424,9 +432,36 @@ class Parser {
       events,
       eventHandlers,
       twin,
+      verify,
+      observe,
       traitImpls,
       span: this.spanFrom(start, end),
     };
+  }
+
+  private parseObserve(): ObserveDecl {
+    const start = this.expect("OBSERVE", "Expected 'observe'");
+    this.expect("LBRACE", "Expected '{' after observe");
+    const sensors: string[] = [];
+    while (!this.check("RBRACE") && !this.check("EOF")) {
+      const sensorTok = this.expect("IDENT", "Expected sensor name in observe block");
+      sensors.push(sensorTok.lexeme);
+      this.expect("SEMICOLON", "Expected ';' after observe sensor");
+    }
+    const end = this.expect("RBRACE", "Expected '}' to close observe block");
+    return { kind: "ObserveDecl", sensors, span: this.spanFrom(start, end) };
+  }
+
+  private parseVerify(): VerifyDecl {
+    const start = this.expect("VERIFY", "Expected 'verify'");
+    this.expect("LBRACE", "Expected '{' after verify");
+    const rules = [];
+    while (!this.check("RBRACE") && !this.check("EOF")) {
+      rules.push(this.parseExpr());
+      this.expect("SEMICOLON", "Expected ';' after verify rule");
+    }
+    const end = this.expect("RBRACE", "Expected '}' to close verify block");
+    return { kind: "VerifyDecl", rules, span: this.spanFrom(start, end) };
   }
 
   private parseTraitImpl(): TraitImplDecl {
@@ -1124,14 +1159,16 @@ class Parser {
 
   private parseCapability(): CapabilityDecl {
     const start = this.peek();
-    const action = this.expect("IDENT", "Expected capability action");
+    const action = this.match("PLAN")
+      ? "plan"
+      : this.expect("IDENT", "Expected capability action").lexeme;
     let target: string | null = null;
     if (this.match("LPAREN")) {
       target = this.expect("IDENT", "Expected capability target").lexeme;
       this.expect("RPAREN", "Expected ')' after capability target");
     }
     return {
-      action: action.lexeme,
+      action,
       target,
       span: this.spanFrom(start, this.previous()),
     };
@@ -1281,6 +1318,16 @@ class Parser {
       this.expect("SEMICOLON", "Expected ';' after enter statement");
       const end = this.previous();
       return { kind: "EnterStmt", stateName, span: this.spanFrom(start, end) };
+    }
+
+    if (this.match("REMEMBER")) {
+      const keyTok = this.expect("STRING", "Expected memory key string");
+      const key = keyTok.value as string;
+      this.expect("COMMA", "Expected ',' after memory key");
+      const value = this.parseExpr();
+      this.expect("SEMICOLON", "Expected ';' after remember statement");
+      const end = this.previous();
+      return { kind: "RememberStmt", key, value, span: this.spanFrom(start, end) };
     }
 
     const expr = this.parseExpr();
@@ -1678,11 +1725,12 @@ class Parser {
   private isNamedArgStart(): boolean {
     const next = this.tokens[this.pos + 1];
     if (next?.type !== "COLON") return false;
-    return this.check("IDENT") || this.check("FROM");
+    return this.check("IDENT") || this.check("FROM") || this.check("GOAL");
   }
 
   private parseNamedArgName(): string {
     if (this.match("FROM")) return "from";
+    if (this.match("GOAL")) return "goal";
     return this.advance().lexeme;
   }
 }

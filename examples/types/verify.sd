@@ -1,0 +1,17 @@
+robot VerifyDemo {
+  sensor lidar: Lidar on "/scan";
+  actuator wheels: DifferentialDrive;
+
+  safety {
+    max_speed = 2.0 m/s;
+  }
+
+  verify {
+    robot.velocity().linear <= 2.0 m/s;
+    not robot.in_zone("restricted");
+  }
+
+  behavior run() {
+    wheels.drive(linear: 0.5 m/s, angular: 0.0 rad/s);
+  }
+}

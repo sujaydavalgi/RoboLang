@@ -21,7 +21,7 @@ robot R {
     uses planner;
     tools [lidar, wheels];
     goal "test";
-    can [ propose_motion ];
+    can [ propose_motion, plan ];
 
     plan {
       let scan = lidar.read();
@@ -51,6 +51,60 @@ robot R {
 }
 
 #[test]
+fn capability_denied_when_agent_lacks_summarize() {
+    let source = r#"
+robot R {
+  sensor lidar: Lidar on "/scan";
+  actuator wheels: DifferentialDrive;
+  ai_model planner: LLM { provider: "mock"; model: "test"; temperature: 0.1; }
+  agent NoSummarize {
+    uses planner;
+    tools [lidar, wheels];
+    goal "test";
+    can [ read(lidar), propose_motion, plan ];
+    plan {
+      let scan = lidar.read();
+      let _ = planner.summarize(input: scan);
+      wheels.stop();
+    }
+  }
+  behavior run() { NoSummarize.plan(); }
+}
+"#;
+    let err = run(
+        source,
+        RunOptions {
+            max_loop_iterations: 1,
+            ..Default::default()
+        },
+    )
+    .expect_err("agent without summarize should fail");
+    assert!(
+        err.to_string().contains("lacks capability summarize"),
+        "expected capability error, got: {err}"
+    );
+}
+
+#[test]
+fn reasoning_trace_from_action_proposal() {
+    let source = r#"
+robot R {
+  sensor lidar: Lidar on "/scan";
+  actuator wheels: DifferentialDrive;
+  safety { max_speed = 1.0 m/s; }
+  ai_model planner: LLM { provider: "mock"; model: "test"; temperature: 0.1; }
+  behavior run() {
+    let proposal = planner.reason(prompt: "go forward", input: lidar.read());
+    let trace = proposal.trace;
+    let _ = trace;
+    wheels.stop();
+  }
+}
+"#;
+    check(source).expect("reasoning trace member should type-check");
+}
+
+#[test]
 fn capability_denied_when_agent_lacks_propose_motion() {
     let source = r#"
 robot R {
@@ -71,7 +125,7 @@ robot R {
     uses planner;
     tools [lidar, wheels];
     goal "test";
-    can [ read(lidar) ];
+    can [ read(lidar), plan ];
 
     plan {
       let scan = lidar.read();
@@ -258,6 +312,51 @@ robot R {
             .iter()
             .any(|d| d.message.contains("Non-exhaustive match")),
         "expected exhaustiveness error, got: {:?}",
+        err.diagnostics()
+    );
+}
+
+#[test]
+fn verify_rule_fails_at_runtime() {
+    let source = r#"
+robot R {
+  actuator wheels: DifferentialDrive;
+  verify {
+    robot.velocity().linear > 100.0 m/s;
+  }
+  behavior run() {
+    wheels.drive(linear: 0.5 m/s, angular: 0.0 rad/s);
+  }
+}
+"#;
+    check(source).expect("verify rule should type-check");
+    let err = run(source, RunOptions::default()).expect_err("verify rule should fail");
+    assert!(
+        err.diagnostics()
+            .iter()
+            .any(|d| d.message.contains("verify rule")),
+        "expected verify failure, got: {:?}",
+        err.diagnostics()
+    );
+}
+
+#[test]
+fn verify_non_bool_rejected_at_typecheck() {
+    let source = r#"
+robot R {
+  actuator wheels: DifferentialDrive;
+  verify {
+    robot.velocity().linear;
+  }
+  behavior run() { wheels.stop(); }
+}
+"#;
+    let err = check(source).expect_err("non-boolean verify rule should fail typecheck");
+    assert!(
+        err.diagnostics()
+            .iter()
+            .any(|d| d.message.contains("verify rule must be boolean")),
+        "expected boolean verify error, got: {:?}",
         err.diagnostics()
     );
 }

@@ -136,6 +136,20 @@ pub enum EventHandlerDecl {
     },
 }
 
+/// Sensor fusion configuration listing sensors to combine.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(tag = "kind")]
+pub enum ObserveDecl {
+    ObserveDecl { sensors: Vec<String>, span: Span },
+}
+
+/// System-level verification assertions checked after behavior/task execution.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(tag = "kind")]
+pub enum VerifyDecl {
+    VerifyDecl { rules: Vec<Expr>, span: Span },
+}
+
 /// Digital twin shadow configuration.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "kind")]

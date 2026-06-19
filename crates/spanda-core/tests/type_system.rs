@@ -64,7 +64,11 @@ robot R {
 "#;
     let err = check(source).expect_err("Array arity mismatch should fail at parse");
     assert!(
-        err.to_string().contains("expects 1") || err.diagnostics().iter().any(|d| d.message.contains("expects 1")),
+        err.to_string().contains("expects 1")
+            || err
+                .diagnostics()
+                .iter()
+                .any(|d| d.message.contains("expects 1")),
         "got {err}"
     );
 }
@@ -168,10 +172,9 @@ robot R {
 "#;
     let err = check(source).expect_err("ActionProposal execute should fail typecheck");
     assert!(
-        err.diagnostics().iter().any(|d| {
-            d.message.contains("ActionProposal")
-                && d.message.contains("execute")
-        }),
+        err.diagnostics()
+            .iter()
+            .any(|d| { d.message.contains("ActionProposal") && d.message.contains("execute") }),
         "got {:?}",
         err.diagnostics()
     );
@@ -208,9 +211,142 @@ robot R {
 "#;
     let err = check(source).expect_err("unknown type should fail");
     assert!(
-        err.to_string().contains("Unknown type") || err.diagnostics().iter().any(|d| d.message.contains("Unknown type")),
+        err.to_string().contains("Unknown type")
+            || err
+                .diagnostics()
+                .iter()
+                .any(|d| d.message.contains("Unknown type")),
         "got {err}"
     );
+}
+
+#[test]
+fn goal_type_and_agent_goal_injection() {
+    let source = r#"
+robot R {
+  sensor lidar: Lidar on "/scan";
+  actuator wheels: DifferentialDrive;
+  safety { max_speed = 1.0 m/s; }
+  ai_model planner: LLM { provider: "mock"; model: "p"; temperature: 0.1; }
+  agent Navigator {
+    uses planner;
+    tools [lidar, wheels];
+    goal "Reach dock";
+    can [ read(lidar), propose_motion, plan ];
+    plan {
+      let mission: Goal = "Reach dock";
+      let scan = lidar.read();
+      let proposal = planner.reason(prompt: "go", input: scan, goal: mission);
+      let trace = proposal.trace;
+      let _ = trace;
+      let action = safety.validate(proposal);
+      wheels.execute(action);
+    }
+  }
+  behavior run() {
+    let g: Goal = goal(text: "Deliver package");
+    let _ = g;
+    Navigator.plan();
+  }
+}
+"#;
+    check(source).expect("goal types and agent goal injection should type-check");
+    run(
+        source,
+        RunOptions {
+            max_loop_iterations: 1,
+            ..Default::default()
+        },
+    )
+    .expect("goal example should run");
+}
+
+#[test]
+fn goals_example_runs() {
+    let source = std::fs::read_to_string(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../examples/types/goals.sd"
+    ))
+    .expect("read goals example");
+    compile(&source).expect("goals example should compile");
+    run(&source, RunOptions::default()).expect("goals example should run");
+}
+
+#[test]
+fn memory_remember_and_recall() {
+    let source = r#"
+robot R {
+  sensor lidar: Lidar on "/scan";
+  actuator wheels: DifferentialDrive;
+  safety { max_speed = 1.0 m/s; }
+  ai_model planner: LLM { provider: "mock"; model: "p"; temperature: 0.1; }
+  agent Navigator {
+    uses planner;
+    tools [lidar, wheels];
+    memory short_term;
+    can [ read(lidar), propose_motion, plan ];
+    plan {
+      let scan = lidar.read();
+      remember "last_scan", scan;
+      let recalled = recall("last_scan");
+      let _ = recalled;
+      let proposal = planner.reason(prompt: "go", input: scan);
+      let action = safety.validate(proposal);
+      wheels.execute(action);
+    }
+  }
+  behavior run() { Navigator.plan(); }
+}
+"#;
+    check(source).expect("remember/recall should type-check");
+    run(
+        source,
+        RunOptions {
+            max_loop_iterations: 1,
+            ..Default::default()
+        },
+    )
+    .expect("remember/recall should run");
+}
+
+#[test]
+fn memory_example_runs() {
+    let source = std::fs::read_to_string(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../examples/types/memory.sd"
+    ))
+    .expect("read memory example");
+    compile(&source).expect("memory example should compile");
+    run(&source, RunOptions::default()).expect("memory example should run");
+}
+
+#[test]
+fn verify_block_type_checks_and_runs() {
+    let source = r#"
+robot R {
+  actuator wheels: DifferentialDrive;
+  safety { max_speed = 2.0 m/s; }
+  verify {
+    robot.velocity().linear <= 2.0 m/s;
+  }
+  behavior run() {
+    wheels.drive(linear: 0.5 m/s, angular: 0.0 rad/s);
+  }
+}
+"#;
+    check(source).expect("verify block should type-check");
+    run(source, RunOptions::default()).expect("verify block should pass at runtime");
+}
+
+#[test]
+fn verify_example_runs() {
+    let source = std::fs::read_to_string(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../examples/types/verify.sd"
+    ))
+    .expect("read verify example");
+    compile(&source).expect("verify example should compile");
+    run(&source, RunOptions::default()).expect("verify example should run");
 }
 
 #[test]

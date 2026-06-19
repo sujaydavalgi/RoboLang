@@ -23,7 +23,7 @@ export function runtimeActionProposal(
   angular: number,
   source: string,
 ): RuntimeValue {
-  return { kind: "action_proposal", linear, angular, source, trusted: false };
+  return { kind: "action_proposal", linear, angular, source, trace: [], trusted: false };
 }
 
 export function isActionProposal(value: RuntimeValue): boolean {

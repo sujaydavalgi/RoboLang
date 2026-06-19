@@ -24,12 +24,12 @@ export class AIModel {
     this.provider = provider;
   }
 
-  reason(prompt: string, input?: RuntimeValue): RuntimeValue {
+  reason(prompt: string, input?: RuntimeValue, goal?: string): RuntimeValue {
     if (this.modelType !== "LLM") {
       throw new Error(`Model '${this.name}' is ${this.modelType}, not LLM`);
     }
     return this.provider.complete({
-      prompt: buildPrompt(prompt, input),
+      prompt: buildPrompt(prompt, input, goal),
       input,
       model: this.config.model,
       provider: this.config.provider,

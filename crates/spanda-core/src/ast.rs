@@ -154,6 +154,8 @@ pub enum RobotDecl {
         events: Vec<crate::foundations::EventDecl>,
         event_handlers: Vec<crate::foundations::EventHandlerDecl>,
         twin: Option<crate::foundations::TwinDecl>,
+        observe: Option<crate::foundations::ObserveDecl>,
+        verify: Option<crate::foundations::VerifyDecl>,
         trait_impls: Vec<crate::foundations::TraitImplDecl>,
         span: Span,
     },
@@ -168,13 +170,20 @@ pub enum SocDecl {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "kind")]
 pub enum HalBlock {
-    HalBlock { members: Vec<HalMemberDecl>, span: Span },
+    HalBlock {
+        members: Vec<HalMemberDecl>,
+        span: Span,
+    },
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "kind")]
 pub enum HalMemberDecl {
-    HalI2cDecl { name: String, address: f64, span: Span },
+    HalI2cDecl {
+        name: String,
+        address: f64,
+        span: Span,
+    },
     HalSpiDecl {
         name: String,
         bus: f64,
@@ -414,35 +423,65 @@ pub enum Stmt {
         body: Vec<Stmt>,
         span: Span,
     },
-    ExprStmt { expr: Expr, span: Span },
-    ReturnStmt { value: Option<Expr>, span: Span },
+    ExprStmt {
+        expr: Expr,
+        span: Span,
+    },
+    ReturnStmt {
+        value: Option<Expr>,
+        span: Span,
+    },
     PublishStmt {
         topic_name: String,
         value: Expr,
         span: Span,
     },
-    ServiceCallStmt { service_name: String, span: Span },
+    ServiceCallStmt {
+        service_name: String,
+        span: Span,
+    },
     ActionSendStmt {
         action_name: String,
         goal: Expr,
         span: Span,
     },
-    EmergencyStopStmt { span: Span },
-    ResetEmergencyStopStmt { span: Span },
-    EmitStmt { event_name: String, span: Span },
-    EnterStmt { state_name: String, span: Span },
+    EmergencyStopStmt {
+        span: Span,
+    },
+    ResetEmergencyStopStmt {
+        span: Span,
+    },
+    EmitStmt {
+        event_name: String,
+        span: Span,
+    },
+    EnterStmt {
+        state_name: String,
+        span: Span,
+    },
+    RememberStmt {
+        key: String,
+        value: Expr,
+        span: Span,
+    },
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "kind")]
 pub enum Expr {
-    LiteralExpr { value: LiteralValue, span: Span },
+    LiteralExpr {
+        value: LiteralValue,
+        span: Span,
+    },
     UnitLiteralExpr {
         value: f64,
         unit: UnitKind,
         span: Span,
     },
-    IdentExpr { name: String, span: Span },
+    IdentExpr {
+        name: String,
+        span: Span,
+    },
     BinaryExpr {
         op: BinaryOp,
         left: Box<Expr>,

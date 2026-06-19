@@ -108,6 +108,18 @@ export type TwinDecl = {
   span: Span;
 };
 
+export type VerifyDecl = {
+  kind: "VerifyDecl";
+  rules: Expr[];
+  span: Span;
+};
+
+export type ObserveDecl = {
+  kind: "ObserveDecl";
+  sensors: string[];
+  span: Span;
+};
+
 export type CapabilityDecl = {
   action: string;
   target: string | null;

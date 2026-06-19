@@ -12,8 +12,8 @@ function scanDistance(input?: RuntimeValue): number {
   return 5;
 }
 
-function actionProposal(linear: number, angular: number, source: string): RuntimeValue {
-  return { kind: "action_proposal", linear, angular, source, trusted: false };
+function actionProposal(linear: number, angular: number, source: string, trace: string[]): RuntimeValue {
+  return { kind: "action_proposal", linear, angular, source, trace, trusted: false };
 }
 
 export class MockAIProvider implements AIProvider {
@@ -22,17 +22,31 @@ export class MockAIProvider implements AIProvider {
     const dist = scanDistance(request.input);
 
     if (/stop|halt|wait/i.test(request.prompt)) {
-      return actionProposal(0, 0, request.model);
+      return actionProposal(0, 0, request.model, [
+        `model=${request.model}`,
+        `prompt=${prompt}`,
+        "decision=stop",
+      ]);
     }
 
     if (/turn|avoid|obstacle/i.test(request.prompt) || dist < 0.8) {
       const angular = dist < 0.4 ? 0.6 : 0.25;
       const linear = dist < 0.4 ? 0 : Math.min(0.4, dist * 0.3);
-      return actionProposal(linear, angular, request.model);
+      return actionProposal(linear, angular, request.model, [
+        `model=${request.model}`,
+        `prompt=${prompt}`,
+        `nearest_distance=${dist.toFixed(2)}`,
+        "decision=avoid_obstacle",
+      ]);
     }
 
     const linear = Math.min(0.8, dist * 0.45);
-    return actionProposal(linear, 0, request.model);
+    return actionProposal(linear, 0, request.model, [
+      `model=${request.model}`,
+      `prompt=${prompt}`,
+      `nearest_distance=${dist.toFixed(2)}`,
+      "decision=forward",
+    ]);
   }
 
   detect(request: DetectionRequest): RuntimeValue {

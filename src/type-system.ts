@@ -22,9 +22,11 @@ const KNOWN_DOMAIN_TYPES = new Set([
   "Timestamp", "Interval", "Waypoint", "MotionCommand", "ControlSignal", "PIDConfig", "GpsFix",
   "ImuData", "AudioFrame", "Prompt", "Completion", "Embedding", "Token", "Context", "Memory",
   "Plan", "ReasoningTrace", "Agent", "Goal", "Task", "Skill", "Capability", "Intent", "Command",
-  "Conversation", "Speech", "Gesture", "Emotion", "Feedback", "Risk", "Hazard",
+  "Conversation", "Speech", "Gesture", "Emotion", "Feedback", "Approval", "Risk", "Hazard",
+  "Confidence", "Prediction", "Probability",
   "SafetyConstraint", "Twin", "SimulationState", "Telemetry", "Replay", "Fault", "Scenario",
   "KnowledgeGraph", "Belief", "Observation", "WorldModel", "Policy", "Reward", "StateEstimate",
+  "SensorFusion", "FusedObservation",
   "LLM", "VisionModel", "EmbeddingModel", "CameraFrame", "Image", "DepthImage", "PointCloud",
   "LidarScan", "Goal",
 ]);
@@ -158,6 +160,10 @@ export function resolveTypeName(name: string): SpandaType {
     case "Gesture":
     case "Emotion":
     case "Feedback":
+    case "Approval":
+    case "Confidence":
+    case "Prediction":
+    case "Probability":
     case "Risk":
     case "Hazard":
     case "SafetyConstraint":
@@ -175,6 +181,8 @@ export function resolveTypeName(name: string): SpandaType {
     case "Policy":
     case "Reward":
     case "StateEstimate":
+    case "SensorFusion":
+    case "FusedObservation":
       return { kind: "named", name: short };
     default:
       if (KNOWN_DOMAIN_TYPES.has(short)) {
