@@ -35,13 +35,6 @@ spanda sim examples/rover.sd
 
 Build the native CLI with `npm run build:rust` (output: `target/release/spanda`).
 
-## Source extensions
-
-| Extension | Status |
-|-----------|--------|
-| `.sd` | Primary Spanda source format |
-| `.syn` | Deprecated legacy alias (accepted with a warning) |
-
 ## Links
 
 - GitHub: [github.com/sujaydavalgi/Spanda](https://github.com/sujaydavalgi/Spanda)

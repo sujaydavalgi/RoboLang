@@ -4,7 +4,6 @@ import { parse } from "./parser/index.js";
 import { typeCheck, TypeCheckError } from "./types/index.js";
 import { Interpreter, type RobotBackend, type RobotState } from "./runtime/index.js";
 import type { Program } from "./ast/nodes.js";
-import { warnDeprecatedSourceExtension } from "./source-path.js";
 
 export type CompileBackend = "typescript" | "rust-native" | "rust-cli";
 
@@ -74,13 +73,11 @@ export async function compileAsync(source: string, backend?: CompileBackend): Pr
 }
 
 export function compileFile(path: string, backend?: CompileBackend): CompileResult {
-  warnDeprecatedSourceExtension(path);
   const source = readFileSync(path, "utf-8");
   return compile(source, backend);
 }
 
 export async function compileFileAsync(path: string, backend?: CompileBackend): Promise<CompileResult> {
-  warnDeprecatedSourceExtension(path);
   const source = readFileSync(path, "utf-8");
   return compileAsync(source, backend);
 }

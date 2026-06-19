@@ -7,7 +7,6 @@ import { LexerError } from "../lexer/index.js";
 import { ParseError } from "../parser/index.js";
 import { TypeCheckError } from "../types/index.js";
 import { RuntimeError } from "../runtime/index.js";
-import { warnDeprecatedSourceExtension } from "../source-path.js";
 
 const USAGE = `Spanda Programming Language — the pulse of autonomous intelligence
 
@@ -20,8 +19,6 @@ Examples:
   spanda run examples/rover.sd
   spanda sim examples/rover.sd
   spanda check examples/rover.sd
-
-Legacy .syn files are accepted with a deprecation warning.
 `;
 
 function main(): void {
@@ -41,7 +38,6 @@ function main(): void {
   }
 
   const absPath = resolve(filePath);
-  warnDeprecatedSourceExtension(absPath);
 
   try {
     switch (command) {

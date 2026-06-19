@@ -14,7 +14,7 @@ AI models are the mind.
 Actuators are the muscles.  
 Spanda is the intelligent pulse that transforms perception into action.
 
-Source files use the **`.sd`** extension. The legacy **`.syn`** extension is still accepted but deprecated.
+Source files use the **`.sd`** extension.
 
 ## Features
 

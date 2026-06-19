@@ -10,7 +10,6 @@ pub mod hal;
 pub mod soc;
 pub mod lib_registry;
 mod error;
-pub mod source_path;
 
 pub use ast::*;
 pub use error::*;

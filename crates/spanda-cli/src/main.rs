@@ -3,7 +3,7 @@ use std::env;
 use std::fs;
 use std::io::{self, Write};
 use std::process;
-use spanda_core::{check, run, RunOptions, SpandaError, source_path};
+use spanda_core::{check, run, RunOptions, SpandaError};
 
 #[derive(Serialize)]
 struct CheckResponse {
@@ -26,8 +26,7 @@ fn usage() {
          Usage:\n\
            spanda check [--json] <file.sd>\n\
            spanda run [--json] [--verbose] <file.sd>\n\
-           spanda sim [--json] <file.sd>\n\n\
-         Legacy .syn files are accepted with a deprecation warning.\n"
+           spanda sim [--json] <file.sd>\n"
     );
 }
 
@@ -171,7 +170,6 @@ fn main() {
     });
 
     let source = read_source(file);
-    source_path::warn_deprecated_source_extension(file);
 
     match command {
         "check" => {
