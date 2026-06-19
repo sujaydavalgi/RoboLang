@@ -1,0 +1,35 @@
+{
+  "name": "@synapse/native",
+  "version": "0.1.0",
+  "description": "Synapse Rust core bindings for Node.js",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "build:native": "napi build --platform --release --cargo-cwd ../../crates/synapse-node --js ./native.js --dts ./native.d.ts .",
+    "build:cli": "cargo build -p synapse-cli --release"
+  },
+  "napi": {
+    "name": "synapse-node",
+    "triples": {
+      "defaults": true,
+      "additional": [
+        "aarch64-apple-darwin",
+        "x86_64-apple-darwin",
+        "aarch64-unknown-linux-gnu",
+        "x86_64-unknown-linux-gnu"
+      ]
+    }
+  },
+  "devDependencies": {
+    "@napi-rs/cli": "^2.18.0",
+    "typescript": "^5.7.0"
+  }
+}
