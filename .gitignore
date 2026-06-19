@@ -1,6 +1,7 @@
 node_modules/
 dist/
 target/
+*.tsbuildinfo
 packages/web/wasm/*.wasm
 packages/web/wasm/spanda_wasm_bg.wasm.d.ts
 packages/native/*.node
