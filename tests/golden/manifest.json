@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "fixtures": [
+    {
+      "file": "examples/hello_robot.syn",
+      "check": "pass"
+    },
+    {
+      "file": "examples/differential_drive.syn",
+      "check": "pass",
+      "run": { "maxLoopIterations": 5 }
+    },
+    {
+      "file": "examples/lidar_avoidance.syn",
+      "check": "pass",
+      "run": { "maxLoopIterations": 5 }
+    },
+    {
+      "file": "examples/ai_navigation.syn",
+      "check": "pass",
+      "run": { "maxLoopIterations": 5 }
+    },
+    {
+      "file": "examples/vision_pick_place.syn",
+      "check": "pass"
+    },
+    {
+      "file": "examples/llm_robot_assistant.syn",
+      "check": "pass"
+    },
+    {
+      "file": "examples/ai_safety_violation.syn",
+      "check": "fail",
+      "errorContains": "SafeAction"
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Synapse Core API Contract",
+  "version": 1,
+  "description": "Stable JSON boundary between Rust core and TypeScript/React tooling",
+  "definitions": {
+    "Diagnostic": {
+      "type": "object",
+      "required": ["line", "column", "message", "severity"],
+      "properties": {
+        "line": { "type": "integer", "minimum": 1 },
+        "column": { "type": "integer", "minimum": 1 },
+        "message": { "type": "string" },
+        "severity": { "enum": ["error", "warning"] }
+      }
+    },
+    "RobotState": {
+      "type": "object",
+      "required": ["pose", "velocity", "emergencyStop"],
+      "properties": {
+        "pose": {
+          "type": "object",
+          "properties": {
+            "x": { "type": "number" },
+            "y": { "type": "number" },
+            "theta": { "type": "number" },
+            "z": { "type": "number" }
+          }
+        },
+        "velocity": {
+          "type": "object",
+          "properties": {
+            "linear": { "type": "number" },
+            "angular": { "type": "number" }
+          }
+        },
+        "emergencyStop": { "type": "boolean" }
+      }
+    },
+    "CheckResponse": {
+      "type": "object",
+      "required": ["ok"],
+      "properties": {
+        "ok": { "type": "boolean" },
+        "diagnostics": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/Diagnostic" }
+        }
+      }
+    },
+    "RunResponse": {
+      "type": "object",
+      "required": ["state", "events"],
+      "properties": {
+        "state": { "$ref": "#/definitions/RobotState" },
+        "events": { "type": "array", "items": { "type": "string" } },
+        "logs": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  }
+}
