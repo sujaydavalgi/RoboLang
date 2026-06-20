@@ -1,3 +1,5 @@
+mod package;
+
 use serde::Serialize;
 use spanda_core::{
     check, format_source, run, verify_compatibility, CompatSeverity, RunOptions, SpandaError,
@@ -38,12 +40,21 @@ fn usage() {
     eprintln!(
         "Spanda Programming Language\n\n\
          Usage:\n\
-           spanda check [--json] <file.sd>\n\
+           spanda check [--json] [<file.sd> | --project]\n\
            spanda verify [--json] [--target <HardwareProfile>] [--all-targets] [--simulate] <file.sd>\n\
            spanda compatibility [--json] [--target <HardwareProfile>] [--all-targets] [--simulate] <file.sd>\n\
            spanda run [--json] [--verbose] <file.sd>\n\
            spanda sim [--json] <file.sd>\n\
-           spanda fmt <file.sd>\n"
+           spanda fmt <file.sd>\n\n\
+         Package commands:\n\
+           spanda init [name] [--description <text>]\n\
+           spanda build [--project <dir>]\n\
+           spanda test [--project <dir>]\n\
+           spanda add <package> [--version <ver>] [--path <dir>] [--git <url>]\n\
+           spanda remove <package>\n\
+           spanda install [--project <dir>]\n\
+           spanda publish [--project <dir>]\n\
+           spanda registry search <query>\n"
     );
 }
 
@@ -221,6 +232,37 @@ fn print_verify_json(result: Result<spanda_core::CompatibilityReport, SpandaErro
     println!("{}", serde_json::to_string(&resp).unwrap());
 }
 
+fn is_package_command(cmd: &str) -> bool {
+    matches!(
+        cmd,
+        "init" | "build" | "test" | "add" | "remove" | "publish" | "install" | "registry"
+    )
+}
+
+fn dispatch_package(command: &str, rest: &[String]) {
+    match command {
+        "init" => package::cmd_init(rest),
+        "build" => package::cmd_build(rest),
+        "test" => package::cmd_test(rest),
+        "add" => package::cmd_add(rest),
+        "remove" => package::cmd_remove(rest),
+        "install" => package::cmd_install(rest),
+        "publish" => package::cmd_publish(rest),
+        "registry" => {
+            if rest.first().map(String::as_str) != Some("search") {
+                eprintln!("Usage: spanda registry search <query>");
+                process::exit(1);
+            }
+            package::cmd_registry_search(&rest[1..]);
+        }
+        _ => {
+            eprintln!("Unknown package command: {command}");
+            package::usage_package();
+            process::exit(1);
+        }
+    }
+}
+
 fn main() {
     let args: Vec<String> = env::args().collect();
     if args.len() < 2 || args[1] == "--help" || args[1] == "-h" {
@@ -228,19 +270,27 @@ fn main() {
         process::exit(if args.len() < 2 { 1 } else { 0 });
     }
 
+    let command = args[1].as_str();
+    if is_package_command(command) {
+        dispatch_package(command, &args[2..]);
+        let _ = io::stdout().flush();
+        return;
+    }
+
     let mut json = false;
     let mut verbose = false;
     let mut target: Option<String> = None;
     let mut all_targets = false;
     let mut simulate = false;
-    let mut command: Option<&str> = None;
-    let mut file: Option<&str> = None;
+    let mut project_mode = false;
+    let mut file: Option<String> = None;
 
-    let mut i = 1;
+    let mut i = 2;
     while i < args.len() {
         match args[i].as_str() {
             "--json" => json = true,
             "--verbose" | "-v" => verbose = true,
+            "--project" => project_mode = true,
             "--target" => {
                 i += 1;
                 if i >= args.len() {
@@ -251,10 +301,7 @@ fn main() {
             }
             "--all-targets" => all_targets = true,
             "--simulate" => simulate = true,
-            "check" | "run" | "sim" | "fmt" | "verify" | "compatibility" if command.is_none() => {
-                command = Some(&args[i]);
-            }
-            other if !other.starts_with('-') && file.is_none() => file = Some(other),
+            other if !other.starts_with('-') && file.is_none() => file = Some(other.to_string()),
             other => {
                 eprintln!("Unknown argument: {other}");
                 usage();
@@ -264,29 +311,26 @@ fn main() {
         i += 1;
     }
 
-    let command = command.unwrap_or_else(|| {
-        eprintln!("Missing command");
-        usage();
-        process::exit(1);
-    });
-
-    let file = file.unwrap_or_else(|| {
-        eprintln!("Missing file path");
-        usage();
-        process::exit(1);
-    });
-
-    let source = read_source(file);
-
     match command {
         "check" => {
-            if json {
-                print_check_json(check(&source).err());
-            } else {
-                human_check(&source, file);
+            if project_mode || file.is_none() {
+                package::cmd_check_project(&args[2..]);
+            } else if let Some(ref file_path) = file {
+                let source = read_source(file_path);
+                if json {
+                    print_check_json(check(&source).err());
+                } else {
+                    human_check(&source, file_path);
+                }
             }
         }
         "verify" | "compatibility" => {
+            let file = file.unwrap_or_else(|| {
+                eprintln!("Missing file path");
+                usage();
+                process::exit(1);
+            });
+            let source = read_source(&file);
             let options = VerifyOptions {
                 target: target.clone(),
                 all_targets,
@@ -303,10 +347,16 @@ fn main() {
                     process::exit(1);
                 }
             } else {
-                human_verify(&source, file, &options);
+                human_verify(&source, &file, &options);
             }
         }
         "run" | "sim" => {
+            let file = file.unwrap_or_else(|| {
+                eprintln!("Missing file path");
+                usage();
+                process::exit(1);
+            });
+            let source = read_source(&file);
             let max_loop_iterations = if command == "sim" || verbose { 20 } else { 10 };
             let opts = RunOptions {
                 max_loop_iterations,
@@ -315,13 +365,19 @@ fn main() {
             if json {
                 print_run_json(run(&source, opts));
             } else {
-                human_run(&source, file, command == "sim" || verbose);
+                human_run(&source, &file, command == "sim" || verbose);
             }
         }
         "fmt" => {
+            let file = file.unwrap_or_else(|| {
+                eprintln!("Missing file path");
+                usage();
+                process::exit(1);
+            });
+            let source = read_source(&file);
             let formatted = format_source(&source);
             if formatted != source {
-                fs::write(file, formatted).unwrap_or_else(|e| {
+                fs::write(&file, formatted).unwrap_or_else(|e| {
                     eprintln!("Error writing {file}: {e}");
                     process::exit(1);
                 });
@@ -332,6 +388,7 @@ fn main() {
         }
         _ => {
             eprintln!("Unknown command: {command}");
+            usage();
             process::exit(1);
         }
     }
