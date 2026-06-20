@@ -1,0 +1,17 @@
+// Planned FFI bridge imports — type-check only (no native linking yet).
+// See docs/ffi-and-ecosystem.md
+
+import python.torch;
+import cpp.ros2;
+
+extern fn stub_echo(value: Int) -> Int;
+
+robot BridgeDemo {
+  actuator wheels: DifferentialDrive;
+
+  behavior run() {
+    let echoed = stub_echo(1);
+    let _ = echoed;
+    wheels.stop();
+  }
+}

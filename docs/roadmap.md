@@ -14,25 +14,28 @@
 - Phase 10: `twin` declarations with mirror/replay runtime
 - Phase 11: ROS2-style `topic` / `service` / `action`
 - **Hardware compatibility verification**: `hardware`, `deploy`, `requires_hardware`, `requires_network`, task `budget`, `mission`, `simulate_compatibility`, `spanda verify`, compatibility matrix, fault injection
-- Tooling: LSP with check + verify diagnostics, `spanda fmt`, `verifyViaCli` TypeScript bridge
+- Tooling: LSP with check + verify diagnostics, `spanda fmt`, full TypeScript CLI parity
+- FFI bridge import registry (`python.*`, `cpp.*`) — type-check only
+- N-API / WASM `verify` bindings
 - Incremental runtime: enum values, struct literals, trait impl binding
 - Phase 14: Example programs (`examples/types/`, `examples/hardware/`)
+- TypeScript parser mirror for hardware/deploy/requirements syntax
 
 ## In progress
 
-- TypeScript parser mirror for hardware/requirements syntax (verification delegates to Rust CLI)
-- Package manager (`spanda pkg`)
+- Package manager publish to live registry
 - Digital twin live telemetry sync (replay buffer exists)
 - Advanced power models (dynamic load from behavior analysis)
 - Self-hosted compiler subset
+- Real Python/C++/ROS2 bridge linking (see `docs/ffi-and-ecosystem.md`)
 
 ## Planned
 
 - IDE: inline hardware profile picker, deploy target hints
-- `spanda verify --all-targets` JSON matrix export for CI dashboards
 - Hardware adapter trait code generation
-- ROS2 adapter implementation (stub exists)
+- ROS2 adapter live node integration (stub exists)
 - Formal verification integration for safety constraints
+- Spanda IR + LLVM native backend (see `docs/compiler-backend-roadmap.md`)
 
 ## Self-hosting compiler path
 

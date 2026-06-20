@@ -341,6 +341,13 @@ robot PatrolBot {
 | `spanda run <file.sd>` | Run with simulated backend |
 | `spanda sim <file.sd>` | Run simulation with detailed output |
 | `spanda fmt <file.sd>` | Format source file |
+| `spanda lint <file.sd>` | Lint source file |
+| `spanda doc <file.sd>` | Generate markdown documentation |
+| `spanda codegen <file.sd>` | Emit skeleton native/WASM/ESP32 output |
+| `spanda debug <file.sd>` | Run with breakpoint pauses |
+| `spanda init` / `build` / `test` / `add` / `install` | Package manager (native CLI) |
+
+The npm `spanda` command (`src/cli`) implements the same surface and delegates to the native binary when built (`npm run build:rust`).
 
 All commands support `--json` for machine-readable output.
 
@@ -351,11 +358,11 @@ Spanda uses a **dual-layer architecture**:
 | Layer | Technology | Responsibility |
 |-------|------------|----------------|
 | **Language core** | Rust (`crates/spanda-core`) | Lexer, parser, type checker, interpreter, safety, AI, simulator, **hardware verifier** |
-| **Native CLI** | Rust (`crates/spanda-cli`) | `check`, `verify`, `run`, `sim`, `fmt`, package commands |
-| **Node bindings** | N-API (`crates/spanda-node`) | In-process calls from Node.js |
-| **Browser bindings** | WASM (`crates/spanda-wasm`) | Playground and web IDE |
+| **Native CLI** | Rust (`crates/spanda-cli`) | Full command set including package manager |
+| **Node bindings** | N-API (`crates/spanda-node`) | `check`, `run`, `verify` |
+| **Browser bindings** | WASM (`crates/spanda-wasm`) | `check`, `run`, `verify` |
 | **Language Server** | TypeScript (`packages/lsp`) | Type-check + hardware compatibility diagnostics |
-| **Developer UX** | TypeScript + React (`packages/web`, `src/cli`) | CLI wrapper, web playground, tests |
+| **Developer UX** | TypeScript + React (`packages/web`, `src/cli`) | Full CLI (delegates to Rust when built), playground, tests |
 
 See [docs/spanda-architecture.md](docs/spanda-architecture.md), [docs/ffi-and-ecosystem.md](docs/ffi-and-ecosystem.md), and [docs/compiler-backend-roadmap.md](docs/compiler-backend-roadmap.md) for deeper design notes.
 

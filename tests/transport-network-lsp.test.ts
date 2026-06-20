@@ -93,4 +93,15 @@ robot Bot {
     expect(sym?.kind).toBe("topic");
     expect(sym?.name).toBe("alerts");
   });
+
+  it("indexes hardware profiles and deploy targets", () => {
+    const hwSource = `
+hardware Board { memory: 2 GB; }
+robot R { actuator wheels: DifferentialDrive; behavior run() { wheels.stop(); } }
+deploy R to Board;
+`;
+    const index = buildSymbolIndex(parse(tokenize(hwSource)));
+    expect(index.symbols.some((s) => s.kind === "hardware" && s.name === "Board")).toBe(true);
+    expect(index.symbols.some((s) => s.kind === "deploy")).toBe(true);
+  });
 });

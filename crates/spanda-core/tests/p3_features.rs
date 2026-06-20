@@ -126,3 +126,17 @@ fn ffi_registry_stub_echo() {
         spanda_core::runtime::RuntimeValue::Number { value, .. } if (value - 42.0).abs() < f64::EPSILON
     ));
 }
+
+#[test]
+fn ffi_bridge_imports_type_check() {
+    let source = r#"
+import python.torch;
+import cpp.ros2;
+
+robot R {
+  actuator wheels: DifferentialDrive;
+  behavior run() { wheels.stop(); }
+}
+"#;
+    check(source).expect("planned FFI bridge imports should type-check");
+}

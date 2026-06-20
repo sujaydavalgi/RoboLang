@@ -164,3 +164,37 @@ export function runFile(path: string, options: RunOptions): RobotState {
   const { program } = compileFile(path);
   return run(program, options);
 }
+
+export type VerifyHardwareOptions = {
+  target?: string;
+  allTargets?: boolean;
+  simulate?: boolean;
+  rustCli?: boolean;
+};
+
+/** Hardware compatibility verification (requires native CLI or returns error). */
+export async function verifyHardware(
+  source: string,
+  options: VerifyHardwareOptions = {},
+): Promise<import("./rust-bridge.js").VerifyResult> {
+  const { verifyViaCli, isCliAvailable } = await import("./rust-bridge.js");
+  if (!isCliAvailable()) {
+    return {
+      ok: false,
+      items: [
+        {
+          category: "error",
+          message: "Hardware verification requires native CLI (npm run build:rust)",
+          severity: "error",
+          line: 1,
+          column: 1,
+        },
+      ],
+    };
+  }
+  const args: string[] = [];
+  if (options.target) args.push("--target", options.target);
+  if (options.allTargets) args.push("--all-targets");
+  if (options.simulate) args.push("--simulate");
+  return verifyViaCli(source, args);
+}
