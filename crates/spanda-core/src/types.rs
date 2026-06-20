@@ -227,6 +227,7 @@ pub struct TypeChecker {
     peer_robot_names: std::collections::HashSet<String>,
     module_registry: Option<ModuleRegistry>,
     module_functions: HashMap<String, ModuleFnDecl>,
+    extern_functions: HashMap<String, crate::foundations::ExternFnDecl>,
     type_param_scope: HashMap<String, SpandaType>,
 }
 
@@ -254,6 +255,7 @@ impl TypeChecker {
             peer_robot_names: std::collections::HashSet::new(),
             module_registry: None,
             module_functions: HashMap::new(),
+            extern_functions: HashMap::new(),
             type_param_scope: HashMap::new(),
         }
     }
@@ -262,6 +264,7 @@ impl TypeChecker {
         let Program::Program {
             imports,
             functions,
+            extern_functions,
             tests,
             structs,
             enums,
@@ -309,6 +312,7 @@ impl TypeChecker {
             self.check_trait(trait_decl);
         }
 
+        self.check_extern_functions(extern_functions);
         self.check_module_functions(functions);
 
         for test in tests {
@@ -388,6 +392,21 @@ impl TypeChecker {
             }
             let _ = self.resolve_type_ann(&func.return_type);
             self.type_param_scope = saved_scope;
+        }
+    }
+
+    fn check_extern_functions(&mut self, functions: &[crate::foundations::ExternFnDecl]) {
+        for func in functions {
+            for param in &func.params {
+                self.validate_type_annotation(
+                    &param.type_ann,
+                    param.span.start.line,
+                    param.span.start.column,
+                );
+            }
+            let _ = self.resolve_type_ann(&func.return_type);
+            self.extern_functions
+                .insert(func.name.clone(), func.clone());
         }
     }
 
@@ -2512,6 +2531,21 @@ impl TypeChecker {
                     return Self::future_type(ret);
                 }
                 return ret;
+            }
+            if let Some(func) = self.extern_functions.get(name.as_str()).cloned() {
+                for (i, arg) in args.iter().enumerate() {
+                    if let Some(param) = func.params.get(i) {
+                        let expected = self.resolve_type_ann(&param.type_ann);
+                        let actual = self.check_expr(arg);
+                        self.assert_compatible(
+                            &expected,
+                            &actual,
+                            span.start.line,
+                            span.start.column,
+                        );
+                    }
+                }
+                return self.resolve_type_ann(&func.return_type);
             }
             if name == "assert" {
                 if let Some(arg) = args.first() {

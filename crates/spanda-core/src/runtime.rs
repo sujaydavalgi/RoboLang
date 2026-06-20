@@ -364,6 +364,8 @@ pub struct InterpreterOptions {
     pub on_motion_blocked: Option<MotionBlockedCallback>,
     pub on_log: Option<LogCallback>,
     pub module_registry: Option<crate::modules::ModuleRegistry>,
+    pub debug: Option<crate::debug::DebugController>,
+    pub ffi_registry: crate::ffi::FfiRegistry,
 }
 
 impl Default for InterpreterOptions {
@@ -373,6 +375,8 @@ impl Default for InterpreterOptions {
             on_motion_blocked: None,
             on_log: None,
             module_registry: None,
+            debug: None,
+            ffi_registry: crate::ffi::FfiRegistry::new(),
         }
     }
 }
@@ -405,6 +409,7 @@ pub struct Interpreter<B: RobotBackend> {
     default_transport: TransportKind,
     module_functions: HashMap<String, crate::foundations::ModuleFnDecl>,
     imported_functions: HashMap<String, crate::foundations::ModuleFnDecl>,
+    extern_functions: HashMap<String, crate::foundations::ExternFnDecl>,
     concurrency: crate::concurrency::ConcurrencyRuntime,
 }
 
@@ -438,6 +443,7 @@ impl<B: RobotBackend> Interpreter<B> {
             default_transport: TransportKind::Sim,
             module_functions: HashMap::new(),
             imported_functions: HashMap::new(),
+            extern_functions: HashMap::new(),
             concurrency: crate::concurrency::ConcurrencyRuntime::new(),
         }
     }
@@ -505,11 +511,13 @@ impl<B: RobotBackend> Interpreter<B> {
             enums,
             traits,
             functions,
+            extern_functions,
             imports,
             ..
         } = program;
         self.module_functions.clear();
         self.imported_functions.clear();
+        self.extern_functions.clear();
         for func in functions {
             let ModuleFnDecl {
                 name, visibility, ..
@@ -517,6 +525,9 @@ impl<B: RobotBackend> Interpreter<B> {
             if matches!(visibility, Visibility::Export | Visibility::Public) {
                 self.module_functions.insert(name.clone(), func.clone());
             }
+        }
+        for ext in extern_functions {
+            self.extern_functions.insert(ext.name.clone(), ext.clone());
         }
         use crate::ast::ImportDecl;
         if let Some(registry) = &self.options.module_registry {
@@ -1470,6 +1481,16 @@ impl<B: RobotBackend> Interpreter<B> {
     }
 
     fn execute_stmt(&mut self, stmt: &Stmt) -> Result<(), SpandaError> {
+        if let Some(debug) = &self.options.debug {
+            let line = crate::debug::stmt_line(stmt);
+            if debug.should_pause(line) {
+                debug.record_pause(line, "breakpoint");
+                return Err(SpandaError::DebugPause {
+                    line,
+                    reason: "breakpoint".into(),
+                });
+            }
+        }
         match stmt {
             Stmt::VarDecl { name, init, .. } => {
                 if let Some(expr) = init {
@@ -2207,6 +2228,13 @@ impl<B: RobotBackend> Interpreter<B> {
         line: u32,
     ) -> Result<RuntimeValue, SpandaError> {
         if let Expr::IdentExpr { name, .. } = callee {
+            if let Some(ext) = self.extern_functions.get(name).cloned() {
+                let mut arg_values = Vec::new();
+                for arg in args {
+                    arg_values.push(self.eval_expr(arg)?);
+                }
+                return self.options.ffi_registry.call(&ext, &arg_values);
+            }
             if let Some(func) = self
                 .module_functions
                 .get(name)

@@ -27,6 +27,8 @@ pub enum SpandaError {
     TypeCheck { diagnostics: Vec<Diagnostic> },
     #[error("{message} (line {line})")]
     Runtime { message: String, line: u32 },
+    #[error("Debug pause at line {line}: {reason}")]
+    DebugPause { line: u32, reason: String },
 }
 
 impl SpandaError {
@@ -53,6 +55,11 @@ impl SpandaError {
             SpandaError::TypeCheck { diagnostics } => diagnostics.clone(),
             SpandaError::Runtime { message, line } => vec![Diagnostic {
                 message: message.clone(),
+                line: *line,
+                column: 1,
+            }],
+            SpandaError::DebugPause { line, reason } => vec![Diagnostic {
+                message: format!("Debug pause: {reason}"),
                 line: *line,
                 column: 1,
             }],

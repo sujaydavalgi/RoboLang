@@ -31,6 +31,16 @@ pub struct ModuleParamDecl {
     pub span: Span,
 }
 
+/// Foreign function interface declaration (`extern fn read_sensor() -> Int;`).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct ExternFnDecl {
+    pub name: String,
+    pub library: Option<String>,
+    pub params: Vec<ModuleParamDecl>,
+    pub return_type: SpandaType,
+    pub span: Span,
+}
+
 /// In-language test block: `test "name" { ... }`
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct TestDecl {

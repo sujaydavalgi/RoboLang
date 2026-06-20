@@ -1,0 +1,16 @@
+module native_bridge;
+
+extern "libc" fn stub_add(a: Int, b: Int) -> Int;
+
+export fn sum_pair(a: Int, b: Int) -> Int {
+  return stub_add(a, b);
+}
+
+robot Bridge {
+  actuator wheels: DifferentialDrive;
+  behavior run() {
+    let total = sum_pair(10, 32);
+    let _ = total;
+    wheels.stop();
+  }
+}

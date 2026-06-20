@@ -146,6 +146,7 @@ mod tests {
             imports: vec![],
             functions,
             tests: vec![],
+            extern_functions: vec![],
             structs: vec![],
             enums: vec![],
             traits: vec![],

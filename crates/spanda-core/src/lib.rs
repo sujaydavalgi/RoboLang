@@ -1,11 +1,14 @@
 pub mod ai;
 pub mod ast;
 pub mod audit;
+pub mod codegen;
 pub mod comm;
 pub mod concurrency;
+pub mod debug;
 pub mod docs;
 mod error;
 pub mod events;
+pub mod ffi;
 pub mod format;
 pub mod foundations;
 pub mod hal;
@@ -31,8 +34,11 @@ pub mod types;
 pub mod units;
 
 pub use ast::*;
+pub use codegen::{generate as codegen, wasm_deploy_manifest, CodegenTarget};
+pub use debug::{DebugCommand, DebugController, DebugOptions, DebugPause, DebugSession};
 pub use docs::generate_markdown;
 pub use error::*;
+pub use ffi::FfiRegistry;
 pub use format::{format_ast, format_source};
 pub use hardware::{
     list_hardware_profiles, CompatItem, CompatSeverity, CompatibilityMatrix, CompatibilityReport,
@@ -144,6 +150,7 @@ pub fn run_tests_with_registry(
             on_log: Some(Rc::new(move |msg| logs_cb.borrow_mut().push(msg))),
             on_motion_blocked: None,
             module_registry: Some(registry.clone()),
+            ..Default::default()
         },
     );
 
@@ -206,6 +213,7 @@ pub fn run_program(program: &Program, options: RunOptions) -> Result<RunResult, 
             on_log: Some(Rc::new(move |msg| logs_cb.borrow_mut().push(msg))),
             on_motion_blocked: None,
             module_registry: options.module_registry.clone(),
+            ..Default::default()
         },
     );
 
@@ -219,4 +227,21 @@ pub fn run_program(program: &Program, options: RunOptions) -> Result<RunResult, 
         events,
         logs: run_logs,
     })
+}
+
+pub fn run_debug(source: &str, options: DebugOptions) -> Result<DebugSession, SpandaError> {
+    let program = compile(source)?.program;
+    let controller = DebugController::new(options);
+    let pauses = controller.pauses();
+    let mut interp = Interpreter::new(
+        create_default_simulator(SimulatorConfig::default()),
+        InterpreterOptions {
+            max_loop_iterations: 10,
+            debug: Some(controller),
+            ..Default::default()
+        },
+    );
+    let _ = interp.run(&program, None);
+    let pause_list = pauses.borrow().clone();
+    Ok(DebugSession { pauses: pause_list })
 }

@@ -422,6 +422,8 @@ pub enum Program {
         functions: Vec<crate::foundations::ModuleFnDecl>,
         #[serde(default)]
         tests: Vec<crate::foundations::TestDecl>,
+        #[serde(default)]
+        extern_functions: Vec<crate::foundations::ExternFnDecl>,
         structs: Vec<crate::foundations::StructDecl>,
         enums: Vec<crate::foundations::EnumDecl>,
         traits: Vec<crate::foundations::TraitDecl>,

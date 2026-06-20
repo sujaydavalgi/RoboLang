@@ -258,6 +258,7 @@ impl Parser {
         }
         let mut imports = Vec::new();
         let mut functions = Vec::new();
+        let mut extern_functions = Vec::new();
         let mut tests = Vec::new();
         let mut structs = Vec::new();
         let mut enums = Vec::new();
@@ -275,6 +276,8 @@ impl Parser {
         while !self.check(TokenType::Eof) {
             if self.is_module_fn_start() {
                 functions.push(self.parse_module_fn()?);
+            } else if self.match_types(&[TokenType::Extern]) {
+                extern_functions.push(self.parse_extern_fn()?);
             } else if self.check(TokenType::Ident) && self.peek().lexeme == "test" {
                 tests.push(self.parse_test()?);
             } else if self.check(TokenType::Struct) {
@@ -312,6 +315,7 @@ impl Parser {
             imports,
             functions,
             tests,
+            extern_functions,
             structs,
             enums,
             traits,
@@ -1003,6 +1007,57 @@ impl Parser {
             return_type,
             is_async,
             body,
+            span: self.span_from(&start, &end),
+        })
+    }
+
+    fn parse_extern_fn(&mut self) -> Result<crate::foundations::ExternFnDecl, SpandaError> {
+        use crate::foundations::{ExternFnDecl, ModuleParamDecl};
+        let start = self.previous().clone();
+        let library = if self.match_types(&[TokenType::String]) {
+            let TokenValue::String(lib) = self.previous().value.clone() else {
+                return Err(SpandaError::Parse {
+                    message: "Expected library name string after extern".into(),
+                    line: self.previous().line,
+                    column: self.previous().column,
+                });
+            };
+            Some(lib)
+        } else {
+            None
+        };
+        self.expect(TokenType::Fn, "Expected 'fn' in extern declaration")?;
+        let name = self.parse_label("Expected extern function name")?;
+        self.expect(TokenType::Lparen, "Expected '(' after extern function name")?;
+        let mut params = Vec::new();
+        if !self.check(TokenType::Rparen) {
+            loop {
+                let pstart = self.peek().clone();
+                let pname = self.parse_label("Expected parameter name")?;
+                self.expect(TokenType::Colon, "Expected ':' after parameter name")?;
+                let type_ann = self.parse_type_annotation()?;
+                params.push(ModuleParamDecl {
+                    name: pname,
+                    type_ann,
+                    span: self.span_from(&pstart, self.previous()),
+                });
+                if !self.match_types(&[TokenType::Comma]) {
+                    break;
+                }
+            }
+        }
+        self.expect(TokenType::Rparen, "Expected ')' after extern parameters")?;
+        self.expect(TokenType::Arrow, "Expected '->' after extern parameters")?;
+        let return_type = self.parse_type_annotation()?;
+        let end = self.expect(
+            TokenType::Semicolon,
+            "Expected ';' after extern declaration",
+        )?;
+        Ok(ExternFnDecl {
+            name,
+            library,
+            params,
+            return_type,
             span: self.span_from(&start, &end),
         })
     }
