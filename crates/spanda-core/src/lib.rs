@@ -19,10 +19,10 @@ pub mod foundations;
 pub mod hal;
 pub mod hardware;
 pub mod hardware_monitor;
+pub mod language_reference;
 pub mod lexer;
 pub mod lib_registry;
 pub mod lint;
-pub mod language_reference;
 pub mod modules;
 pub mod parser;
 pub mod pretty;
@@ -61,7 +61,6 @@ pub use codegen::{generate as codegen, wasm_deploy_manifest, CodegenTarget};
 pub use debug::{DebugCommand, DebugController, DebugOptions, DebugPause, DebugSession};
 pub use debug_session::{DebugMachine, DebugStackFrame, DebugStepKind};
 pub use docs::generate_markdown;
-pub use language_reference::{generate_cli_man_pages, generate_language_reference};
 pub use error::*;
 pub use ffi::FfiRegistry;
 pub use format::{format_ast, format_source};
@@ -69,6 +68,7 @@ pub use hardware::{
     list_hardware_profiles, CompatItem, CompatSeverity, CompatibilityMatrix, CompatibilityReport,
     MatrixCell, VerifyOptions,
 };
+pub use language_reference::{generate_cli_man_pages, generate_language_reference};
 pub use lint::{lint, LintIssue, LintReport, LintSeverity};
 pub use modules::{load_project_modules, ModuleRegistry};
 pub use replay::{

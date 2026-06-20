@@ -3,8 +3,8 @@
 //! Emits markdown from the compiler's source of truth: std namespaces, builtins,
 //! type methods, object properties, keywords, and CLI commands.
 
-use crate::lib_registry::list_libraries;
 use crate::lexer::reserved_keywords;
+use crate::lib_registry::list_libraries;
 use crate::type_system::std_namespaces;
 use crate::types::{
     format_type_name, MethodSig, BUILTIN_FUNCTIONS, BUILTIN_METHODS, OBJECT_PROPERTIES,
@@ -107,8 +107,20 @@ fn render_keywords(out: &mut String) {
         (
             "Triggers and tasks",
             &[
-                "on", "every", "when", "task", "spawn", "select", "parallel", "priority",
-                "entered", "exited", "event", "subscribe", "publish", "receive",
+                "on",
+                "every",
+                "when",
+                "task",
+                "spawn",
+                "select",
+                "parallel",
+                "priority",
+                "entered",
+                "exited",
+                "event",
+                "subscribe",
+                "publish",
+                "receive",
             ],
         ),
         (
@@ -120,24 +132,60 @@ fn render_keywords(out: &mut String) {
         (
             "Safety and verification",
             &[
-                "verify", "observe", "emergency_stop", "reset_emergency_stop", "stop_if",
-                "requires", "ensures", "invariant", "can", "warning",
+                "verify",
+                "observe",
+                "emergency_stop",
+                "reset_emergency_stop",
+                "stop_if",
+                "requires",
+                "ensures",
+                "invariant",
+                "can",
+                "warning",
             ],
         ),
         (
             "Reliability and realtime",
             &[
-                "pipeline", "watchdog", "recover", "retry", "fallback", "fault", "mission",
-                "deadline", "timing", "min_period", "duration", "jitter", "isolated", "backoff",
-                "times", "mode",
+                "pipeline",
+                "watchdog",
+                "recover",
+                "retry",
+                "fallback",
+                "fault",
+                "mission",
+                "deadline",
+                "timing",
+                "min_period",
+                "duration",
+                "jitter",
+                "isolated",
+                "backoff",
+                "times",
+                "mode",
             ],
         ),
         (
             "Hardware and deploy",
             &[
-                "hardware", "deploy", "hal", "soc", "requires_hardware", "requires_network",
-                "simulate_compatibility", "budget", "cpu", "storage", "gpu", "battery", "capacity",
-                "sensors", "actuators", "network", "bandwidth", "latency",
+                "hardware",
+                "deploy",
+                "hal",
+                "soc",
+                "requires_hardware",
+                "requires_network",
+                "simulate_compatibility",
+                "budget",
+                "cpu",
+                "storage",
+                "gpu",
+                "battery",
+                "capacity",
+                "sensors",
+                "actuators",
+                "network",
+                "bandwidth",
+                "latency",
             ],
         ),
     ];
@@ -167,7 +215,9 @@ fn render_keywords(out: &mut String) {
 
 fn render_triggers(out: &mut String) {
     out.push_str("## Triggers\n\n");
-    out.push_str("Unified reactive handlers on robots and agents. See [triggers.md](./triggers.md).\n\n");
+    out.push_str(
+        "Unified reactive handlers on robots and agents. See [triggers.md](./triggers.md).\n\n",
+    );
     out.push_str("| Form | Syntax | Fires when |\n");
     out.push_str("|------|--------|------------|\n");
     out.push_str("| Event | `on event_name { ... }` | Named event is emitted |\n");
@@ -241,7 +291,10 @@ fn render_std_library(out: &mut String) {
         out.push_str("**Types**\n\n");
         for ty in types {
             if let Some(m) = type_methods.get(*ty) {
-                out.push_str(&format!("- [`{ty}`](#type-{ty}) — {method_count} method(s)\n", method_count = m.len()));
+                out.push_str(&format!(
+                    "- [`{ty}`](#type-{ty}) — {method_count} method(s)\n",
+                    method_count = m.len()
+                ));
             } else {
                 out.push_str(&format!("- `{ty}`\n"));
             }
@@ -283,11 +336,7 @@ fn format_method_sig(
 }
 
 fn collect_method_sig(method: &MethodSig) -> (Vec<String>, BTreeMap<String, String>, String) {
-    let positional: Vec<String> = method
-        .params()
-        .iter()
-        .map(format_type_name)
-        .collect();
+    let positional: Vec<String> = method.params().iter().map(format_type_name).collect();
     let named: BTreeMap<String, String> = method
         .named_params()
         .iter()
@@ -412,7 +461,9 @@ fn render_type_methods(out: &mut String) {
                 &named,
                 &returns,
             );
-            out.push_str(&format!("#### `{method_name}` {{#type-{type_name}-{method_name}}}\n\n"));
+            out.push_str(&format!(
+                "#### `{method_name}` {{#type-{type_name}-{method_name}}}\n\n"
+            ));
             out.push_str("```spanda\n");
             out.push_str(&signature);
             out.push_str("\n```\n\n");
@@ -465,10 +516,7 @@ fn render_hardware_libraries(out: &mut String) {
 
     let mut by_vendor: BTreeMap<String, Vec<_>> = BTreeMap::new();
     for lib in list_libraries() {
-        by_vendor
-            .entry(lib.vendor.clone())
-            .or_default()
-            .push(lib);
+        by_vendor.entry(lib.vendor.clone()).or_default().push(lib);
     }
 
     for (vendor, libs) in by_vendor {
@@ -655,7 +703,10 @@ fn render_single_man(cmd: &CliCommand) -> String {
     let short = cmd.name.strip_prefix("spanda-").unwrap_or(cmd.name);
     let anchor = short;
     let mut out = String::new();
-    out.push_str(&format!("### {}({}) {{#cli-{}}}\n\n", cmd.name, cmd.section, anchor));
+    out.push_str(&format!(
+        "### {}({}) {{#cli-{}}}\n\n",
+        cmd.name, cmd.section, anchor
+    ));
     out.push_str("**NAME**\n\n");
     out.push_str(&format!(
         "`{short}` — {}\n\n",
@@ -742,7 +793,9 @@ pub fn generate_cli_man_pages() -> Vec<(String, String)> {
         body.push_str("\n```\n\n");
         body.push_str("## SEE ALSO\n\n");
         body.push_str(cmd.see_also);
-        body.push_str(", [spanda(1)](./spanda.md), [spanda-reference.md](../spanda-reference.md)\n");
+        body.push_str(
+            ", [spanda(1)](./spanda.md), [spanda-reference.md](../spanda-reference.md)\n",
+        );
         pages.push((format!("{}.md", cmd.name), body));
     }
 
