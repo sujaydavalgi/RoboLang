@@ -8,7 +8,7 @@ Honest snapshot of Spanda capabilities. **Stubbed** = syntax or API exists witho
 |---------|--------|-------|
 | Lexer / parser / AST | Implemented | Rust authoritative; TS mirror includes hardware/deploy |
 | Type checker + units | Implemented | Physical unit algebra enforced |
-| modules / imports | Implemented | std.*, vendor sensors, FFI bridge paths |
+| modules / imports | Implemented | Rust + TS `ModuleRegistry`; project vendor via `spanda install` |
 | structs / enums / traits | Implemented | Enum associated data not yet supported |
 | generics | Partially implemented | Module function type params only |
 | match / Result / Option | Implemented | |
@@ -17,7 +17,7 @@ Honest snapshot of Spanda capabilities. **Stubbed** = syntax or API exists witho
 | test blocks | Implemented | Rust runtime |
 | `extern fn` / FFI | Partially implemented | `extern python` + `extern cpp` subprocess bridges; native stubs |
 | Spanda IR (SIR) | Partially implemented | `spanda ir`; imports, behaviors, extern bridge kinds |
-| Codegen / LLVM | Stubbed | SIR-aware template codegen; LLVM planned |
+| Codegen / LLVM | Partially implemented | SIR-aware templates + `spanda llvm-ir` (signatures only) |
 
 ## Autonomous systems
 
