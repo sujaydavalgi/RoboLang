@@ -28,12 +28,27 @@ impl DeviceIdentity {
         }
     }
 
-    pub fn default_key(&self) -> String {
-        if self.public_key.is_empty() {
+    /// Material used to derive the Ed25519 signing key.
+    pub fn signing_material(&self) -> String {
+        if self.public_key.is_empty() || crate::crypto::is_hex_public_key(&self.public_key) {
             format!("spanda-device-{}", self.id)
         } else {
             self.public_key.clone()
         }
+    }
+
+    /// Hex-encoded Ed25519 public key for signature verification.
+    pub fn verifying_key_hex(&self) -> String {
+        if crate::crypto::is_hex_public_key(&self.public_key) {
+            self.public_key.clone()
+        } else {
+            crate::crypto::public_key_from_material(&self.signing_material())
+        }
+    }
+
+    /// Backward-compatible alias for signing material.
+    pub fn default_key(&self) -> String {
+        self.signing_material()
     }
 }
 

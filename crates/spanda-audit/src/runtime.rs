@@ -60,11 +60,11 @@ impl AuditRuntime {
         let hash = sha256(&body);
 
         let (signature, signer_id, signing_key) = if let Some(identity) = &self.identity {
-            let key = identity.default_key();
+            let material = identity.signing_material();
             (
-                Some(sign(&body, &key)),
+                Some(sign(&body, &material)),
                 Some(identity.id.clone()),
-                Some(key),
+                Some(identity.verifying_key_hex()),
             )
         } else {
             (None, None, None)
@@ -117,13 +117,13 @@ impl AuditRuntime {
             .or_else(|| self.identity.as_ref().map(|i| i.id.clone()))
             .unwrap_or_else(|| "unknown".into());
 
-        let key = self
+        let material = self
             .identity
             .as_ref()
-            .map(|i| i.default_key())
+            .map(|i| i.signing_material())
             .unwrap_or_else(|| signed_by.clone());
 
-        let sig = sign(&record.hash.0, &key);
+        let sig = sign(&record.hash.0, &material);
 
         Ok(ProvenanceRecord {
             name: name.to_string(),
@@ -137,12 +137,12 @@ impl AuditRuntime {
     }
 
     pub fn verify_provenance_signature(&self, prov: &ProvenanceRecord) -> bool {
-        let key = self
+        let verify_key = self
             .identity
             .as_ref()
-            .map(|i| i.default_key())
+            .map(|i| i.verifying_key_hex())
             .unwrap_or_else(|| prov.signed_by.clone());
-        verify_signature(&prov.hash.0, &prov.signature, &key)
+        verify_signature(&prov.hash.0, &prov.signature, &verify_key)
     }
 
     pub fn root_hash(&self) -> Option<Hash> {

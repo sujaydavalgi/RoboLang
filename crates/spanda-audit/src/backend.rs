@@ -57,12 +57,12 @@ impl AuditBackend for LocalAuditBackend {
         }
 
         if let Some(sig) = &record.signature {
-            let key = record
+            let pub_key = record
                 .signing_key
                 .as_deref()
                 .or(record.signer_id.as_deref())
                 .unwrap_or("unknown");
-            if !crate::crypto::verify_signature(&record.canonical_body(), sig, key) {
+            if !crate::crypto::verify_signature(&record.canonical_body(), sig, pub_key) {
                 return Err(AuditError::InvalidSignature);
             }
         }

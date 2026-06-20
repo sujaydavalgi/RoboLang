@@ -2,6 +2,7 @@
 members = [
     "crates/spanda-core",
     "crates/spanda-audit",
+    "crates/spanda-security",
     "crates/spanda-package",
     "crates/spanda-cli",
     "crates/spanda-node",

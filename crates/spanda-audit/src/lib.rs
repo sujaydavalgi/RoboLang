@@ -13,7 +13,7 @@ pub mod runtime;
 pub use backend::{
     AuditBackend, JsonAuditBackend, LedgerBackend, LocalAuditBackend, MockLedgerBackend,
 };
-pub use crypto::{sha256, sign, verify_signature};
+pub use crypto::{public_key_from_material, sha256, sign, verify_signature};
 pub use error::{AuditError, AuditResult};
 pub use record::{
     AuditExport, AuditRecord, DeviceIdentity, Hash, MissionRecord, ProvenanceRecord, RecordId,
