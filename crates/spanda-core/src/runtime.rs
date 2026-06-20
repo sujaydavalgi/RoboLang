@@ -99,6 +99,7 @@ pub enum RuntimeValue {
     Enum {
         enum_name: String,
         variant: String,
+        payloads: Vec<RuntimeValue>,
     },
     Sensor {
         name: String,
@@ -545,9 +546,13 @@ impl<B: RobotBackend> Interpreter<B> {
         self.struct_defs.clear();
         for enum_decl in enums {
             let EnumDecl::EnumDecl { name, variants, .. } = enum_decl;
-            self.enum_variants.insert(name.clone(), variants.clone());
+            self.enum_variants.insert(
+                name.clone(),
+                variants.iter().map(|v| v.name.clone()).collect(),
+            );
             for variant in variants {
-                self.variant_owner.insert(variant.clone(), name.clone());
+                self.variant_owner
+                    .insert(variant.name.clone(), name.clone());
             }
         }
         for struct_decl in structs {
@@ -1948,6 +1953,7 @@ impl<B: RobotBackend> Interpreter<B> {
                     return Ok(RuntimeValue::Enum {
                         enum_name: enum_name.clone(),
                         variant: name.clone(),
+                        payloads: Vec::new(),
                     });
                 }
                 self.env.get(name).cloned().ok_or_else(|| {
@@ -1998,6 +2004,7 @@ impl<B: RobotBackend> Interpreter<B> {
                             return Ok(RuntimeValue::Enum {
                                 enum_name: name.clone(),
                                 variant: property.clone(),
+                                payloads: Vec::new(),
                             });
                         }
                     }
@@ -2031,8 +2038,18 @@ impl<B: RobotBackend> Interpreter<B> {
                 };
                 for arm in arms {
                     if arm.variant == variant {
+                        if !arm.bindings.is_empty() {
+                            if let RuntimeValue::Enum { payloads, .. } = &value {
+                                for (binding, payload) in arm.bindings.iter().zip(payloads.iter()) {
+                                    self.env.set(binding.clone(), payload.clone());
+                                }
+                            }
+                        }
                         for stmt in &arm.body {
                             self.execute_stmt(stmt)?;
+                        }
+                        for binding in &arm.bindings {
+                            self.env.bindings.remove(binding);
                         }
                         break;
                     }
@@ -2282,6 +2299,17 @@ impl<B: RobotBackend> Interpreter<B> {
                     });
                 }
                 return self.call_module_function(&func, args, line);
+            }
+            if let Some(enum_name) = self.variant_owner.get(name).cloned() {
+                let mut payloads = Vec::new();
+                for arg in args {
+                    payloads.push(self.eval_expr(arg)?);
+                }
+                return Ok(RuntimeValue::Enum {
+                    enum_name,
+                    variant: name.clone(),
+                    payloads,
+                });
             }
             return self.eval_builtin_function(name, args, named_args, line);
         }
@@ -3499,6 +3527,7 @@ impl<B: RobotBackend> Interpreter<B> {
                     let RuntimeValue::Enum {
                         enum_name: e1,
                         variant: v1,
+                        payloads: p1,
                     } = left
                     else {
                         unreachable!()
@@ -3506,11 +3535,12 @@ impl<B: RobotBackend> Interpreter<B> {
                     let RuntimeValue::Enum {
                         enum_name: e2,
                         variant: v2,
+                        payloads: p2,
                     } = right
                     else {
                         unreachable!()
                     };
-                    let equal = e1 == e2 && v1 == v2;
+                    let equal = e1 == e2 && v1 == v2 && p1 == p2;
                     return Ok(RuntimeValue::Bool {
                         value: if op == BinaryOp::Eq { equal } else { !equal },
                     });

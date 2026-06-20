@@ -130,7 +130,15 @@ fn render_enum(decl: &crate::foundations::EnumDecl) -> String {
     let crate::foundations::EnumDecl::EnumDecl { name, variants, .. } = decl;
     let mut out = format!("### `{name}`\n\n");
     for variant in variants {
-        out.push_str(&format!("- `{variant}`\n"));
+        if variant.field_types.is_empty() {
+            out.push_str(&format!("- `{}`\n", variant.name));
+        } else {
+            out.push_str(&format!(
+                "- `{}({})`\n",
+                variant.name,
+                variant.field_types.join(", ")
+            ));
+        }
     }
     out
 }

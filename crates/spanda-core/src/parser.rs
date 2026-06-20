@@ -207,6 +207,24 @@ impl Parser {
         self.parse_label(message)
     }
 
+    fn parse_type_name(&mut self) -> Result<String, SpandaError> {
+        let mut name = self.parse_type_name_part("Expected type name")?;
+        if self.match_types(&[TokenType::Lt]) {
+            let mut args = Vec::new();
+            if !self.check(TokenType::Gt) {
+                loop {
+                    args.push(self.parse_type_name()?);
+                    if !self.match_types(&[TokenType::Comma]) {
+                        break;
+                    }
+                }
+            }
+            self.expect(TokenType::Gt, "Expected '>' to close generic type")?;
+            name = format!("{name}<{args}>", args = args.join(", "));
+        }
+        Ok(name)
+    }
+
     fn parse_type_annotation(&mut self) -> Result<SpandaType, SpandaError> {
         use crate::type_system::{resolve_generic_type, resolve_type_name};
         let start = self.peek().clone();
@@ -1099,23 +1117,29 @@ impl Parser {
     fn parse_struct(&mut self) -> Result<StructDecl, SpandaError> {
         let start = self.advance();
         let name = self.expect(TokenType::Ident, "Expected struct name")?;
+        let type_params = if self.check(TokenType::Lt) {
+            self.parse_type_params()?
+        } else {
+            Vec::new()
+        };
         self.expect(TokenType::Lbrace, "Expected '{' after struct name")?;
         let mut fields = Vec::new();
         while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof) {
             let field_start = self.peek().clone();
             let field_name = self.expect(TokenType::Ident, "Expected field name")?;
             self.expect(TokenType::Colon, "Expected ':' after field name")?;
-            let type_name = self.expect(TokenType::Ident, "Expected field type")?;
+            let type_name = self.parse_type_name()?;
             self.expect(TokenType::Semicolon, "Expected ';' after field")?;
             fields.push(FieldDecl {
                 name: field_name.lexeme,
-                type_name: type_name.lexeme,
+                type_name,
                 span: self.span_from(&field_start, self.previous()),
             });
         }
         let end = self.expect(TokenType::Rbrace, "Expected '}' to close struct")?;
         Ok(StructDecl::StructDecl {
             name: name.lexeme,
+            type_params,
             fields,
             span: self.span_from(&start, &end),
         })
@@ -1127,10 +1151,23 @@ impl Parser {
         self.expect(TokenType::Lbrace, "Expected '{' after enum name")?;
         let mut variants = Vec::new();
         while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof) {
-            variants.push(
-                self.expect(TokenType::Ident, "Expected enum variant")?
-                    .lexeme,
-            );
+            let variant_start = self.peek().clone();
+            let variant_name = self.expect(TokenType::Ident, "Expected enum variant")?;
+            let mut field_types = Vec::new();
+            if self.match_types(&[TokenType::Lparen]) {
+                while !self.check(TokenType::Rparen) && !self.check(TokenType::Eof) {
+                    field_types.push(self.parse_type_name()?);
+                    if !self.match_types(&[TokenType::Comma]) {
+                        break;
+                    }
+                }
+                self.expect(TokenType::Rparen, "Expected ')' after enum variant fields")?;
+            }
+            variants.push(EnumVariantDecl {
+                name: variant_name.lexeme,
+                field_types,
+                span: self.span_from(&variant_start, self.previous()),
+            });
             if self.match_types(&[TokenType::Comma]) {
                 continue;
             }
@@ -3505,6 +3542,16 @@ impl Parser {
             while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof) {
                 let arm_start = self.peek().clone();
                 let variant = self.parse_import_segment("Expected match arm variant")?;
+                let mut bindings = Vec::new();
+                if self.match_types(&[TokenType::Lparen]) {
+                    while !self.check(TokenType::Rparen) && !self.check(TokenType::Eof) {
+                        bindings.push(self.parse_import_segment("Expected binding name")?);
+                        if !self.match_types(&[TokenType::Comma]) {
+                            break;
+                        }
+                    }
+                    self.expect(TokenType::Rparen, "Expected ')' after match bindings")?;
+                }
                 self.expect(TokenType::FatArrow, "Expected '=>' in match arm")?;
                 let body = if self.check(TokenType::Lbrace) {
                     self.advance();
@@ -3516,6 +3563,7 @@ impl Parser {
                 };
                 arms.push(MatchArm {
                     variant,
+                    bindings,
                     body,
                     span: self.span_from(&arm_start, self.previous()),
                 });

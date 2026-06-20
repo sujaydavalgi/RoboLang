@@ -95,8 +95,16 @@ fn runtime_to_json(value: &RuntimeValue) -> JsonValue {
         RuntimeValue::String { value } => json!({ "kind": "string", "value": value }),
         RuntimeValue::Void | RuntimeValue::Null => JsonValue::Null,
         RuntimeValue::Bytes { data } => json!({ "kind": "bytes", "data": data }),
-        RuntimeValue::Enum { enum_name, variant } => {
-            json!({ "kind": "enum", "enum": enum_name, "variant": variant })
+        RuntimeValue::Enum {
+            enum_name,
+            variant,
+            payloads,
+        } => {
+            let mut map = json!({ "kind": "enum", "enum": enum_name, "variant": variant });
+            if !payloads.is_empty() {
+                map["payloads"] = json!(payloads.iter().map(runtime_to_json).collect::<Vec<_>>());
+            }
+            map
         }
         RuntimeValue::Result { ok, value } => json!({
             "kind": if *ok { "ok" } else { "err" },
@@ -188,18 +196,30 @@ fn json_to_runtime(value: &JsonValue) -> Result<RuntimeValue, SpandaError> {
                 .unwrap_or_default();
             Ok(RuntimeValue::Bytes { data })
         }
-        "enum" => Ok(RuntimeValue::Enum {
-            enum_name: obj
-                .get("enum")
-                .and_then(|v| v.as_str())
-                .unwrap_or("")
-                .to_string(),
-            variant: obj
-                .get("variant")
-                .and_then(|v| v.as_str())
-                .unwrap_or("")
-                .to_string(),
-        }),
+        "enum" => {
+            let payloads = obj
+                .get("payloads")
+                .and_then(|v| v.as_array())
+                .map(|arr| {
+                    arr.iter()
+                        .filter_map(|v| json_to_runtime(v).ok())
+                        .collect()
+                })
+                .unwrap_or_default();
+            Ok(RuntimeValue::Enum {
+                enum_name: obj
+                    .get("enum")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("")
+                    .to_string(),
+                variant: obj
+                    .get("variant")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("")
+                    .to_string(),
+                payloads,
+            })
+        }
         "ok" => Ok(RuntimeValue::Result {
             ok: true,
             value: Box::new(json_to_runtime(

@@ -293,7 +293,15 @@ impl PrettyPrinter {
         self.open_block(&format!("enum {name}"));
         for (i, variant) in variants.iter().enumerate() {
             let suffix = if i + 1 == variants.len() { "" } else { "," };
-            self.write_line(&format!("{variant}{suffix}"));
+            if variant.field_types.is_empty() {
+                self.write_line(&format!("{}{suffix}", variant.name));
+            } else {
+                self.write_line(&format!(
+                    "{}({}){suffix}",
+                    variant.name,
+                    variant.field_types.join(", ")
+                ));
+            }
         }
         self.close_block("");
     }

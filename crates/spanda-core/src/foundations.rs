@@ -85,6 +85,8 @@ pub struct SelectArm {
 pub enum StructDecl {
     StructDecl {
         name: String,
+        #[serde(default)]
+        type_params: Vec<String>,
         fields: Vec<FieldDecl>,
         span: Span,
     },
@@ -97,13 +99,22 @@ pub struct FieldDecl {
     pub span: Span,
 }
 
+/// Enum variant with optional payload field types.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct EnumVariantDecl {
+    pub name: String,
+    #[serde(default)]
+    pub field_types: Vec<String>,
+    pub span: Span,
+}
+
 /// Top-level enum declaration.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "kind")]
 pub enum EnumDecl {
     EnumDecl {
         name: String,
-        variants: Vec<String>,
+        variants: Vec<EnumVariantDecl>,
         span: Span,
     },
 }
@@ -159,6 +170,8 @@ pub struct TraitImplMethodDecl {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct MatchArm {
     pub variant: String,
+    #[serde(default)]
+    pub bindings: Vec<String>,
     pub body: Vec<Stmt>,
     pub span: Span,
 }

@@ -215,8 +215,10 @@ pub struct TypeChecker {
     pub errors: Vec<Diagnostic>,
     symbols: HashMap<String, SymbolEntry>,
     enum_variants: HashMap<String, Vec<String>>,
+    enum_payload_fields: HashMap<(String, String), Vec<String>>,
     variant_owner: HashMap<String, String>,
     struct_defs: HashMap<String, Vec<(String, String)>>,
+    struct_type_params: HashMap<String, Vec<String>>,
     trait_defs: HashMap<String, HashMap<String, TraitMethodSig>>,
     agent_trait_methods: HashMap<String, HashMap<String, SpandaType>>,
     state_machine_states: std::collections::HashSet<String>,
@@ -243,8 +245,10 @@ impl TypeChecker {
             errors: Vec::new(),
             symbols: HashMap::new(),
             enum_variants: HashMap::new(),
+            enum_payload_fields: HashMap::new(),
             variant_owner: HashMap::new(),
             struct_defs: HashMap::new(),
+            struct_type_params: HashMap::new(),
             trait_defs: HashMap::new(),
             agent_trait_methods: HashMap::new(),
             state_machine_states: std::collections::HashSet::new(),
@@ -466,13 +470,25 @@ impl TypeChecker {
     }
 
     fn check_struct(&mut self, decl: &StructDecl) {
-        let StructDecl::StructDecl { name, fields, span } = decl;
+        let StructDecl::StructDecl {
+            name,
+            type_params,
+            fields,
+            span,
+        } = decl;
+        if !type_params.is_empty() {
+            self.struct_type_params
+                .insert(name.clone(), type_params.clone());
+        }
         for field in fields {
-            if resolve_type_alias(&field.type_name).is_none()
+            let allowed_generic = type_params.contains(&field.type_name);
+            if !allowed_generic
+                && resolve_type_alias(&field.type_name).is_none()
                 && !matches!(
                     field.type_name.as_str(),
-                    "Pose" | "Velocity" | "Scan" | "String" | "Bool" | "Path"
+                    "Pose" | "Velocity" | "Scan" | "String" | "Bool" | "Path" | "Int" | "Float"
                 )
+                && !field.type_name.contains('<')
             {
                 self.error(
                     format!("Unknown field type '{}'", field.type_name),
@@ -522,11 +538,25 @@ impl TypeChecker {
                 actuator_type: None,
             },
         );
-        self.enum_variants.insert(name.clone(), variants.clone());
+        let variant_names: Vec<String> = variants.iter().map(|v| v.name.clone()).collect();
+        self.enum_variants
+            .insert(name.clone(), variant_names.clone());
         for variant in variants {
-            if let Some(existing) = self.variant_owner.insert(variant.clone(), name.clone()) {
+            if !variant.field_types.is_empty() {
+                self.enum_payload_fields.insert(
+                    (name.clone(), variant.name.clone()),
+                    variant.field_types.clone(),
+                );
+            }
+            if let Some(existing) = self
+                .variant_owner
+                .insert(variant.name.clone(), name.clone())
+            {
                 self.error(
-                    format!("Enum variant '{variant}' already declared in enum '{existing}'"),
+                    format!(
+                        "Enum variant '{}' already declared in enum '{existing}'",
+                        variant.name
+                    ),
                     span.start.line,
                     span.start.column,
                 );
@@ -2324,9 +2354,60 @@ impl TypeChecker {
                 span.start.column,
             );
         }
+        let scrutinee_enum = match &scrutinee_type {
+            SpandaType::Named { name } => Some(name.clone()),
+            _ => None,
+        };
         for arm in arms {
+            if !arm.bindings.is_empty() {
+                if let Some(enum_name) = &scrutinee_enum {
+                    if let Some(field_types) = self
+                        .enum_payload_fields
+                        .get(&(enum_name.clone(), arm.variant.clone()))
+                        .cloned()
+                    {
+                        if arm.bindings.len() != field_types.len() {
+                            self.error(
+                                format!(
+                                    "Match arm '{}' expects {} binding(s), got {}",
+                                    arm.variant,
+                                    field_types.len(),
+                                    arm.bindings.len()
+                                ),
+                                arm.span.start.line,
+                                arm.span.start.column,
+                            );
+                        }
+                        for (i, binding) in arm.bindings.iter().enumerate() {
+                            if let Some(type_name) = field_types.get(i) {
+                                self.symbols.insert(
+                                    binding.clone(),
+                                    SymbolEntry {
+                                        robo_type: self.type_name_to_spanda(type_name),
+                                        kind: SymbolKind::Variable,
+                                        sensor_type: None,
+                                        actuator_type: None,
+                                    },
+                                );
+                            }
+                        }
+                    } else {
+                        self.error(
+                            format!(
+                                "Variant '{}' has no payload bindings",
+                                arm.variant
+                            ),
+                            arm.span.start.line,
+                            arm.span.start.column,
+                        );
+                    }
+                }
+            }
             for stmt in &arm.body {
                 self.check_stmt(stmt);
+            }
+            for binding in &arm.bindings {
+                self.symbols.remove(binding);
             }
         }
         self.check_match_exhaustiveness(arms, &scrutinee_type, span);
@@ -2579,6 +2660,53 @@ impl TypeChecker {
             }
             if matches!(name.as_str(), "Ok" | "Err" | "Some" | "None") {
                 return self.check_result_option_ctor(name, args, span);
+            }
+            if let Some(enum_name) = self.variant_owner.get(name).cloned() {
+                let key = (enum_name.clone(), name.clone());
+                if let Some(field_types) = self.enum_payload_fields.get(&key).cloned() {
+                    if args.len() != field_types.len() {
+                        self.error(
+                            format!(
+                                "Variant '{name}' expects {} payload argument(s), got {}",
+                                field_types.len(),
+                                args.len()
+                            ),
+                            span.start.line,
+                            span.start.column,
+                        );
+                    }
+                    for (i, arg) in args.iter().enumerate() {
+                        if let Some(type_name) = field_types.get(i) {
+                            let expected = self.type_name_to_spanda(type_name);
+                            let actual = self.check_expr(arg);
+                            self.assert_compatible(
+                                &expected,
+                                &actual,
+                                span.start.line,
+                                span.start.column,
+                            );
+                        }
+                    }
+                    return SpandaType::Named {
+                        name: enum_name.clone(),
+                    };
+                }
+                if self
+                    .enum_variants
+                    .get(&enum_name)
+                    .is_some_and(|variants| variants.iter().any(|v| v == name))
+                {
+                    if !args.is_empty() {
+                        self.error(
+                            format!("Unit variant '{name}' takes no arguments"),
+                            span.start.line,
+                            span.start.column,
+                        );
+                    }
+                    return SpandaType::Named {
+                        name: enum_name.clone(),
+                    };
+                }
             }
             if let Some(sig) = builtin_functions().get(name.as_str()) {
                 for arg in named_args {
