@@ -16,8 +16,8 @@ Honest snapshot of Spanda capabilities. **Stubbed** = syntax or API exists witho
 | spawn / select / channels | Partially implemented | Cooperative concurrency |
 | test blocks | Implemented | Rust runtime |
 | `extern fn` / FFI | Partially implemented | `extern python` + `extern cpp` subprocess bridges; native stubs |
-| Spanda IR (SIR) | Partially implemented | `spanda ir` lowers AST to JSON SIR |
-| Codegen / LLVM | Stubbed | Skeleton `spanda codegen`; LLVM planned |
+| Spanda IR (SIR) | Partially implemented | `spanda ir`; imports, behaviors, extern bridge kinds |
+| Codegen / LLVM | Stubbed | SIR-aware template codegen; LLVM planned |
 
 ## Autonomous systems
 
@@ -29,7 +29,7 @@ Honest snapshot of Spanda capabilities. **Stubbed** = syntax or API exists witho
 | safety zones / emergency stop | Implemented | |
 | deterministic scheduler | Implemented | `task every Nms` |
 | state machine / events | Implemented | |
-| twin / replay | Implemented | Replay buffer |
+| twin / replay | Implemented | Replay buffer; **`twin sync`** telemetry/replay wired |
 | observe / fusion | Implemented | |
 | verify { } behavioral assertions | Implemented | |
 | hardware / deploy | Implemented | Rust verify CLI; TS parse + deploy validation |
@@ -42,9 +42,9 @@ Honest snapshot of Spanda capabilities. **Stubbed** = syntax or API exists witho
 | TypeScript CLI | Implemented | Delegates to Rust when built; TS fallback for check/run/sim |
 | Formatter / linter / docgen | Implemented | Rust |
 | LSP | Partially implemented | Symbols include hardware/deploy |
-| DAP debugger | Partially implemented | Breakpoints in interpreter |
-| N-API | Partially implemented | check, run, verify |
-| WASM | Partially implemented | check, run, verify |
+| DAP debugger | Partially implemented | Breakpoints + continue/step commands |
+| N-API | Partially implemented | check, run, verify, sir, fmt |
+| WASM | Partially implemented | check, run, verify, sir, fmt |
 
 ## Ecosystem / FFI
 
@@ -52,8 +52,8 @@ Honest snapshot of Spanda capabilities. **Stubbed** = syntax or API exists witho
 |---------|--------|-------|
 | python.* / cpp.* imports | Partially implemented | Type-check; `extern python`/`extern cpp` subprocess bridges |
 | ROS2 adapter | Stubbed | Log-only stub |
-| Transport adapters | Stubbed | In-memory + log stubs |
-| Package manager | Partially implemented | spanda.toml, lockfile, local/git |
+| Transport adapters | Partially implemented | In-memory + log stubs; ROS2/MQTT via Python bridge handlers |
+| Package manager | Partially implemented | spanda.toml, lockfile, git vendor, local registry packages |
 | LLVM / native codegen | Stubbed | See compiler-backend-roadmap.md |
 
 See also [README.md](../README.md), [ffi-and-ecosystem.md](./ffi-and-ecosystem.md), [compiler-backend-roadmap.md](./compiler-backend-roadmap.md).

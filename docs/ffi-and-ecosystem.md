@@ -26,6 +26,12 @@ Real native linking (dlopen, PyO3 in-process, cxx) is **not** implemented yet. *
 
 ### Subprocess Python bridge (implemented)
 
+Bridge handlers include transport and AI shims (mock when credentials absent):
+
+- `ros2_publish(topic, data)` — log/sim publish metadata
+- `mqtt_publish(topic, payload)` — log/sim publish metadata  
+- `openai_complete(prompt)` — calls OpenAI when `OPENAI_API_KEY` is set, else mock
+
 ```bash
 # Optional: custom bridge script path
 export SPANDA_PYTHON_BRIDGE=/path/to/spanda_python_bridge.py

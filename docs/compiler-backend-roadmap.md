@@ -24,7 +24,7 @@ Supporting outputs today:
 | Interpreted run | `spanda run` / `spanda sim` | Implemented |
 | Formatted source | `spanda fmt` | Implemented |
 | Markdown docs | `spanda doc` | Implemented |
-| Skeleton codegen | `spanda codegen --target native\|wasm\|esp32` | Stubbed (template C/WASM/ESP32, not a real compiler) |
+| Skeleton codegen | `spanda codegen --target native\|wasm\|esp32` | Stubbed (SIR-aware template C/WASM/ESP32, not a real compiler) |
 | WASM manifest | `spanda deploy --target wasm` | Partially implemented |
 
 ## Future pipeline (planned)
@@ -36,9 +36,9 @@ Spanda source (.sd)
   → native binary / WASM module
 ```
 
-### Milestone 1 — Spanda IR (SIR) ✓ (foundation)
+### Milestone 1 — Spanda IR (SIR) ✓ (extended)
 
-- Lower typed AST to SIR preserving module functions, extern bridge kinds, and robot names.
+- Lower typed AST to SIR preserving module functions, extern bridge kinds, imports, behavior names, and robot names.
 - **`spanda ir [--json] file.sd`** emits SIR for codegen planning and CI inspection.
 - SIR is the contract between frontend and backends; the interpreter still executes AST directly.
 
