@@ -46,6 +46,7 @@ import { transportFromIdent } from "../comm/index.js";
 import type {
   CapabilityDecl,
   EnumDecl,
+  EnumVariantDecl,
   EventDecl,
   EventHandlerDecl,
   FieldDecl,
@@ -505,6 +506,21 @@ class Parser {
     return this.parseLabel(message);
   }
 
+  private parseTypeName(): string {
+    let name = this.parseTypeNamePart("Expected type name");
+    if (this.match("LT")) {
+      const args: string[] = [];
+      if (!this.check("GT")) {
+        do {
+          args.push(this.parseTypeName());
+        } while (this.match("COMMA"));
+      }
+      this.expect("GT", "Expected '>' to close generic type");
+      name = `${name}<${args.join(", ")}>`;
+    }
+    return name;
+  }
+
   private parseTypeAnnotation(): SpandaType {
     const parts = [this.parseTypeNamePart("Expected type name")];
     while (this.match("DOT")) {
@@ -541,17 +557,18 @@ class Parser {
   private parseStruct(): StructDecl {
     const start = this.advance();
     const name = this.expect("IDENT", "Expected struct name");
+    const typeParams = this.parseTypeParams();
     this.expect("LBRACE", "Expected '{' after struct name");
     const fields: FieldDecl[] = [];
     while (!this.check("RBRACE") && !this.check("EOF")) {
       const fieldStart = this.peek();
       const fieldName = this.expect("IDENT", "Expected field name");
       this.expect("COLON", "Expected ':' after field name");
-      const typeName = this.expect("IDENT", "Expected field type");
+      const typeName = this.parseTypeName();
       this.expect("SEMICOLON", "Expected ';' after field");
       fields.push({
         name: fieldName.lexeme,
-        typeName: typeName.lexeme,
+        typeName,
         span: this.spanFrom(fieldStart, this.previous()),
       });
     }
@@ -559,6 +576,7 @@ class Parser {
     return {
       kind: "StructDecl",
       name: name.lexeme,
+      typeParams: typeParams.length > 0 ? typeParams : undefined,
       fields,
       span: this.spanFrom(start, end),
     };
@@ -568,9 +586,23 @@ class Parser {
     const start = this.advance();
     const name = this.expect("IDENT", "Expected enum name");
     this.expect("LBRACE", "Expected '{' after enum name");
-    const variants: string[] = [];
+    const variants: EnumVariantDecl[] = [];
     while (!this.check("RBRACE") && !this.check("EOF")) {
-      variants.push(this.expect("IDENT", "Expected enum variant").lexeme);
+      const variantStart = this.peek();
+      const variantName = this.expect("IDENT", "Expected enum variant");
+      const fieldTypes: string[] = [];
+      if (this.match("LPAREN")) {
+        while (!this.check("RPAREN") && !this.check("EOF")) {
+          fieldTypes.push(this.parseTypeName());
+          if (!this.match("COMMA")) break;
+        }
+        this.expect("RPAREN", "Expected ')' after enum variant fields");
+      }
+      variants.push({
+        name: variantName.lexeme,
+        fieldTypes,
+        span: this.spanFrom(variantStart, this.previous()),
+      });
       if (this.match("COMMA")) continue;
     }
     const end = this.expect("RBRACE", "Expected '}' to close enum");
@@ -3028,6 +3060,14 @@ class Parser {
       while (!this.check("RBRACE") && !this.check("EOF")) {
         const armStart = this.peek();
         const variant = this.parseLabel("Expected match arm variant");
+        const bindings: string[] = [];
+        if (this.match("LPAREN")) {
+          while (!this.check("RPAREN") && !this.check("EOF")) {
+            bindings.push(this.parseLabel("Expected binding name"));
+            if (!this.match("COMMA")) break;
+          }
+          this.expect("RPAREN", "Expected ')' after match bindings");
+        }
         this.expect("FAT_ARROW", "Expected '=>' in match arm");
         let body: Stmt[];
         if (this.check("LBRACE")) {
@@ -3039,6 +3079,7 @@ class Parser {
         }
         arms.push({
           variant,
+          bindings: bindings.length > 0 ? bindings : undefined,
           body,
           span: this.spanFrom(armStart, this.previous()),
         });

@@ -59,7 +59,7 @@ export type RuntimeValue =
   | { kind: "trajectory"; waypoints: PoseValue[] }
   | { kind: "transform"; fromFrame: string; toFrame: string; pose: PoseValue }
   | { kind: "object"; typeName: string; fields: Record<string, RuntimeValue> }
-  | { kind: "enum"; enumName: string; variant: string }
+  | { kind: "enum"; enumName: string; variant: string; payloads: RuntimeValue[] }
   | { kind: "sensor"; name: string; sensorType: string; library?: string | null; halBinding?: string | null; topic?: string | null }
   | { kind: "actuator"; name: string; actuatorType: string }
   | { kind: "topic"; name: string; messageType: string; topicPath: string }
@@ -130,6 +130,10 @@ export class Environment {
 
   set(name: string, value: RuntimeValue): void {
     this.bindings.set(name, value);
+  }
+
+  remove(name: string): void {
+    this.bindings.delete(name);
   }
 
   clone(): Environment {
@@ -247,9 +251,10 @@ export class Interpreter {
     }
 
     for (const enumDecl of program.enums) {
-      this.enumVariants.set(enumDecl.name, [...enumDecl.variants]);
+      const variantNames = enumDecl.variants.map((v) => v.name);
+      this.enumVariants.set(enumDecl.name, variantNames);
       for (const variant of enumDecl.variants) {
-        this.variantOwner.set(variant, enumDecl.name);
+        this.variantOwner.set(variant.name, enumDecl.name);
       }
     }
     for (const structDecl of program.structs) {
@@ -977,7 +982,7 @@ export class Interpreter {
       case "IdentExpr": {
         const enumName = this.variantOwner.get(expr.name);
         if (enumName) {
-          return { kind: "enum", enumName, variant: expr.name };
+          return { kind: "enum", enumName, variant: expr.name, payloads: [] };
         }
         const val = this.env.get(expr.name);
         if (!val) throw new RuntimeError(`Undefined variable '${expr.name}'`, expr.span.start.line);
@@ -1007,7 +1012,18 @@ export class Interpreter {
         else if (value.kind === "object") variant = value.typeName;
         for (const arm of expr.arms) {
           if (arm.variant === variant) {
+            const bindings = arm.bindings ?? [];
+            if (bindings.length > 0 && value.kind === "enum") {
+              for (let i = 0; i < bindings.length; i++) {
+                const payload = value.payloads[i];
+                const binding = bindings[i];
+                if (payload && binding) this.env.set(binding, payload);
+              }
+            }
             this.executeBlock(arm.body);
+            for (const binding of bindings) {
+              this.env.remove(binding);
+            }
             break;
           }
         }
@@ -1074,7 +1090,7 @@ export class Interpreter {
     if (expr.object.kind === "IdentExpr") {
       const variants = this.enumVariants.get(expr.object.name);
       if (variants?.includes(expr.property)) {
-        return { kind: "enum", enumName: expr.object.name, variant: expr.property };
+        return { kind: "enum", enumName: expr.object.name, variant: expr.property, payloads: [] };
       }
     }
 
@@ -1170,6 +1186,11 @@ export class Interpreter {
       if (externFn && (externFn.bridge === "python" || externFn.bridge === "cpp")) {
         const args = expr.args.map((arg) => this.evalExpr(arg));
         return callExternBridge(externFn, args);
+      }
+      const enumName = this.variantOwner.get(calleeName);
+      if (enumName) {
+        const payloads = expr.args.map((arg) => this.evalExpr(arg));
+        return { kind: "enum", enumName, variant: calleeName, payloads };
       }
       return this.evalBuiltinFunction(calleeName, expr);
     }

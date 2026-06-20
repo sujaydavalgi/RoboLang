@@ -54,14 +54,21 @@ export type FieldDecl = {
 export type StructDecl = {
   kind: "StructDecl";
   name: string;
+  typeParams?: string[];
   fields: FieldDecl[];
+  span: Span;
+};
+
+export type EnumVariantDecl = {
+  name: string;
+  fieldTypes: string[];
   span: Span;
 };
 
 export type EnumDecl = {
   kind: "EnumDecl";
   name: string;
-  variants: string[];
+  variants: EnumVariantDecl[];
   span: Span;
 };
 
@@ -103,6 +110,7 @@ export type TraitImplDecl = {
 
 export type MatchArm = {
   variant: string;
+  bindings?: string[];
   body: Stmt[];
   span: Span;
 };

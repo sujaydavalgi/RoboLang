@@ -97,6 +97,8 @@ class TypeChecker {
   private symbols = new Map<string, SymbolEntry>();
   private enumVariants = new Map<string, string[]>();
   private variantOwner = new Map<string, string>();
+  private enumPayloadFields = new Map<string, string[]>();
+  private structTypeParams = new Map<string, string[]>();
   private structDefs = new Map<string, Array<{ name: string; typeName: string }>>();
   private traitDefs = new Map<string, Map<string, { params: Array<{ name: string; typeName: string }>; returnType: string }>>();
   private agentTraitMethods = new Map<string, Map<string, SpandaType>>();
@@ -236,10 +238,17 @@ class TypeChecker {
   }
 
   private checkStruct(decl: import("../foundations.js").StructDecl): void {
+    const typeParams = decl.typeParams ?? [];
+    if (typeParams.length > 0) {
+      this.structTypeParams.set(decl.name, typeParams);
+    }
     for (const field of decl.fields) {
+      const allowedGeneric = typeParams.includes(field.typeName);
       if (
+        !allowedGeneric &&
         !resolveTypeAlias(field.typeName) &&
-        !["Pose", "Velocity", "Scan", "String", "Bool", "Path"].includes(field.typeName)
+        !["Pose", "Velocity", "Scan", "String", "Bool", "Path", "Int", "Float"].includes(field.typeName) &&
+        !field.typeName.includes("<")
       ) {
         this.error(`Unknown field type '${field.typeName}'`, field.span.start.line, field.span.start.column);
       }
@@ -255,6 +264,10 @@ class TypeChecker {
     );
   }
 
+  private enumPayloadKey(enumName: string, variant: string): string {
+    return `${enumName}\0${variant}`;
+  }
+
   private checkEnum(decl: import("../foundations.js").EnumDecl): void {
     if (decl.variants.length === 0) {
       this.error(`Enum '${decl.name}' must declare at least one variant`, decl.span.start.line, decl.span.start.column);
@@ -264,17 +277,24 @@ class TypeChecker {
       roboType: { kind: "named", name: decl.name },
       kind: "variable",
     });
-    this.enumVariants.set(decl.name, [...decl.variants]);
+    const variantNames = decl.variants.map((v) => v.name);
+    this.enumVariants.set(decl.name, variantNames);
     for (const variant of decl.variants) {
-      const existing = this.variantOwner.get(variant);
+      if (variant.fieldTypes.length > 0) {
+        this.enumPayloadFields.set(
+          this.enumPayloadKey(decl.name, variant.name),
+          variant.fieldTypes,
+        );
+      }
+      const existing = this.variantOwner.get(variant.name);
       if (existing) {
         this.error(
-          `Enum variant '${variant}' already declared in enum '${existing}'`,
+          `Enum variant '${variant.name}' already declared in enum '${existing}'`,
           decl.span.start.line,
           decl.span.start.column,
         );
       } else {
-        this.variantOwner.set(variant, decl.name);
+        this.variantOwner.set(variant.name, decl.name);
       }
     }
   }
@@ -1460,13 +1480,49 @@ class TypeChecker {
   }
 
   private checkMatch(expr: import("../ast/nodes.js").MatchExpr): SpandaType {
-    this.checkExpr(expr.scrutinee);
+    const scrutineeType = this.checkExpr(expr.scrutinee);
     if (expr.arms.length === 0) {
       this.error("match expression requires at least one arm", expr.span.start.line, expr.span.start.column);
     }
+    const scrutineeEnum = scrutineeType.kind === "named" ? scrutineeType.name : null;
     for (const arm of expr.arms) {
+      const bindings = arm.bindings ?? [];
+      if (bindings.length > 0) {
+        if (scrutineeEnum) {
+          const fieldTypes = this.enumPayloadFields.get(this.enumPayloadKey(scrutineeEnum, arm.variant));
+          if (fieldTypes) {
+            if (bindings.length !== fieldTypes.length) {
+              this.error(
+                `Match arm '${arm.variant}' expects ${fieldTypes.length} binding(s), got ${bindings.length}`,
+                arm.span.start.line,
+                arm.span.start.column,
+              );
+            }
+            for (let i = 0; i < bindings.length; i++) {
+              const typeName = fieldTypes[i];
+              const binding = bindings[i];
+              if (typeName && binding) {
+                this.symbols.set(binding, {
+                  name: binding,
+                  roboType: this.typeNameToSpanda(typeName),
+                  kind: "variable",
+                });
+              }
+            }
+          } else {
+            this.error(
+              `Variant '${arm.variant}' has no payload bindings`,
+              arm.span.start.line,
+              arm.span.start.column,
+            );
+          }
+        }
+      }
       for (const stmt of arm.body) {
         this.checkStmt(stmt);
+      }
+      for (const binding of bindings) {
+        this.symbols.delete(binding);
       }
     }
     this.checkMatchExhaustiveness(expr.arms, expr.span);
@@ -1658,6 +1714,36 @@ class TypeChecker {
       }
       if (name === "Ok" || name === "Err" || name === "Some" || name === "None") {
         return this.checkResultOptionCtor(name, expr.args, expr.span);
+      }
+      const enumName = this.variantOwner.get(name);
+      if (enumName) {
+        const fieldTypes = this.enumPayloadFields.get(this.enumPayloadKey(enumName, name));
+        if (fieldTypes) {
+          if (expr.args.length !== fieldTypes.length) {
+            this.error(
+              `Variant '${name}' expects ${fieldTypes.length} payload argument(s), got ${expr.args.length}`,
+              expr.span.start.line,
+              expr.span.start.column,
+            );
+          }
+          for (let i = 0; i < expr.args.length; i++) {
+            const typeName = fieldTypes[i];
+            const arg = expr.args[i];
+            if (typeName && arg) {
+              const expected = this.typeNameToSpanda(typeName);
+              const actual = this.checkExpr(arg);
+              this.assertCompatible(expected, actual, expr.span.start.line, expr.span.start.column);
+            }
+          }
+          return { kind: "named", name: enumName };
+        }
+        const variants = this.enumVariants.get(enumName);
+        if (variants?.includes(name)) {
+          if (expr.args.length > 0) {
+            this.error(`Unit variant '${name}' takes no arguments`, expr.span.start.line, expr.span.start.column);
+          }
+          return { kind: "named", name: enumName };
+        }
       }
       const fn = BUILTIN_FUNCTIONS[name];
       if (!fn) {
