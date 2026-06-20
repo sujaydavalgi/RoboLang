@@ -209,6 +209,16 @@ export class Interpreter {
     return this.options.backend.getState();
   }
 
+  runTests(program: Program): void {
+    this.currentProgram = program;
+    this.loadProgramMetadata(program);
+    for (const test of program.tests) {
+      this.options.onLog?.(`test ${test.name}`);
+      this.returning = false;
+      this.executeBlock(test.body);
+    }
+  }
+
   private loadProgramMetadata(program: Program): void {
     this.enumVariants.clear();
     this.variantOwner.clear();
@@ -1381,6 +1391,20 @@ export class Interpreter {
             : getString(this.getNamedArgValue(expr, "key"), "");
         const entry = agent.memory.recall(key);
         return entry ?? { kind: "void" };
+      }
+      case "assert": {
+        const arg0 = expr.args[0];
+        if (!arg0) {
+          throw new RuntimeError("assert requires a boolean condition", expr.span.start.line);
+        }
+        const cond = this.evalExpr(arg0);
+        if (cond.kind !== "bool") {
+          throw new RuntimeError("assert requires a boolean condition", expr.span.start.line);
+        }
+        if (!cond.value) {
+          throw new RuntimeError("Assertion failed", expr.span.start.line);
+        }
+        return { kind: "void" };
       }
       default:
         return { kind: "void" };

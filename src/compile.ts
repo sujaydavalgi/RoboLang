@@ -4,6 +4,7 @@ import { parse } from "./parser/index.js";
 import { typeCheck, TypeCheckError, checkWithRegistry } from "./types/index.js";
 import type { ModuleRegistry } from "./modules/index.js";
 import { Interpreter, type RobotBackend, type RobotState } from "./runtime/index.js";
+import { createDefaultSimulator } from "./simulator/index.js";
 import type { Program } from "./ast/nodes.js";
 
 export type CompileBackend = "typescript" | "rust-native" | "rust-cli";
@@ -217,6 +218,38 @@ export async function verifyHardware(
   if (options.allTargets) args.push("--all-targets");
   if (options.simulate) args.push("--simulate");
   return verifyViaCli(source, args);
+}
+
+export type TestRunResult = {
+  passed: number;
+  failed: number;
+  logs: string[];
+};
+
+export function runTestsWithRegistry(
+  source: string,
+  registry?: ModuleRegistry,
+): TestRunResult {
+  const { program } = compileWithRegistry(source, registry);
+  const logs: string[] = [];
+  const backend = createDefaultSimulator();
+  try {
+    const interpreter = new Interpreter({
+      backend,
+      maxLoopIterations: 10,
+      moduleRegistry: registry,
+      onLog: (msg) => logs.push(msg),
+    });
+    interpreter.runTests(program);
+    return { passed: program.tests.length, failed: 0, logs };
+  } catch (e) {
+    logs.push(e instanceof Error ? e.message : String(e));
+    return { passed: 0, failed: Math.max(program.tests.length, 1), logs };
+  }
+}
+
+export function runTests(source: string): TestRunResult {
+  return runTestsWithRegistry(source, undefined);
 }
 
 export { ModuleRegistry, loadProjectModules } from "./modules/index.js";
