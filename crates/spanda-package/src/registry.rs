@@ -1,4 +1,5 @@
 use crate::category::PackageCategory;
+use crate::safety::SafetyLevel;
 use serde::Serialize;
 
 /// Stub registry entry for local resolution (no public registry yet).
@@ -126,6 +127,22 @@ pub static LOCAL_REGISTRY: &[RegistryEntry] = &[
         license: "Apache-2.0",
         import_paths: &["supply_chain.trace"],
     },
+    RegistryEntry {
+        name: "spanda-python-bridge",
+        description: "Python ecosystem orchestration bridge (PyTorch, OpenCV, NumPy)",
+        versions: &["0.1.0"],
+        category: PackageCategory::Ai,
+        license: "Apache-2.0",
+        import_paths: &["python.torch", "python.opencv"],
+    },
+    RegistryEntry {
+        name: "spanda-cpp-bridge",
+        description: "C++ ecosystem orchestration bridge (ROS2, PCL, CUDA)",
+        versions: &["0.1.0"],
+        category: PackageCategory::Ros2,
+        license: "Apache-2.0",
+        import_paths: &["cpp.ros2", "cpp.pcl"],
+    },
 ];
 
 pub fn search_registry(query: &str) -> Vec<&'static RegistryEntry> {
@@ -142,6 +159,43 @@ pub fn search_registry(query: &str) -> Vec<&'static RegistryEntry> {
 
 pub fn find_registry_entry(name: &str) -> Option<&'static RegistryEntry> {
     LOCAL_REGISTRY.iter().find(|e| e.name == name)
+}
+
+impl RegistryEntry {
+    /// Default safety level for registry packages (until per-entry metadata is stored remotely).
+    pub fn safety_level(&self) -> SafetyLevel {
+        match self.name {
+            "spanda-ros2" | "spanda-opencv" | "spanda-yolo" | "spanda-mqtt" => {
+                SafetyLevel::SimulationOnly
+            }
+            "spanda-python-bridge" | "spanda-cpp-bridge" => SafetyLevel::HardwareSafe,
+            "spanda-openai" => SafetyLevel::Experimental,
+            _ => SafetyLevel::Experimental,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct RegistryInfo {
+    pub name: String,
+    pub description: String,
+    pub versions: Vec<String>,
+    pub category: String,
+    pub license: String,
+    pub import_paths: Vec<String>,
+    pub safety_level: String,
+}
+
+pub fn registry_info(name: &str) -> Option<RegistryInfo> {
+    find_registry_entry(name).map(|e| RegistryInfo {
+        name: e.name.to_string(),
+        description: e.description.to_string(),
+        versions: e.versions.iter().map(|v| v.to_string()).collect(),
+        category: e.category.as_str().to_string(),
+        license: e.license.to_string(),
+        import_paths: e.import_paths.iter().map(|p| p.to_string()).collect(),
+        safety_level: e.safety_level().as_str().to_string(),
+    })
 }
 
 pub fn all_import_paths() -> Vec<&'static str> {

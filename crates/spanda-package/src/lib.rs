@@ -27,7 +27,10 @@ pub use import::{all_registered_import_paths, resolve_package_import};
 pub use lockfile::{Lockfile, LOCKFILE_FILENAME};
 pub use manifest::{find_project_root, PackageManifest, PackageSection, MANIFEST_FILENAME};
 pub use project::{add_dependency, collect_source_files, init_package, remove_dependency};
-pub use registry::{find_registry_entry, search_registry, RegistryEntry, LOCAL_REGISTRY};
+pub use registry::{
+    find_registry_entry, registry_info, search_registry, RegistryEntry, RegistryInfo,
+    LOCAL_REGISTRY,
+};
 pub use resolver::{resolve_dependencies, ResolveOptions, ResolveResult};
 pub use safety::{SafetyLevel, SafetyMetadata};
 pub use validation::{

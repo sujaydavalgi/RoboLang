@@ -15,7 +15,9 @@ Honest snapshot of Spanda capabilities. **Stubbed** = syntax or API exists witho
 | async / await | Implemented | Cooperative single-threaded |
 | spawn / select / channels | Partially implemented | Cooperative concurrency |
 | test blocks | Implemented | Rust runtime |
-| extern fn | Partially implemented | Stub registry only |
+| extern fn | Partially implemented | `extern python`/`extern cpp`; stub registry; clear error when unlinked |
+| Spanda IR (SIR) | Partially implemented | `spanda ir` lowers AST to JSON SIR |
+| Codegen / LLVM | Stubbed | Skeleton `spanda codegen`; LLVM planned |
 
 ## Autonomous systems
 

@@ -33,6 +33,7 @@ Usage:
   spanda codegen [--target native|wasm|esp32] [--out <file>] <file.sd>
   spanda deploy --target wasm [--out <file.json>] <file.sd>
   spanda debug [--break <line>] <file.sd>
+  spanda ir [--json] <file.sd>
 
 Package commands (require native CLI: npm run build:rust):
   spanda init [name] [--description <text>]
@@ -147,6 +148,9 @@ function main(): void {
         break;
       case "debug":
         handleDebug(positional[0], flags);
+        break;
+      case "ir":
+        handleIr(positional[0], json);
         break;
       case "init":
       case "build":
@@ -379,6 +383,21 @@ function handleDeploy(filePath: string | undefined, outPath: string | undefined)
   }
 }
 
+function handleIr(filePath: string | undefined, json: boolean): void {
+  requireNative("Spanda IR lowering requires the native Rust CLI.");
+  const abs = absPath(filePath);
+  const args = ["ir", abs];
+  if (json) args.push("--json");
+  const result = runNativeCli(args);
+  if (json) {
+    console.log(result.stdout ?? "");
+  } else {
+    process.stdout.write(result.stdout ?? "");
+    process.stderr.write(result.stderr ?? "");
+  }
+  process.exit(result.status === 0 ? 0 : 1);
+}
+
 function handleDebug(filePath: string | undefined, flags: Map<string, string | boolean>): void {
   requireNative("Debug requires the native Rust CLI.");
   const abs = absPath(filePath);
@@ -428,21 +447,31 @@ function handlePackage(
 function handleRegistry(positional: string[], json: boolean): void {
   requireNative("Registry commands require the native Rust CLI.");
   const sub = positional[0];
-  if (sub !== "search") {
-    console.error("Usage: spanda registry search <query>");
+  if (sub === "search") {
+    const query = positional[1];
+    if (!query) {
+      console.error("Error: missing search query");
+      process.exit(1);
+    }
+    const args = ["registry", "search", query];
+    if (json) args.push("--json");
+    const result = runNativeCli(args);
+    process.stdout.write(result.stdout ?? "");
+    process.stderr.write(result.stderr ?? "");
+    process.exit(result.status === 0 ? 0 : 1);
+  } else if (sub === "info") {
+    const pkg = positional[1];
+    if (!pkg) {
+      console.error("Error: missing package name");
+      process.exit(1);
+    }
+    const result = runNativeCli(["registry", "info", pkg]);
+    console.log(result.stdout ?? "");
+    process.exit(result.status === 0 ? 0 : 1);
+  } else {
+    console.error("Usage: spanda registry search <query> | spanda registry info <package>");
     process.exit(1);
   }
-  const query = positional[1];
-  if (!query) {
-    console.error("Error: missing search query");
-    process.exit(1);
-  }
-  const args = ["registry", "search", query];
-  if (json) args.push("--json");
-  const result = runNativeCli(args);
-  process.stdout.write(result.stdout ?? "");
-  process.stderr.write(result.stderr ?? "");
-  process.exit(result.status === 0 ? 0 : 1);
 }
 
 function printError(err: unknown): void {
