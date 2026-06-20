@@ -1,6 +1,7 @@
 [workspace]
 members = [
     "crates/spanda-core",
+    "crates/spanda-package",
     "crates/spanda-cli",
     "crates/spanda-node",
     "crates/spanda-wasm",
