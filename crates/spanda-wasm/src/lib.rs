@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use spanda_core::{check, run, RunOptions};
+use spanda_core::{check, run, verify_compatibility, RunOptions, VerifyOptions};
 use wasm_bindgen::prelude::*;
 
 #[derive(Serialize, Deserialize)]
@@ -62,4 +62,38 @@ pub fn wasm_run(source: &str, max_loop_iterations: u32) -> JsValue {
 #[wasm_bindgen]
 pub fn wasm_version() -> String {
     env!("CARGO_PKG_VERSION").to_string()
+}
+
+#[derive(Serialize, Deserialize)]
+struct VerifyResponse {
+    ok: bool,
+    compatible: bool,
+    items: Vec<spanda_core::CompatItem>,
+}
+
+#[wasm_bindgen]
+pub fn wasm_verify(source: &str) -> JsValue {
+    let resp = match verify_compatibility(source, &VerifyOptions::default()) {
+        Ok(report) => VerifyResponse {
+            ok: report.compatible,
+            compatible: report.compatible,
+            items: report.items,
+        },
+        Err(e) => VerifyResponse {
+            ok: false,
+            compatible: false,
+            items: e
+                .diagnostics()
+                .into_iter()
+                .map(|d| spanda_core::CompatItem {
+                    category: "error".into(),
+                    message: d.message,
+                    severity: spanda_core::CompatSeverity::Error,
+                    line: d.line,
+                    column: d.column,
+                })
+                .collect(),
+        },
+    };
+    to_js(&resp)
 }

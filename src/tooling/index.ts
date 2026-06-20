@@ -6,6 +6,8 @@ export {
   fmtViaCli,
   isCliAvailable,
   lintViaCli,
+  runNativeCli,
+  verifyFileViaCli,
   type CodegenTarget,
   type DebugPause,
   type DebugResult,

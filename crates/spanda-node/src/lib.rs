@@ -2,7 +2,7 @@
 
 use napi::bindgen_prelude::*;
 use napi_derive::napi;
-use spanda_core::{check, run, RunOptions, SpandaError};
+use spanda_core::{check, run, verify_compatibility, RunOptions, SpandaError, VerifyOptions};
 
 #[napi(object)]
 pub struct DiagnosticJs {
@@ -115,4 +115,55 @@ pub fn run_source(source: String, options: Option<RunOptionsJs>) -> Result<RunRe
 #[napi]
 pub fn core_version() -> String {
     env!("CARGO_PKG_VERSION").to_string()
+}
+
+#[napi(object)]
+pub struct CompatItemJs {
+    pub category: String,
+    pub message: String,
+    pub severity: String,
+    pub line: u32,
+    pub column: u32,
+}
+
+#[napi(object)]
+pub struct VerifyResultJs {
+    pub ok: bool,
+    pub compatible: bool,
+    pub items: Vec<CompatItemJs>,
+}
+
+#[napi]
+pub fn verify_source(source: String) -> VerifyResultJs {
+    match verify_compatibility(&source, &VerifyOptions::default()) {
+        Ok(report) => VerifyResultJs {
+            ok: report.compatible,
+            compatible: report.compatible,
+            items: report
+                .items
+                .into_iter()
+                .map(|i| CompatItemJs {
+                    category: i.category,
+                    message: i.message,
+                    severity: format!("{:?}", i.severity).to_lowercase(),
+                    line: i.line,
+                    column: i.column,
+                })
+                .collect(),
+        },
+        Err(e) => VerifyResultJs {
+            ok: false,
+            compatible: false,
+            items: map_diagnostics(&e)
+                .into_iter()
+                .map(|d| CompatItemJs {
+                    category: "error".into(),
+                    message: d.message,
+                    severity: "error".into(),
+                    line: d.line,
+                    column: d.column,
+                })
+                .collect(),
+        },
+    }
 }
