@@ -4,7 +4,7 @@ use spanda_core::sir::SirProgram;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-use crate::{emit_module_ir_with_triple, default_target_triple_for_host};
+use crate::{emit_module_ir_with_options, default_target_triple_for_host};
 
 #[derive(Debug, Clone)]
 pub struct CompileNativeOptions {
@@ -12,6 +12,7 @@ pub struct CompileNativeOptions {
     pub clang: Option<String>,
     pub workspace_root: PathBuf,
     pub target_triple: Option<String>,
+    pub hal_profile: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -30,7 +31,11 @@ pub fn compile_native(
         .or_else(detect_clang)
         .ok_or_else(|| "clang not found — install LLVM/clang to use compile-native".to_string())?;
 
-    let ir = emit_module_ir_with_triple(sir, opts.target_triple.as_deref());
+    let ir = emit_module_ir_with_options(
+        sir,
+        opts.target_triple.as_deref(),
+        opts.hal_profile.as_deref(),
+    );
     let build_dir = resolve_target_dir(&opts.workspace_root).join("spanda-native");
     std::fs::create_dir_all(&build_dir).map_err(|e| e.to_string())?;
     let llvm_ir_path = build_dir.join("program.ll");
@@ -148,6 +153,7 @@ robot R {
                 clang: detect_clang(),
                 workspace_root: workspace_root.clone(),
                 target_triple: None,
+                hal_profile: None,
             },
         )
         .expect("compile-native");

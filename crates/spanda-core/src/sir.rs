@@ -82,6 +82,13 @@ pub enum SirStmt {
         variant: String,
         tag: u32,
     },
+    LetEnumPayload {
+        name: String,
+        enum_name: String,
+        variant: String,
+        tag: u32,
+        payloads: Vec<f64>,
+    },
     LoopEvery {
         interval_ms: f64,
         body: Vec<SirStmt>,
@@ -97,6 +104,17 @@ pub enum SirStmt {
     },
     IfVar {
         condition: String,
+        then_body: Vec<SirStmt>,
+        else_body: Option<Vec<SirStmt>>,
+    },
+    IfCompareBool {
+        variable: String,
+        equals: bool,
+        then_body: Vec<SirStmt>,
+        else_body: Option<Vec<SirStmt>>,
+    },
+    IfNotVar {
+        variable: String,
         then_body: Vec<SirStmt>,
         else_body: Option<Vec<SirStmt>>,
     },
@@ -118,6 +136,8 @@ pub enum SirStmt {
 pub struct SirMatchArm {
     pub variant: String,
     pub tag: u32,
+    #[serde(default)]
+    pub bindings: Vec<String>,
     pub body: Vec<SirStmt>,
 }
 
@@ -304,6 +324,17 @@ impl LowerCtx<'_> {
                             tag,
                         };
                     }
+                    if let Some((enum_name, variant, tag, payloads)) =
+                        self.resolve_enum_payload(init)
+                    {
+                        return SirStmt::LetEnumPayload {
+                            name: name.clone(),
+                            enum_name,
+                            variant,
+                            tag,
+                            payloads,
+                        };
+                    }
                 }
                 SirStmt::Unsupported {
                     label: "var_decl".into(),
@@ -337,6 +368,30 @@ impl LowerCtx<'_> {
                         condition: name.clone(),
                         then_body: self.lower_stmts(then_branch),
                         else_body: else_branch.as_ref().map(|branch| self.lower_stmts(branch)),
+                    }
+                } else if let Some((variable, equals)) = compare_bool_literal(condition) {
+                    SirStmt::IfCompareBool {
+                        variable,
+                        equals,
+                        then_body: self.lower_stmts(then_branch),
+                        else_body: else_branch.as_ref().map(|branch| self.lower_stmts(branch)),
+                    }
+                } else if let Expr::UnaryExpr {
+                    op: crate::ast::UnaryOp::Not,
+                    operand,
+                    ..
+                } = condition
+                {
+                    if let Expr::IdentExpr { name, .. } = operand.as_ref() {
+                        SirStmt::IfNotVar {
+                            variable: name.clone(),
+                            then_body: self.lower_stmts(then_branch),
+                            else_body: else_branch.as_ref().map(|branch| self.lower_stmts(branch)),
+                        }
+                    } else {
+                        SirStmt::Unsupported {
+                            label: "if".into(),
+                        }
                     }
                 } else {
                     SirStmt::Unsupported {
@@ -382,6 +437,7 @@ impl LowerCtx<'_> {
                                 Some(SirMatchArm {
                                     variant: arm.variant.clone(),
                                     tag: *tag,
+                                    bindings: arm.bindings.clone(),
                                     body: self.lower_stmts(&arm.body),
                                 })
                             })
@@ -427,6 +483,47 @@ impl LowerCtx<'_> {
             _ => None,
         }
     }
+
+    fn resolve_enum_payload(&self, expr: &Expr) -> Option<(String, String, u32, Vec<f64>)> {
+        let Expr::CallExpr { callee, args, .. } = expr else {
+            return None;
+        };
+        let Expr::IdentExpr { name, .. } = callee.as_ref() else {
+            return None;
+        };
+        let (enum_name, tag) = self.variant_index.get(name)?;
+        if args.is_empty() {
+            return None;
+        }
+        let payloads: Vec<f64> = args.iter().filter_map(|arg| float_literal(arg)).collect();
+        if payloads.len() != args.len() {
+            return None;
+        }
+        Some((enum_name.clone(), name.clone(), *tag, payloads))
+    }
+}
+
+fn compare_bool_literal(expr: &Expr) -> Option<(String, bool)> {
+    let Expr::BinaryExpr {
+        op: crate::ast::BinaryOp::Eq,
+        left,
+        right,
+        ..
+    } = expr
+    else {
+        return None;
+    };
+    if let Expr::IdentExpr { name, .. } = left.as_ref() {
+        if let Some(value) = bool_literal(right) {
+            return Some((name.clone(), value));
+        }
+    }
+    if let Expr::IdentExpr { name, .. } = right.as_ref() {
+        if let Some(value) = bool_literal(left) {
+            return Some((name.clone(), value));
+        }
+    }
+    None
 }
 
 fn lower_return(value: Option<&Expr>) -> SirStmt {
@@ -596,6 +693,7 @@ fn type_to_string(ty: &SpandaType) -> String {
         SpandaType::Transform => "Transform".into(),
         SpandaType::EnumVariant { enum_name, variant } => format!("{enum_name}::{variant}"),
         SpandaType::TypeParam { name } => name.clone(),
+        SpandaType::TraitObject { trait_name } => format!("dyn {trait_name}"),
     }
 }
 
@@ -747,5 +845,34 @@ robot R {
         assert!(matches!(body[1], SirStmt::LetEnumUnit { .. }));
         assert!(matches!(body[2], SirStmt::IfVar { .. }));
         assert!(matches!(body[3], SirStmt::MatchEnumUnit { .. }));
+    }
+
+    #[test]
+    fn lowers_enum_payload_if_compare_and_if_not() {
+        let source = r#"
+enum DriveCmd { Stop, Drive(Float, Float) }
+
+robot R {
+  actuator wheels: DifferentialDrive;
+  behavior run() {
+    let cmd = Drive(0.3, 0.0);
+    let flag = true;
+    if flag == true { wheels.drive(linear: 0.1 m/s, angular: 0.0 rad/s); }
+    if not flag { wheels.stop(); }
+    match cmd {
+      Stop => wheels.stop();
+      Drive(l, a) => wheels.drive(linear: 0.3 m/s, angular: 0.0 rad/s);
+    };
+  }
+}
+"#;
+        let program = parser::parse(lexer::tokenize(source).expect("tokenize")).expect("parse");
+        types::check(&program).expect("check");
+        let sir = lower_program(&program);
+        let body = &sir.robots[0].behaviors[0].body;
+        assert!(matches!(body[0], SirStmt::LetEnumPayload { ref payloads, .. } if payloads.len() == 2));
+        assert!(matches!(body[2], SirStmt::IfCompareBool { equals: true, .. }));
+        assert!(matches!(body[3], SirStmt::IfNotVar { .. }));
+        assert!(matches!(body[4], SirStmt::MatchEnumUnit { ref arms, .. } if arms.iter().any(|arm| !arm.bindings.is_empty())));
     }
 }

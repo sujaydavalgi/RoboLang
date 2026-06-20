@@ -6,7 +6,7 @@ use spanda_core::{
     verify_compatibility, wasm_deploy_manifest, CodegenTarget, CompatSeverity, DebugOptions,
     RunOptions, SpandaError, VerifyOptions,
 };
-use spanda_llvm::{compile_native, emit_module_ir_with_triple, CompileNativeOptions};
+use spanda_llvm::{compile_native, emit_module_ir_with_options, CompileNativeOptions};
 use std::collections::HashSet;
 use std::env;
 use std::fs;
@@ -80,8 +80,8 @@ fn usage() {
            spanda deploy --target wasm [--out <file.json>] <file.sd>\n\
            spanda debug [--break <line>] <file.sd>\n\
            spanda ir [--json] <file.sd>\n\
-           spanda llvm-ir [--out <file.ll>] [--target-triple <triple>] <file.sd>\n\
-           spanda compile-native [--out <binary>] [--target-triple <triple>] <file.sd>\n\n\
+           spanda llvm-ir [--out <file.ll>] [--target-triple <triple>] [--hal-profile <name>] <file.sd>\n\
+           spanda compile-native [--out <binary>] [--target-triple <triple>] [--hal-profile <name>] <file.sd>\n\n\
          Package commands:\n\
            spanda init [name] [--description <text>]\n\
            spanda build [--project <dir>]\n\
@@ -323,6 +323,7 @@ fn main() {
     let mut project_mode = false;
     let mut out_path: Option<String> = None;
     let mut target_triple: Option<String> = None;
+    let mut hal_profile: Option<String> = None;
     let mut codegen_target = CodegenTarget::Native;
     let mut breakpoints: Vec<u32> = Vec::new();
     let mut file: Option<String> = None;
@@ -382,6 +383,14 @@ fn main() {
                     process::exit(1);
                 }
                 target_triple = Some(args[i].clone());
+            }
+            "--hal-profile" => {
+                i += 1;
+                if i >= args.len() {
+                    eprintln!("--hal-profile requires a value");
+                    process::exit(1);
+                }
+                hal_profile = Some(args[i].clone());
             }
             other if !other.starts_with('-') && file.is_none() => file = Some(other.to_string()),
             other => {
@@ -673,7 +682,11 @@ fn main() {
             let source = read_source(&file);
             match lower_to_sir(&source) {
                 Ok(sir) => {
-                    let ir = emit_module_ir_with_triple(&sir, target_triple.as_deref());
+                    let ir = emit_module_ir_with_options(
+                        &sir,
+                        target_triple.as_deref(),
+                        hal_profile.as_deref(),
+                    );
                     if let Some(ref out) = out_path {
                         fs::write(out, &ir).unwrap_or_else(|e| {
                             eprintln!("Error writing {out}: {e}");
@@ -710,6 +723,7 @@ fn main() {
                             clang: None,
                             workspace_root: workspace,
                             target_triple,
+                            hal_profile,
                         },
                     ) {
                         Ok(result) => {
