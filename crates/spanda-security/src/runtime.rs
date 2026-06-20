@@ -80,19 +80,10 @@ impl SecurityContext {
         payload: &str,
     ) -> SecurityResult<Option<SignedMessage>> {
         let policy = self.secure_endpoints.policy_or_open(path);
-        policy.prepare_outbound(
-            payload,
-            self.identity.as_ref(),
-            &self.capabilities,
-            path,
-        )
+        policy.prepare_outbound(payload, self.identity.as_ref(), &self.capabilities, path)
     }
 
-    pub fn verify_inbound(
-        &self,
-        path: &str,
-        signed: Option<&SignedMessage>,
-    ) -> SecurityResult<()> {
+    pub fn verify_inbound(&self, path: &str, signed: Option<&SignedMessage>) -> SecurityResult<()> {
         let policy = self.secure_endpoints.policy_or_open(path);
         policy.verify_inbound(signed, self.identity.as_ref(), &self.capabilities, path)
     }
@@ -108,11 +99,7 @@ impl SecurityContext {
             return Ok(());
         }
         self.require_operation("audit.record")?;
-        let redacted = if detail.contains("secret:") {
-            detail.to_string()
-        } else {
-            detail.to_string()
-        };
+        let redacted = detail.to_string();
         audit
             .record_event(&format!("security.{event_type}"), &redacted)
             .map_err(|e| SecurityError::Other(format!("audit failed: {e}")))?;

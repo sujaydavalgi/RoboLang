@@ -122,6 +122,10 @@ impl SecureEndpointRegistry {
     pub fn len(&self) -> usize {
         self.policies.len()
     }
+
+    pub fn is_empty(&self) -> bool {
+        self.policies.is_empty()
+    }
 }
 
 #[cfg(test)]

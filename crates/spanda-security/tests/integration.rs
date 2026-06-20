@@ -43,9 +43,7 @@ fn capability_denial_blocks_audit() {
 #[test]
 fn trust_level_blocks_restricted_endpoint() {
     let mut ctx = SecurityContext::new();
-    ctx.set_identity(
-        RobotIdentity::new("rover-1", "key").with_trust(TrustLevel::Restricted),
-    );
+    ctx.set_identity(RobotIdentity::new("rover-1", "key").with_trust(TrustLevel::Restricted));
     let mut caps = CapabilitySet::new();
     caps.grant("identity.verify");
     ctx.capabilities = caps;

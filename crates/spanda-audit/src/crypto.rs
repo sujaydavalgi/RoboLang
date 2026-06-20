@@ -1,5 +1,5 @@
 use crate::record::Hash;
-use ed25519_dalek::{Signer, SigningKey, VerifyingKey, Signature};
+use ed25519_dalek::{Signature, Signer, SigningKey, VerifyingKey};
 use sha2::{Digest, Sha256};
 
 /// Derive a 32-byte Ed25519 seed from arbitrary key material (UTF-8).
@@ -36,8 +36,7 @@ pub fn sha256(data: &str) -> Hash {
 
 /// Sign data with Ed25519 using signing material or hex-encoded private seed.
 pub fn sign(data: &str, key_material: &str) -> String {
-    let sk = if key_material.len() == 64 && key_material.chars().all(|c| c.is_ascii_hexdigit())
-    {
+    let sk = if key_material.len() == 64 && key_material.chars().all(|c| c.is_ascii_hexdigit()) {
         if let Ok(bytes) = hex::decode(key_material) {
             if bytes.len() == 32 {
                 SigningKey::from_bytes(&bytes.try_into().expect("32-byte seed"))

@@ -21,8 +21,6 @@ impl PackagePermissions {
     pub fn from_capabilities(caps: impl IntoIterator<Item = impl Into<String>>) -> Self {
         let mut set = CapabilitySet::new();
         set.grant_all(caps);
-        Self {
-            capabilities: set,
-        }
+        Self { capabilities: set }
     }
 }
