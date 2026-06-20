@@ -9,6 +9,7 @@ pub mod docs;
 mod error;
 pub mod events;
 pub mod ffi;
+pub mod ffi_registry;
 pub mod format;
 pub mod foundations;
 pub mod hal;

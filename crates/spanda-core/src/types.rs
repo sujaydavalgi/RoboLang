@@ -280,6 +280,7 @@ impl TypeChecker {
                 || resolve_ai_import(path).is_some()
                 || resolve_module_import(path)
                 || resolve_std_import(path)
+                || crate::ffi_registry::resolve_ffi_import(path)
                 || self
                     .module_registry
                     .as_ref()

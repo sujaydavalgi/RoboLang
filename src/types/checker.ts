@@ -14,6 +14,7 @@ import type {
 } from "../ast/nodes.js";
 import type { CapabilityDecl, ExternFnDecl, MatchArm, ModuleFnDecl, TraitImplDecl } from "../foundations.js";
 import { resolveModuleImport, resolveTypeAlias } from "../foundations.js";
+import { resolveFfiImport } from "../ffi/registry.js";
 import { resolveStdImport } from "../stdlib.js";
 import {
   MessageRegistry,
@@ -114,7 +115,8 @@ class TypeChecker {
         !resolveImport(imp.path) &&
         !resolveAiImport(imp.path) &&
         !resolveModuleImport(imp.path) &&
-        !resolveStdImport(imp.path)
+        !resolveStdImport(imp.path) &&
+        !resolveFfiImport(imp.path)
       ) {
         this.error(`Unknown import '${imp.path}'`, imp.span.start.line, imp.span.start.column);
       } else {
