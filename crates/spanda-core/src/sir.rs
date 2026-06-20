@@ -118,6 +118,24 @@ pub enum SirStmt {
         then_body: Vec<SirStmt>,
         else_body: Option<Vec<SirStmt>>,
     },
+    LetDouble {
+        name: String,
+        value: f64,
+    },
+    IfCompareDouble {
+        left: String,
+        op: SirCompareOp,
+        right: f64,
+        then_body: Vec<SirStmt>,
+        else_body: Option<Vec<SirStmt>>,
+    },
+    IfScanDistanceCompare {
+        scan_var: String,
+        op: SirCompareOp,
+        threshold: f64,
+        then_body: Vec<SirStmt>,
+        else_body: Option<Vec<SirStmt>>,
+    },
     MatchEnumUnit {
         scrutinee: String,
         enum_name: String,
@@ -130,6 +148,17 @@ pub enum SirStmt {
         #[serde(rename = "stmt_kind")]
         label: String,
     },
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum SirCompareOp {
+    Lt,
+    Lte,
+    Gt,
+    Gte,
+    Eq,
+    Neq,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -304,6 +333,14 @@ impl LowerCtx<'_> {
         match stmt {
             Stmt::VarDecl { name, init, .. } => {
                 if let Some(init) = init {
+                    if let Some(value) = float_literal(init) {
+                        if value.fract().abs() > f64::EPSILON {
+                            return SirStmt::LetDouble {
+                                name: name.clone(),
+                                value,
+                            };
+                        }
+                    }
                     if let Some(value) = int_literal(init) {
                         return SirStmt::LetInt {
                             name: name.clone(),
@@ -333,6 +370,12 @@ impl LowerCtx<'_> {
                             variant,
                             tag,
                             payloads,
+                        };
+                    }
+                    if let Some(value) = float_literal(init) {
+                        return SirStmt::LetDouble {
+                            name: name.clone(),
+                            value,
                         };
                     }
                 }
@@ -374,6 +417,31 @@ impl LowerCtx<'_> {
     ) -> SirStmt {
         let then_body = self.lower_stmts(then_branch);
         let else_body = else_branch.map(|branch| self.lower_stmts(branch));
+        if let Some(condition) = eval_const_bool(condition) {
+            return SirStmt::IfBool {
+                condition,
+                then_body,
+                else_body,
+            };
+        }
+        if let Some((left, op, right)) = extract_double_compare(condition) {
+            return SirStmt::IfCompareDouble {
+                left,
+                op,
+                right,
+                then_body,
+                else_body,
+            };
+        }
+        if let Some((scan_var, op, threshold)) = extract_scan_distance_compare(condition) {
+            return SirStmt::IfScanDistanceCompare {
+                scan_var,
+                op,
+                threshold,
+                then_body,
+                else_body,
+            };
+        }
         if let Some(condition) = bool_literal(condition) {
             return SirStmt::IfBool {
                 condition,
@@ -425,6 +493,32 @@ impl LowerCtx<'_> {
             ..
         } = condition
         {
+            if let Some((var, cmp_op, rhs)) = extract_double_compare(left) {
+                return SirStmt::IfCompareDouble {
+                    left: var,
+                    op: cmp_op,
+                    right: rhs,
+                    then_body: vec![self.lower_if_stmt(
+                        right,
+                        then_branch,
+                        else_branch,
+                    )],
+                    else_body,
+                };
+            }
+            if let Some((scan_var, cmp_op, threshold)) = extract_scan_distance_compare(left) {
+                return SirStmt::IfScanDistanceCompare {
+                    scan_var,
+                    op: cmp_op,
+                    threshold,
+                    then_body: vec![self.lower_if_stmt(
+                        right,
+                        then_branch,
+                        else_branch,
+                    )],
+                    else_body,
+                };
+            }
             if let (Expr::IdentExpr { name: l, .. }, Expr::IdentExpr { name: r, .. }) =
                 (left.as_ref(), right.as_ref())
             {
@@ -435,7 +529,7 @@ impl LowerCtx<'_> {
                         then_body: then_body.clone(),
                         else_body: else_body.clone(),
                     }],
-                    else_body: else_body.clone(),
+                    else_body,
                 };
             }
         }
@@ -446,6 +540,32 @@ impl LowerCtx<'_> {
             ..
         } = condition
         {
+            if let Some((var, cmp_op, rhs)) = extract_double_compare(left) {
+                return SirStmt::IfCompareDouble {
+                    left: var,
+                    op: cmp_op,
+                    right: rhs,
+                    then_body,
+                    else_body: Some(vec![self.lower_if_stmt(
+                        right,
+                        then_branch,
+                        else_branch,
+                    )]),
+                };
+            }
+            if let Some((scan_var, cmp_op, threshold)) = extract_scan_distance_compare(left) {
+                return SirStmt::IfScanDistanceCompare {
+                    scan_var,
+                    op: cmp_op,
+                    threshold,
+                    then_body,
+                    else_body: Some(vec![self.lower_if_stmt(
+                        right,
+                        then_branch,
+                        else_branch,
+                    )]),
+                };
+            }
             if let (Expr::IdentExpr { name: l, .. }, Expr::IdentExpr { name: r, .. }) =
                 (left.as_ref(), right.as_ref())
             {
@@ -729,6 +849,116 @@ fn stmt_kind(stmt: &Stmt) -> String {
     }
 }
 
+fn binary_op_to_compare(op: crate::ast::BinaryOp) -> Option<SirCompareOp> {
+    use crate::ast::BinaryOp;
+    match op {
+        BinaryOp::Lt => Some(SirCompareOp::Lt),
+        BinaryOp::Lte => Some(SirCompareOp::Lte),
+        BinaryOp::Gt => Some(SirCompareOp::Gt),
+        BinaryOp::Gte => Some(SirCompareOp::Gte),
+        BinaryOp::Eq => Some(SirCompareOp::Eq),
+        BinaryOp::Neq => Some(SirCompareOp::Neq),
+        _ => None,
+    }
+}
+
+fn reverse_compare(op: SirCompareOp) -> SirCompareOp {
+    match op {
+        SirCompareOp::Lt => SirCompareOp::Gt,
+        SirCompareOp::Lte => SirCompareOp::Gte,
+        SirCompareOp::Gt => SirCompareOp::Lt,
+        SirCompareOp::Gte => SirCompareOp::Lte,
+        other => other,
+    }
+}
+
+fn eval_double_compare(op: SirCompareOp, left: f64, right: f64) -> bool {
+    match op {
+        SirCompareOp::Lt => left < right,
+        SirCompareOp::Lte => left <= right,
+        SirCompareOp::Gt => left > right,
+        SirCompareOp::Gte => left >= right,
+        SirCompareOp::Eq => (left - right).abs() < f64::EPSILON,
+        SirCompareOp::Neq => (left - right).abs() >= f64::EPSILON,
+    }
+}
+
+fn extract_double_compare(expr: &Expr) -> Option<(String, SirCompareOp, f64)> {
+    let Expr::BinaryExpr { op, left, right, .. } = expr else {
+        return None;
+    };
+    let sir_op = binary_op_to_compare(*op)?;
+    if let Expr::IdentExpr { name, .. } = left.as_ref() {
+        if let Some(value) = float_literal(right) {
+            return Some((name.clone(), sir_op, value));
+        }
+    }
+    if let Expr::IdentExpr { name, .. } = right.as_ref() {
+        if let Some(value) = float_literal(left) {
+            return Some((name.clone(), reverse_compare(sir_op), value));
+        }
+    }
+    None
+}
+
+fn extract_scan_distance_compare(expr: &Expr) -> Option<(String, SirCompareOp, f64)> {
+    let Expr::BinaryExpr { op, left, right, .. } = expr else {
+        return None;
+    };
+    let sir_op = binary_op_to_compare(*op)?;
+    let threshold = float_literal(right)?;
+    let Expr::MemberExpr { object, property, .. } = left.as_ref() else {
+        return None;
+    };
+    if property != "nearest_distance" {
+        return None;
+    }
+    let Expr::IdentExpr { name, .. } = object.as_ref() else {
+        return None;
+    };
+    Some((name.clone(), sir_op, threshold))
+}
+
+fn eval_const_bool(expr: &Expr) -> Option<bool> {
+    if let Some(value) = bool_literal(expr) {
+        return Some(value);
+    }
+    if let Expr::UnaryExpr {
+        op: crate::ast::UnaryOp::Not,
+        operand,
+        ..
+    } = expr
+    {
+        return eval_const_bool(operand).map(|value| !value);
+    }
+    if let Expr::BinaryExpr {
+        op: crate::ast::BinaryOp::And,
+        left,
+        right,
+        ..
+    } = expr
+    {
+        return Some(eval_const_bool(left)? && eval_const_bool(right)?);
+    }
+    if let Expr::BinaryExpr {
+        op: crate::ast::BinaryOp::Or,
+        left,
+        right,
+        ..
+    } = expr
+    {
+        return Some(eval_const_bool(left)? || eval_const_bool(right)?);
+    }
+    if let Expr::BinaryExpr { op, left, right, .. } = expr {
+        if let (Some(l), Some(r)) = (float_literal(left), float_literal(right)) {
+            if let Some(cmp) = binary_op_to_compare(*op) {
+                return Some(eval_double_compare(cmp, l, r));
+            }
+        }
+    }
+    None
+}
+
 fn lower_extern(ext: &ExternFnDecl) -> SirExtern {
     SirExtern {
         name: ext.name.clone(),
@@ -954,5 +1184,42 @@ robot R {
         assert!(matches!(body[2], SirStmt::IfCompareBool { equals: true, .. }));
         assert!(matches!(body[3], SirStmt::IfNotVar { .. }));
         assert!(matches!(body[4], SirStmt::MatchEnumUnit { ref arms, .. } if arms.iter().any(|arm| !arm.bindings.is_empty())));
+    }
+
+    #[test]
+    fn lowers_if_double_and_scan_distance_compare() {
+        let source = r#"
+robot R {
+  sensor scan: Lidar;
+  actuator wheels: DifferentialDrive;
+  behavior run() {
+    let limit = 1.5;
+    if limit < 2.0 { wheels.stop(); }
+    if scan.nearest_distance < 1.0 m { wheels.drive(linear: 0.1 m/s, angular: 0.0 rad/s); }
+  }
+}
+"#;
+        let program = parser::parse(lexer::tokenize(source).expect("tokenize")).expect("parse");
+        types::check(&program).expect("check");
+        let sir = lower_program(&program);
+        let body = &sir.robots[0].behaviors[0].body;
+        assert!(matches!(body[0], SirStmt::LetDouble { value, .. } if (value - 1.5).abs() < f64::EPSILON));
+        assert!(matches!(
+            body[1],
+            SirStmt::IfCompareDouble {
+                op: SirCompareOp::Lt,
+                right,
+                ..
+            } if (right - 2.0).abs() < f64::EPSILON
+        ));
+        assert!(matches!(
+            body[2],
+            SirStmt::IfScanDistanceCompare {
+                ref scan_var,
+                op: SirCompareOp::Lt,
+                threshold,
+                ..
+            } if scan_var == "scan" && (threshold - 1.0).abs() < f64::EPSILON
+        ));
     }
 }

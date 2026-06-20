@@ -7,7 +7,8 @@ mod compile;
 
 use spanda_core::foundations::BridgeKind;
 use spanda_core::sir::{
-    SirBehavior, SirExtern, SirFunction, SirMatchArm, SirProgram, SirStmt, SirVisibility,
+    SirBehavior, SirCompareOp, SirExtern, SirFunction, SirMatchArm, SirProgram, SirStmt,
+    SirVisibility,
 };
 use std::collections::{BTreeSet, HashSet};
 
@@ -48,7 +49,8 @@ pub fn emit_module_ir_with_options(
     out.push_str("declare void @spanda_rt_log_i32(i8*, i32)\n");
     out.push_str("declare void @spanda_rt_publish(i8*, i8*)\n");
     out.push_str("declare void @spanda_rt_subscribe(i8*)\n");
-    out.push_str("declare void @spanda_rt_loop_delay_ms(i64)\n\n");
+    out.push_str("declare void @spanda_rt_loop_delay_ms(i64)\n");
+    out.push_str("declare double @spanda_rt_scan_nearest(i8*)\n\n");
 
     let strings = collect_string_literals(sir);
     for (idx, text) in strings.iter().enumerate() {
@@ -200,6 +202,38 @@ fn collect_stmt_strings(stmts: &[SirStmt], set: &mut BTreeSet<String>) {
                 else_body,
                 ..
             } => {
+                collect_stmt_strings(then_body, set);
+                if let Some(else_body) = else_body {
+                    collect_stmt_strings(else_body, set);
+                }
+            }
+            SirStmt::IfCompareBool {
+                then_body,
+                else_body,
+                ..
+            }
+            | SirStmt::IfNotVar {
+                then_body,
+                else_body,
+                ..
+            }
+            | SirStmt::IfCompareDouble {
+                then_body,
+                else_body,
+                ..
+            } => {
+                collect_stmt_strings(then_body, set);
+                if let Some(else_body) = else_body {
+                    collect_stmt_strings(else_body, set);
+                }
+            }
+            SirStmt::IfScanDistanceCompare {
+                scan_var,
+                then_body,
+                else_body,
+                ..
+            } => {
+                set.insert(scan_var.clone());
                 collect_stmt_strings(then_body, set);
                 if let Some(else_body) = else_body {
                     collect_stmt_strings(else_body, set);
@@ -374,6 +408,22 @@ fn emit_behavior_fn(robot: &str, behavior: &SirBehavior, strings: &[String], hal
 struct EmitLocals {
     bool_slots: HashSet<String>,
     enum_slots: HashSet<String>,
+    double_slots: HashSet<String>,
+}
+
+fn double_slot(name: &str) -> String {
+    format!("spanda_double_{name}")
+}
+
+fn compare_op_fcmp(op: SirCompareOp) -> &'static str {
+    match op {
+        SirCompareOp::Lt => "olt",
+        SirCompareOp::Lte => "ole",
+        SirCompareOp::Gt => "ogt",
+        SirCompareOp::Gte => "oge",
+        SirCompareOp::Eq => "oeq",
+        SirCompareOp::Neq => "one",
+    }
 }
 
 fn bool_slot(name: &str) -> String {
@@ -465,6 +515,15 @@ fn emit_stmt(
                 "  store i1 {}, i1* %{slot}\n",
                 if *value { 1 } else { 0 }
             ));
+            out
+        }
+        SirStmt::LetDouble { name, value } => {
+            let slot = double_slot(name);
+            let mut out = String::new();
+            if locals.double_slots.insert(name.clone()) {
+                out.push_str(&format!("  %{slot} = alloca double\n"));
+            }
+            out.push_str(&format!("  store double {value}, double* %{slot}\n"));
             out
         }
         SirStmt::LetEnumUnit { name, tag, .. } => {
@@ -611,6 +670,86 @@ fn emit_stmt(
                    br label %{merge_label}\n\
                  {merge_label}:\n",
                 slot = slot,
+                then_label = then_label,
+                else_label = else_label,
+                merge_label = merge_label,
+                then_ir = then_ir,
+                else_ir = else_ir,
+            )
+        }
+        SirStmt::IfCompareDouble {
+            left,
+            op,
+            right,
+            then_body,
+            else_body,
+        } => {
+            let id = *branch_id;
+            *branch_id += 1;
+            let slot = double_slot(left);
+            let pred = compare_op_fcmp(*op);
+            let then_label = format!("if_then{id}");
+            let else_label = format!("if_else{id}");
+            let merge_label = format!("if_merge{id}");
+            let then_ir = emit_stmts(then_body, return_kind, strings, loop_id, branch_id, locals, hal);
+            let else_ir = else_body
+                .as_ref()
+                .map(|body| emit_stmts(body, return_kind, strings, loop_id, branch_id, locals, hal))
+                .unwrap_or_default();
+            format!(
+                "  %if_dbl{id} = load double, double* %{slot}\n\
+                   %if_ok{id} = fcmp {pred} double %if_dbl{id}, {right}\n\
+                   br i1 %if_ok{id}, label %{then_label}, label %{else_label}\n\
+                 {then_label}:\n\
+                 {then_ir}\
+                   br label %{merge_label}\n\
+                 {else_label}:\n\
+                 {else_ir}\
+                   br label %{merge_label}\n\
+                 {merge_label}:\n",
+                slot = slot,
+                pred = pred,
+                right = right,
+                then_label = then_label,
+                else_label = else_label,
+                merge_label = merge_label,
+                then_ir = then_ir,
+                else_ir = else_ir,
+            )
+        }
+        SirStmt::IfScanDistanceCompare {
+            scan_var,
+            op,
+            threshold,
+            then_body,
+            else_body,
+        } => {
+            let id = *branch_id;
+            *branch_id += 1;
+            let scan_ptr = string_global_ptr_for(scan_var, strings);
+            let pred = compare_op_fcmp(*op);
+            let then_label = format!("if_then{id}");
+            let else_label = format!("if_else{id}");
+            let merge_label = format!("if_merge{id}");
+            let then_ir = emit_stmts(then_body, return_kind, strings, loop_id, branch_id, locals, hal);
+            let else_ir = else_body
+                .as_ref()
+                .map(|body| emit_stmts(body, return_kind, strings, loop_id, branch_id, locals, hal))
+                .unwrap_or_default();
+            format!(
+                "  %scan_dist{id} = call double @spanda_rt_scan_nearest(i8* {scan_ptr})\n\
+                   %if_ok{id} = fcmp {pred} double %scan_dist{id}, {threshold}\n\
+                   br i1 %if_ok{id}, label %{then_label}, label %{else_label}\n\
+                 {then_label}:\n\
+                 {then_ir}\
+                   br label %{merge_label}\n\
+                 {else_label}:\n\
+                 {else_ir}\
+                   br label %{merge_label}\n\
+                 {merge_label}:\n",
+                scan_ptr = scan_ptr,
+                pred = pred,
+                threshold = threshold,
                 then_label = then_label,
                 else_label = else_label,
                 merge_label = merge_label,

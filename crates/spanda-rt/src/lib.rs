@@ -4,11 +4,22 @@
 //! emergency stop. The interpreter/simulator remains authoritative for now;
 //! this crate is the link target for Milestone 2 LLVM codegen.
 
+use std::collections::HashMap;
 use std::ffi::CStr;
 use std::os::raw::c_char;
-use std::sync::Mutex;
+use std::sync::{Mutex, OnceLock};
 
 static EVENTS: Mutex<Vec<String>> = Mutex::new(Vec::new());
+
+fn double_bindings() -> &'static Mutex<HashMap<String, f64>> {
+    static STORE: OnceLock<Mutex<HashMap<String, f64>>> = OnceLock::new();
+    STORE.get_or_init(|| Mutex::new(HashMap::new()))
+}
+
+fn scan_distances() -> &'static Mutex<HashMap<String, f64>> {
+    static STORE: OnceLock<Mutex<HashMap<String, f64>>> = OnceLock::new();
+    STORE.get_or_init(|| Mutex::new(HashMap::new()))
+}
 
 #[no_mangle]
 pub extern "C" fn spanda_rt_drive(actuator: *const c_char, linear: f64, angular: f64) {
@@ -50,6 +61,53 @@ pub extern "C" fn spanda_rt_subscribe(topic: *const c_char) {
 pub extern "C" fn spanda_rt_loop_delay_ms(millis: u64) {
     log_event(format!("loop_delay:{millis}"));
     std::thread::sleep(std::time::Duration::from_millis(millis));
+}
+
+#[no_mangle]
+pub extern "C" fn spanda_rt_store_double(name: *const c_char, value: f64) {
+    let key = ptr_to_str(name);
+    double_bindings().lock().unwrap().insert(key, value);
+}
+
+#[no_mangle]
+pub extern "C" fn spanda_rt_load_double(name: *const c_char) -> f64 {
+    let key = ptr_to_str(name);
+    double_bindings()
+        .lock()
+        .unwrap()
+        .get(&key)
+        .copied()
+        .unwrap_or(0.0)
+}
+
+/// Stub scan distance for LLVM `scan.nearest_distance` compares (sim default 2.0 m).
+#[no_mangle]
+pub extern "C" fn spanda_rt_scan_nearest(name: *const c_char) -> f64 {
+    let key = ptr_to_str(name);
+    scan_distances()
+        .lock()
+        .unwrap()
+        .get(&key)
+        .copied()
+        .unwrap_or(2.0)
+}
+
+#[no_mangle]
+pub extern "C" fn spanda_rt_compare_double(op: i32, left: f64, right: f64) -> u8 {
+    let ok = match op {
+        0 => left < right,
+        1 => left <= right,
+        2 => left > right,
+        3 => left >= right,
+        4 => (left - right).abs() < f64::EPSILON,
+        5 => (left - right).abs() >= f64::EPSILON,
+        _ => false,
+    };
+    if ok {
+        1
+    } else {
+        0
+    }
 }
 
 /// Test helper: drain and return recorded runtime events.
