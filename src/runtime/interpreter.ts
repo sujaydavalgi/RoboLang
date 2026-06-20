@@ -1281,9 +1281,10 @@ export class Interpreter {
         return { kind: "transform", fromFrame, toFrame, pose };
       }
       case "goal": {
+        const arg0 = expr.args[0];
         const text =
-          expr.args[0] && expr.args[0].kind === "StringLiteralExpr"
-            ? String(expr.args[0].value)
+          arg0?.kind === "LiteralExpr" && typeof arg0.value === "string"
+            ? arg0.value
             : getString(this.getNamedArgValue(expr, "text"), "");
         return { kind: "goal", text };
       }
@@ -1301,9 +1302,10 @@ export class Interpreter {
             expr.span.start.line,
           );
         }
+        const arg0 = expr.args[0];
         const key =
-          expr.args[0] && expr.args[0].kind === "StringLiteralExpr"
-            ? String(expr.args[0].value)
+          arg0?.kind === "LiteralExpr" && typeof arg0.value === "string"
+            ? arg0.value
             : getString(this.getNamedArgValue(expr, "key"), "");
         const entry = agent.memory.recall(key);
         return entry ?? { kind: "void" };

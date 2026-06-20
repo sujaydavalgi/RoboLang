@@ -1,4 +1,6 @@
 import type { RuntimeValue } from "../runtime/interpreter.js";
+
+export type { RuntimeValue } from "../runtime/interpreter.js";
 import type { SafetyZoneRuntime } from "../safety/index.js";
 
 export type PoseValue = { x: number; y: number; theta: number; z: number };

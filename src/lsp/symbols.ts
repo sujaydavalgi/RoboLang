@@ -86,7 +86,7 @@ export function buildSymbolIndex(program: Program): SymbolIndex {
         name: service.name,
         kind: "service",
         span: service.span,
-        detail: service.serviceType,
+        detail: service.serviceType ?? undefined,
         container: robot.name,
       });
     }
@@ -96,7 +96,7 @@ export function buildSymbolIndex(program: Program): SymbolIndex {
         name: action.name,
         kind: "action",
         span: action.span,
-        detail: action.actionType,
+        detail: action.actionType ?? undefined,
         container: robot.name,
       });
     }

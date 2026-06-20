@@ -219,7 +219,7 @@ export class InMemoryCommBus {
     return {
       kind: "object",
       typeName: serviceType,
-      fields: new Map([["ok", { kind: "bool", value: true }]]),
+      fields: { ok: { kind: "bool", value: true } },
     };
   }
 
@@ -227,7 +227,7 @@ export class InMemoryCommBus {
     return {
       kind: "object",
       typeName: actionType,
-      fields: new Map([["success", { kind: "bool", value: true }]]),
+      fields: { success: { kind: "bool", value: true } },
     };
   }
 
