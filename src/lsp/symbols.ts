@@ -14,7 +14,9 @@ export type SymbolKind =
   | "event"
   | "behavior"
   | "bus"
-  | "device";
+  | "device"
+  | "hardware"
+  | "deploy";
 
 export type SpandaSymbol = {
   name: string;
@@ -45,6 +47,24 @@ export function buildSymbolIndex(program: Program): SymbolIndex {
       kind: "message",
       span: msg.span,
       detail: msg.fields.map((f) => `${f.name}: ${f.typeName}`).join(", "),
+    });
+  }
+
+  for (const profile of program.hardwareProfiles) {
+    addSymbol(index, {
+      name: profile.name,
+      kind: "hardware",
+      span: profile.span,
+      detail: profile.cpu ?? undefined,
+    });
+  }
+
+  for (const deploy of program.deployments) {
+    addSymbol(index, {
+      name: `${deploy.robotName}→${deploy.targets.join(",")}`,
+      kind: "deploy",
+      span: deploy.span,
+      detail: deploy.targets.join(", "),
     });
   }
 

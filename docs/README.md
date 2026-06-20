@@ -14,6 +14,7 @@ Spanda is an AI-native autonomous systems programming language. Source files use
 | [roadmap.md](./roadmap.md) | Roadmap and self-hosting plan |
 | [compiler-backend-roadmap.md](./compiler-backend-roadmap.md) | **LLVM / native codegen evolution** |
 | [ffi-and-ecosystem.md](./ffi-and-ecosystem.md) | **Python/C++/ROS2 interoperability strategy** |
+| [feature-status.md](./feature-status.md) | **Honest feature implementation snapshot** |
 | [migration.md](./migration.md) | Migration from legacy syntax and dual-backend notes |
 | [test-plan.md](./test-plan.md) | Test coverage plan |
 | [api-contract.json](./api-contract.json) | JSON schema for diagnostics, run results, and verify output |

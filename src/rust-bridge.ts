@@ -1,5 +1,5 @@
 import { spawnSync, type SpawnSyncReturns } from "node:child_process";
-import { existsSync, statSync, unlinkSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, statSync, unlinkSync, writeFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -276,4 +276,26 @@ export function debugViaCli(source: string, breakpoints: number[] = []): DebugRe
     }
   }
   return { ok: true, pauses };
+}
+
+/** Run the native spanda binary with arbitrary arguments. */
+export function runNativeCli(args: string[]): SpawnSyncReturns<string> {
+  const bin = cliPath();
+  if (!bin) {
+    return {
+      status: 1,
+      signal: null,
+      output: ["", "Rust CLI not built (run: npm run build:rust)", ""],
+      stdout: "",
+      stderr: "Rust CLI not built (run: npm run build:rust)",
+      pid: 0,
+      error: new Error("Rust CLI not built"),
+    } as SpawnSyncReturns<string>;
+  }
+  return spawnSync(bin, args, { encoding: "utf-8" });
+}
+
+export function verifyFileViaCli(filePath: string, extraArgs: string[] = []): VerifyResult {
+  const source = readFileSync(filePath, "utf-8");
+  return verifyViaCli(source, extraArgs);
 }
