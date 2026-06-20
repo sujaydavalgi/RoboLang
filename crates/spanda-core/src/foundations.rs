@@ -201,6 +201,7 @@ pub struct TransitionDecl {
 pub enum TaskDecl {
     TaskDecl {
         name: String,
+        priority: TaskPriority,
         interval_ms: f64,
         requires: Option<Expr>,
         ensures: Option<Expr>,
@@ -209,6 +210,29 @@ pub enum TaskDecl {
         body: Vec<Stmt>,
         span: Span,
     },
+}
+
+/// Cooperative scheduler priority for deterministic task ordering.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
+#[serde(rename_all = "lowercase")]
+pub enum TaskPriority {
+    Critical,
+    High,
+    #[default]
+    Normal,
+    Low,
+}
+
+impl TaskPriority {
+    pub fn from_ident(ident: &str) -> Option<Self> {
+        match ident {
+            "critical" => Some(Self::Critical),
+            "high" => Some(Self::High),
+            "normal" => Some(Self::Normal),
+            "low" => Some(Self::Low),
+            _ => None,
+        }
+    }
 }
 
 /// Event declaration and handler.

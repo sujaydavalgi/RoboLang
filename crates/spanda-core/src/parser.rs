@@ -1500,11 +1500,17 @@ impl Parser {
         let to_agent = self
             .expect(TokenType::Ident, "Expected target agent")?
             .lexeme;
+        let message_type = if self.match_types(&[TokenType::Colon]) {
+            self.expect(TokenType::Ident, "Expected message type after ':'")?
+                .lexeme
+        } else {
+            String::new()
+        };
         self.expect(TokenType::Semicolon, "Expected ';' after agent channel")?;
         Ok(AgentChannelDecl::AgentChannelDecl {
             from_agent,
             to_agent,
-            message_type: String::new(),
+            message_type,
             span: self.span_from(&start, self.previous()),
         })
     }
@@ -2802,8 +2808,20 @@ impl Parser {
     fn parse_task(&mut self) -> Result<TaskDecl, SpandaError> {
         let start = self.advance();
         let name = self.expect(TokenType::Ident, "Expected task name")?;
-        self.expect(TokenType::Every, "Expected 'every' after task name")?;
-        let interval_ms = self.parse_duration()?;
+        let mut priority = crate::foundations::TaskPriority::Normal;
+        if self.check(TokenType::Ident) {
+            if let Some(parsed_priority) =
+                crate::foundations::TaskPriority::from_ident(&self.peek().lexeme)
+            {
+                self.advance();
+                priority = parsed_priority;
+            }
+        }
+        let interval_ms = if self.match_types(&[TokenType::Every]) {
+            self.parse_duration()?
+        } else {
+            10.0
+        };
         let (requires, ensures, invariant) = self.parse_contract_clauses()?;
         self.expect(TokenType::Lbrace, "Expected '{' after task signature")?;
         let mut budget = None;
@@ -2814,6 +2832,7 @@ impl Parser {
         let end = self.expect(TokenType::Rbrace, "Expected '}' to close task")?;
         Ok(TaskDecl::TaskDecl {
             name: name.lexeme,
+            priority,
             interval_ms,
             requires,
             ensures,
@@ -3077,12 +3096,12 @@ impl Parser {
             });
         }
         if self.match_types(&[TokenType::Receive]) {
-            let topic = self.expect(TokenType::Ident, "Expected topic name after receive")?;
+            let topic_name = self.parse_subscribe_target()?;
             self.expect(TokenType::To, "Expected 'to' after topic in receive")?;
             let var = self.expect(TokenType::Ident, "Expected variable name")?;
             self.expect(TokenType::Semicolon, "Expected ';' after receive")?;
             return Ok(Stmt::ReceiveStmt {
-                topic_name: topic.lexeme,
+                topic_name,
                 var_name: var.lexeme,
                 span: self.span_from(&start, self.previous()),
             });
@@ -3215,6 +3234,16 @@ impl Parser {
             self.expect(TokenType::Semicolon, "Expected ';' after select")?;
             return Ok(Stmt::SelectStmt {
                 arms,
+                span: self.span_from(&start, &end),
+            });
+        }
+        if self.match_types(&[TokenType::Parallel]) {
+            self.expect(TokenType::Lbrace, "Expected '{' after parallel")?;
+            let body = self.parse_block()?;
+            let end = self.expect(TokenType::Rbrace, "Expected '}' to close parallel")?;
+            self.expect(TokenType::Semicolon, "Expected ';' after parallel block")?;
+            return Ok(Stmt::ParallelStmt {
+                body,
                 span: self.span_from(&start, &end),
             });
         }
@@ -3430,6 +3459,30 @@ impl Parser {
             let operand = self.parse_unary()?;
             return Ok(Expr::AwaitExpr {
                 operand: Box::new(operand),
+                span: self.span_from(&start, self.previous()),
+            });
+        }
+        if self.match_types(&[TokenType::Spawn]) {
+            let start = self.previous().clone();
+            let callee = Box::new(Expr::IdentExpr {
+                name: self.parse_label("Expected function name after spawn")?,
+                span: self.span_from(&start, self.previous()),
+            });
+            let mut args = Vec::new();
+            if self.match_types(&[TokenType::Lparen]) {
+                if !self.check(TokenType::Rparen) {
+                    loop {
+                        args.push(self.parse_expr()?);
+                        if !self.match_types(&[TokenType::Comma]) {
+                            break;
+                        }
+                    }
+                }
+                self.expect(TokenType::Rparen, "Expected ')' after spawn arguments")?;
+            }
+            return Ok(Expr::SpawnExpr {
+                callee,
+                args,
                 span: self.span_from(&start, self.previous()),
             });
         }
@@ -3835,6 +3888,7 @@ fn expr_span(expr: &Expr) -> Span {
         | Expr::ExecuteExpr { span, .. }
         | Expr::DiscoverExpr { span, .. } => *span,
         Expr::AwaitExpr { span, .. } => *span,
+        Expr::SpawnExpr { span, .. } => *span,
     }
 }
 
@@ -3899,6 +3953,11 @@ fn re_span_expr(expr: Expr, span: Span) -> Expr {
         },
         Expr::AwaitExpr { operand, span } => Expr::AwaitExpr {
             operand: Box::new((*operand).clone()),
+            span,
+        },
+        Expr::SpawnExpr { callee, args, span } => Expr::SpawnExpr {
+            callee: Box::new((*callee).clone()),
+            args: args.clone(),
             span,
         },
     }

@@ -111,6 +111,15 @@ pub struct RunOptions {
     pub lidar_range: f64,
     #[serde(skip)]
     pub module_registry: Option<crate::modules::ModuleRegistry>,
+    /// Emit scheduler multiplexing and tick diagnostics to runtime logs.
+    #[serde(default)]
+    pub trace_scheduler: bool,
+    /// Emit per-task tick and deadline diagnostics to runtime logs.
+    #[serde(default)]
+    pub trace_tasks: bool,
+    /// Log digital twin replay frame summaries (simulation).
+    #[serde(default)]
+    pub replay_trace: bool,
 }
 
 fn default_max_loop_iterations() -> usize {
@@ -133,4 +142,6 @@ pub struct RunResult {
     pub state: RobotState,
     pub events: Vec<String>,
     pub logs: Vec<String>,
+    #[serde(default)]
+    pub metrics: crate::telemetry::RuntimeTelemetry,
 }

@@ -487,13 +487,24 @@ impl PrettyPrinter {
         for task in tasks {
             let crate::foundations::TaskDecl::TaskDecl {
                 name,
+                priority,
                 interval_ms,
                 requires,
                 ensures,
                 body,
                 ..
             } = task;
-            let mut header = format!("task {name} every {interval_ms}ms");
+            let mut header = format!("task {name}");
+            if !matches!(priority, crate::foundations::TaskPriority::Normal) {
+                header.push(' ');
+                header.push_str(match priority {
+                    crate::foundations::TaskPriority::Critical => "critical",
+                    crate::foundations::TaskPriority::High => "high",
+                    crate::foundations::TaskPriority::Normal => "normal",
+                    crate::foundations::TaskPriority::Low => "low",
+                });
+            }
+            header.push_str(&format!(" every {interval_ms}ms"));
             if let Some(req) = requires {
                 let mut cond = PrettyPrinter::new();
                 cond.print_expr(req);
@@ -689,6 +700,11 @@ impl PrettyPrinter {
                 }
                 self.close_block(";");
             }
+            Stmt::ParallelStmt { body, .. } => {
+                self.open_block("parallel");
+                self.print_stmts(body);
+                self.close_block(";");
+            }
         }
     }
 
@@ -817,6 +833,22 @@ impl PrettyPrinter {
             Expr::AwaitExpr { operand, .. } => {
                 self.write("await ");
                 self.print_expr(operand);
+            }
+            Expr::SpawnExpr { callee, args, .. } => {
+                self.write("spawn ");
+                if let Expr::IdentExpr { name, .. } = callee.as_ref() {
+                    self.write(name);
+                }
+                if !args.is_empty() {
+                    self.write("(");
+                    for (i, arg) in args.iter().enumerate() {
+                        if i > 0 {
+                            self.write(", ");
+                        }
+                        self.print_expr(arg);
+                    }
+                    self.write(")");
+                }
             }
         }
     }

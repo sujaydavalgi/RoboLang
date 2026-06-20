@@ -104,6 +104,7 @@ pub fn stmt_line(stmt: &crate::ast::Stmt) -> u32 {
         | Stmt::DiscoverStmt { span, .. }
         | Stmt::ReceiveStmt { span, .. }
         | Stmt::SpawnStmt { span, .. }
-        | Stmt::SelectStmt { span, .. } => span.start.line,
+        | Stmt::SelectStmt { span, .. }
+        | Stmt::ParallelStmt { span, .. } => span.start.line,
     }
 }

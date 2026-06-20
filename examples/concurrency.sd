@@ -1,0 +1,62 @@
+module perception;
+
+export fn scan_distance() -> Distance {
+  return 2.5 m;
+}
+
+export async fn localize() -> Pose {
+  return pose(x: 0.0 m, y: 0.0 m, theta: 0.0 rad);
+}
+
+export fn ping() -> Int {
+  return 42;
+}
+
+robot Rover {
+  sensor lidar: Lidar on "/scan";
+  actuator wheels: DifferentialDrive;
+
+  safety {
+    max_speed = 1.0 m/s;
+    stop_if lidar.nearest_distance < 0.5 m;
+  }
+
+  task safety_monitor critical every 20ms {
+    if lidar.nearest_distance < 0.5 m {
+      wheels.stop();
+    }
+  }
+
+  task navigation high every 50ms {
+    parallel {
+      let loc = spawn localize();
+      let ping_handle = spawn ping();
+    };
+
+    let results = _parallel;
+    let _ = results;
+
+    let dist = scan_distance();
+    if dist > 1.0 m {
+      wheels.drive(linear: 0.3 m/s, angular: 0.0 rad/s);
+    } else {
+      wheels.stop();
+    }
+
+    let ch = channel();
+    send(ch, 1);
+    select {
+      recv(ch) => {
+        wheels.stop();
+      }
+    };
+  }
+
+  task health_report low every 100ms {
+    budget {
+      battery <= 5%;
+      cpu <= 10%;
+    }
+    wheels.stop();
+  }
+}

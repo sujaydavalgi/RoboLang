@@ -15,7 +15,7 @@ use crate::audit::{
 use crate::comm::{CommBus, DiscoverFilter, TransportKind};
 use crate::error::{PoseState, RobotState, SpandaError, VelocityState};
 use crate::events::EventBus;
-use crate::foundations::{CapabilityDecl, StateMachineDecl, TaskDecl, TwinDecl};
+use crate::foundations::{CapabilityDecl, StateMachineDecl, TaskDecl, TaskPriority, TwinDecl};
 use crate::hal::{create_sim_hal, hal_member_from_decl, HalBackend, SimHalBackend};
 use crate::lib_registry::{get_sensor_driver, read_with_driver, DriverContext, SimState};
 use crate::safety::{
@@ -191,6 +191,9 @@ pub enum RuntimeValue {
         func_name: String,
         args: Vec<RuntimeValue>,
         resolved: Option<Box<RuntimeValue>>,
+    },
+    TaskHandle {
+        id: u64,
     },
     Channel {
         id: u64,
@@ -422,6 +425,9 @@ pub struct InterpreterOptions {
     pub module_registry: Option<crate::modules::ModuleRegistry>,
     pub debug: Option<crate::debug::DebugController>,
     pub ffi_registry: crate::ffi::FfiRegistry,
+    pub trace_scheduler: bool,
+    pub trace_tasks: bool,
+    pub replay_trace: bool,
 }
 
 impl Default for InterpreterOptions {
@@ -433,6 +439,9 @@ impl Default for InterpreterOptions {
             module_registry: None,
             debug: None,
             ffi_registry: crate::ffi::FfiRegistry::new(),
+            trace_scheduler: false,
+            trace_tasks: false,
+            replay_trace: false,
         }
     }
 }
@@ -467,6 +476,7 @@ pub struct Interpreter<B: RobotBackend> {
     imported_functions: HashMap<String, crate::foundations::ModuleFnDecl>,
     extern_functions: HashMap<String, crate::foundations::ExternFnDecl>,
     concurrency: crate::concurrency::ConcurrencyRuntime,
+    telemetry: crate::telemetry::RuntimeTelemetry,
 }
 
 impl<B: RobotBackend> Interpreter<B> {
@@ -501,6 +511,33 @@ impl<B: RobotBackend> Interpreter<B> {
             imported_functions: HashMap::new(),
             extern_functions: HashMap::new(),
             concurrency: crate::concurrency::ConcurrencyRuntime::new(),
+            telemetry: crate::telemetry::RuntimeTelemetry::default(),
+        }
+    }
+
+    pub fn telemetry(&self) -> &crate::telemetry::RuntimeTelemetry {
+        &self.telemetry
+    }
+
+    pub fn take_telemetry(&mut self) -> crate::telemetry::RuntimeTelemetry {
+        std::mem::take(&mut self.telemetry)
+    }
+
+    fn trace_scheduler_log(&self, message: impl Into<String>) {
+        if self.options.trace_scheduler {
+            self.log(format!("trace-scheduler: {}", message.into()));
+        }
+    }
+
+    fn trace_task_log(&self, message: impl Into<String>) {
+        if self.options.trace_tasks {
+            self.log(format!("trace-task: {}", message.into()));
+        }
+    }
+
+    fn trace_replay_log(&self, message: impl Into<String>) {
+        if self.options.replay_trace {
+            self.log(format!("trace-replay: {}", message.into()));
         }
     }
 
@@ -606,17 +643,36 @@ impl<B: RobotBackend> Interpreter<B> {
                 } else if let Some((body, interval_ms, requires, ensures, invariant)) =
                     robot.task_with_contracts(&name)
                 {
+                    let schedule = robot
+                        .all_task_schedules()
+                        .into_iter()
+                        .find(|schedule| schedule.name == name);
+                    let priority = schedule
+                        .as_ref()
+                        .map(|s| s.priority)
+                        .unwrap_or(TaskPriority::Normal);
+                    let budget = schedule.as_ref().and_then(|s| s.budget.clone());
                     self.execute_task_loop_with_contracts(
+                        &name,
+                        priority,
                         &body,
                         interval_ms,
                         &requires,
                         &ensures,
                         &invariant,
+                        budget,
                     )?;
                 }
             }
         }
         self.process_spawn_queue()?;
+        if let Some(twin) = &self.twin {
+            let frames = twin.replay_frame_count();
+            self.telemetry.record_replay_frames(frames as u64);
+            if self.options.replay_trace && frames > 0 {
+                self.trace_replay_log(format!("captured {frames} replay frame(s)"));
+            }
+        }
         Ok(self.backend.get_state())
     }
 
@@ -729,6 +785,7 @@ impl<B: RobotBackend> Interpreter<B> {
             peer_robots,
             devices,
             twin_sync,
+            agent_channels,
             ..
         } = robot;
 
@@ -827,6 +884,24 @@ impl<B: RobotBackend> Interpreter<B> {
 
         for agent_decl in agents {
             self.setup_agent(agent_decl);
+        }
+        for channel in agent_channels {
+            let crate::comm::AgentChannelDecl::AgentChannelDecl {
+                from_agent,
+                to_agent,
+                message_type,
+                ..
+            } = channel;
+            self.concurrency
+                .register_agent_route(from_agent, to_agent, message_type);
+            self.log(format!(
+                "agent channel: {from_agent} -> {to_agent}{}",
+                if message_type.is_empty() {
+                    String::new()
+                } else {
+                    format!(" ({message_type})")
+                }
+            ));
         }
         for trait_impl in trait_impls {
             use crate::foundations::TraitImplDecl;
@@ -1328,9 +1403,77 @@ impl<B: RobotBackend> Interpreter<B> {
         self.agents.insert(name.clone(), agent);
         self.agent_capabilities
             .insert(name.clone(), capabilities.clone());
+        self.comm_bus.register_agent(name);
         self.env
             .define(name.clone(), RuntimeValue::Agent { name: name.clone() });
         self.log(format!("Agent '{name}': {goal}"));
+    }
+
+    fn run_scheduled_task(&mut self, schedule: &TaskSchedule) -> Result<bool, SpandaError> {
+        if let Some(budget) = &schedule.budget {
+            if let Some(metrics) = self.telemetry.tasks.get(&schedule.name) {
+                if metrics.max_duration_ms > 0.0 {
+                    if let Some(kind) = task_budget_violation_kind(
+                        budget,
+                        metrics.max_duration_ms,
+                        schedule.interval_ms,
+                    ) {
+                        self.telemetry.record_budget_violation(
+                            &schedule.name,
+                            schedule.priority,
+                            schedule.interval_ms,
+                        );
+                        self.telemetry.record_task_skip(
+                            &schedule.name,
+                            schedule.priority,
+                            schedule.interval_ms,
+                        );
+                        self.log(format!(
+                            "task '{}': {kind} budget exceeded — skipping tick",
+                            schedule.name
+                        ));
+                        self.trace_task_log(format!("{} skipped ({kind} budget)", schedule.name));
+                        return Ok(true);
+                    }
+                }
+            }
+        }
+        let started = std::time::Instant::now();
+        let continue_running = self.execute_task_iteration(
+            &schedule.body,
+            &schedule.requires,
+            &schedule.ensures,
+            &schedule.invariant,
+            Some(&schedule.name),
+        )?;
+        let measured_ms = started.elapsed().as_secs_f64() * 1000.0;
+        let duration_ms = measured_ms.max(RUNTIME_TASK_COST_MS);
+        self.telemetry.record_task_duration(
+            &schedule.name,
+            schedule.priority,
+            schedule.interval_ms,
+            duration_ms,
+        );
+        if let Some(budget) = &schedule.budget {
+            if let Some(kind) =
+                task_budget_violation_kind(budget, duration_ms, schedule.interval_ms)
+            {
+                self.telemetry.record_budget_violation(
+                    &schedule.name,
+                    schedule.priority,
+                    schedule.interval_ms,
+                );
+                self.log(format!(
+                    "task '{}': {kind} budget exceeded ({duration_ms:.2}ms)",
+                    schedule.name
+                ));
+                self.trace_task_log(format!(
+                    "{} budget violation {kind} duration={duration_ms:.2}ms",
+                    schedule.name
+                ));
+            }
+        }
+        Ok(continue_running)
     }
 
     fn eval_contract(&mut self, expr: &Expr) -> Result<bool, SpandaError> {
@@ -1394,17 +1537,46 @@ impl<B: RobotBackend> Interpreter<B> {
         Ok(())
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn execute_task_loop_with_contracts(
         &mut self,
+        task_name: &str,
+        priority: TaskPriority,
         body: &[Stmt],
         interval_ms: f64,
         requires: &Option<Expr>,
         ensures: &Option<Expr>,
         invariant: &Option<Expr>,
+        budget: Option<crate::foundations::ResourceBudgetDecl>,
     ) -> Result<(), SpandaError> {
-        for _ in 0..self.options.max_loop_iterations {
+        self.telemetry.record_scheduler_start(1, interval_ms);
+        self.trace_scheduler_log(format!(
+            "single-task {task_name} interval={interval_ms}ms priority={}",
+            priority_label(priority)
+        ));
+        let schedule = TaskSchedule {
+            name: task_name.to_string(),
+            priority,
+            interval_ms,
+            next_due_ms: 0.0,
+            body: body.to_vec(),
+            requires: requires.clone(),
+            ensures: ensures.clone(),
+            invariant: invariant.clone(),
+            budget,
+        };
+        for iteration in 0..self.options.max_loop_iterations {
             self.backend.tick(interval_ms);
-            if !self.execute_task_iteration(body, requires, ensures, invariant, None)? {
+            self.telemetry.record_scheduler_tick();
+            self.telemetry
+                .record_task_tick(task_name, priority, interval_ms);
+            self.trace_task_log(format!(
+                "{task_name} tick={} priority={} interval={interval_ms}ms",
+                iteration + 1,
+                priority_label(priority)
+            ));
+            if !self.run_scheduled_task(&schedule)? {
+                self.telemetry.record_emergency_stop();
                 break;
             }
             self.run_verify_rules()?;
@@ -1426,6 +1598,11 @@ impl<B: RobotBackend> Interpreter<B> {
                 let label = task_name
                     .map(|name| format!("task '{name}'"))
                     .unwrap_or_else(|| "task".into());
+                if let Some(name) = task_name {
+                    self.telemetry
+                        .record_task_skip(name, TaskPriority::Normal, 0.0);
+                    self.trace_task_log(format!("{name} skipped (requires failed)"));
+                }
                 self.log(format!(
                     "{label} requires contract failed — skipping iteration"
                 ));
@@ -1462,24 +1639,50 @@ impl<B: RobotBackend> Interpreter<B> {
             .max(1.0);
         let mut schedules = tasks;
         let mut sim_time = 0.0;
+        self.telemetry
+            .record_scheduler_start(schedules.len() as u64, base_tick);
         self.log(format!(
             "scheduler: multiplexing {} task(s) with base tick {}ms",
             schedules.len(),
             base_tick
         ));
-        for _ in 0..self.options.max_loop_iterations {
+        self.trace_scheduler_log(format!(
+            "start tasks={} base_tick={base_tick}ms",
+            schedules.len()
+        ));
+        for iteration in 0..self.options.max_loop_iterations {
             self.backend.tick(base_tick);
             sim_time += base_tick;
+            self.telemetry.record_scheduler_tick();
+            self.trace_scheduler_log(format!("tick={} sim_time={sim_time}ms", iteration + 1));
+            schedules.sort_by_key(|schedule| schedule.priority_rank());
             for schedule in &mut schedules {
                 if schedule.next_due_ms <= sim_time {
+                    if sim_time > schedule.next_due_ms + schedule.interval_ms {
+                        self.telemetry.record_missed_deadline(
+                            &schedule.name,
+                            schedule.priority,
+                            schedule.interval_ms,
+                        );
+                        self.trace_task_log(format!(
+                            "{} missed deadline at sim_time={sim_time}ms",
+                            schedule.name
+                        ));
+                    }
+                    self.telemetry.record_task_tick(
+                        &schedule.name,
+                        schedule.priority,
+                        schedule.interval_ms,
+                    );
                     self.log(format!("task '{}': tick", schedule.name));
-                    if !self.execute_task_iteration(
-                        &schedule.body,
-                        &schedule.requires,
-                        &schedule.ensures,
-                        &schedule.invariant,
-                        Some(&schedule.name),
-                    )? {
+                    self.trace_task_log(format!(
+                        "{} tick priority={} interval={}ms",
+                        schedule.name,
+                        priority_label(schedule.priority),
+                        schedule.interval_ms
+                    ));
+                    if !self.run_scheduled_task(schedule)? {
+                        self.telemetry.record_emergency_stop();
                         return Ok(());
                     }
                     schedule.next_due_ms = sim_time + schedule.interval_ms;
@@ -1493,6 +1696,7 @@ impl<B: RobotBackend> Interpreter<B> {
                 .map(|m| m.is_emergency_stop())
                 .unwrap_or(false)
             {
+                self.telemetry.record_emergency_stop();
                 break;
             }
         }
@@ -1858,12 +2062,18 @@ impl<B: RobotBackend> Interpreter<B> {
                 var_name,
                 ..
             } => {
-                if let Some(RuntimeValue::Topic { topic_path, .. }) = self.env.get(topic_name) {
-                    let path = topic_path.clone();
-                    if let Some(val) = self.comm_bus.receive(&path) {
-                        self.env.define(var_name.clone(), val);
-                        self.log(format!("receive {topic_name} to {var_name}"));
-                    }
+                let path = if topic_name.contains('.') {
+                    format!("/{}", topic_name.replace('.', "/"))
+                } else if let Some(RuntimeValue::Topic { topic_path, .. }) =
+                    self.env.get(topic_name)
+                {
+                    topic_path.clone()
+                } else {
+                    format!("/{topic_name}")
+                };
+                if let Some(val) = self.comm_bus.receive(&path) {
+                    self.env.define(var_name.clone(), val);
+                    self.log(format!("receive {topic_name} to {var_name}"));
                 }
             }
             Stmt::EmergencyStopStmt { .. } => {
@@ -1916,21 +2126,10 @@ impl<B: RobotBackend> Interpreter<B> {
                 self.eval_expr(expr)?;
             }
             Stmt::SpawnStmt { callee, args, span } => {
-                let mut arg_values = Vec::new();
-                for arg in args {
-                    arg_values.push(self.eval_expr(arg)?);
-                }
-                let name = match callee {
-                    Expr::IdentExpr { name, .. } => name.clone(),
-                    _ => {
-                        return Err(RuntimeError::new(
-                            "spawn requires function name",
-                            span.start.line,
-                        )
-                        .into_spanda())
-                    }
-                };
-                self.concurrency.queue_spawn(name, arg_values);
+                let (name, arg_values) = self.eval_spawn_target(callee, args, span.start.line)?;
+                self.telemetry.record_fire_and_forget_spawn();
+                self.trace_task_log(format!("spawn fire-and-forget {name}"));
+                self.concurrency.queue_fire_and_forget(name, arg_values);
             }
             Stmt::SelectStmt { arms, span } => {
                 'select: for arm in arms {
@@ -1940,6 +2139,69 @@ impl<B: RobotBackend> Interpreter<B> {
                         self.execute_block(&arm.body)?;
                         break 'select;
                     }
+                }
+            }
+            Stmt::ParallelStmt { body, span } => {
+                self.telemetry.record_parallel_block();
+                self.trace_task_log(format!("parallel block {} branch(es)", body.len()));
+                let saved = self.env.clone_bindings();
+                let mut pending_handles: Vec<(Option<String>, u64)> = Vec::new();
+                let mut results = HashMap::new();
+
+                self.log(format!(
+                    "parallel: executing {} branch(es) cooperatively",
+                    body.len()
+                ));
+
+                for stmt in body {
+                    self.env = saved.clone_bindings();
+                    match stmt {
+                        Stmt::VarDecl {
+                            name,
+                            init: Some(init),
+                            ..
+                        } => {
+                            let val = self.eval_expr(init)?;
+                            if let RuntimeValue::TaskHandle { id } = val {
+                                pending_handles.push((Some(name.clone()), id));
+                            } else {
+                                results.insert(name.clone(), val);
+                            }
+                        }
+                        Stmt::ExprStmt { expr, .. } => {
+                            let val = self.eval_expr(expr)?;
+                            if let RuntimeValue::TaskHandle { id } = val {
+                                pending_handles.push((None, id));
+                            }
+                        }
+                        Stmt::SpawnStmt { callee, args, .. } => {
+                            let (func_name, arg_values) =
+                                self.eval_spawn_target(callee, args, span.start.line)?;
+                            let handle = self.concurrency.create_task_handle(func_name, arg_values);
+                            if let RuntimeValue::TaskHandle { id } = handle {
+                                pending_handles.push((None, id));
+                            }
+                        }
+                        _ => self.execute_stmt(stmt)?,
+                    }
+                }
+
+                self.env = saved;
+
+                for (name, id) in pending_handles {
+                    let result = self.resolve_task_handle(id, span.start.line)?;
+                    if let Some(binding) = name {
+                        results.insert(binding, result);
+                    }
+                }
+
+                if !results.is_empty() {
+                    let count = results.len();
+                    self.env.define(
+                        "_parallel",
+                        RuntimeValue::object("ParallelResults", results),
+                    );
+                    self.log(format!("parallel: aggregated {count} result(s)"));
                 }
             }
             Stmt::ReturnStmt { .. } => {}
@@ -2058,24 +2320,79 @@ impl<B: RobotBackend> Interpreter<B> {
         }
     }
 
-    fn process_spawn_queue(&mut self) -> Result<(), SpandaError> {
-        let jobs = self.concurrency.drain_spawn_queue();
-        for job in jobs {
-            if let Some(func) = self
-                .module_functions
-                .get(&job.func_name)
-                .or_else(|| self.imported_functions.get(&job.func_name))
-                .cloned()
-            {
-                let saved = self.env.clone_bindings();
-                for (i, param) in func.params.iter().enumerate() {
-                    if let Some(val) = job.args.get(i) {
-                        self.env.define(param.name.clone(), val.clone());
-                    }
-                }
-                self.execute_block(&func.body)?;
-                self.env = saved;
+    fn eval_spawn_target(
+        &mut self,
+        callee: &Expr,
+        args: &[Expr],
+        line: u32,
+    ) -> Result<(String, Vec<RuntimeValue>), SpandaError> {
+        let mut arg_values = Vec::new();
+        for arg in args {
+            arg_values.push(self.eval_expr(arg)?);
+        }
+        let name = match callee {
+            Expr::IdentExpr { name, .. } => name.clone(),
+            _ => return Err(RuntimeError::new("spawn requires function name", line).into_spanda()),
+        };
+        Ok((name, arg_values))
+    }
+
+    fn execute_spawn_job(
+        &mut self,
+        func_name: &str,
+        args: &[RuntimeValue],
+        line: u32,
+    ) -> Result<RuntimeValue, SpandaError> {
+        let func = self
+            .module_functions
+            .get(func_name)
+            .or_else(|| self.imported_functions.get(func_name))
+            .cloned()
+            .ok_or_else(|| {
+                RuntimeError::new(format!("Unknown spawn target '{func_name}'"), line).into_spanda()
+            })?;
+        let saved = self.env.clone_bindings();
+        for (i, param) in func.params.iter().enumerate() {
+            if let Some(val) = args.get(i) {
+                self.env.define(param.name.clone(), val.clone());
             }
+        }
+        let result = self
+            .execute_block_with_return(&func.body)?
+            .unwrap_or(RuntimeValue::Void);
+        self.env = saved;
+        Ok(result)
+    }
+
+    fn resolve_task_handle(&mut self, id: u64, line: u32) -> Result<RuntimeValue, SpandaError> {
+        if let Some(result) = self.concurrency.handle(id).and_then(|h| h.result.clone()) {
+            return Ok(result);
+        }
+        let result = self.execute_spawn_handle(id, line)?;
+        self.telemetry.record_join();
+        self.trace_task_log(format!("join handle {id} -> completed"));
+        Ok(result)
+    }
+
+    fn execute_spawn_handle(&mut self, id: u64, line: u32) -> Result<RuntimeValue, SpandaError> {
+        if let Some(result) = self.concurrency.handle(id).and_then(|h| h.result.clone()) {
+            return Ok(result);
+        }
+        let (func_name, args) = {
+            let handle = self.concurrency.handle(id).ok_or_else(|| {
+                RuntimeError::new(format!("Unknown task handle id {id}"), line).into_spanda()
+            })?;
+            (handle.func_name.clone(), handle.args.clone())
+        };
+        let result = self.execute_spawn_job(&func_name, &args, line)?;
+        self.concurrency.set_handle_result(id, result.clone());
+        Ok(result)
+    }
+
+    fn process_spawn_queue(&mut self) -> Result<(), SpandaError> {
+        let ids = self.concurrency.drain_fire_and_forget_queue();
+        for id in ids {
+            self.execute_spawn_handle(id, 0)?;
         }
         Ok(())
     }
@@ -2168,6 +2485,12 @@ impl<B: RobotBackend> Interpreter<B> {
             Expr::AwaitExpr { operand, span } => {
                 let value = self.eval_expr(operand)?;
                 self.resolve_future(value, span.start.line)
+            }
+            Expr::SpawnExpr { callee, args, span } => {
+                let (name, arg_values) = self.eval_spawn_target(callee, args, span.start.line)?;
+                self.telemetry.record_spawn();
+                self.trace_task_log(format!("spawn handle {name}"));
+                Ok(self.concurrency.create_task_handle(name, arg_values))
             }
             Expr::MatchExpr {
                 scrutinee, arms, ..
@@ -2941,6 +3264,7 @@ impl<B: RobotBackend> Interpreter<B> {
                 } else {
                     self.get_named_arg_value(named_args, "value")?
                 };
+                self.concurrency.bind_channel_type(&channel, &value, line)?;
                 self.concurrency.send(&channel, value, line)?;
                 Ok(RuntimeValue::Void)
             }
@@ -2956,6 +3280,87 @@ impl<B: RobotBackend> Interpreter<B> {
                     Some(value) => Ok(value),
                     None => Ok(RuntimeValue::Void),
                 }
+            }
+            "join" => {
+                let value = args
+                    .first()
+                    .map(|a| self.eval_expr(a))
+                    .transpose()?
+                    .ok_or_else(|| RuntimeError::new("join requires handle", line).into_spanda())?;
+                match value {
+                    RuntimeValue::Future { .. } => {
+                        self.telemetry.record_join();
+                        self.trace_task_log("join future");
+                        self.resolve_future(value, line)
+                    }
+                    RuntimeValue::TaskHandle { id } => self.resolve_task_handle(id, line),
+                    _ => Err(
+                        RuntimeError::new("join requires a Future or TaskHandle value", line)
+                            .into_spanda(),
+                    ),
+                }
+            }
+            "send_agent" => {
+                let from = self.current_agent.clone().ok_or_else(|| {
+                    RuntimeError::new("send_agent requires active agent context", line)
+                        .into_spanda()
+                })?;
+                let to = if let Some(arg) = args.first() {
+                    get_string(&self.eval_expr(arg)?, "")
+                } else {
+                    get_string(&self.get_named_arg_value(named_args, "to")?, "")
+                };
+                if to.is_empty() {
+                    return Err(
+                        RuntimeError::new("send_agent requires target agent name", line)
+                            .into_spanda(),
+                    );
+                }
+                let value = if args.len() > 1 {
+                    self.eval_expr(&args[1])?
+                } else {
+                    self.get_named_arg_value(named_args, "value")?
+                };
+                self.concurrency.send_agent(&from, &to, value, line)?;
+                self.log(format!("send_agent {from} -> {to}"));
+                Ok(RuntimeValue::Void)
+            }
+            "recv_agent" => {
+                let agent = self.current_agent.clone().ok_or_else(|| {
+                    RuntimeError::new("recv_agent requires active agent context", line)
+                        .into_spanda()
+                })?;
+                match self.concurrency.try_recv_agent(&agent, line) {
+                    Some(value) => Ok(value),
+                    None => Ok(RuntimeValue::Void),
+                }
+            }
+            "peer_send" => {
+                let peer = if let Some(arg) = args.first() {
+                    get_string(&self.eval_expr(arg)?, "")
+                } else {
+                    get_string(&self.get_named_arg_value(named_args, "peer")?, "")
+                };
+                let topic = if args.len() > 1 {
+                    get_string(&self.eval_expr(&args[1])?, "")
+                } else {
+                    get_string(&self.get_named_arg_value(named_args, "topic")?, "")
+                };
+                let value = if args.len() > 2 {
+                    self.eval_expr(&args[2])?
+                } else {
+                    self.get_named_arg_value(named_args, "value")?
+                };
+                if peer.is_empty() || topic.is_empty() {
+                    return Err(
+                        RuntimeError::new("peer_send requires (peer, topic, value)", line)
+                            .into_spanda(),
+                    );
+                }
+                self.comm_bus
+                    .publish_peer(&peer, &topic, value, self.default_transport);
+                self.log(format!("peer_send {peer}.{topic}"));
+                Ok(RuntimeValue::Void)
             }
             "serialize" => {
                 let value = args
@@ -3822,12 +4227,61 @@ fn pose_value_to_state(pose: &PoseValue) -> PoseState {
 // AST accessor extensions
 struct TaskSchedule {
     name: String,
+    priority: TaskPriority,
     interval_ms: f64,
     next_due_ms: f64,
     body: Vec<Stmt>,
     requires: Option<Expr>,
     ensures: Option<Expr>,
     invariant: Option<Expr>,
+    budget: Option<crate::foundations::ResourceBudgetDecl>,
+}
+
+const RUNTIME_TASK_COST_MS: f64 = 5.0;
+
+fn task_budget_violation_kind(
+    budget: &crate::foundations::ResourceBudgetDecl,
+    duration_ms: f64,
+    interval_ms: f64,
+) -> Option<&'static str> {
+    let crate::foundations::ResourceBudgetDecl::ResourceBudgetDecl {
+        cpu_pct_max,
+        battery_pct_max,
+        ..
+    } = budget;
+    let interval = interval_ms.max(1.0);
+    let duty_pct = (duration_ms / interval) * 100.0;
+    if let Some(cpu_max) = cpu_pct_max {
+        if duty_pct > *cpu_max {
+            return Some("cpu");
+        }
+    }
+    if let Some(bat_max) = battery_pct_max {
+        if duty_pct > *bat_max {
+            return Some("battery");
+        }
+    }
+    None
+}
+
+impl TaskSchedule {
+    fn priority_rank(&self) -> u8 {
+        match self.priority {
+            TaskPriority::Critical => 0,
+            TaskPriority::High => 1,
+            TaskPriority::Normal => 2,
+            TaskPriority::Low => 3,
+        }
+    }
+}
+
+fn priority_label(priority: TaskPriority) -> &'static str {
+    match priority {
+        TaskPriority::Critical => "critical",
+        TaskPriority::High => "high",
+        TaskPriority::Normal => "normal",
+        TaskPriority::Low => "low",
+    }
 }
 
 trait RobotDeclExt {
@@ -3877,6 +4331,7 @@ impl RobotDeclExt for RobotDecl {
         tasks.iter().find_map(|t| match t {
             TaskDecl::TaskDecl {
                 name: n,
+                priority: _priority,
                 interval_ms,
                 requires,
                 ensures,
@@ -3901,20 +4356,24 @@ impl RobotDeclExt for RobotDecl {
             .map(|t| match t {
                 TaskDecl::TaskDecl {
                     name,
+                    priority,
                     interval_ms,
                     requires,
                     ensures,
                     invariant,
+                    budget,
                     body,
                     ..
                 } => TaskSchedule {
                     name: name.clone(),
+                    priority: *priority,
                     interval_ms: *interval_ms,
                     next_due_ms: 0.0,
                     body: body.clone(),
                     requires: requires.clone(),
                     ensures: ensures.clone(),
                     invariant: invariant.clone(),
+                    budget: budget.clone(),
                 },
             })
             .collect()

@@ -348,6 +348,18 @@ impl InMemoryCommBus {
     pub fn register_device(&mut self, name: impl Into<String>) {
         self.discovered_devices.push(name.into());
     }
+
+    /// Deliver a message to a peer robot topic namespace (`/{peer}/{topic}`).
+    pub fn publish_peer(
+        &mut self,
+        peer: &str,
+        topic: &str,
+        value: RuntimeValue,
+        transport: TransportKind,
+    ) {
+        let path = format!("/{peer}/{topic}");
+        self.publish(&path, "PeerMessage", value, transport);
+    }
 }
 
 impl CommBus for InMemoryCommBus {

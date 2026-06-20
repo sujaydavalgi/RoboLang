@@ -363,6 +363,16 @@ impl RoutingCommBus {
     pub fn register_device(&mut self, name: impl Into<String>) {
         self.memory.register_device(name);
     }
+
+    pub fn publish_peer(
+        &mut self,
+        peer: &str,
+        topic: &str,
+        value: RuntimeValue,
+        transport: TransportKind,
+    ) {
+        self.memory.publish_peer(peer, topic, value, transport);
+    }
 }
 
 impl CommBus for RoutingCommBus {

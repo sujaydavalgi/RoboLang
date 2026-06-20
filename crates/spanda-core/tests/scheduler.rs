@@ -54,3 +54,43 @@ fn multitask_example_runs() {
     .expect("read multitask example");
     run(&source, RunOptions::default()).expect("multitask example should run");
 }
+
+#[test]
+fn scheduler_runs_critical_before_low_priority() {
+    let source = r#"
+robot R {
+  actuator wheels: DifferentialDrive;
+  task SafetyMonitor critical every 50ms {
+    wheels.stop();
+  }
+  task Telemetry low every 50ms {
+    wheels.stop();
+  }
+}
+"#;
+    let result = run(
+        source,
+        RunOptions {
+            max_loop_iterations: 2,
+            ..Default::default()
+        },
+    )
+    .expect("priority scheduling should run");
+    let mut first_critical = None;
+    let mut first_low = None;
+    for (idx, log) in result.logs.iter().enumerate() {
+        if first_critical.is_none() && log.contains("task 'SafetyMonitor': tick") {
+            first_critical = Some(idx);
+        }
+        if first_low.is_none() && log.contains("task 'Telemetry': tick") {
+            first_low = Some(idx);
+        }
+    }
+    assert!(first_critical.is_some(), "missing critical task logs");
+    assert!(first_low.is_some(), "missing low task logs");
+    assert!(
+        first_critical.unwrap() < first_low.unwrap(),
+        "critical task should run before low priority task; logs={:?}",
+        result.logs
+    );
+}

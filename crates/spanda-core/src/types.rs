@@ -232,6 +232,8 @@ pub struct TypeChecker {
     module_functions: HashMap<String, ModuleFnDecl>,
     extern_functions: HashMap<String, crate::foundations::ExternFnDecl>,
     type_param_scope: HashMap<String, SpandaType>,
+    channel_payload_types: HashMap<String, SpandaType>,
+    active_agent: Option<String>,
 }
 
 impl Default for TypeChecker {
@@ -263,6 +265,8 @@ impl TypeChecker {
             module_functions: HashMap::new(),
             extern_functions: HashMap::new(),
             type_param_scope: HashMap::new(),
+            channel_payload_types: HashMap::new(),
+            active_agent: None,
         }
     }
 
@@ -423,6 +427,13 @@ impl TypeChecker {
     fn future_type(inner: SpandaType) -> SpandaType {
         SpandaType::Generic {
             name: "Future".into(),
+            type_args: vec![inner],
+        }
+    }
+
+    fn task_handle_type(inner: SpandaType) -> SpandaType {
+        SpandaType::Generic {
+            name: "TaskHandle".into(),
             type_args: vec![inner],
         }
     }
@@ -1197,11 +1208,12 @@ impl TypeChecker {
         for task in tasks {
             let TaskDecl::TaskDecl {
                 name,
+                priority: _priority,
                 interval_ms,
                 requires,
                 ensures,
                 invariant,
-                budget: _budget,
+                budget,
                 body,
                 span,
             } = task;
@@ -1217,6 +1229,55 @@ impl TypeChecker {
                     span.start.line,
                     span.start.column,
                 );
+            }
+            if let Some(crate::foundations::ResourceBudgetDecl::ResourceBudgetDecl {
+                battery_pct_max,
+                memory_mb_max,
+                cpu_pct_max,
+                network_mbps_max,
+                storage_mb_max,
+                ..
+            }) = budget
+            {
+                let validate_non_negative =
+                    |checker: &mut TypeChecker, label: &str, value: f64, line: u32, column: u32| {
+                        if value < 0.0 {
+                            checker.error(
+                                format!("{label} budget must be non-negative"),
+                                line,
+                                column,
+                            );
+                        }
+                    };
+                if let Some(v) = battery_pct_max {
+                    if *v > 100.0 {
+                        self.error(
+                            "battery budget must be <= 100%".into(),
+                            span.start.line,
+                            span.start.column,
+                        );
+                    }
+                    validate_non_negative(self, "battery", *v, span.start.line, span.start.column);
+                }
+                if let Some(v) = memory_mb_max {
+                    validate_non_negative(self, "memory", *v, span.start.line, span.start.column);
+                }
+                if let Some(v) = cpu_pct_max {
+                    if *v > 100.0 {
+                        self.error(
+                            "cpu budget must be <= 100%".into(),
+                            span.start.line,
+                            span.start.column,
+                        );
+                    }
+                    validate_non_negative(self, "cpu", *v, span.start.line, span.start.column);
+                }
+                if let Some(v) = network_mbps_max {
+                    validate_non_negative(self, "network", *v, span.start.line, span.start.column);
+                }
+                if let Some(v) = storage_mb_max {
+                    validate_non_negative(self, "storage", *v, span.start.line, span.start.column);
+                }
             }
             if let Some(req) = requires {
                 let t = self.check_expr(req);
@@ -1875,9 +1936,12 @@ impl TypeChecker {
             },
         );
         let saved = self.symbols.clone();
+        let prev_agent = self.active_agent.clone();
+        self.active_agent = Some(name.clone());
         for stmt in plan_body {
             self.check_stmt(stmt);
         }
+        self.active_agent = prev_agent;
         self.symbols = saved;
     }
 
@@ -2108,7 +2172,12 @@ impl TypeChecker {
                 var_name,
                 span,
             } => {
-                if self.symbols.get(topic_name).map(|s| s.kind) != Some(SymbolKind::Topic) {
+                let (root, _) = topic_name
+                    .split_once('.')
+                    .unwrap_or((topic_name.as_str(), ""));
+                if self.symbols.get(topic_name).map(|s| s.kind) != Some(SymbolKind::Topic)
+                    && !self.peer_robot_names.contains(root)
+                {
                     self.error(
                         format!("Unknown topic '{topic_name}' for receive"),
                         span.start.line,
@@ -2151,6 +2220,22 @@ impl TypeChecker {
                         self.check_stmt(stmt);
                     }
                 }
+            }
+            Stmt::ParallelStmt { body, .. } => {
+                for stmt in body {
+                    self.check_stmt(stmt);
+                }
+                self.symbols.insert(
+                    "_parallel".into(),
+                    SymbolEntry {
+                        robo_type: SpandaType::Named {
+                            name: "ParallelResults".into(),
+                        },
+                        kind: SymbolKind::Variable,
+                        sensor_type: None,
+                        actuator_type: None,
+                    },
+                );
             }
         }
     }
@@ -2316,6 +2401,37 @@ impl TypeChecker {
                     span.start.line,
                     span.start.column,
                 );
+                SpandaType::Void
+            }
+            Expr::SpawnExpr { callee, args, span } => {
+                if let Expr::IdentExpr { name, .. } = callee.as_ref() {
+                    if let Some(func) = self.module_functions.get(name).cloned() {
+                        for (i, arg) in args.iter().enumerate() {
+                            if let Some(param) = func.params.get(i) {
+                                let expected = self.resolve_type_ann(&param.type_ann);
+                                let actual = self.check_expr(arg);
+                                self.assert_compatible(
+                                    &expected,
+                                    &actual,
+                                    span.start.line,
+                                    span.start.column,
+                                );
+                            }
+                        }
+                        return Self::task_handle_type(self.resolve_type_ann(&func.return_type));
+                    }
+                    self.error(
+                        format!("Unknown spawn target '{name}'"),
+                        span.start.line,
+                        span.start.column,
+                    );
+                } else {
+                    self.error(
+                        "spawn requires function name".into(),
+                        span.start.line,
+                        span.start.column,
+                    );
+                }
                 SpandaType::Void
             }
             Expr::DiscoverExpr { .. } => SpandaType::Named {
@@ -2693,6 +2809,146 @@ impl TypeChecker {
         span: &Span,
     ) -> SpandaType {
         if let Expr::IdentExpr { name, .. } = callee {
+            if name == "channel" {
+                if !args.is_empty() || !named_args.is_empty() {
+                    self.error(
+                        "channel takes no arguments".into(),
+                        span.start.line,
+                        span.start.column,
+                    );
+                }
+                return SpandaType::Named {
+                    name: "Channel".into(),
+                };
+            }
+            if name == "send" {
+                if args.len() < 2 {
+                    self.error(
+                        "send requires (channel, value)".into(),
+                        span.start.line,
+                        span.start.column,
+                    );
+                    return SpandaType::Void;
+                }
+                let channel_ty = self.check_expr(&args[0]);
+                if !matches!(channel_ty, SpandaType::Named { ref name } if name == "Channel") {
+                    self.error(
+                        "send first argument must be Channel".into(),
+                        span.start.line,
+                        span.start.column,
+                    );
+                }
+                let payload_ty = self.check_expr(&args[1]);
+                if let Expr::IdentExpr {
+                    name: channel_name, ..
+                } = &args[0]
+                {
+                    if let Some(existing) = self.channel_payload_types.get(channel_name).cloned() {
+                        self.assert_compatible(
+                            &existing,
+                            &payload_ty,
+                            span.start.line,
+                            span.start.column,
+                        );
+                    } else {
+                        self.channel_payload_types
+                            .insert(channel_name.clone(), payload_ty.clone());
+                    }
+                }
+                return SpandaType::Void;
+            }
+            if name == "recv" {
+                if args.is_empty() {
+                    self.error(
+                        "recv requires (channel)".into(),
+                        span.start.line,
+                        span.start.column,
+                    );
+                    return SpandaType::Void;
+                }
+                let channel_ty = self.check_expr(&args[0]);
+                if !matches!(channel_ty, SpandaType::Named { ref name } if name == "Channel") {
+                    self.error(
+                        "recv argument must be Channel".into(),
+                        span.start.line,
+                        span.start.column,
+                    );
+                }
+                if let Expr::IdentExpr {
+                    name: channel_name, ..
+                } = &args[0]
+                {
+                    if let Some(existing) = self.channel_payload_types.get(channel_name) {
+                        return existing.clone();
+                    }
+                }
+                return SpandaType::Void;
+            }
+            if name == "join" {
+                if args.is_empty() {
+                    self.error(
+                        "join requires (handle)".into(),
+                        span.start.line,
+                        span.start.column,
+                    );
+                    return SpandaType::Void;
+                }
+                let joined = self.check_expr(&args[0]);
+                if let SpandaType::Generic { name, type_args } = &joined {
+                    if name == "Future" || name == "TaskHandle" {
+                        if let Some(inner) = type_args.first() {
+                            return inner.clone();
+                        }
+                    }
+                }
+                self.error(
+                    "join requires a Future or TaskHandle value".into(),
+                    span.start.line,
+                    span.start.column,
+                );
+                return SpandaType::Void;
+            }
+            if name == "send_agent" {
+                if args.len() < 2 {
+                    self.error(
+                        "send_agent requires (to, value)".into(),
+                        span.start.line,
+                        span.start.column,
+                    );
+                    return SpandaType::Void;
+                }
+                if self.active_agent.is_none() {
+                    self.error(
+                        "send_agent requires active agent context".into(),
+                        span.start.line,
+                        span.start.column,
+                    );
+                }
+                self.check_expr(&args[1]);
+                return SpandaType::Void;
+            }
+            if name == "recv_agent" {
+                if self.active_agent.is_none() {
+                    self.error(
+                        "recv_agent requires active agent context".into(),
+                        span.start.line,
+                        span.start.column,
+                    );
+                }
+                return SpandaType::Void;
+            }
+            if name == "peer_send" {
+                if args.len() < 3 {
+                    self.error(
+                        "peer_send requires (peer, topic, value)".into(),
+                        span.start.line,
+                        span.start.column,
+                    );
+                    return SpandaType::Void;
+                }
+                self.check_expr(&args[2]);
+                return SpandaType::Void;
+            }
             if let Some(func) = self.module_functions.get(name.as_str()).cloned() {
                 let mut call_scope = HashMap::new();
                 for (i, tp) in func.type_params.iter().enumerate() {
@@ -3561,6 +3817,34 @@ fn builtin_functions() -> HashMap<&'static str, FnSig> {
             "recv",
             FnSig {
                 named_params: HashMap::new(),
+                returns: SpandaType::Void,
+            },
+        ),
+        (
+            "send_agent",
+            FnSig {
+                named_params: HashMap::from([
+                    ("to".into(), SpandaType::String),
+                    ("value".into(), SpandaType::Void),
+                ]),
+                returns: SpandaType::Void,
+            },
+        ),
+        (
+            "recv_agent",
+            FnSig {
+                named_params: HashMap::new(),
+                returns: SpandaType::Void,
+            },
+        ),
+        (
+            "peer_send",
+            FnSig {
+                named_params: HashMap::from([
+                    ("peer".into(), SpandaType::String),
+                    ("topic".into(), SpandaType::String),
+                    ("value".into(), SpandaType::Void),
+                ]),
                 returns: SpandaType::Void,
             },
         ),

@@ -88,3 +88,146 @@ robot R {
     check(source).expect("spawn/channel/select should type-check");
     run(source, RunOptions::default()).expect("concurrency primitives should run");
 }
+
+#[test]
+fn typed_channel_rejects_mismatched_payloads() {
+    let source = r#"
+module comm;
+
+robot R {
+  actuator wheels: DifferentialDrive;
+  behavior run() {
+    let ch = channel();
+    send(ch, 42);
+    send(ch, "bad");
+    wheels.stop();
+  }
+}
+"#;
+    let err = check(source).expect_err("type checker should reject mismatched channel payload");
+    assert!(
+        err.diagnostics()
+            .iter()
+            .any(|d| d.message.contains("Type mismatch")),
+        "expected channel payload type mismatch, got {:?}",
+        err.diagnostics()
+    );
+}
+
+#[test]
+fn priority_task_without_every_is_allowed() {
+    let source = r#"
+robot R {
+  actuator wheels: DifferentialDrive;
+  task SafetyMonitor critical {
+    wheels.stop();
+  }
+}
+"#;
+    check(source).expect("priority task without explicit period should type-check");
+}
+
+#[test]
+fn parallel_block_runs_and_waits_for_spawned_calls() {
+    let source = r#"
+module comm;
+
+export fn perception() -> Int { return 1; }
+export fn planning() -> Int { return 2; }
+
+robot R {
+  actuator wheels: DifferentialDrive;
+  behavior run() {
+    parallel {
+      perception();
+      planning();
+    };
+    wheels.stop();
+  }
+}
+"#;
+    check(source).expect("parallel block should type-check");
+    let result = run(source, RunOptions::default()).expect("parallel block should run");
+    assert!(
+        result
+            .logs
+            .iter()
+            .any(|l| l.contains("parallel: executing")),
+        "expected parallel execution log, got {:?}",
+        result.logs
+    );
+}
+
+#[test]
+fn join_future_returns_inner_value() {
+    let source = r#"
+module comm;
+
+export async fn ping() -> Int { return 7; }
+
+robot R {
+  actuator wheels: DifferentialDrive;
+  behavior run() {
+    let f = ping();
+    let v = join(f);
+    let _ = v;
+    wheels.stop();
+  }
+}
+"#;
+    check(source).expect("join should type-check for Future");
+    run(source, RunOptions::default()).expect("join should resolve Future");
+}
+
+#[test]
+fn spawn_handle_join_returns_result() {
+    let source = r#"
+module comm;
+
+export fn ping() -> Int { return 7; }
+
+robot R {
+  actuator wheels: DifferentialDrive;
+  behavior run() {
+    let h = spawn ping();
+    let v = join(h);
+    let _ = v;
+    wheels.stop();
+  }
+}
+"#;
+    check(source).expect("spawn handle should type-check");
+    run(source, RunOptions::default()).expect("join should resolve TaskHandle");
+}
+
+#[test]
+fn parallel_aggregates_spawn_handles() {
+    let source = r#"
+module comm;
+
+export fn a() -> Int { return 1; }
+export fn b() -> Int { return 2; }
+
+robot R {
+  actuator wheels: DifferentialDrive;
+  behavior run() {
+    parallel {
+      let left = spawn a();
+      let right = spawn b();
+    };
+    let _ = _parallel;
+    wheels.stop();
+  }
+}
+"#;
+    check(source).expect("parallel spawn aggregation should type-check");
+    let result = run(source, RunOptions::default()).expect("parallel aggregation should run");
+    assert!(
+        result
+            .logs
+            .iter()
+            .any(|l| l.contains("parallel: aggregated 2 result")),
+        "expected parallel aggregation log, got {:?}",
+        result.logs
+    );
+}

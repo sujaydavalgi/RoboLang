@@ -31,6 +31,7 @@ pub mod sir;
 pub mod soc;
 pub mod state_machine;
 pub mod stdlib;
+pub mod telemetry;
 pub mod transport;
 pub mod transport_live;
 pub mod transport_rclrs;
@@ -59,6 +60,7 @@ pub use sir::{
     lower_program, SirBehavior, SirExtern, SirFunction, SirParam, SirProgram, SirStmt,
     SirVisibility,
 };
+pub use telemetry::{ExecutionMetrics, RuntimeTelemetry, SchedulerMetrics, TaskMetrics};
 
 use runtime::{Interpreter, InterpreterOptions, RobotBackend};
 use serde::{Deserialize, Serialize};
@@ -233,12 +235,16 @@ pub fn run_program(program: &Program, options: RunOptions) -> Result<RunResult, 
             on_log: Some(Rc::new(move |msg| logs_cb.borrow_mut().push(msg))),
             on_motion_blocked: None,
             module_registry: options.module_registry.clone(),
+            trace_scheduler: options.trace_scheduler,
+            trace_tasks: options.trace_tasks,
+            replay_trace: options.replay_trace,
             ..Default::default()
         },
     );
 
     let state = interp.run(program, options.entry_behavior.as_deref())?;
     let events = interp.robot_backend().event_log();
+    let metrics = interp.take_telemetry();
 
     let run_logs = logs.borrow().clone();
 
@@ -246,6 +252,7 @@ pub fn run_program(program: &Program, options: RunOptions) -> Result<RunResult, 
         state,
         events,
         logs: run_logs,
+        metrics,
     })
 }
 

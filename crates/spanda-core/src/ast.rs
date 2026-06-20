@@ -846,6 +846,10 @@ pub enum Stmt {
         arms: Vec<crate::foundations::SelectArm>,
         span: Span,
     },
+    ParallelStmt {
+        body: Vec<Stmt>,
+        span: Span,
+    },
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -912,6 +916,11 @@ pub enum Expr {
     },
     AwaitExpr {
         operand: Box<Expr>,
+        span: Span,
+    },
+    SpawnExpr {
+        callee: Box<Expr>,
+        args: Vec<Expr>,
         span: Span,
     },
 }

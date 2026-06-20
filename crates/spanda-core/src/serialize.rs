@@ -149,6 +149,7 @@ fn runtime_kind_name(value: &RuntimeValue) -> &'static str {
         RuntimeValue::Service { .. } => "service",
         RuntimeValue::Action { .. } => "action",
         RuntimeValue::Future { .. } => "future",
+        RuntimeValue::TaskHandle { .. } => "task_handle",
         RuntimeValue::Channel { .. } => "channel",
         RuntimeValue::Bytes { .. } => "bytes",
         RuntimeValue::Null => "null",

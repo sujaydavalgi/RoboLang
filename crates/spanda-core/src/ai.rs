@@ -403,6 +403,7 @@ fn runtime_value_kind(value: &RuntimeValue) -> &'static str {
         RuntimeValue::Bytes { .. } => "bytes",
         RuntimeValue::Null => "null",
         RuntimeValue::Future { .. } => "future",
+        RuntimeValue::TaskHandle { .. } => "task_handle",
         RuntimeValue::Channel { .. } => "channel",
         RuntimeValue::TraitObject { .. } => "trait_object",
     }

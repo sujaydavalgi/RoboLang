@@ -230,7 +230,7 @@ robot R {
         result
             .logs
             .iter()
-            .any(|l| l.contains("task requires contract failed")),
+            .any(|l| l.contains("requires contract failed")),
         "expected skip log, got: {:?}",
         result.logs
     );
