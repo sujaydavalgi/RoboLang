@@ -54,6 +54,15 @@ import {
 import { isKnownCapability, parseTrustLevel } from "../security/index.js";
 import { unitCategory } from "../units/index.js";
 
+/** Built-in hardware profiles (mirrors Rust `hardware::builtin_profiles`). */
+const BUILTIN_HARDWARE_PROFILES = new Set([
+  "RoverV1",
+  "RoverV2",
+  "JetsonOrin",
+  "RaspberryPi5",
+  "ESP32",
+]);
+
 type SymbolEntry = {
   name: string;
   roboType: SpandaType;
@@ -139,6 +148,44 @@ class TypeChecker {
 
     for (const robot of program.robots) {
       this.checkRobot(robot, imported);
+    }
+
+    this.checkHardwareProgram(program);
+  }
+
+  private checkHardwareProgram(program: Program): void {
+    const profileNames = new Set(program.hardwareProfiles.map((p) => p.name));
+    const robotNames = new Set(program.robots.map((r) => r.name));
+    const seenProfiles = new Set<string>();
+
+    for (const profile of program.hardwareProfiles) {
+      if (seenProfiles.has(profile.name)) {
+        this.error(
+          `Duplicate hardware profile '${profile.name}'`,
+          profile.span.start.line,
+          profile.span.start.column,
+        );
+      }
+      seenProfiles.add(profile.name);
+    }
+
+    for (const deploy of program.deployments) {
+      if (!robotNames.has(deploy.robotName)) {
+        this.error(
+          `Deploy references unknown robot '${deploy.robotName}'`,
+          deploy.span.start.line,
+          deploy.span.start.column,
+        );
+      }
+      for (const target of deploy.targets) {
+        if (!profileNames.has(target) && !BUILTIN_HARDWARE_PROFILES.has(target)) {
+          this.error(
+            `Deploy target '${target}' is not a declared or built-in hardware profile`,
+            deploy.span.start.line,
+            deploy.span.start.column,
+          );
+        }
+      }
     }
   }
 

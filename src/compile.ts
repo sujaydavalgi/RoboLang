@@ -79,6 +79,11 @@ export async function compileAsync(source: string, backend?: CompileBackend): Pr
             structs: [],
             enums: [],
             traits: [],
+            hardwareProfiles: [],
+            deployments: [],
+            requiresHardware: null,
+            requiresNetwork: null,
+            simulateCompatibility: null,
             messages: [],
             robots: [],
             span: {

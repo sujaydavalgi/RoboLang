@@ -351,11 +351,57 @@ Spanda uses a **dual-layer architecture**:
 | Layer | Technology | Responsibility |
 |-------|------------|----------------|
 | **Language core** | Rust (`crates/spanda-core`) | Lexer, parser, type checker, interpreter, safety, AI, simulator, **hardware verifier** |
-| **Native CLI** | Rust (`crates/spanda-cli`) | `check`, `verify`, `run`, `sim`, `fmt` with human or `--json` output |
+| **Native CLI** | Rust (`crates/spanda-cli`) | `check`, `verify`, `run`, `sim`, `fmt`, package commands |
 | **Node bindings** | N-API (`crates/spanda-node`) | In-process calls from Node.js |
 | **Browser bindings** | WASM (`crates/spanda-wasm`) | Playground and web IDE |
 | **Language Server** | TypeScript (`packages/lsp`) | Type-check + hardware compatibility diagnostics |
 | **Developer UX** | TypeScript + React (`packages/web`, `src/cli`) | CLI wrapper, web playground, tests |
+
+See [docs/spanda-architecture.md](docs/spanda-architecture.md), [docs/ffi-and-ecosystem.md](docs/ffi-and-ecosystem.md), and [docs/compiler-backend-roadmap.md](docs/compiler-backend-roadmap.md) for deeper design notes.
+
+## Feature status
+
+Honest snapshot of what works today vs what is planned. **Stubbed** means syntax or API exists but does not perform real external integration.
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| Lexer / parser / AST | Implemented | Rust authoritative; TS mirror includes hardware/deploy |
+| Type checker + physical units | Implemented | Unit algebra enforced; TS mirror validates deploy targets |
+| `ActionProposal` → `SafeAction` | Implemented | Compile-time and runtime gate |
+| Safety zones + emergency stop | Implemented | Evaluated before motion |
+| Deterministic task scheduler | Implemented | `task every Nms` with optional `budget` |
+| Hardware verification CLI | Implemented | `spanda verify`, matrix, fault injection (Rust only) |
+| Simulation backend | Implemented | Physics-lite 2D pose, lidar, arm, drone |
+| AI agents (mock) | Implemented | `MockAIProvider`; real LLM backends planned |
+| Communication framework | Partially implemented | Topics/services/actions; transport adapters stubbed |
+| ROS2 integration | Stubbed | Adapter interface + examples; no live ROS2 node |
+| Package manager | Partially implemented | `spanda.toml`, lockfile, local/git deps; publish stub |
+| Security / audit | Implemented | Capabilities, secrets, signed messages, audit records |
+| `extern fn` / FFI | Partially implemented | Parsed + stub registry; no Python/C++ linking yet |
+| Codegen / LLVM native binary | Stubbed | Skeleton `spanda codegen`; see compiler backend roadmap |
+| LSP | Partially implemented | Check + verify diagnostics via Rust CLI |
+| Debugger (DAP) | Partially implemented | Breakpoints in interpreter; DAP server early stage |
+| Formatter / linter / docgen | Implemented | Rust CLI; TS delegates via rust-bridge |
+| WASM deploy | Partially implemented | Manifest JSON; not full native compilation |
+
+### Experimental
+
+- TypeScript-only `check`/`run`/`sim` (fallback when Rust CLI not built)
+- `spanda codegen` and `spanda deploy --target wasm` template output
+- Transport annotations (`ros2`, `mqtt`, `dds`) — logged in simulator only
+
+### Planned
+
+- Python / C++ / ROS2 bridge implementations ([ffi-and-ecosystem.md](docs/ffi-and-ecosystem.md))
+- Spanda IR + LLVM backend ([compiler-backend-roadmap.md](docs/compiler-backend-roadmap.md))
+- Live digital twin telemetry sync
+- Real AI provider plugins (OpenAI, local models, ONNX inference)
+
+## Why Spanda alongside Python and C++
+
+Python and C++ remain the best tools for model training, vendor SDKs, and low-level drivers. Spanda sits **above** them as the coordination layer: typed robot programs, mandatory safety validation, hardware compatibility checks before deploy, and deterministic scheduling — without forcing teams to rewrite existing libraries.
+
+Future `import python.torch` / `extern cpp fn` syntax ([docs/ffi-and-ecosystem.md](docs/ffi-and-ecosystem.md)) makes orchestration explicit while keeping inference and drivers in mature ecosystems.
 
 ### Build commands
 

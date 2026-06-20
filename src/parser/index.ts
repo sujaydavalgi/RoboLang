@@ -67,6 +67,13 @@ import type {
   TwinDecl,
   VerifyDecl,
   ObserveDecl,
+  HardwareDecl,
+  DeployDecl,
+  RequiresHardwareDecl,
+  RequiresNetworkDecl,
+  SimulateCompatibilityDecl,
+  MissionDecl,
+  ResourceBudgetDecl,
   IdentityDecl,
   AuditDecl,
   ProvenanceDecl,
@@ -254,6 +261,11 @@ class Parser {
     const traits: TraitDecl[] = [];
     const messages: MessageDecl[] = [];
     const robots: RobotDecl[] = [];
+    const hardwareProfiles: HardwareDecl[] = [];
+    const deployments: DeployDecl[] = [];
+    let requiresHardware: RequiresHardwareDecl | null = null;
+    let requiresNetwork: RequiresNetworkDecl | null = null;
+    let simulateCompatibility: SimulateCompatibilityDecl | null = null;
 
     while (this.check("IMPORT")) {
       imports.push(this.parseImport());
@@ -272,13 +284,27 @@ class Parser {
         enums.push(this.parseEnum());
       } else if (this.check("TRAIT")) {
         traits.push(this.parseTrait());
+      } else if (this.check("HARDWARE")) {
+        hardwareProfiles.push(this.parseHardware());
+      } else if (this.check("DEPLOY")) {
+        deployments.push(this.parseDeploy());
+      } else if (this.check("REQUIRES_HARDWARE")) {
+        requiresHardware = this.parseRequiresHardware();
+      } else if (this.check("REQUIRES_NETWORK")) {
+        requiresNetwork = this.parseRequiresNetwork();
+      } else if (this.check("SIMULATE_COMPATIBILITY")) {
+        simulateCompatibility = this.parseSimulateCompatibility();
       } else if (this.check("MESSAGE")) {
         messages.push(this.parseMessage());
       } else if (this.check("ROBOT")) {
         robots.push(this.parseRobot());
       } else {
         const t = this.peek();
-        throw new ParseError("Expected struct, enum, trait, message, or robot declaration", t.line, t.column);
+        throw new ParseError(
+          "Expected struct, enum, trait, hardware, deploy, or robot declaration",
+          t.line,
+          t.column,
+        );
       }
     }
 
@@ -293,6 +319,11 @@ class Parser {
       structs,
       enums,
       traits,
+      hardwareProfiles,
+      deployments,
+      requiresHardware,
+      requiresNetwork,
+      simulateCompatibility,
       messages,
       robots,
       span: this.spanFrom(start, end),
@@ -602,6 +633,7 @@ class Parser {
     const agents: AgentDecl[] = [];
     const behaviors: BehaviorDecl[] = [];
     const tasks: TaskDecl[] = [];
+    let mission: MissionDecl | null = null;
     const stateMachines: StateMachineDecl[] = [];
     const events: EventDecl[] = [];
     const eventHandlers: EventHandlerDecl[] = [];
@@ -681,6 +713,8 @@ class Parser {
         trust = this.parseTrust();
       } else if (this.check("PERMISSIONS")) {
         permissions = this.parsePermissions();
+      } else if (this.check("MISSION")) {
+        mission = this.parseMission();
       } else if (this.check("IMPL")) {
         traitImpls.push(this.parseTraitImpl());
       } else if (this.check("BUS")) {
@@ -712,6 +746,7 @@ class Parser {
       agents,
       behaviors,
       tasks,
+      mission,
       stateMachines,
       events,
       eventHandlers,
@@ -866,6 +901,314 @@ class Parser {
   private parseNumberValue(): number {
     const tok = this.expect("NUMBER", "Expected number");
     return tok.value as number;
+  }
+
+  private parseStorageAmount(): number {
+    const value = this.parseNumberValue();
+    if (this.check("IDENT")) {
+      const unit = this.peek().lexeme;
+      let mb = value;
+      if (unit === "GB" || unit === "Gb") mb = value * 1024;
+      else if (unit === "MB" || unit === "Mb") mb = value;
+      else if (unit === "TB" || unit === "Tb") mb = value * 1024 * 1024;
+      if (unit === "GB" || unit === "MB" || unit === "TB" || unit === "Gb" || unit === "Mb" || unit === "Tb") {
+        this.advance();
+      }
+      return mb;
+    }
+    return value;
+  }
+
+  private parseNetworkAmount(): number {
+    const value = this.parseNumberValue();
+    if (this.check("IDENT")) {
+      const unit = this.peek().lexeme;
+      if (unit === "Mbps" || unit === "mbps") {
+        this.advance();
+        return value;
+      }
+      if (unit === "Gbps" || unit === "gbps") {
+        this.advance();
+        return value * 1000;
+      }
+    }
+    return value;
+  }
+
+  private parseEnergyWhValue(): number {
+    const tok = this.peek();
+    if (tok.type === "UNIT_LITERAL" && tok.unit === "Wh") {
+      this.advance();
+      return tok.value as number;
+    }
+    const value = this.parseNumberValue();
+    if (this.check("IDENT") && this.peek().lexeme === "Wh") {
+      this.advance();
+    }
+    return value;
+  }
+
+  private parsePowerWValue(): number {
+    const tok = this.peek();
+    if (tok.type === "UNIT_LITERAL" && tok.unit === "W") {
+      this.advance();
+      return tok.value as number;
+    }
+    const value = this.parseNumberValue();
+    if (this.check("IDENT") && this.peek().lexeme === "W") {
+      this.advance();
+    }
+    return value;
+  }
+
+  private parseHardwareTypeList(kind: string): string[] {
+    this.expect("LBRACKET", `Expected '[' after ${kind}`);
+    const items: string[] = [];
+    if (!this.check("RBRACKET")) {
+      do {
+        items.push(this.parseLabel(`Expected ${kind} type name`));
+      } while (this.match("COMMA") && !this.check("RBRACKET"));
+    }
+    this.expect("RBRACKET", `Expected ']' after ${kind} list`);
+    this.expect("SEMICOLON", `Expected ';' after ${kind} list`);
+    return items;
+  }
+
+  private parseHardware(): HardwareDecl {
+    const start = this.advance();
+    const name = this.parseLabel("Expected hardware profile name");
+    this.expect("LBRACE", "Expected '{' after hardware name");
+    let cpu: string | null = null;
+    let memoryMb: number | null = null;
+    let storageMb: number | null = null;
+    let gpuTops: number | null = null;
+    let gpuRequired = false;
+    let sensors: string[] = [];
+    let actuators: string[] = [];
+    let batteryWh: number | null = null;
+    let networkBandwidthMbps: number | null = null;
+    let networkLatencyMs: number | null = null;
+    let minControlPeriodMs: number | null = null;
+    let powerDrawW: number | null = null;
+
+    while (!this.check("RBRACE") && !this.check("EOF")) {
+      if (this.match("CPU")) {
+        this.expect("COLON", "Expected ':' after cpu");
+        cpu = this.parseLabel("Expected CPU identifier");
+        this.expect("SEMICOLON", "Expected ';' after cpu");
+      } else if (this.match("MEMORY")) {
+        this.expect("COLON", "Expected ':' after memory");
+        memoryMb = this.parseStorageAmount();
+        this.expect("SEMICOLON", "Expected ';' after memory");
+      } else if (this.match("STORAGE")) {
+        this.expect("COLON", "Expected ':' after storage");
+        storageMb = this.parseStorageAmount();
+        this.expect("SEMICOLON", "Expected ';' after storage");
+      } else if (this.match("GPU")) {
+        this.expect("COLON", "Expected ':' after gpu");
+        if (this.match("TRUE")) {
+          gpuRequired = true;
+        } else {
+          gpuTops = this.parseNumberValue();
+          if (this.check("IDENT") && this.peek().lexeme === "TOPS") {
+            this.advance();
+          }
+        }
+        this.expect("SEMICOLON", "Expected ';' after gpu");
+      } else if (this.match("SENSORS")) {
+        sensors = this.parseHardwareTypeList("sensors");
+      } else if (this.match("ACTUATORS")) {
+        actuators = this.parseHardwareTypeList("actuators");
+      } else if (this.match("BATTERY")) {
+        this.expect("LBRACE", "Expected '{' after battery");
+        while (!this.check("RBRACE") && !this.check("EOF")) {
+          this.expect("CAPACITY", "Expected capacity in battery block");
+          this.expect("COLON", "Expected ':' after capacity");
+          batteryWh = this.parseEnergyWhValue();
+          this.expect("SEMICOLON", "Expected ';' after capacity");
+        }
+        this.expect("RBRACE", "Expected '}' to close battery block");
+      } else if (this.match("NETWORK")) {
+        this.expect("LBRACE", "Expected '{' after network");
+        while (!this.check("RBRACE") && !this.check("EOF")) {
+          if (this.match("BANDWIDTH")) {
+            this.expect("COLON", "Expected ':' after bandwidth");
+            networkBandwidthMbps = this.parseNetworkAmount();
+            this.expect("SEMICOLON", "Expected ';' after bandwidth");
+          } else if (this.match("LATENCY")) {
+            this.expect("COLON", "Expected ':' after latency");
+            networkLatencyMs = this.parseDuration();
+            this.expect("SEMICOLON", "Expected ';' after latency");
+          } else {
+            const t = this.peek();
+            throw new ParseError("Expected bandwidth or latency in network block", t.line, t.column);
+          }
+        }
+        this.expect("RBRACE", "Expected '}' to close network block");
+      } else if (this.match("TIMING")) {
+        this.expect("LBRACE", "Expected '{' after timing");
+        while (!this.check("RBRACE") && !this.check("EOF")) {
+          this.expect("MIN_PERIOD", "Expected min_period in timing block");
+          this.expect("COLON", "Expected ':' after min_period");
+          minControlPeriodMs = this.parseDuration();
+          this.expect("SEMICOLON", "Expected ';' after min_period");
+        }
+        this.expect("RBRACE", "Expected '}' to close timing block");
+      } else if (this.match("RESOURCE")) {
+        this.expect("COLON", "Expected ':' after resource");
+        powerDrawW = this.parsePowerWValue();
+        this.expect("SEMICOLON", "Expected ';' after resource power");
+      } else {
+        const t = this.peek();
+        throw new ParseError("Expected hardware profile member", t.line, t.column);
+      }
+    }
+
+    const end = this.expect("RBRACE", "Expected '}' to close hardware block");
+    return {
+      kind: "HardwareDecl",
+      name,
+      cpu,
+      memoryMb,
+      storageMb,
+      gpuTops,
+      gpuRequired,
+      sensors,
+      actuators,
+      batteryWh,
+      networkBandwidthMbps,
+      networkLatencyMs,
+      minControlPeriodMs,
+      powerDrawW,
+      span: this.spanFrom(start, end),
+    };
+  }
+
+  private parseDeploy(): DeployDecl {
+    const start = this.advance();
+    const robotName = this.parseLabel("Expected robot name after deploy");
+    this.expect("TO", "Expected 'to' after deploy robot name");
+    const targets: string[] = [];
+    if (this.match("LBRACKET")) {
+      if (!this.check("RBRACKET")) {
+        do {
+          targets.push(this.parseLabel("Expected hardware target name"));
+        } while (this.match("COMMA"));
+      }
+      this.expect("RBRACKET", "Expected ']' after deploy targets");
+    } else {
+      targets.push(this.parseLabel("Expected hardware target name"));
+    }
+    this.expect("SEMICOLON", "Expected ';' after deploy statement");
+    const end = this.previous();
+    return { kind: "DeployDecl", robotName, targets, span: this.spanFrom(start, end) };
+  }
+
+  private parseRequiresHardware(): RequiresHardwareDecl {
+    const start = this.advance();
+    this.expect("LBRACE", "Expected '{' after requires_hardware");
+    let memoryMbMin: number | null = null;
+    let storageMbMin: number | null = null;
+    let gpuTopsMin: number | null = null;
+    let gpuRequired = false;
+    let sensors: string[] = [];
+    let actuators: string[] = [];
+
+    while (!this.check("RBRACE") && !this.check("EOF")) {
+      if (this.match("MEMORY")) {
+        this.expect("GTE", "Expected '>=' after memory in requires_hardware");
+        memoryMbMin = this.parseStorageAmount();
+        this.expect("SEMICOLON", "Expected ';' after memory requirement");
+      } else if (this.match("STORAGE")) {
+        this.expect("GTE", "Expected '>=' after storage in requires_hardware");
+        storageMbMin = this.parseStorageAmount();
+        this.expect("SEMICOLON", "Expected ';' after storage requirement");
+      } else if (this.match("GPU")) {
+        if (this.match("GTE")) {
+          gpuTopsMin = this.parseNumberValue();
+          if (this.check("IDENT") && this.peek().lexeme === "TOPS") {
+            this.advance();
+          }
+        } else {
+          this.expect("COLON", "Expected ':' or '>=' after gpu");
+          if (this.match("TRUE")) {
+            gpuRequired = true;
+          } else {
+            gpuTopsMin = this.parseNumberValue();
+            if (this.check("IDENT") && this.peek().lexeme === "TOPS") {
+              this.advance();
+            }
+          }
+        }
+        this.expect("SEMICOLON", "Expected ';' after gpu requirement");
+      } else if (this.match("SENSORS")) {
+        sensors = this.parseHardwareTypeList("sensors");
+      } else if (this.match("ACTUATORS")) {
+        actuators = this.parseHardwareTypeList("actuators");
+      } else {
+        const t = this.peek();
+        throw new ParseError("Expected requires_hardware member", t.line, t.column);
+      }
+    }
+
+    const end = this.expect("RBRACE", "Expected '}' to close requires_hardware");
+    return {
+      kind: "RequiresHardwareDecl",
+      memoryMbMin,
+      storageMbMin,
+      gpuTopsMin,
+      gpuRequired,
+      sensors,
+      actuators,
+      span: this.spanFrom(start, end),
+    };
+  }
+
+  private parseRequiresNetwork(): RequiresNetworkDecl {
+    const start = this.advance();
+    this.expect("LBRACE", "Expected '{' after requires_network");
+    let bandwidthMbpsMin: number | null = null;
+    let latencyMsMax: number | null = null;
+
+    while (!this.check("RBRACE") && !this.check("EOF")) {
+      if (this.match("BANDWIDTH")) {
+        this.expect("GTE", "Expected '>=' after bandwidth");
+        bandwidthMbpsMin = this.parseNetworkAmount();
+        this.expect("SEMICOLON", "Expected ';' after bandwidth requirement");
+      } else if (this.match("LATENCY")) {
+        this.expect("LTE", "Expected '<=' after latency");
+        latencyMsMax = this.parseDuration();
+        this.expect("SEMICOLON", "Expected ';' after latency requirement");
+      } else {
+        const t = this.peek();
+        throw new ParseError("Expected bandwidth or latency in requires_network", t.line, t.column);
+      }
+    }
+
+    const end = this.expect("RBRACE", "Expected '}' to close requires_network");
+    return {
+      kind: "RequiresNetworkDecl",
+      bandwidthMbpsMin,
+      latencyMsMax,
+      span: this.spanFrom(start, end),
+    };
+  }
+
+  private parseSimulateCompatibility(): SimulateCompatibilityDecl {
+    const start = this.advance();
+    this.expect("LBRACE", "Expected '{' after simulate_compatibility");
+    const faults: { faultType: string; span: Span }[] = [];
+
+    while (!this.check("RBRACE") && !this.check("EOF")) {
+      this.expect("FAULT", "Expected fault declaration in simulate_compatibility");
+      const faultStart = this.peek();
+      const faultType = this.parseLabel("Expected fault type name");
+      this.expect("SEMICOLON", "Expected ';' after fault");
+      faults.push({ faultType, span: this.spanFrom(faultStart, this.previous()) });
+    }
+
+    const end = this.expect("RBRACE", "Expected '}' to close simulate_compatibility");
+    return { kind: "SimulateCompatibilityDecl", faults, span: this.spanFrom(start, end) };
   }
 
   private parseObserve(): ObserveDecl {
@@ -1580,7 +1923,7 @@ class Parser {
   }
 
   private parseConfigKeyToken(): string {
-    if (this.check("IDENT") || this.check("PROVIDER")) {
+    if (this.check("IDENT") || this.check("PROVIDER") || this.check("MEMORY")) {
       return this.advance().lexeme;
     }
     const t = this.peek();
@@ -1597,8 +1940,18 @@ class Parser {
     if (this.match("FALSE")) {
       return false;
     }
-    if (this.match("NUMBER") || this.match("UNIT_LITERAL")) {
-      return this.previous().value as number;
+    if (this.check("UNIT_LITERAL")) {
+      return this.advance().value as number;
+    }
+    if (this.check("NUMBER")) {
+      const value = this.parseNumberValue();
+      if (this.check("IDENT")) {
+        const unit = this.peek().lexeme;
+        if (unit === "GB" || unit === "MB" || unit === "TB" || unit === "Gb" || unit === "Mb" || unit === "Tb") {
+          this.advance();
+        }
+      }
+      return value;
     }
     const t = this.peek();
     throw new ParseError("Expected config value", t.line, t.column);
@@ -1805,6 +2158,10 @@ class Parser {
     const intervalMs = this.parseDuration();
     const { requires, ensures, invariant } = this.parseContractClauses();
     this.expect("LBRACE", "Expected '{' after task signature");
+    let budget: ResourceBudgetDecl | null = null;
+    if (this.check("BUDGET")) {
+      budget = this.parseBudget();
+    }
     const body = this.parseBlock();
     const end = this.expect("RBRACE", "Expected '}' to close task");
     return {
@@ -1814,9 +2171,130 @@ class Parser {
       requires,
       ensures,
       invariant,
+      budget,
       body,
       span: this.spanFrom(start, end),
     };
+  }
+
+  private parseBudget(): ResourceBudgetDecl {
+    const start = this.advance();
+    this.expect("LBRACE", "Expected '{' after budget");
+    let batteryPctMax: number | null = null;
+    let memoryMbMax: number | null = null;
+    let cpuPctMax: number | null = null;
+    let networkMbpsMax: number | null = null;
+    let storageMbMax: number | null = null;
+
+    while (!this.check("RBRACE") && !this.check("EOF")) {
+      if (this.match("BATTERY")) {
+        this.expect("LTE", "Expected '<=' after battery in budget");
+        batteryPctMax = this.parsePercentValue();
+        this.expect("SEMICOLON", "Expected ';' after battery budget");
+      } else if (this.match("MEMORY")) {
+        this.expect("LTE", "Expected '<=' after memory in budget");
+        memoryMbMax = this.parseStorageAmount();
+        this.expect("SEMICOLON", "Expected ';' after memory budget");
+      } else if (this.match("CPU")) {
+        this.expect("LTE", "Expected '<=' after cpu in budget");
+        cpuPctMax = this.parsePercentValue();
+        this.expect("SEMICOLON", "Expected ';' after cpu budget");
+      } else if (this.match("NETWORK")) {
+        this.expect("LTE", "Expected '<=' after network in budget");
+        networkMbpsMax = this.parseNetworkAmount();
+        this.expect("SEMICOLON", "Expected ';' after network budget");
+      } else if (this.match("STORAGE")) {
+        this.expect("LTE", "Expected '<=' after storage in budget");
+        storageMbMax = this.parseStorageAmount();
+        this.expect("SEMICOLON", "Expected ';' after storage budget");
+      } else {
+        const t = this.peek();
+        throw new ParseError("Expected budget constraint", t.line, t.column);
+      }
+    }
+
+    const end = this.expect("RBRACE", "Expected '}' to close budget");
+    return {
+      kind: "ResourceBudgetDecl",
+      batteryPctMax,
+      memoryMbMax,
+      cpuPctMax,
+      networkMbpsMax,
+      storageMbMax,
+      span: this.spanFrom(start, end),
+    };
+  }
+
+  private parsePercentValue(): number {
+    const value = this.parseNumberValue();
+    if (this.check("IDENT") && this.peek().lexeme === "%") {
+      this.advance();
+    } else if (this.match("PERCENT")) {
+      /* consumed */
+    }
+    return value;
+  }
+
+  private parseMission(): MissionDecl {
+    const start = this.advance();
+    this.expect("LBRACE", "Expected '{' after mission");
+    let durationHours: number | null = null;
+
+    while (!this.check("RBRACE") && !this.check("EOF")) {
+      this.expect("DURATION", "Expected duration in mission block");
+      this.expect("COLON", "Expected ':' after duration");
+      durationHours = this.parseDurationHours();
+      this.expect("SEMICOLON", "Expected ';' after duration");
+    }
+
+    const end = this.expect("RBRACE", "Expected '}' to close mission");
+    if (durationHours === null) {
+      const t = this.peek();
+      throw new ParseError("mission block requires duration", t.line, t.column);
+    }
+    return {
+      kind: "MissionDecl",
+      durationHours,
+      span: this.spanFrom(start, end),
+    };
+  }
+
+  private parseDurationHours(): number {
+    const tok = this.peek();
+    if (tok.type === "UNIT_LITERAL" && tok.unit === "h") {
+      this.advance();
+      return tok.value as number;
+    }
+    const value = this.parseNumberValue();
+    if (this.check("IDENT")) {
+      const unit = this.peek().lexeme;
+      let hours = value;
+      if (unit === "h" || unit === "hr" || unit === "hrs" || unit === "hour" || unit === "hours") {
+        hours = value;
+      } else if (unit === "min" || unit === "mins" || unit === "minute" || unit === "minutes") {
+        hours = value / 60;
+      } else if (unit === "s" || unit === "sec" || unit === "secs") {
+        hours = value / 3600;
+      }
+      if (
+        unit === "h" ||
+        unit === "hr" ||
+        unit === "hrs" ||
+        unit === "hour" ||
+        unit === "hours" ||
+        unit === "min" ||
+        unit === "mins" ||
+        unit === "minute" ||
+        unit === "minutes" ||
+        unit === "s" ||
+        unit === "sec" ||
+        unit === "secs"
+      ) {
+        this.advance();
+      }
+      return hours;
+    }
+    return value;
   }
 
   private parseStateMachine(): StateMachineDecl {

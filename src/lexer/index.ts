@@ -142,6 +142,7 @@ export type TokenType =
   | "AND"
   | "OR"
   | "NOT"
+  | "PERCENT"
   | "IDENT"
   | "NUMBER"
   | "STRING"
@@ -546,6 +547,12 @@ export function tokenize(source: string): Token[] {
     }
     if (ch === "/") {
       tokens.push({ type: "SLASH", lexeme: "/", value: null, ...start });
+      i++;
+      column++;
+      continue;
+    }
+    if (ch === "%") {
+      tokens.push({ type: "PERCENT", lexeme: "%", value: null, ...start });
       i++;
       column++;
       continue;

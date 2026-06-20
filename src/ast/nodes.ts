@@ -20,6 +20,7 @@ import type {
   StateMachineDecl,
   StructDecl,
   TaskDecl,
+  MissionDecl,
   TraitDecl,
   TraitImplDecl,
   TwinDecl,
@@ -161,6 +162,11 @@ export type Program = {
   structs: StructDecl[];
   enums: EnumDecl[];
   traits: TraitDecl[];
+  hardwareProfiles: import("../foundations.js").HardwareDecl[];
+  deployments: import("../foundations.js").DeployDecl[];
+  requiresHardware: import("../foundations.js").RequiresHardwareDecl | null;
+  requiresNetwork: import("../foundations.js").RequiresNetworkDecl | null;
+  simulateCompatibility: import("../foundations.js").SimulateCompatibilityDecl | null;
   messages: MessageDecl[];
   robots: RobotDecl[];
   span: Span;
@@ -188,6 +194,7 @@ export type RobotDecl = {
   agents: AgentDecl[];
   behaviors: BehaviorDecl[];
   tasks: TaskDecl[];
+  mission: MissionDecl | null;
   stateMachines: StateMachineDecl[];
   events: EventDecl[];
   eventHandlers: EventHandlerDecl[];
