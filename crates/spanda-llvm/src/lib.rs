@@ -50,7 +50,9 @@ pub fn emit_module_ir_with_options(
     out.push_str("declare void @spanda_rt_publish(i8*, i8*)\n");
     out.push_str("declare void @spanda_rt_subscribe(i8*)\n");
     out.push_str("declare void @spanda_rt_loop_delay_ms(i64)\n");
-    out.push_str("declare double @spanda_rt_scan_nearest(i8*)\n\n");
+    out.push_str("declare double @spanda_rt_scan_nearest(i8*)\n");
+    out.push_str("declare void @spanda_rt_store_bool(i8*, i8)\n");
+    out.push_str("declare i8 @spanda_rt_eval_condition(i8*)\n\n");
 
     let strings = collect_string_literals(sir);
     for (idx, text) in strings.iter().enumerate() {
@@ -187,6 +189,9 @@ fn collect_stmt_strings(stmts: &[SirStmt], set: &mut BTreeSet<String>) {
             SirStmt::Subscribe { target } => {
                 set.insert(target.clone());
             }
+            SirStmt::LetBool { name, .. } | SirStmt::LetDouble { name, .. } => {
+                set.insert(name.clone());
+            }
             SirStmt::IfBool {
                 then_body,
                 else_body,
@@ -198,30 +203,42 @@ fn collect_stmt_strings(stmts: &[SirStmt], set: &mut BTreeSet<String>) {
                 }
             }
             SirStmt::IfVar {
+                condition,
                 then_body,
                 else_body,
                 ..
             } => {
+                set.insert(condition.clone());
                 collect_stmt_strings(then_body, set);
                 if let Some(else_body) = else_body {
                     collect_stmt_strings(else_body, set);
                 }
             }
             SirStmt::IfCompareBool {
+                variable,
                 then_body,
                 else_body,
                 ..
             }
             | SirStmt::IfNotVar {
-                then_body,
-                else_body,
-                ..
-            }
-            | SirStmt::IfCompareDouble {
+                variable,
                 then_body,
                 else_body,
                 ..
             } => {
+                set.insert(variable.clone());
+                collect_stmt_strings(then_body, set);
+                if let Some(else_body) = else_body {
+                    collect_stmt_strings(else_body, set);
+                }
+            }
+            SirStmt::IfCompareDouble {
+                left,
+                then_body,
+                else_body,
+                ..
+            } => {
+                set.insert(left.clone());
                 collect_stmt_strings(then_body, set);
                 if let Some(else_body) = else_body {
                     collect_stmt_strings(else_body, set);
@@ -234,6 +251,18 @@ fn collect_stmt_strings(stmts: &[SirStmt], set: &mut BTreeSet<String>) {
                 ..
             } => {
                 set.insert(scan_var.clone());
+                collect_stmt_strings(then_body, set);
+                if let Some(else_body) = else_body {
+                    collect_stmt_strings(else_body, set);
+                }
+            }
+            SirStmt::IfRuntime {
+                condition,
+                then_body,
+                else_body,
+                ..
+            } => {
+                set.insert(condition.clone());
                 collect_stmt_strings(then_body, set);
                 if let Some(else_body) = else_body {
                     collect_stmt_strings(else_body, set);
@@ -507,13 +536,15 @@ fn emit_stmt(
         SirStmt::LetInt { name, value } => format!("  ; let {name} = {value}\n"),
         SirStmt::LetBool { name, value } => {
             let slot = bool_slot(name);
+            let name_ptr = string_global_ptr_for(name, strings);
             let mut out = String::new();
             if locals.bool_slots.insert(name.clone()) {
                 out.push_str(&format!("  %{slot} = alloca i1\n"));
             }
+            let bit = if *value { 1 } else { 0 };
+            out.push_str(&format!("  store i1 {bit}, i1* %{slot}\n"));
             out.push_str(&format!(
-                "  store i1 {}, i1* %{slot}\n",
-                if *value { 1 } else { 0 }
+                "  call void @spanda_rt_store_bool(i8* {name_ptr}, i8 {bit})\n"
             ));
             out
         }
@@ -750,6 +781,41 @@ fn emit_stmt(
                 scan_ptr = scan_ptr,
                 pred = pred,
                 threshold = threshold,
+                then_label = then_label,
+                else_label = else_label,
+                merge_label = merge_label,
+                then_ir = then_ir,
+                else_ir = else_ir,
+            )
+        }
+        SirStmt::IfRuntime {
+            condition,
+            then_body,
+            else_body,
+        } => {
+            let id = *branch_id;
+            *branch_id += 1;
+            let cond_ptr = string_global_ptr_for(condition, strings);
+            let then_label = format!("if_then{id}");
+            let else_label = format!("if_else{id}");
+            let merge_label = format!("if_merge{id}");
+            let then_ir = emit_stmts(then_body, return_kind, strings, loop_id, branch_id, locals, hal);
+            let else_ir = else_body
+                .as_ref()
+                .map(|body| emit_stmts(body, return_kind, strings, loop_id, branch_id, locals, hal))
+                .unwrap_or_default();
+            format!(
+                "  %rt_cond{id} = call i8 @spanda_rt_eval_condition(i8* {cond_ptr})\n\
+                   %if_ok{id} = icmp ne i8 %rt_cond{id}, 0\n\
+                   br i1 %if_ok{id}, label %{then_label}, label %{else_label}\n\
+                 {then_label}:\n\
+                 {then_ir}\
+                   br label %{merge_label}\n\
+                 {else_label}:\n\
+                 {else_ir}\
+                   br label %{merge_label}\n\
+                 {merge_label}:\n",
+                cond_ptr = cond_ptr,
                 then_label = then_label,
                 else_label = else_label,
                 merge_label = merge_label,

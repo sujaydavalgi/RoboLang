@@ -136,6 +136,11 @@ pub enum SirStmt {
         then_body: Vec<SirStmt>,
         else_body: Option<Vec<SirStmt>>,
     },
+    IfRuntime {
+        condition: String,
+        then_body: Vec<SirStmt>,
+        else_body: Option<Vec<SirStmt>>,
+    },
     MatchEnumUnit {
         scrutinee: String,
         enum_name: String,
@@ -159,6 +164,52 @@ pub enum SirCompareOp {
     Gte,
     Eq,
     Neq,
+}
+
+/// Serializable condition tree for LLVM runtime `if` fallback.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(tag = "op", rename_all = "snake_case")]
+pub enum SirCondition {
+    Bool {
+        value: bool,
+    },
+    Ident {
+        name: String,
+    },
+    Not {
+        operand: Box<SirCondition>,
+    },
+    And {
+        left: Box<SirCondition>,
+        right: Box<SirCondition>,
+    },
+    Or {
+        left: Box<SirCondition>,
+        right: Box<SirCondition>,
+    },
+    EqBool {
+        name: String,
+        value: bool,
+    },
+    NeqBool {
+        name: String,
+        value: bool,
+    },
+    EqString {
+        name: String,
+        value: String,
+    },
+    CompareDouble {
+        name: String,
+        cmp: SirCompareOp,
+        value: f64,
+    },
+    ScanDistance {
+        scan_var: String,
+        cmp: SirCompareOp,
+        threshold: f64,
+    },
+    Unsupported,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -580,8 +631,10 @@ impl LowerCtx<'_> {
                 };
             }
         }
-        SirStmt::Unsupported {
-            label: "if".into(),
+        SirStmt::IfRuntime {
+            condition: serialize_expr_condition(condition),
+            then_body,
+            else_body,
         }
     }
 
@@ -959,6 +1012,106 @@ fn eval_const_bool(expr: &Expr) -> Option<bool> {
     None
 }
 
+pub fn serialize_expr_condition(expr: &Expr) -> String {
+    serde_json::to_string(&expr_to_condition(expr)).unwrap_or_else(|_| {
+        serde_json::to_string(&SirCondition::Unsupported).unwrap_or_else(|_| "{}".into())
+    })
+}
+
+fn expr_to_condition(expr: &Expr) -> SirCondition {
+    if let Some(value) = bool_literal(expr) {
+        return SirCondition::Bool { value };
+    }
+    if let Expr::IdentExpr { name, .. } = expr {
+        return SirCondition::Ident {
+            name: name.clone(),
+        };
+    }
+    if let Expr::UnaryExpr {
+        op: crate::ast::UnaryOp::Not,
+        operand,
+        ..
+    } = expr
+    {
+        return SirCondition::Not {
+            operand: Box::new(expr_to_condition(operand)),
+        };
+    }
+    if let Expr::BinaryExpr {
+        op: crate::ast::BinaryOp::And,
+        left,
+        right,
+        ..
+    } = expr
+    {
+        return SirCondition::And {
+            left: Box::new(expr_to_condition(left)),
+            right: Box::new(expr_to_condition(right)),
+        };
+    }
+    if let Expr::BinaryExpr {
+        op: crate::ast::BinaryOp::Or,
+        left,
+        right,
+        ..
+    } = expr
+    {
+        return SirCondition::Or {
+            left: Box::new(expr_to_condition(left)),
+            right: Box::new(expr_to_condition(right)),
+        };
+    }
+    if let Some((variable, equals)) = compare_bool_literal(expr) {
+        return SirCondition::EqBool {
+            name: variable,
+            value: equals,
+        };
+    }
+    if let Some((variable, equals)) = compare_bool_ne_literal(expr) {
+        return SirCondition::NeqBool {
+            name: variable,
+            value: equals,
+        };
+    }
+    if let Some((name, value)) = compare_string_literal(expr) {
+        return SirCondition::EqString { name, value };
+    }
+    if let Some((name, cmp, value)) = extract_double_compare(expr) {
+        return SirCondition::CompareDouble { name, cmp, value };
+    }
+    if let Some((scan_var, cmp, threshold)) = extract_scan_distance_compare(expr) {
+        return SirCondition::ScanDistance {
+            scan_var,
+            cmp,
+            threshold,
+        };
+    }
+    SirCondition::Unsupported
+}
+
+fn compare_string_literal(expr: &Expr) -> Option<(String, String)> {
+    let Expr::BinaryExpr {
+        op: crate::ast::BinaryOp::Eq,
+        left,
+        right,
+        ..
+    } = expr
+    else {
+        return None;
+    };
+    if let Expr::IdentExpr { name, .. } = left.as_ref() {
+        if let Some(value) = string_literal(right) {
+            return Some((name.clone(), value));
+        }
+    }
+    if let Expr::IdentExpr { name, .. } = right.as_ref() {
+        if let Some(value) = string_literal(left) {
+            return Some((name.clone(), value));
+        }
+    }
+    None
+}
+
 fn lower_extern(ext: &ExternFnDecl) -> SirExtern {
     SirExtern {
         name: ext.name.clone(),
@@ -1221,5 +1374,23 @@ robot R {
                 ..
             } if scan_var == "scan" && (threshold - 1.0).abs() < f64::EPSILON
         ));
+    }
+
+    #[test]
+    fn lowers_unsupported_if_to_runtime_condition() {
+        let source = r#"
+robot R {
+  actuator wheels: DifferentialDrive;
+  behavior run() {
+    let mode = "auto";
+    if mode == "auto" { wheels.stop(); }
+  }
+}
+"#;
+        let program = parser::parse(lexer::tokenize(source).expect("tokenize")).expect("parse");
+        types::check(&program).expect("check");
+        let sir = lower_program(&program);
+        let body = &sir.robots[0].behaviors[0].body;
+        assert!(matches!(body[1], SirStmt::IfRuntime { ref condition, .. } if condition.contains("eq_string")));
     }
 }
