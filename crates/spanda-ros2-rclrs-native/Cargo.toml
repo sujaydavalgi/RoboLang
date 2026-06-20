@@ -1,0 +1,11 @@
+[package]
+name = "spanda-ros2-rclrs-native"
+version = "0.1.0"
+edition = "2021"
+description = "Native ROS 2 I/O for Spanda via rclrs (requires sourced ROS 2 + patched std_msgs)"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+rclrs = "0.7"

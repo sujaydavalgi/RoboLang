@@ -17,3 +17,4 @@ packages/native/index.d.ts
 .DS_Store
 .cursor/
 .githooks/
+.cargo/config.toml

@@ -1,0 +1,5 @@
+# Copy to .cargo/config.toml after sourcing ROS 2 and running:
+#   ./scripts/setup-ros2-rust-cargo.sh [/path/to/colcon/install]
+
+[patch.crates-io]
+std_msgs = { path = "/opt/ros/humble/share/std_msgs/rust" }
