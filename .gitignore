@@ -1,4 +1,4 @@
-// node
+# node / build
 node_modules/
 dist/
 target/
@@ -13,7 +13,7 @@ target/
 # typescript
 *.tsbuildinfo
 
-//packages
+# packages — build artifacts (source glue remains tracked)
 packages/web/wasm/*.wasm
 packages/web/wasm/spanda_wasm_bg.wasm.d.ts
 packages/native/*.node
@@ -24,30 +24,30 @@ packages/native/index.js
 packages/native/index.js.map
 packages/native/index.d.ts
 
-// logs
+# logs / OS
 *.log
 .DS_Store
 
-// vscode
-.cursor/
-.githooks/
+# editor — ignore local Cursor state, keep shared rules
+.cursor/*
+!.cursor/
+!.cursor/rules/
+!.cursor/rules/**
 
-// cargo
+# test / coverage
+coverage/
+
+# cargo
 .cargo/config.toml
+crates/spanda-ros2-rclrs-native/Cargo.lock
 
-// spanda
+# spanda runtime artifacts
 .spanda-*.sd
 .spanda/
 *.trace
 
-//python
+# python
 __pycache__/
-*.pyc
-*.pyo
-*.pyd
-*.pyw
-*.pyz
-*.pywz
-*.pyzw
-*.pyzwz
-*.pyzwzw
+*.py[cod]
+*$py.class
+.pytest_cache/
