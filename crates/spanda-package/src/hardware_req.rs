@@ -112,7 +112,27 @@ pub fn known_capabilities() -> &'static [&'static str] {
         "ai.inference",
         "ros2.publish",
         "ros2.subscribe",
+        "audit.write",
+        "audit.read",
+        "identity.sign",
+        "identity.verify",
+        "ledger.anchor",
     ]
+}
+
+/// Capabilities that require explicit application approval.
+pub fn high_risk_capabilities() -> &'static [&'static str] {
+    &[
+        "ledger.anchor",
+        "identity.sign",
+        "actuator.execute",
+        "network.outbound",
+        "audit.write",
+    ]
+}
+
+pub fn is_high_risk_capability(cap: &str) -> bool {
+    high_risk_capabilities().contains(&cap)
 }
 
 pub fn validate_capability(cap: &str) -> PackageResult<()> {

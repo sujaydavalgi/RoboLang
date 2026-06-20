@@ -20,6 +20,10 @@ pub enum PackageCategory {
     Safety,
     Hri,
     Testing,
+    Provenance,
+    Identity,
+    SupplyChain,
+    Ledger,
 }
 
 impl PackageCategory {
@@ -40,6 +44,10 @@ impl PackageCategory {
             Self::Safety,
             Self::Hri,
             Self::Testing,
+            Self::Provenance,
+            Self::Identity,
+            Self::SupplyChain,
+            Self::Ledger,
         ]
     }
 
@@ -60,6 +68,10 @@ impl PackageCategory {
             Self::Safety => "safety",
             Self::Hri => "hri",
             Self::Testing => "testing",
+            Self::Provenance => "provenance",
+            Self::Identity => "identity",
+            Self::SupplyChain => "supply-chain",
+            Self::Ledger => "ledger",
         }
     }
 }
@@ -84,6 +96,10 @@ impl FromStr for PackageCategory {
             "safety" => Ok(Self::Safety),
             "hri" => Ok(Self::Hri),
             "testing" => Ok(Self::Testing),
+            "provenance" => Ok(Self::Provenance),
+            "identity" => Ok(Self::Identity),
+            "supply-chain" => Ok(Self::SupplyChain),
+            "ledger" => Ok(Self::Ledger),
             other => Err(format!("unknown package category '{other}'")),
         }
     }

@@ -268,10 +268,25 @@ fn check_capability_excess(
 ) {
     for cap in caps.uses.iter().chain(caps.required.iter()) {
         if !app_perms.capabilities.contains(cap) {
+            let severity = if crate::hardware_req::is_high_risk_capability(cap) {
+                "requires explicit approval"
+            } else {
+                "runtime may deny access"
+            };
             report.push_warning(
                 "capabilities",
                 format!(
-                    "package requires capability '{cap}' not granted to application — runtime may deny access"
+                    "package requires capability '{cap}' not granted to application — {severity}"
+                ),
+            );
+        }
+    }
+    for cap in caps.all() {
+        if crate::hardware_req::is_high_risk_capability(cap) {
+            report.push_warning(
+                "capabilities",
+                format!(
+                    "high-risk capability '{cap}' declared — ensure explicit operator approval"
                 ),
             );
         }

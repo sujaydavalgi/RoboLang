@@ -20,7 +20,8 @@ pub use dependency::{
 };
 pub use error::{PackageError, PackageResult};
 pub use hardware_req::{
-    known_capabilities, validate_capability, CapabilityRequirements, HardwareRequirements,
+    high_risk_capabilities, is_high_risk_capability, known_capabilities, validate_capability,
+    CapabilityRequirements, HardwareRequirements,
 };
 pub use import::{all_registered_import_paths, resolve_package_import};
 pub use lockfile::{Lockfile, LOCKFILE_FILENAME};
