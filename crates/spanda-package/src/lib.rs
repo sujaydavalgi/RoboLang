@@ -7,6 +7,7 @@ pub mod import;
 pub mod lockfile;
 pub mod manifest;
 pub mod project;
+pub mod publish;
 pub mod registry;
 pub mod registry_remote;
 pub mod resolver;
@@ -29,6 +30,7 @@ pub use import::{all_registered_import_paths, resolve_package_import};
 pub use lockfile::{Lockfile, LOCKFILE_FILENAME};
 pub use manifest::{find_project_root, PackageManifest, PackageSection, MANIFEST_FILENAME};
 pub use project::{add_dependency, collect_source_files, init_package, remove_dependency};
+pub use publish::{bundle_package, publish_package, PublishReport};
 pub use registry::{
     find_registry_entry, registry_info, registry_package_dir, search_registry,
     search_registry_merged, RegistryEntry, RegistryInfo, LOCAL_REGISTRY,

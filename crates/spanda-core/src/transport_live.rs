@@ -77,11 +77,21 @@ pub fn ros2_live_enabled() -> bool {
     std::env::var("SPANDA_ROS2_LIVE").is_ok()
 }
 
+pub fn ros2_native_enabled() -> bool {
+    std::env::var("SPANDA_ROS2_NATIVE").is_ok()
+}
+
 pub fn mqtt_live_enabled() -> bool {
     std::env::var("SPANDA_MQTT_LIVE").is_ok()
 }
 
 pub fn try_ros2_publish(topic: &str, value: &RuntimeValue) -> bool {
+    if ros2_native_enabled() {
+        eprintln!(
+            "SPANDA_ROS2_NATIVE: native rclrs transport not linked — rebuild with ROS2 support or use SPANDA_ROS2_LIVE"
+        );
+        return false;
+    }
     if !ros2_live_enabled() {
         return false;
     }
@@ -122,6 +132,18 @@ mod tests {
     #[test]
     fn live_flags_default_off() {
         std::env::remove_var("SPANDA_ROS2_LIVE");
+        std::env::remove_var("SPANDA_ROS2_NATIVE");
         assert!(!ros2_live_enabled());
+        assert!(!ros2_native_enabled());
+    }
+
+    #[test]
+    fn native_flag_reports_honest_partial() {
+        std::env::set_var("SPANDA_ROS2_NATIVE", "1");
+        assert!(ros2_native_enabled());
+        assert!(!try_ros2_publish("/cmd", &RuntimeValue::String {
+            value: "hi".into()
+        }));
+        std::env::remove_var("SPANDA_ROS2_NATIVE");
     }
 }

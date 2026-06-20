@@ -1,7 +1,7 @@
 use spanda_core::{check, load_project_modules, run_tests_with_registry};
 use spanda_package::{
-    add_dependency, collect_source_files, find_project_root, init_package, registry_info,
-    remove_dependency, resolve_dependencies, search_registry, search_registry_merged,
+    add_dependency, collect_source_files, find_project_root, init_package, publish_package,
+    registry_info, remove_dependency, resolve_dependencies, search_registry, search_registry_merged,
     validate_package, ApplicationPermissions, DependencySpec, Lockfile, PackageManifest,
     ResolveOptions, LOCKFILE_FILENAME, MANIFEST_FILENAME,
 };
@@ -328,11 +328,30 @@ pub fn cmd_publish(args: &[String]) {
     let manifest = load_project(&root);
     validate_project(&root, &manifest);
     let _ = run_install_inner(&root, &manifest, false);
-    println!(
-        "✓ Package '{}' v{} validated and ready for publish",
-        manifest.package.name, manifest.package.version
-    );
-    println!("  (public registry not yet available — local validation only)");
+    match publish_package(&root, &manifest) {
+        Ok(report) => {
+            println!(
+                "✓ Package '{}' v{} bundled at {}",
+                manifest.package.name,
+                manifest.package.version,
+                report.bundle_path.display()
+            );
+            if report.uploaded {
+                println!(
+                    "✓ Uploaded to {}",
+                    report.upload_url.as_deref().unwrap_or("registry")
+                );
+            } else if std::env::var("SPANDA_REGISTRY_URL").is_ok() {
+                println!("  (bundle kept locally — registry upload failed or skipped)");
+            } else {
+                println!("  Set SPANDA_REGISTRY_URL to upload the bundle remotely");
+            }
+        }
+        Err(e) => {
+            eprintln!("Error publishing: {e}");
+            process::exit(1);
+        }
+    }
 }
 
 pub fn cmd_registry_search(args: &[String]) {
