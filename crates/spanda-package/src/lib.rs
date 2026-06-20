@@ -11,6 +11,7 @@ pub mod registry;
 pub mod resolver;
 pub mod safety;
 pub mod validation;
+pub mod vendor;
 
 pub use adapter::{framework_packages, AdapterMetadata, FrameworkPackage};
 pub use category::PackageCategory;
@@ -28,11 +29,12 @@ pub use lockfile::{Lockfile, LOCKFILE_FILENAME};
 pub use manifest::{find_project_root, PackageManifest, PackageSection, MANIFEST_FILENAME};
 pub use project::{add_dependency, collect_source_files, init_package, remove_dependency};
 pub use registry::{
-    find_registry_entry, registry_info, search_registry, RegistryEntry, RegistryInfo,
-    LOCAL_REGISTRY,
+    find_registry_entry, registry_info, registry_package_dir, search_registry, RegistryEntry,
+    RegistryInfo, LOCAL_REGISTRY,
 };
 pub use resolver::{resolve_dependencies, ResolveOptions, ResolveResult};
 pub use safety::{SafetyLevel, SafetyMetadata};
 pub use validation::{
     validate_package, ApplicationPermissions, ValidationIssue, ValidationReport, ValidationSeverity,
 };
+pub use vendor::{vendor_dependencies, VendorReport};

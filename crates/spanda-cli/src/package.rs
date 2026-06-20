@@ -297,6 +297,20 @@ fn run_install_inner(root: &Path, manifest: &PackageManifest, verbose: bool) -> 
         eprintln!("Error writing lockfile: {e}");
         process::exit(1);
     });
+    match spanda_package::vendor_dependencies(root, &lockfile) {
+        Ok(vendor) => {
+            if verbose {
+                for item in &vendor.vendored {
+                    println!("  vendored {item}");
+                }
+                for w in &vendor.warnings {
+                    eprintln!("  ⚠ {w}");
+                }
+            }
+        }
+        Err(e) if verbose => eprintln!("  ⚠ vendor: {e}"),
+        Err(_) => {}
+    }
     if verbose {
         println!(
             "✓ Installed {} dependencies → {LOCKFILE_FILENAME}",

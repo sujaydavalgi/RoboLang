@@ -1,0 +1,8 @@
+[package]
+name = "spanda-mqtt"
+version = "0.1.0"
+description = "MQTT pub/sub transport adapter (bridge-backed)"
+license = "Apache-2.0"
+
+[capabilities]
+communication = ["mqtt.publish", "mqtt.subscribe"]

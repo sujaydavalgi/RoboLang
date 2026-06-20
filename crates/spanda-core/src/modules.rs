@@ -69,6 +69,25 @@ pub fn load_project_modules(project_root: &Path) -> Result<ModuleRegistry, Spand
             collect_modules(&dir, &mut entries)?;
         }
     }
+    let vendor_root = project_root.join(".spanda/packages");
+    if vendor_root.is_dir() {
+        for entry in std::fs::read_dir(&vendor_root).map_err(|e| SpandaError::Runtime {
+            message: e.to_string(),
+            line: 0,
+        })? {
+            let entry = entry.map_err(|e| SpandaError::Runtime {
+                message: e.to_string(),
+                line: 0,
+            })?;
+            let path = entry.path();
+            if path.is_dir() {
+                let src = path.join("src");
+                if src.is_dir() {
+                    collect_modules(&src, &mut entries)?;
+                }
+            }
+        }
+    }
     if entries.is_empty() {
         return Ok(ModuleRegistry::new());
     }

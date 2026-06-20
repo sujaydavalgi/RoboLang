@@ -1,0 +1,8 @@
+[package]
+name = "spanda-ros2"
+version = "0.1.0"
+description = "ROS 2 integration framework (bridge-backed)"
+license = "Apache-2.0"
+
+[capabilities]
+communication = ["comm.ros2.publish", "comm.ros2.subscribe"]

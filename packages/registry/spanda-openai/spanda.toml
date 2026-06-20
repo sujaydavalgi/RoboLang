@@ -1,0 +1,8 @@
+[package]
+name = "spanda-openai"
+version = "0.1.0"
+description = "OpenAI provider adapter (Python bridge)"
+license = "Apache-2.0"
+
+[capabilities]
+ai = ["ai.openai.complete"]

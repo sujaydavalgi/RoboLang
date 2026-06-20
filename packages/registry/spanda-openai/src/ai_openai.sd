@@ -1,0 +1,6 @@
+module ai.openai;
+
+export fn complete(prompt: String) -> String {
+  let _ = prompt;
+  "mock-completion"
+}

@@ -161,6 +161,20 @@ pub fn find_registry_entry(name: &str) -> Option<&'static RegistryEntry> {
     LOCAL_REGISTRY.iter().find(|e| e.name == name)
 }
 
+/// Local source tree for a registry package (when shipped in-repo).
+pub fn registry_package_dir(name: &str) -> Option<std::path::PathBuf> {
+    if find_registry_entry(name).is_none() {
+        return None;
+    }
+    let candidates = [
+        std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("../../packages/registry")
+            .join(name),
+        std::path::PathBuf::from("packages/registry").join(name),
+    ];
+    candidates.into_iter().find(|p| p.is_dir())
+}
+
 impl RegistryEntry {
     /// Default safety level for registry packages (until per-entry metadata is stored remotely).
     pub fn safety_level(&self) -> SafetyLevel {
