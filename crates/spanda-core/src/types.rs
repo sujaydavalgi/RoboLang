@@ -450,6 +450,10 @@ impl TypeChecker {
             twin,
             verify,
             observe,
+            identity,
+            audit,
+            provenance,
+            signed_records,
             trait_impls,
             buses,
             peer_robots,
@@ -805,6 +809,99 @@ impl TypeChecker {
                     actuator_type: None,
                 },
             );
+        }
+
+        if let Some(identity_decl) = identity {
+            let crate::foundations::IdentityDecl::IdentityDecl { fields, span, .. } = identity_decl;
+            let has_id = fields.iter().any(|(k, _)| k == "id");
+            if !has_id {
+                self.error(
+                    "identity block must declare an 'id' field".into(),
+                    span.start.line,
+                    span.start.column,
+                );
+            }
+            self.symbols.insert(
+                "identity".into(),
+                SymbolEntry {
+                    robo_type: SpandaType::Named {
+                        name: "RobotIdentity".into(),
+                    },
+                    kind: SymbolKind::Variable,
+                    sensor_type: None,
+                    actuator_type: None,
+                },
+            );
+        }
+
+        if let Some(audit_decl) = audit {
+            let crate::foundations::AuditDecl::AuditDecl { records, span, .. } = audit_decl;
+            if records.is_empty() {
+                self.error(
+                    "audit block must record at least one field".into(),
+                    span.start.line,
+                    span.start.column,
+                );
+            }
+            self.symbols.insert(
+                "audit".into(),
+                SymbolEntry {
+                    robo_type: SpandaType::Named {
+                        name: "AuditLog".into(),
+                    },
+                    kind: SymbolKind::Variable,
+                    sensor_type: None,
+                    actuator_type: None,
+                },
+            );
+        }
+
+        self.symbols.insert(
+            String::from("mock_ledger"),
+            SymbolEntry {
+                robo_type: SpandaType::Named {
+                    name: "MockLedger".into(),
+                },
+                kind: SymbolKind::Variable,
+                sensor_type: None,
+                actuator_type: None,
+            },
+        );
+
+        if let Some(provenance_decl) = provenance {
+            let crate::foundations::ProvenanceDecl::ProvenanceDecl {
+                hash_algo,
+                signed_by,
+                span,
+                ..
+            } = provenance_decl;
+            if hash_algo != "sha256" {
+                self.error(
+                    format!("unsupported provenance hash algorithm '{hash_algo}' — only sha256 is supported in MVP"),
+                    span.start.line,
+                    span.start.column,
+                );
+            }
+            if signed_by.is_empty() {
+                self.error(
+                    "provenance block must declare signed_by".into(),
+                    span.start.line,
+                    span.start.column,
+                );
+            }
+        }
+
+        for signed in signed_records {
+            let crate::foundations::SignedRecordDecl::SignedRecordDecl {
+                signed_by, span, ..
+            } = signed;
+            if signed_by.is_empty() {
+                self.error(
+                    "signed record must specify signed_by".into(),
+                    span.start.line,
+                    span.start.column,
+                );
+            }
         }
 
         for behavior in behaviors {
@@ -2710,6 +2807,16 @@ fn robot_methods() -> HashMap<&'static str, MethodSig> {
                 returns: SpandaType::Bool,
             },
         ),
+        (
+            "identity",
+            MethodSig {
+                params: vec![],
+                named_params: HashMap::new(),
+                returns: SpandaType::Named {
+                    name: "RobotIdentity".into(),
+                },
+            },
+        ),
     ])
 }
 
@@ -2977,6 +3084,54 @@ fn builtin_methods(type_name: &str) -> Option<HashMap<&'static str, MethodSig>> 
                 },
             ),
         )])),
+        "AuditLog" => Some(HashMap::from([
+            (
+                "record",
+                m(
+                    vec![SpandaType::String],
+                    HashMap::new(),
+                    SpandaType::Named {
+                        name: "RecordId".into(),
+                    },
+                ),
+            ),
+            ("export", m(vec![], HashMap::new(), SpandaType::String)),
+            ("count", m(vec![], HashMap::new(), SpandaType::Int)),
+            (
+                "root_hash",
+                m(
+                    vec![],
+                    HashMap::new(),
+                    SpandaType::Named {
+                        name: "Hash".into(),
+                    },
+                ),
+            ),
+        ])),
+        "MockLedger" => Some(HashMap::from([
+            (
+                "anchor",
+                m(
+                    vec![SpandaType::Named {
+                        name: "Hash".into(),
+                    }],
+                    HashMap::new(),
+                    SpandaType::Named {
+                        name: "TransactionId".into(),
+                    },
+                ),
+            ),
+            (
+                "verify",
+                m(
+                    vec![SpandaType::Named {
+                        name: "Hash".into(),
+                    }],
+                    HashMap::new(),
+                    SpandaType::Bool,
+                ),
+            ),
+        ])),
         "SensorFusion" => Some(HashMap::from([(
             "read",
             m(

@@ -158,6 +158,7 @@ impl Parser {
                 | TokenType::Deadline
                 | TokenType::Telemetry
                 | TokenType::Faults
+                | TokenType::Verify
         );
         if ok {
             Ok(self.advance().lexeme)
@@ -185,6 +186,7 @@ impl Parser {
                 | TokenType::Capacity
                 | TokenType::Hardware
                 | TokenType::Deploy
+                | TokenType::Bus
         );
         if ok {
             Ok(self.advance().lexeme)
@@ -1009,6 +1011,10 @@ impl Parser {
         })
     }
 
+    fn is_robot_member_keyword(&self, kw: &str) -> bool {
+        self.check(TokenType::Ident) && self.peek().lexeme == kw
+    }
+
     fn parse_robot(&mut self) -> Result<RobotDecl, SpandaError> {
         let start = self.expect(TokenType::Robot, "Expected 'robot'")?;
         let name_tok = self.expect(TokenType::Ident, "Expected robot name")?;
@@ -1032,6 +1038,10 @@ impl Parser {
         let mut twin = None;
         let mut verify = None;
         let mut observe = None;
+        let mut identity = None;
+        let mut audit = None;
+        let mut provenance = None;
+        let mut signed_records = Vec::new();
         let mut trait_impls = Vec::new();
         let mut requires_hardware = None;
         let mut requires_network = None;
@@ -1086,6 +1096,14 @@ impl Parser {
                 verify = Some(self.parse_verify()?);
             } else if self.check(TokenType::Observe) {
                 observe = Some(self.parse_observe()?);
+            } else if self.is_robot_member_keyword("identity") {
+                identity = Some(self.parse_identity()?);
+            } else if self.is_robot_member_keyword("audit") {
+                audit = Some(self.parse_audit()?);
+            } else if self.is_robot_member_keyword("provenance") {
+                provenance = Some(self.parse_provenance()?);
+            } else if self.is_robot_member_keyword("record") {
+                signed_records.push(self.parse_signed_record()?);
             } else if self.check(TokenType::RequiresHardware) {
                 requires_hardware = Some(self.parse_requires_hardware()?);
             } else if self.check(TokenType::RequiresNetwork) {
@@ -1131,6 +1149,10 @@ impl Parser {
             twin,
             verify,
             observe,
+            identity,
+            audit,
+            provenance,
+            signed_records,
             requires_hardware,
             requires_network,
             mission,
@@ -1805,12 +1827,9 @@ impl Parser {
                 })
             } else {
                 Some(SensorBinding::Hal {
-                    bus_name: self
-                        .expect(
-                            TokenType::Ident,
-                            "Expected HAL bus name or topic string after 'on'",
-                        )?
-                        .lexeme,
+                    bus_name: self.parse_hal_binding_name(
+                        "Expected HAL bus name or topic string after 'on'",
+                    )?,
                 })
             }
         } else {
@@ -1907,6 +1926,134 @@ impl Parser {
         })
     }
 
+    fn parse_identity(&mut self) -> Result<IdentityDecl, SpandaError> {
+        let start = self.advance();
+        let type_name = self.expect(TokenType::Ident, "Expected identity type name")?;
+        self.expect(TokenType::Lbrace, "Expected '{' after identity type")?;
+        let mut fields = Vec::new();
+        while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof) {
+            let key = self.parse_config_key_token()?;
+            self.expect(TokenType::Colon, "Expected ':' in identity field")?;
+            let value = self.parse_config_value_string()?;
+            self.expect(TokenType::Semicolon, "Expected ';' after identity field")?;
+            fields.push((key, value));
+        }
+        let end = self.expect(TokenType::Rbrace, "Expected '}' to close identity")?;
+        Ok(IdentityDecl::IdentityDecl {
+            type_name: type_name.lexeme,
+            fields,
+            span: self.span_from(&start, &end),
+        })
+    }
+
+    fn parse_audit(&mut self) -> Result<AuditDecl, SpandaError> {
+        let start = self.advance();
+        let name = self.expect(TokenType::Ident, "Expected audit name")?;
+        self.expect(TokenType::Lbrace, "Expected '{' after audit name")?;
+        let mut records = Vec::new();
+        while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof) {
+            self.expect(TokenType::Ident, "Expected 'record' in audit block")?;
+            if self.previous().lexeme != "record" {
+                let t = self.previous();
+                return Err(SpandaError::Parse {
+                    message: "Expected 'record' in audit block".into(),
+                    line: t.line,
+                    column: t.column,
+                });
+            }
+            records.push(self.parse_expr()?);
+            self.expect(TokenType::Semicolon, "Expected ';' after audit record")?;
+        }
+        let end = self.expect(TokenType::Rbrace, "Expected '}' to close audit")?;
+        Ok(AuditDecl::AuditDecl {
+            name: name.lexeme,
+            records,
+            span: self.span_from(&start, &end),
+        })
+    }
+
+    fn parse_provenance(&mut self) -> Result<ProvenanceDecl, SpandaError> {
+        let start = self.advance();
+        let name = self.expect(TokenType::Ident, "Expected provenance name")?;
+        self.expect(TokenType::Lbrace, "Expected '{' after provenance name")?;
+        let mut hash_algo = "sha256".to_string();
+        let mut signed_by = String::new();
+        while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof) {
+            let key = self.parse_config_key_token()?;
+            self.expect(TokenType::Colon, "Expected ':' in provenance field")?;
+            match key.as_str() {
+                "hash" => {
+                    hash_algo = self
+                        .expect(TokenType::Ident, "Expected hash algorithm name")?
+                        .lexeme;
+                }
+                "signed_by" => {
+                    signed_by = Self::expr_path_string(&self.parse_expr()?);
+                }
+                other => {
+                    let t = self.peek();
+                    return Err(SpandaError::Parse {
+                        message: format!("Unknown provenance field '{other}'"),
+                        line: t.line,
+                        column: t.column,
+                    });
+                }
+            }
+            self.expect(TokenType::Semicolon, "Expected ';' after provenance field")?;
+        }
+        let end = self.expect(TokenType::Rbrace, "Expected '}' to close provenance")?;
+        Ok(ProvenanceDecl::ProvenanceDecl {
+            name: name.lexeme,
+            hash_algo,
+            signed_by,
+            span: self.span_from(&start, &end),
+        })
+    }
+
+    fn parse_signed_record(&mut self) -> Result<SignedRecordDecl, SpandaError> {
+        let start = self.advance();
+        let event_name = self.expect(TokenType::Ident, "Expected signed record event name")?;
+        self.expect(
+            TokenType::SignedBy,
+            "Expected 'signed_by' after record event",
+        )?;
+        let signed_by = Self::expr_path_string(&self.parse_expr()?);
+        self.expect(
+            TokenType::Semicolon,
+            "Expected ';' after signed record declaration",
+        )?;
+        Ok(SignedRecordDecl::SignedRecordDecl {
+            event_name: event_name.lexeme,
+            signed_by,
+            span: self.span_from(&start, self.previous()),
+        })
+    }
+
+    fn parse_config_value_string(&mut self) -> Result<String, SpandaError> {
+        let tok = self.advance();
+        match tok.token_type {
+            TokenType::String => Ok(tok.lexeme.trim_matches('"').to_string()),
+            TokenType::Ident => Ok(tok.lexeme),
+            _ => Err(SpandaError::Parse {
+                message: "Expected string or identifier in config value".into(),
+                line: tok.line,
+                column: tok.column,
+            }),
+        }
+    }
+
+    fn expr_path_string(expr: &Expr) -> String {
+        match expr {
+            Expr::IdentExpr { name, .. } => name.clone(),
+            Expr::MemberExpr {
+                object, property, ..
+            } => {
+                format!("{}.{}", Self::expr_path_string(object), property)
+            }
+            _ => String::new(),
+        }
+    }
+
     fn parse_ai_model(&mut self) -> Result<AiModelDecl, SpandaError> {
         let start = self.advance();
         let name = self.expect(TokenType::Ident, "Expected ai model name")?;
@@ -1946,6 +2093,9 @@ impl Parser {
     fn parse_config_key_token(&mut self) -> Result<String, SpandaError> {
         if self.check(TokenType::Ident) || self.check(TokenType::Provider) {
             Ok(self.advance().lexeme)
+        } else if self.check(TokenType::SignedBy) {
+            self.advance();
+            Ok("signed_by".into())
         } else {
             let t = self.peek();
             Err(SpandaError::Parse {
@@ -2964,6 +3114,12 @@ impl Parser {
         if self.match_types(&[TokenType::Safety]) {
             return Ok(Expr::IdentExpr {
                 name: "safety".into(),
+                span: self.span_from(&start, self.previous()),
+            });
+        }
+        if self.match_types(&[TokenType::Actuator]) {
+            return Ok(Expr::IdentExpr {
+                name: "actuator".into(),
                 span: self.span_from(&start, self.previous()),
             });
         }

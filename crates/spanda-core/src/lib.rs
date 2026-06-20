@@ -1,5 +1,6 @@
 pub mod ai;
 pub mod ast;
+pub mod audit;
 pub mod comm;
 mod error;
 pub mod events;

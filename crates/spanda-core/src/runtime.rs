@@ -8,6 +8,10 @@ use crate::ast::{
     RobotDecl, SafetyRule, SafetyZoneDecl, SensorBinding, SensorDecl, ServiceDecl, Stmt, TopicDecl,
     UnaryOp, UnitKind, ZoneShape,
 };
+use crate::audit::{
+    sha256 as audit_sha256, sign as audit_sign, verify_signature, AuditRuntime, DeviceIdentity,
+    MockLedgerBackend,
+};
 use crate::comm::{CommBus, DiscoverFilter, TransportKind};
 use crate::error::{PoseState, RobotState, SpandaError, VelocityState};
 use crate::events::EventBus;
@@ -125,6 +129,12 @@ pub enum RuntimeValue {
         name: String,
     },
     SafetyCtx,
+    AuditCtx,
+    LedgerCtx,
+    Identity {
+        id: String,
+        public_key: String,
+    },
     AiModel {
         name: String,
         model_type: String,
@@ -360,6 +370,8 @@ pub struct Interpreter<B: RobotBackend> {
     agent_trait_impls: HashMap<String, HashMap<String, AgentTraitImplBody>>,
     verify_rules: Vec<Expr>,
     fusion_sensors: Vec<String>,
+    audit_runtime: Option<AuditRuntime>,
+    mock_ledger: MockLedgerBackend,
     comm_bus: RoutingCommBus,
     default_transport: TransportKind,
 }
@@ -387,6 +399,8 @@ impl<B: RobotBackend> Interpreter<B> {
             agent_trait_impls: HashMap::new(),
             verify_rules: Vec::new(),
             fusion_sensors: Vec::new(),
+            audit_runtime: None,
+            mock_ledger: MockLedgerBackend::new(),
             comm_bus: RoutingCommBus::new(),
             default_transport: TransportKind::Sim,
         }
@@ -490,6 +504,10 @@ impl<B: RobotBackend> Interpreter<B> {
             twin,
             verify,
             observe,
+            identity,
+            audit,
+            provenance,
+            signed_records,
             trait_impls,
             buses,
             peer_robots,
@@ -508,6 +526,8 @@ impl<B: RobotBackend> Interpreter<B> {
         self.agent_trait_impls.clear();
         self.verify_rules.clear();
         self.fusion_sensors.clear();
+        self.audit_runtime = None;
+        self.mock_ledger = MockLedgerBackend::new();
         self.current_agent = None;
 
         if let Some(soc_decl) = soc {
@@ -658,6 +678,88 @@ impl<B: RobotBackend> Interpreter<B> {
                 sensors.join(", ")
             ));
         }
+
+        if let Some(identity_decl) = identity {
+            let crate::foundations::IdentityDecl::IdentityDecl { fields, .. } = identity_decl;
+            let id = fields
+                .iter()
+                .find(|(k, _)| k == "id")
+                .map(|(_, v)| v.clone())
+                .unwrap_or_else(|| "unknown".into());
+            let public_key = fields
+                .iter()
+                .find(|(k, _)| k == "public_key")
+                .map(|(_, v)| v.clone())
+                .unwrap_or_default();
+            let device = DeviceIdentity::new(id.clone(), public_key.clone());
+            self.env.define(
+                String::from("identity"),
+                RuntimeValue::Identity {
+                    id: id.clone(),
+                    public_key,
+                },
+            );
+            if let Some(rt) = self.audit_runtime.as_mut() {
+                rt.identity = Some(device);
+            }
+            self.log(format!("identity: device '{id}' registered"));
+        }
+
+        if let Some(audit_decl) = audit {
+            let crate::foundations::AuditDecl::AuditDecl { name, records, .. } = audit_decl;
+            let watched: Vec<String> = records.iter().map(|e| Self::expr_path_string(e)).collect();
+            let mut rt = AuditRuntime::new(name.clone(), watched.clone());
+            if let Some(identity_decl) = identity {
+                let crate::foundations::IdentityDecl::IdentityDecl { fields, .. } = identity_decl;
+                let id = fields
+                    .iter()
+                    .find(|(k, _)| k == "id")
+                    .map(|(_, v)| v.clone())
+                    .unwrap_or_else(|| "unknown".into());
+                let public_key = fields
+                    .iter()
+                    .find(|(k, _)| k == "public_key")
+                    .map(|(_, v)| v.clone())
+                    .unwrap_or_default();
+                rt = rt.with_identity(DeviceIdentity::new(id, public_key));
+            }
+            if let Some(provenance_decl) = provenance {
+                let crate::foundations::ProvenanceDecl::ProvenanceDecl {
+                    hash_algo,
+                    signed_by,
+                    ..
+                } = provenance_decl;
+                rt = rt.with_provenance(hash_algo.clone(), signed_by.clone());
+            }
+            self.env.define("audit", RuntimeValue::AuditCtx);
+            self.audit_runtime = Some(rt);
+            self.log(format!(
+                "audit {name}: recording {} field(s) [{}]",
+                watched.len(),
+                watched.join(", ")
+            ));
+        }
+
+        if let Some(provenance_decl) = provenance {
+            let crate::foundations::ProvenanceDecl::ProvenanceDecl { name, .. } = provenance_decl;
+            self.log(format!("provenance {name}: sha256 signing enabled"));
+        }
+
+        for signed in signed_records {
+            let crate::foundations::SignedRecordDecl::SignedRecordDecl {
+                event_name,
+                signed_by,
+                ..
+            } = signed;
+            if let Some(rt) = self.audit_runtime.as_mut() {
+                let _ = rt.record_event(event_name, &format!("signed_by={signed_by}"));
+            }
+            self.log(format!(
+                "signed record stream: {event_name} (signed_by {signed_by})"
+            ));
+        }
+
+        self.env.define("mock_ledger", RuntimeValue::LedgerCtx);
 
         for sm in state_machines {
             let StateMachineDecl::StateMachineDecl {
@@ -1813,6 +1915,14 @@ impl<B: RobotBackend> Interpreter<B> {
             return self.eval_safety_validate(args, named_args, line);
         }
 
+        if matches!(target, RuntimeValue::AuditCtx) {
+            return self.eval_audit_method(property, args, named_args, line);
+        }
+
+        if matches!(target, RuntimeValue::LedgerCtx) {
+            return self.eval_ledger_method(property, args, named_args, line);
+        }
+
         if self.ai_models.contains_key(target_name)
             || matches!(target, RuntimeValue::AiModel { .. })
         {
@@ -2064,6 +2174,59 @@ impl<B: RobotBackend> Interpreter<B> {
                 })?;
                 Ok(memory.recall(&key).cloned().unwrap_or(RuntimeValue::Void))
             }
+            "sha256" => {
+                let data = if let Some(arg) = args.first() {
+                    get_string(&self.eval_expr(arg)?, "")
+                } else {
+                    get_string(&self.get_named_arg_value(named_args, "data")?, "")
+                };
+                let hash = audit_sha256(&data);
+                Ok(RuntimeValue::Object {
+                    type_name: "Hash".into(),
+                    fields: HashMap::from([("hex".into(), RuntimeValue::String { value: hash.0 })]),
+                })
+            }
+            "sign" => {
+                let data = if let Some(arg) = args.first() {
+                    get_string(&self.eval_expr(arg)?, "")
+                } else {
+                    get_string(&self.get_named_arg_value(named_args, "data")?, "")
+                };
+                let key = if args.len() > 1 {
+                    get_string(&self.eval_expr(&args[1])?, "")
+                } else {
+                    get_string(&self.get_named_arg_value(named_args, "key")?, "")
+                };
+                Ok(RuntimeValue::Object {
+                    type_name: "Signature".into(),
+                    fields: HashMap::from([(
+                        "value".into(),
+                        RuntimeValue::String {
+                            value: audit_sign(&data, &key),
+                        },
+                    )]),
+                })
+            }
+            "verify_signature" => {
+                let data = if let Some(arg) = args.first() {
+                    get_string(&self.eval_expr(arg)?, "")
+                } else {
+                    get_string(&self.get_named_arg_value(named_args, "data")?, "")
+                };
+                let signature = if args.len() > 1 {
+                    get_string(&self.eval_expr(&args[1])?, "")
+                } else {
+                    get_string(&self.get_named_arg_value(named_args, "signature")?, "")
+                };
+                let key = if args.len() > 2 {
+                    get_string(&self.eval_expr(&args[2])?, "")
+                } else {
+                    get_string(&self.get_named_arg_value(named_args, "key")?, "")
+                };
+                Ok(RuntimeValue::Bool {
+                    value: verify_signature(&data, &signature, &key),
+                })
+            }
             _ => Ok(RuntimeValue::Void),
         }
     }
@@ -2119,6 +2282,175 @@ impl<B: RobotBackend> Interpreter<B> {
             None
         } else {
             Some(parts.join("\n"))
+        }
+    }
+
+    fn expr_path_string(expr: &Expr) -> String {
+        match expr {
+            Expr::IdentExpr { name, .. } => name.clone(),
+            Expr::MemberExpr {
+                object, property, ..
+            } => {
+                format!("{}.{}", Self::expr_path_string(object), property)
+            }
+            _ => String::new(),
+        }
+    }
+
+    fn runtime_value_payload(value: &RuntimeValue) -> String {
+        match value {
+            RuntimeValue::String { value } => value.clone(),
+            RuntimeValue::Number { value, .. } => value.to_string(),
+            RuntimeValue::Bool { value } => value.to_string(),
+            RuntimeValue::Pose { x, y, theta, z } => {
+                format!(r#"{{"x":{x},"y":{y},"theta":{theta},"z":{z}}}"#)
+            }
+            RuntimeValue::SafeAction { linear, angular } => {
+                format!(r#"{{"linear":{linear},"angular":{angular}}}"#)
+            }
+            RuntimeValue::ActionProposal {
+                linear,
+                angular,
+                source,
+                ..
+            } => format!(r#"{{"linear":{linear},"angular":{angular},"source":"{source}"}}"#),
+            _ => format!("{value:?}"),
+        }
+    }
+
+    fn eval_audit_method(
+        &mut self,
+        method: &str,
+        args: &[Expr],
+        _named_args: &[crate::ast::NamedArg],
+        line: u32,
+    ) -> Result<RuntimeValue, SpandaError> {
+        match method {
+            "record" => {
+                let event_type = if let Some(arg) = args.first() {
+                    get_string(&self.eval_expr(arg)?, "event")
+                } else {
+                    "event".into()
+                };
+                let payload = if args.len() > 1 {
+                    Self::runtime_value_payload(&self.eval_expr(&args[1])?)
+                } else {
+                    String::new()
+                };
+                let rt = self.audit_runtime.as_mut().ok_or_else(|| {
+                    RuntimeError::new(
+                        "Audit not configured — declare an audit block on the robot",
+                        line,
+                    )
+                    .into_spanda()
+                })?;
+                let id = rt.record_event(&event_type, &payload).map_err(|e| {
+                    RuntimeError::new(format!("audit.record failed: {e}"), line).into_spanda()
+                })?;
+                self.log(format!("audit.record({event_type}) -> {}", id.0));
+                Ok(RuntimeValue::Object {
+                    type_name: "RecordId".into(),
+                    fields: HashMap::from([("id".into(), RuntimeValue::String { value: id.0 })]),
+                })
+            }
+            "export" => {
+                let rt = self.audit_runtime.as_mut().ok_or_else(|| {
+                    RuntimeError::new(
+                        "Audit not configured — declare an audit block on the robot",
+                        line,
+                    )
+                    .into_spanda()
+                })?;
+                let json = rt.export_json().map_err(|e| {
+                    RuntimeError::new(format!("audit.export failed: {e}"), line).into_spanda()
+                })?;
+                Ok(RuntimeValue::String { value: json })
+            }
+            "count" => {
+                let count = self
+                    .audit_runtime
+                    .as_ref()
+                    .map(|rt| rt.record_count())
+                    .unwrap_or(0);
+                Ok(RuntimeValue::Number {
+                    value: count as f64,
+                    unit: UnitKind::None,
+                })
+            }
+            "root_hash" => {
+                let hash = self
+                    .audit_runtime
+                    .as_ref()
+                    .and_then(|rt| rt.root_hash())
+                    .map(|h| h.0)
+                    .unwrap_or_default();
+                Ok(RuntimeValue::Object {
+                    type_name: "Hash".into(),
+                    fields: HashMap::from([("hex".into(), RuntimeValue::String { value: hash })]),
+                })
+            }
+            _ => Ok(RuntimeValue::Void),
+        }
+    }
+
+    fn eval_ledger_method(
+        &mut self,
+        method: &str,
+        args: &[Expr],
+        _named_args: &[crate::ast::NamedArg],
+        line: u32,
+    ) -> Result<RuntimeValue, SpandaError> {
+        use crate::audit::LedgerBackend;
+        match method {
+            "anchor" => {
+                let hash_hex = if let Some(arg) = args.first() {
+                    match self.eval_expr(arg)? {
+                        RuntimeValue::Object { fields, .. } => fields
+                            .get("hex")
+                            .and_then(|v| match v {
+                                RuntimeValue::String { value } => Some(value.clone()),
+                                _ => None,
+                            })
+                            .unwrap_or_default(),
+                        RuntimeValue::String { value } => value,
+                        _ => String::new(),
+                    }
+                } else {
+                    String::new()
+                };
+                let hash = crate::audit::Hash(hash_hex);
+                let tx = self.mock_ledger.anchor_hash(&hash).map_err(|e| {
+                    RuntimeError::new(format!("mock_ledger.anchor failed: {e}"), line).into_spanda()
+                })?;
+                self.log(format!("mock_ledger.anchor -> {}", tx.0));
+                Ok(RuntimeValue::Object {
+                    type_name: "TransactionId".into(),
+                    fields: HashMap::from([("id".into(), RuntimeValue::String { value: tx.0 })]),
+                })
+            }
+            "verify" => {
+                let hash_hex = if let Some(arg) = args.first() {
+                    match self.eval_expr(arg)? {
+                        RuntimeValue::Object { fields, .. } => fields
+                            .get("hex")
+                            .and_then(|v| match v {
+                                RuntimeValue::String { value } => Some(value.clone()),
+                                _ => None,
+                            })
+                            .unwrap_or_default(),
+                        RuntimeValue::String { value } => value,
+                        _ => String::new(),
+                    }
+                } else {
+                    String::new()
+                };
+                let hash = crate::audit::Hash(hash_hex);
+                let ok = self.mock_ledger.verify_anchor(&hash).map_err(|e| {
+                    RuntimeError::new(format!("mock_ledger.verify failed: {e}"), line).into_spanda()
+                })?;
+                Ok(RuntimeValue::Bool { value: ok })
+            }
+            _ => Ok(RuntimeValue::Void),
         }
     }
 
@@ -2185,6 +2517,14 @@ impl<B: RobotBackend> Interpreter<B> {
                     .unwrap_or(false);
                 Ok(RuntimeValue::Bool { value: in_zone })
             }
+            "identity" => self
+                .env
+                .get("identity")
+                .cloned()
+                .ok_or_else(|| SpandaError::Runtime {
+                    message: "robot has no identity — declare an identity block".into(),
+                    line: 0,
+                }),
             _ => Ok(RuntimeValue::Void),
         }
     }

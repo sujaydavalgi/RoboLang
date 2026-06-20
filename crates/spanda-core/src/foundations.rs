@@ -265,6 +265,51 @@ pub enum TwinDecl {
     },
 }
 
+/// Device identity for signed telemetry and mission logs.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(tag = "kind")]
+pub enum IdentityDecl {
+    IdentityDecl {
+        type_name: String,
+        fields: Vec<(String, String)>,
+        span: Span,
+    },
+}
+
+/// Audit block listing fields to record append-only.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(tag = "kind")]
+pub enum AuditDecl {
+    AuditDecl {
+        name: String,
+        records: Vec<Expr>,
+        span: Span,
+    },
+}
+
+/// Provenance configuration for hashing and signing mission records.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(tag = "kind")]
+pub enum ProvenanceDecl {
+    ProvenanceDecl {
+        name: String,
+        hash_algo: String,
+        signed_by: String,
+        span: Span,
+    },
+}
+
+/// Signed record declaration for telemetry / mission event streams.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(tag = "kind")]
+pub enum SignedRecordDecl {
+    SignedRecordDecl {
+        event_name: String,
+        signed_by: String,
+        span: Span,
+    },
+}
+
 /// Capability granted to an agent (`can [ read(lidar), propose_motion ]`).
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct CapabilityDecl {
@@ -299,9 +344,19 @@ pub fn resolve_module_import(path: &str) -> bool {
             | "twin.sync"
             | "sim.gazebo"
             | "sim.webots"
+            | "ledger.mock"
+            | "provenance.core"
+            | "identity.core"
+            | "supply_chain.trace"
+            | "std.core"
             | "std.time"
             | "std.units"
             | "std.spatial"
+            | "std.math"
+            | "std.collections"
+            | "std.result"
+            | "std.io"
+            | "std.log"
             | "std.ai"
             | "std.robotics"
             | "std.sensors"
@@ -312,6 +367,9 @@ pub fn resolve_module_import(path: &str) -> bool {
             | "std.sim"
             | "std.twin"
             | "std.hri"
+            | "std.security"
+            | "std.audit"
+            | "std.crypto"
             | "std.network"
     )
 }

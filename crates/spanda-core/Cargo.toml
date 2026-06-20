@@ -8,6 +8,8 @@ description = "Spanda robotics language — lexer, parser, type checker, and int
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 thiserror = "2"
+spanda-audit = { path = "../spanda-audit" }
 
 [dev-dependencies]
 glob = "0.3"
+spanda-package = { path = "../spanda-package" }

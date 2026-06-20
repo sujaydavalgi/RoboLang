@@ -11,6 +11,7 @@ fn examples_compile_and_run() {
             env!("CARGO_MANIFEST_DIR"),
             "/../../examples/communication/*.sd"
         ),
+        concat!(env!("CARGO_MANIFEST_DIR"), "/../../examples/std/*.sd"),
     ];
     let mut paths = Vec::new();
     for pattern in patterns {

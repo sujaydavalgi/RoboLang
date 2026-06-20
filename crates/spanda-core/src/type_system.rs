@@ -92,6 +92,25 @@ pub fn resolve_type_name(name: &str) -> Result<SpandaType, String> {
                 name: name.to_string(),
             })
         }
+        // Security / audit / crypto
+        "Identity" | "RobotIdentity" | "Signature" | "Permission" | "TrustLevel" | "Hash"
+        | "AuditEvent" | "AuditLog" | "ProvenanceRecord" | "MissionRecord" | "RecordId" => {
+            Ok(SpandaType::Named {
+                name: name.to_string(),
+            })
+        }
+        // Robotics graph
+        "Robot" | "Sensor" | "Actuator" | "Event" | "Bus" | "CompatibilityReport" => {
+            Ok(SpandaType::Named {
+                name: name.to_string(),
+            })
+        }
+        // Core / collections / io
+        "Result" | "Option" | "Error" | "File" | "Reader" | "Writer" | "Logger" | "LogLevel" => {
+            Ok(SpandaType::Named {
+                name: name.to_string(),
+            })
+        }
         // Uncertainty
         "Confidence" | "Prediction" | "Probability" => Ok(SpandaType::Named {
             name: name.to_string(),
@@ -265,6 +284,37 @@ const KNOWN_DOMAIN_TYPES: &[&str] = &[
     "HistoryPolicy",
     "CommBus",
     "Endpoint",
+    "Identity",
+    "RobotIdentity",
+    "Signature",
+    "Permission",
+    "TrustLevel",
+    "Hash",
+    "AuditEvent",
+    "AuditLog",
+    "ProvenanceRecord",
+    "MissionRecord",
+    "RecordId",
+    "Robot",
+    "Sensor",
+    "Actuator",
+    "Event",
+    "Bus",
+    "CompatibilityReport",
+    "Result",
+    "Option",
+    "Error",
+    "File",
+    "Reader",
+    "Writer",
+    "Logger",
+    "LogLevel",
+    "Simulator",
+    "Motor",
+    "Servo",
+    "Gripper",
+    "DriveUnit",
+    "HardwareProfile",
 ];
 
 /// Physical category used to reject invalid unit operations.
@@ -570,6 +620,143 @@ pub fn std_namespaces() -> HashMap<&'static str, &'static [&'static str]> {
             "Message",
             "Service",
             "Action",
+        ][..],
+    );
+    m.insert("std.core", &["Result", "Option", "Error", "Void"][..]);
+    m.insert("std.math", &["Float", "Int"][..]);
+    m.insert(
+        "std.collections",
+        &["Array", "Map", "Set", "Queue", "Stack", "Tuple"][..],
+    );
+    m.insert("std.result", &["Result", "Option", "Error"][..]);
+    m.insert("std.io", &["File", "Reader", "Writer", "Bytes"][..]);
+    m.insert("std.log", &["Logger", "LogLevel"][..]);
+    m.insert(
+        "std.security",
+        &[
+            "Identity",
+            "RobotIdentity",
+            "Signature",
+            "Permission",
+            "Capability",
+            "TrustLevel",
+        ][..],
+    );
+    m.insert(
+        "std.audit",
+        &[
+            "AuditEvent",
+            "AuditLog",
+            "ProvenanceRecord",
+            "MissionRecord",
+            "RecordId",
+        ][..],
+    );
+    m.insert("std.crypto", &["Hash", "Signature"][..]);
+    m.insert(
+        "std.robotics",
+        &[
+            "Robot",
+            "Sensor",
+            "Actuator",
+            "MotionCommand",
+            "ControlSignal",
+            "PIDConfig",
+            "ActionProposal",
+            "SafeAction",
+            "Agent",
+            "Goal",
+            "Task",
+            "Skill",
+            "Capability",
+            "Intent",
+        ][..],
+    );
+    m.insert(
+        "std.ai",
+        &[
+            "LLM",
+            "VisionModel",
+            "EmbeddingModel",
+            "Prompt",
+            "Completion",
+            "Embedding",
+            "Token",
+            "Context",
+            "Memory",
+            "Plan",
+            "ReasoningTrace",
+            "ActionProposal",
+            "SafeAction",
+        ][..],
+    );
+    m.insert(
+        "std.communication",
+        &[
+            "Transport",
+            "QosProfile",
+            "QoS",
+            "Bandwidth",
+            "Latency",
+            "TopicPath",
+            "ServiceEndpoint",
+            "MessageEnvelope",
+            "DiscoveryFilter",
+            "NetworkRequirements",
+            "Reliability",
+            "HistoryPolicy",
+            "CommBus",
+            "Endpoint",
+            "Topic",
+            "Message",
+            "Service",
+            "Action",
+            "Event",
+            "Bus",
+        ][..],
+    );
+    m.insert(
+        "std.hardware",
+        &[
+            "HardwareProfile",
+            "CompatibilityReport",
+            "SensorSpec",
+            "ActuatorSpec",
+            "BusConfig",
+            "PinConfig",
+            "DeviceTree",
+            "Peripheral",
+            "Interface",
+        ][..],
+    );
+    m.insert(
+        "std.sim",
+        &[
+            "Simulator",
+            "Scenario",
+            "Fault",
+            "Replay",
+            "WorldState",
+            "PhysicsConfig",
+            "Scene",
+            "Entity",
+            "SensorModel",
+            "ActuatorModel",
+            "Tick",
+            "ReplayBuffer",
+        ][..],
+    );
+    m.insert(
+        "std.hri",
+        &[
+            "Command",
+            "Conversation",
+            "Speech",
+            "Gesture",
+            "Emotion",
+            "Feedback",
+            "Intent",
+            "Approval",
         ][..],
     );
     m
