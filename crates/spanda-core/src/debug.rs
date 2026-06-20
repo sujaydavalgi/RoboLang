@@ -13,6 +13,8 @@ pub enum DebugCommand {
 pub struct DebugPause {
     pub line: u32,
     pub reason: String,
+    #[serde(default)]
+    pub variables: std::collections::HashMap<String, String>,
 }
 
 #[derive(Debug, Clone, Default)]
@@ -60,10 +62,16 @@ impl DebugController {
         self.breakpoints.contains(&line)
     }
 
-    pub fn record_pause(&self, line: u32, reason: &str) {
+    pub fn record_pause(
+        &self,
+        line: u32,
+        reason: &str,
+        variables: std::collections::HashMap<String, String>,
+    ) {
         self.pauses.borrow_mut().push(DebugPause {
             line,
             reason: reason.to_string(),
+            variables,
         });
     }
 
