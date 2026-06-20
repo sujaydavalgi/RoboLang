@@ -1,0 +1,22 @@
+import std.audit;
+import std.security;
+
+robot Rover {
+  identity RobotIdentity {
+    id: "rover-001";
+    public_key: "device-key-rover-001";
+  }
+
+  audit MissionAudit {
+    record robot.pose;
+  }
+
+  provenance MissionRecord {
+    hash: sha256;
+    signed_by: robot.identity;
+  }
+
+  behavior run() {
+    audit.record("mission_start", robot.pose());
+  }
+}

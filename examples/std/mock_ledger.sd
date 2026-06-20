@@ -1,0 +1,15 @@
+import std.audit;
+import std.crypto;
+
+robot Rover {
+  audit MissionAudit {
+    record robot.pose;
+  }
+
+  behavior run() {
+    audit.record("mission_tick", robot.pose());
+    let root = audit.root_hash();
+    mock_ledger.anchor(root);
+    mock_ledger.verify(root);
+  }
+}

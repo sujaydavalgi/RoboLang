@@ -1,0 +1,18 @@
+import std.security;
+
+robot Rover {
+  identity RobotIdentity {
+    id: "rover-001";
+    public_key: "pub-key-rover-001";
+  }
+
+  audit MissionAudit {
+    record robot.pose;
+  }
+
+  record mission_event signed_by robot.identity;
+
+  behavior run() {
+    let id = robot.identity();
+  }
+}

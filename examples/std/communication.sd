@@ -1,0 +1,11 @@
+import std.communication;
+
+robot CommDemo {
+  topic cmd_vel: Velocity publish on "/cmd_vel";
+  service reset_map: ResetCostmap;
+
+  behavior run() {
+    publish cmd_vel(velocity(linear: 0.1 m/s, angular: 0.0 rad/s));
+    call reset_map();
+  }
+}

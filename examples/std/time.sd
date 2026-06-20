@@ -1,0 +1,7 @@
+import std.time;
+
+robot TimeDemo {
+  behavior run() {
+    let interval: Duration = 100 ms;
+  }
+}

@@ -1,0 +1,8 @@
+import std.spatial;
+
+robot SpatialDemo {
+  behavior run() {
+    let p = pose(x: 1.0, y: 2.0, theta: 0.0);
+    let t = transform(from: "base", to: "map", pose: p);
+  }
+}

@@ -1,0 +1,27 @@
+import std.audit;
+import std.safety;
+import std.robotics;
+
+robot Rover {
+  sensor lidar: Lidar on "/scan";
+  actuator wheels: DifferentialDrive;
+  ai_model planner: LLM {
+    provider: "mock";
+    model: "patrol";
+    temperature: 0.1;
+  }
+  safety { max_speed = 1.0 m/s; }
+
+  audit MissionAudit {
+    record robot.pose;
+    record safety.events;
+    record actuator.commands;
+  }
+
+  behavior patrol() {
+    let proposal = planner.reason(prompt: "move forward");
+    let action = safety.validate(proposal);
+    wheels.execute(action);
+    audit.record("safe_action_executed", action);
+  }
+}

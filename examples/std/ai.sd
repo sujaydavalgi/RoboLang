@@ -1,0 +1,18 @@
+import std.ai;
+import std.safety;
+
+robot AiDemo {
+  ai_model planner: LLM {
+    provider: "mock";
+    model: "demo";
+    temperature: 0.1;
+  }
+  actuator wheels: DifferentialDrive;
+  safety { max_speed = 0.5 m/s; }
+
+  behavior run() {
+    let proposal: ActionProposal = planner.reason(prompt: "scan");
+    let action: SafeAction = safety.validate(proposal);
+    wheels.execute(action);
+  }
+}

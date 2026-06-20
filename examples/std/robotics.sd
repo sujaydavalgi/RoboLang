@@ -1,0 +1,19 @@
+import std.robotics;
+import std.safety;
+
+robot RoboticsDemo {
+  sensor lidar: Lidar on "/scan";
+  actuator wheels: DifferentialDrive;
+  ai_model planner: LLM {
+    provider: "mock";
+    model: "demo";
+    temperature: 0.1;
+  }
+  safety { max_speed = 1.0 m/s; }
+
+  behavior run() {
+    let proposal: ActionProposal = planner.reason(prompt: "hold");
+    let action: SafeAction = safety.validate(proposal);
+    wheels.execute(action);
+  }
+}
