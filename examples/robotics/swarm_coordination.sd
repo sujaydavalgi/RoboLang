@@ -1,0 +1,47 @@
+// Robotics — swarm coordinator policies over fleet groups
+//
+//   spanda check examples/robotics/swarm_coordination.sd
+//   spanda swarm coordinate examples/robotics/swarm_coordination.sd
+//   spanda swarm coordinate examples/robotics/swarm_coordination.sd   # round_robin advances next member
+
+robot ScoutA {
+  robot ScoutB;
+
+  mission Patrol {
+    navigate;
+    inspect;
+    return_home;
+  }
+}
+
+robot ScoutB {
+  mission Patrol {
+    navigate;
+    inspect;
+    return_home;
+  }
+}
+
+robot ScoutC {
+  mission Patrol {
+    navigate;
+    inspect;
+    return_home;
+  }
+}
+
+fleet Recon {
+  ScoutA;
+  ScoutB;
+  ScoutC;
+}
+
+swarm ReconSwarm {
+  fleet Recon;
+  policy round_robin;
+}
+
+swarm ReconBroadcast {
+  fleet Recon;
+  policy broadcast;
+}

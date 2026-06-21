@@ -476,6 +476,7 @@ mod tests {
             requires_connectivity: None,
             geofences: vec![],
             fleets: vec![],
+            swarms: vec![],
             program_safety_zones: vec![],
             certifications: vec![],
             connectivity_policies: vec![],

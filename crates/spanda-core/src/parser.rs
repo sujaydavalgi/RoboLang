@@ -594,6 +594,7 @@ impl Parser {
         let mut requires_connectivity = None;
         let mut geofences = Vec::new();
         let mut fleets = Vec::new();
+        let mut swarms = Vec::new();
         let mut program_safety_zones = Vec::new();
         let mut certifications = Vec::new();
         let mut connectivity_policies = Vec::new();
@@ -637,6 +638,8 @@ impl Parser {
                 geofences.push(self.parse_geofence()?);
             } else if self.check(TokenType::Fleet) {
                 fleets.push(self.parse_fleet()?);
+            } else if self.check(TokenType::Swarm) {
+                swarms.push(self.parse_swarm()?);
             } else if self.check(TokenType::SafetyZone) {
                 program_safety_zones.push(self.parse_program_safety_zone()?);
             } else if self.check(TokenType::Certify) {
@@ -679,6 +682,7 @@ impl Parser {
             requires_connectivity,
             geofences,
             fleets,
+            swarms,
             program_safety_zones,
             certifications,
             connectivity_policies,
@@ -1720,6 +1724,64 @@ impl Parser {
         Ok(FleetDecl::FleetDecl {
             name,
             members,
+            span: self.span_from(&start, &end),
+        })
+    }
+
+    fn parse_swarm(&mut self) -> Result<crate::robotics_platform::SwarmDecl, SpandaError> {
+        // Parse a program-level swarm coordinator declaration.
+        use crate::robotics_platform::{SwarmDecl, SwarmPolicy};
+        let start = self.advance();
+        let name = self.expect(TokenType::Ident, "Expected swarm name")?.lexeme;
+        self.expect(TokenType::Lbrace, "Expected '{' after swarm name")?;
+        let mut fleet_name = None;
+        let mut policy = SwarmPolicy::RoundRobin;
+
+        // Parse fleet and policy fields inside the swarm block.
+        while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof) {
+            if self.check(TokenType::Fleet) {
+                self.advance();
+                fleet_name = Some(
+                    self.expect(TokenType::Ident, "Expected fleet name after 'fleet'")?
+                        .lexeme,
+                );
+                self.expect(TokenType::Semicolon, "Expected ';' after fleet name")?;
+            } else if self.match_types(&[TokenType::Policy]) {
+                let policy_name = self
+                    .expect(TokenType::Ident, "Expected swarm policy name")?
+                    .lexeme;
+                self.expect(TokenType::Semicolon, "Expected ';' after swarm policy")?;
+                policy = SwarmPolicy::parse_ident(&policy_name).ok_or_else(|| {
+                    let t = self.previous();
+                    SpandaError::Parse {
+                        message: format!(
+                            "Unknown swarm policy '{policy_name}' (expected round_robin, broadcast, or leader_follow)"
+                        ),
+                        line: t.line,
+                        column: t.column,
+                    }
+                })?;
+            } else {
+                let t = self.peek();
+                return Err(SpandaError::Parse {
+                    message: "Expected fleet or policy in swarm block".into(),
+                    line: t.line,
+                    column: t.column,
+                });
+            }
+        }
+        let end = self.expect(TokenType::Rbrace, "Expected '}' to close swarm")?;
+        let fleet_name = fleet_name.ok_or_else(|| {
+            SpandaError::Parse {
+                message: format!("swarm '{name}' requires a fleet reference"),
+                line: end.line,
+                column: end.column,
+            }
+        })?;
+        Ok(SwarmDecl::SwarmDecl {
+            name,
+            fleet_name,
+            policy,
             span: self.span_from(&start, &end),
         })
     }

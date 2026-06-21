@@ -496,6 +496,7 @@ impl TypeChecker {
             messages,
             robots,
             fleets,
+            swarms,
             program_safety_zones,
             certifications,
             ..
@@ -588,6 +589,35 @@ impl TypeChecker {
                 span,
             } = fleet;
             if let Some(message) = validate_fleet_members(name, members, &robot_names) {
+                self.error(message, span.start.line, span.start.column);
+            }
+        }
+
+        let fleet_names: Vec<String> = fleets
+            .iter()
+            .map(|fleet| {
+                use crate::robotics_platform::FleetDecl;
+                let FleetDecl::FleetDecl { name, .. } = fleet;
+                name.clone()
+            })
+            .collect();
+        let mut swarm_names = std::collections::HashSet::new();
+        for swarm in swarms {
+            use crate::robotics_platform::{validate_swarm_fleet, SwarmDecl};
+            let SwarmDecl::SwarmDecl {
+                name,
+                fleet_name,
+                span,
+                ..
+            } = swarm;
+            if !swarm_names.insert(name.clone()) {
+                self.error(
+                    format!("Duplicate swarm '{name}'"),
+                    span.start.line,
+                    span.start.column,
+                );
+            }
+            if let Some(message) = validate_swarm_fleet(name, fleet_name, &fleet_names) {
                 self.error(message, span.start.line, span.start.column);
             }
         }

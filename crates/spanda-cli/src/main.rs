@@ -2,6 +2,7 @@
 //!
 mod certify_cli;
 mod deploy_ota;
+mod swarm_cli;
 mod package;
 
 use serde::Serialize;
@@ -100,6 +101,7 @@ fn usage() {
            spanda twin export <file.sd> --out <replay.json>\n\
            spanda fleet run [--json] [--trace-scheduler] [--trace-tasks] [--trace-triggers] [--trace-events] <file.sd>\n\
            spanda fleet orchestrate [--json] [--remote] [--mesh-url <http(s)://host:port>] [--mesh-token <t>] <file.sd>\n\
+           spanda swarm coordinate [--json] <file.sd>\n\
            spanda fleet mesh start [--bind <addr>] [--token <t>] [--tls-cert <pem>] [--tls-key <pem>]\n\
            spanda fleet agent start [--bind <addr>] [--robot <name>] [--token <t>] [--tls-cert <pem>] [--tls-key <pem>]\n\
            spanda fleet agent register <RobotName> <http(s)://host:port> [--token <t>]\n\
@@ -1261,6 +1263,12 @@ fn main() {
     // Take the branch when command equals "fleet".
     if command == "fleet" {
         fleet_dispatch(&args[2..]);
+        let _ = io::stdout().flush();
+        return;
+    }
+
+    if command == "swarm" {
+        swarm_cli::swarm_dispatch(&args[2..]);
         let _ = io::stdout().flush();
         return;
     }

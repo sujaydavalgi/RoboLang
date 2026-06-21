@@ -510,6 +510,8 @@ pub enum Program {
         #[serde(default)]
         fleets: Vec<crate::robotics_platform::FleetDecl>,
         #[serde(default)]
+        swarms: Vec<crate::robotics_platform::SwarmDecl>,
+        #[serde(default)]
         program_safety_zones: Vec<crate::robotics_platform::ProgramSafetyZoneDecl>,
         #[serde(default)]
         certifications: Vec<crate::robotics_platform::CertifyDecl>,

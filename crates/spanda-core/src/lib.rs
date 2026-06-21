@@ -24,6 +24,7 @@ mod error;
 pub mod events;
 pub mod ffi;
 pub mod ffi_registry;
+pub mod swarm_coordinator;
 pub mod fleet_orchestrator;
 pub mod fleet_remote;
 pub mod fleet_agent;
@@ -104,6 +105,11 @@ pub use deploy_agent::{
     save_agent_state, spawn_test_agent, spawn_test_agent_with_options, agent_entry_for_port, AgentState,
 };
 pub use deploy_http::{parse_http_url, DeployAgentTls};
+pub use robotics_platform::SwarmPolicy;
+pub use swarm_coordinator::{
+    coordinate_swarms, default_swarm_state_path, load_swarm_state, save_swarm_state,
+    SwarmCoordinationReport, SwarmCoordinationResult, SwarmState,
+};
 pub use fleet_orchestrator::{
     fleet_registry_from_program, orchestrate_fleets, orchestrate_fleets_mesh,
     orchestrate_fleets_remote, FleetMemberState, FleetOrchestrationReport,

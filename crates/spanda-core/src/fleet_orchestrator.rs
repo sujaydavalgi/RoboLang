@@ -77,7 +77,7 @@ fn mission_for_robot(robot: &RobotDecl) -> Option<MissionRuntime> {
     ))
 }
 
-fn peer_handoffs(member_name: &str, step: &str, peer_robots: &[PeerRobotDecl]) -> Vec<String> {
+pub fn peer_handoffs(member_name: &str, step: &str, peer_robots: &[PeerRobotDecl]) -> Vec<String> {
     if step.is_empty() || peer_robots.is_empty() {
         return Vec::new();
     }
@@ -90,7 +90,7 @@ fn peer_handoffs(member_name: &str, step: &str, peer_robots: &[PeerRobotDecl]) -
         .collect()
 }
 
-fn deliver_peer_steps(
+pub fn deliver_peer_steps(
     mesh_bus: &mut InMemoryCommBus,
     from_robot: &str,
     step: &str,

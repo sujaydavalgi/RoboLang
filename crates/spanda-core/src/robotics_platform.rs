@@ -174,6 +174,46 @@ pub enum FleetDecl {
     },
 }
 
+/// Swarm coordination policy applied to a declared fleet group.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum SwarmPolicy {
+    RoundRobin,
+    Broadcast,
+    LeaderFollow,
+}
+
+impl SwarmPolicy {
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::RoundRobin => "round_robin",
+            Self::Broadcast => "broadcast",
+            Self::LeaderFollow => "leader_follow",
+        }
+    }
+
+    pub fn parse_ident(name: &str) -> Option<Self> {
+        match name {
+            "round_robin" => Some(Self::RoundRobin),
+            "broadcast" => Some(Self::Broadcast),
+            "leader_follow" => Some(Self::LeaderFollow),
+            _ => None,
+        }
+    }
+}
+
+/// Program-level swarm coordinator binding a fleet to a coordination policy.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(tag = "kind")]
+pub enum SwarmDecl {
+    SwarmDecl {
+        name: String,
+        fleet_name: String,
+        policy: SwarmPolicy,
+        span: Span,
+    },
+}
+
 /// Program-level safety zone policy with optional speed cap.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "kind")]
@@ -246,6 +286,21 @@ pub fn validate_fleet_members(
         }
     }
     None
+}
+
+/// Validate swarm declarations reference declared fleet groups.
+pub fn validate_swarm_fleet(
+    swarm_name: &str,
+    fleet_name: &str,
+    fleet_names: &[String],
+) -> Option<String> {
+    // Report swarms that reference unknown fleet identifiers.
+    if fleet_names.iter().any(|name| name == fleet_name) {
+        return None;
+    }
+    Some(format!(
+        "swarm '{swarm_name}' references unknown fleet '{fleet_name}'"
+    ))
 }
 
 /// Validate mission declarations have either duration or steps.
