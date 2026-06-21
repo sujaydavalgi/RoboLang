@@ -247,7 +247,15 @@ pub fn known_capabilities() -> &'static [&'static str] {
         "audit.read",
         "identity.sign",
         "identity.verify",
+        "identity.read",
         "ledger.anchor",
+        "crypto.encrypt",
+        "crypto.decrypt",
+        "crypto.sign",
+        "crypto.verify",
+        "secret.read",
+        "secure_topic.publish",
+        "secure_topic.subscribe",
     ]
 }
 

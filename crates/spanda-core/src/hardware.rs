@@ -577,6 +577,12 @@ fn apply_fault(mut profile: HardwareProfile, fault_type: &str) -> HardwareProfil
         "PacketLoss" => {
             profile.packet_loss_pct = Some(10.0);
         }
+        "InvalidSignature"
+        | "ExpiredCertificate"
+        | "ReplayAttack"
+        | "UnknownDevice"
+        | "ManInTheMiddle"
+        | "SecureHandshakeDropped" => {}
         _ => {}
     }
     profile

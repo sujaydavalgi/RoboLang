@@ -1230,15 +1230,17 @@ impl TypeChecker {
             self.check_actuator(actuator);
         }
 
-        // Process each buse.
+        // Process each bus.
         for bus in buses {
             let comm::BusDecl::BusDecl {
                 name,
                 transport,
+                encryption,
+                authentication,
                 span,
+                ..
             } = bus;
 
-            // Take this path when comm::TransportKind::from ident(name).is none().
             if comm::TransportKind::from_ident(name).is_none()
                 && *transport == comm::TransportKind::Local
             {
@@ -1247,6 +1249,26 @@ impl TypeChecker {
                     span.start.line,
                     span.start.column,
                 );
+            }
+
+            for (field, value) in [
+                ("encryption", encryption.as_deref()),
+                ("authentication", authentication.as_deref()),
+            ] {
+                if let Some(v) = value {
+                    let ok = match field {
+                        "encryption" => ["none", "optional", "required"].contains(&v),
+                        "authentication" => ["none", "signed", "mutual"].contains(&v),
+                        _ => true,
+                    };
+                    if !ok {
+                        self.error(
+                            format!("invalid {field} mode '{v}' on bus '{name}'"),
+                            span.start.line,
+                            span.start.column,
+                        );
+                    }
+                }
             }
         }
 
@@ -2308,8 +2330,10 @@ impl TypeChecker {
                 );
             }
         } else if let Some(st) = service_type {
-            // Take this path when service type for(st).is none().
-            if service_type_for(st).is_none() {
+            if service_type_for(st).is_none()
+                && resolve_message_type(&self.message_registry, st).is_none()
+                && !st.starts_with("Service<")
+            {
                 self.error(
                     format!("Unknown service type '{st}'"),
                     span.start.line,
@@ -2427,7 +2451,28 @@ impl TypeChecker {
         // Example:
         // let result = instance.check_secure_block(block);
 
-        // use level when min trust is present.
+        // Validate encryption/authentication/integrity modes in secure blocks.
+        for (field, value) in [
+            ("encryption", block.encryption.as_deref()),
+            ("authentication", block.authentication.as_deref()),
+            ("integrity", block.integrity.as_deref()),
+        ] {
+            if let Some(v) = value {
+                let ok = match field {
+                    "encryption" => ["none", "optional", "required"].contains(&v),
+                    "authentication" => ["none", "signed", "mutual"].contains(&v),
+                    "integrity" => ["none", "required"].contains(&v),
+                    _ => true,
+                };
+                if !ok {
+                    self.error(
+                        format!("invalid {field} mode '{v}' in secure block"),
+                        block.span.start.line,
+                        block.span.start.column,
+                    );
+                }
+            }
+        }
 
         // Emit output when min trust provides a level.
         if let Some(level) = &block.min_trust {

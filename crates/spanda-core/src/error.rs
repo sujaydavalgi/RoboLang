@@ -188,6 +188,14 @@ pub struct RunOptions {
     /// Write twin replay buffer JSON to this path after run/sim.
     #[serde(default)]
     pub twin_export_path: Option<String>,
+
+    /// Enable strict secure communication enforcement at runtime.
+    #[serde(default)]
+    pub secure_mode: bool,
+
+    /// Inject security fault scenarios during simulation.
+    #[serde(default)]
+    pub inject_security_faults: bool,
 }
 
 fn default_max_loop_iterations() -> usize {

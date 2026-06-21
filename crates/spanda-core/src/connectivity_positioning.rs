@@ -205,7 +205,9 @@ pub fn hardware_event_to_connectivity(event: &str) -> Option<(&'static str, &'st
 /// Map comm bus fault names to connectivity trigger pairs.
 pub fn fault_to_connectivity(fault: &str) -> Option<(&'static str, &'static str)> {
     match fault {
-        "NetworkOutage" | "LteOutage" | "SatelliteOutage" | "WeakWifi" => Some(("network", "disconnected")),
+        "NetworkOutage" | "LteOutage" | "SatelliteOutage" | "WeakWifi" => {
+            Some(("network", "disconnected"))
+        }
         "BluetoothDisconnect" => Some(("bluetooth", "device_disconnected")),
         "FiveGHandoff" => Some(("cellular", "roaming")),
         "GpsSpoofing" => Some(("gps", "spoofed")),
@@ -252,7 +254,8 @@ pub fn apply_gps_reading_faults(
     if type_name != "GpsFix" && type_name != "GPSReading" {
         return RuntimeValue::Object { type_name, fields };
     }
-    let (lat, lon, fix_quality) = apply_gps_position_faults(faults, true_lat, true_lon, sim_time_ms);
+    let (lat, lon, fix_quality) =
+        apply_gps_position_faults(faults, true_lat, true_lon, sim_time_ms);
     fields.insert(
         "lat".into(),
         RuntimeValue::Number {
@@ -373,7 +376,10 @@ pub fn is_link_impaired(link: &str, faults: &HashSet<String>) -> bool {
                 if is_satellite_link(&link) || link == "bluetooth" || link == "ble" {
                     continue;
                 }
-                if is_wifi_link(&link) || is_cellular_link(&link) || link == "network" || link == "ethernet"
+                if is_wifi_link(&link)
+                    || is_cellular_link(&link)
+                    || link == "network"
+                    || link == "ethernet"
                 {
                     return true;
                 }
@@ -394,7 +400,9 @@ pub fn runtime_sim_identity(link: &str, attested: bool) -> crate::runtime::Runti
     let link_lower = link.to_ascii_lowercase();
     let iccid = format!(
         "89{:010}00000000000",
-        link_lower.bytes().fold(0u64, |acc, b| acc.wrapping_mul(31).wrapping_add(b as u64))
+        link_lower
+            .bytes()
+            .fold(0u64, |acc, b| acc.wrapping_mul(31).wrapping_add(b as u64))
             % 10_000_000_000
     );
     let carrier = if is_satellite_link(link) {
@@ -410,26 +418,15 @@ pub fn runtime_sim_identity(link: &str, attested: bool) -> crate::runtime::Runti
     RuntimeValue::Object {
         type_name: "SimIdentity".into(),
         fields: HashMap::from([
-            (
-                "iccid".into(),
-                RuntimeValue::String {
-                    value: iccid,
-                },
-            ),
+            ("iccid".into(), RuntimeValue::String { value: iccid }),
             (
                 "carrier".into(),
                 RuntimeValue::String {
                     value: carrier.into(),
                 },
             ),
-            (
-                "esim".into(),
-                RuntimeValue::Bool { value: esim },
-            ),
-            (
-                "attested".into(),
-                RuntimeValue::Bool { value: attested },
-            ),
+            ("esim".into(), RuntimeValue::Bool { value: esim }),
+            ("attested".into(), RuntimeValue::Bool { value: attested }),
         ]),
     }
 }
@@ -750,10 +747,7 @@ mod tests {
     #[test]
     fn connectivity_link_to_transport_maps_wifi() {
         use crate::comm::TransportKind;
-        assert_eq!(
-            connectivity_link_to_transport("wifi"),
-            TransportKind::Mqtt
-        );
+        assert_eq!(connectivity_link_to_transport("wifi"), TransportKind::Mqtt);
         assert_eq!(
             connectivity_link_to_transport("cellular"),
             TransportKind::Dds
@@ -792,10 +786,7 @@ mod tests {
 
     #[test]
     fn gps_drift_maps_to_trigger() {
-        assert_eq!(
-            fault_to_connectivity("GpsDrift"),
-            Some(("gps", "drift"))
-        );
+        assert_eq!(fault_to_connectivity("GpsDrift"), Some(("gps", "drift")));
     }
 
     #[test]

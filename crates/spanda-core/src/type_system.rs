@@ -119,11 +119,11 @@ pub fn resolve_type_name(name: &str) -> Result<SpandaType, String> {
             })
         }
         "Identity" | "RobotIdentity" | "Signature" | "Permission" | "TrustLevel" | "Hash"
-        | "AuditEvent" | "AuditLog" | "ProvenanceRecord" | "MissionRecord" | "RecordId" => {
-            Ok(SpandaType::Named {
-                name: name.to_string(),
-            })
-        }
+        | "EncryptedMessage" | "SignedMessage" | "VerifiedMessage" | "TrustedSource"
+        | "Certificate" | "PublicKey" | "PrivateKey" | "SessionKey" | "AuditEvent" | "AuditLog"
+        | "ProvenanceRecord" | "MissionRecord" | "RecordId" => Ok(SpandaType::Named {
+            name: name.to_string(),
+        }),
         "Robot" | "Sensor" | "Actuator" | "Event" | "Bus" | "CompatibilityReport" => {
             Ok(SpandaType::Named {
                 name: name.to_string(),

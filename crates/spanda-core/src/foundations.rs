@@ -723,6 +723,7 @@ pub enum SecretDecl {
 #[serde(tag = "source", rename_all = "snake_case")]
 pub enum SecretSourceDecl {
     Env { var: String },
+    File { path: String },
     Literal { value: String },
 }
 
@@ -743,12 +744,37 @@ pub enum PermissionsDecl {
     },
 }
 
+/// Robot-wide secure communication defaults (`secure_comm { encryption: required; ... }`).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(tag = "kind")]
+pub enum SecureCommPolicyDecl {
+    SecureCommPolicyDecl {
+        encryption: Option<String>,
+        authentication: Option<String>,
+        integrity: Option<String>,
+        span: Span,
+    },
+}
+
+/// Named trust boundary for cross-domain validation (`trust_boundary robot_to_robot;`).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(tag = "kind")]
+pub enum TrustBoundaryDecl {
+    TrustBoundaryDecl { name: String, span: Span },
+}
+
 /// Security policy for topics, services, and actions.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct SecureBlockDecl {
     pub signed: bool,
+    pub signed_required: bool,
     pub min_trust: Option<String>,
     pub requires: Vec<String>,
+    pub encryption: Option<String>,
+    pub authentication: Option<String>,
+    pub integrity: Option<String>,
+    pub trusted_sources: Vec<String>,
+    pub reject_untrusted: bool,
     pub span: Span,
 }
 
@@ -770,8 +796,14 @@ impl Default for SecureBlockDecl {
         // Assemble the struct fields and return it.
         Self {
             signed: false,
+            signed_required: false,
             min_trust: None,
             requires: Vec::new(),
+            encryption: None,
+            authentication: None,
+            integrity: None,
+            trusted_sources: Vec::new(),
+            reject_untrusted: false,
             span: Span {
                 start: crate::ast::SourceLocation {
                     line: 0,

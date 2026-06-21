@@ -571,6 +571,9 @@ pub enum RobotDecl {
         secrets: Vec<crate::foundations::SecretDecl>,
         trust: Option<crate::foundations::TrustDecl>,
         permissions: Option<crate::foundations::PermissionsDecl>,
+        secure_comm: Option<crate::foundations::SecureCommPolicyDecl>,
+        #[serde(default)]
+        trust_boundaries: Vec<crate::foundations::TrustBoundaryDecl>,
         requires_hardware: Option<crate::foundations::RequiresHardwareDecl>,
         requires_network: Option<crate::foundations::RequiresNetworkDecl>,
         #[serde(default)]
