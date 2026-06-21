@@ -247,7 +247,7 @@ spanda deploy status
 
 Deploy plans include a `certification_proof` summary (relaxed and strict pass flags). Use `--require-certify` on rollout to block OTA updates when strict certification proof fails (same checklist as `spanda verify --strict-certify` / `spanda certify prove --strict`).
 
-Golden-path script: `examples/robotics/golden_path_deploy.sh`.
+Golden-path script: `examples/robotics/golden_path_deploy.sh` (certify, deploy, verify-adapter, fleet orchestrate, swarm coordinate).
 
 State persists to `.spanda/deploy-state.json` (override with `SPANDA_DEPLOY_STATE`).
 

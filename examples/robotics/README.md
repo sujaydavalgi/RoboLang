@@ -21,4 +21,4 @@ Runnable `.sd` programs demonstrating the Spanda robotics platform. See [robotic
 
 **Scripts**
 
-- `golden_path_deploy.sh` — check → verify → certify prove → deploy plan/rollout dry-run
+- `golden_path_deploy.sh` — check → verify → certify prove → deploy plan/rollout dry-run → verify-adapter → fleet orchestrate → swarm coordinate

@@ -10,4 +10,14 @@ spanda run examples/robotics/nav2_bridge.sd
 spanda run examples/robotics/slam_integration.sd
 ```
 
-Replace the scripts with wrappers around your Nav2 action client or Cartographer/RTAB-Map CLI.
+Validate adapter package metadata before wiring production backends:
+
+```bash
+spanda verify-adapter --project examples/packages/nav2_adapter_package --import navigation.nav2
+spanda verify-adapter --project examples/packages/cartographer_adapter_package --import navigation.cartographer
+spanda verify-adapter --project examples/packages/rtabmap_adapter_package --import navigation.rtabmap
+```
+
+Replace the scripts with wrappers around your Nav2 action client or Cartographer/RTAB-Map CLI. Spanda does not bundle Nav2 or SLAM binaries — it orchestrates external stacks through `[adapter]` packages and optional subprocess bridges.
+
+Full robotics workflow script: `examples/robotics/golden_path_deploy.sh`.
