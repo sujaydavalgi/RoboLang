@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { AddressInfo } from "node:net";
 import { compileFile } from "../src/compile.js";
+import { buildDeployBundle } from "../src/deploy-bundle.js";
 import { buildDeployPlan, deployTargetKey } from "../src/deploy-service.js";
 import {
   agentHealth,
@@ -32,7 +33,8 @@ describe("deploy remote (TS mirror)", () => {
     const entry = { target, url: `http://127.0.0.1:${port}` };
     expect(await agentHealth(entry)).toBe(true);
     const { program } = compileFile("examples/robotics/ota_deployment.sd", "typescript");
-    const plan = buildDeployPlan(program, "ota_deployment.sd", "2.0.0");
+    const plan = buildDeployPlan(program, "examples/robotics/ota_deployment.sd", "2.0.0");
+    const bundle = buildDeployBundle(plan);
     let registry: DeployAgentRegistry = { agents: [] };
     registry = registerAgent(registry, target, entry.url);
     const result = await executeRemoteRollout(
@@ -45,6 +47,7 @@ describe("deploy remote (TS mirror)", () => {
         dryRun: false,
       },
       registry,
+      bundle,
     );
     expect(result.success).toBe(true);
     expect(state.currentVersion).toBe("2.0.0");

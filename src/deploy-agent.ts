@@ -16,6 +16,8 @@ export type AgentState = {
   program?: string;
   programHash?: string;
   requireHash?: boolean;
+  requireSignature?: boolean;
+  trustedPublicKey?: string;
 };
 
 export function defaultAgentStatePath(): string {
@@ -103,6 +105,10 @@ async function handleRequest(
       version?: string;
       program?: string;
       program_hash?: string;
+      assignments?: Array<{ robot_name: string; hardware: string }>;
+      certifications?: string[];
+      artifact_signature?: string;
+      artifact_public_key?: string;
     };
     if (state.target && payload.target && payload.target !== state.target) {
       res.writeHead(400, { "Content-Type": "application/json" });
@@ -113,6 +119,34 @@ async function handleRequest(
       res.writeHead(400, { "Content-Type": "application/json" });
       res.end(JSON.stringify({ ok: false, error: "program_hash required" }));
       return;
+    }
+    if (state.requireSignature) {
+      if (!state.trustedPublicKey || !payload.artifact_signature) {
+        res.writeHead(400, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ ok: false, error: "invalid artifact signature" }));
+        return;
+      }
+      const { verifyDeployBundle } = await import("./deploy-bundle.js");
+      const ok = await verifyDeployBundle(
+        {
+          version: payload.version ?? state.currentVersion,
+          program: payload.program ?? "",
+          programHash: payload.program_hash,
+          assignments: (payload.assignments ?? []).map((a) => ({
+            robotName: a.robot_name,
+            hardware: a.hardware,
+          })),
+          certifications: payload.certifications ?? [],
+          signature: payload.artifact_signature,
+          publicKey: payload.artifact_public_key,
+        },
+        state.trustedPublicKey,
+      );
+      if (!ok) {
+        res.writeHead(400, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ ok: false, error: "invalid artifact signature" }));
+        return;
+      }
     }
     if (payload.target) state.target = payload.target;
     if (state.currentVersion) state.previousVersion = state.currentVersion;
@@ -176,12 +210,16 @@ export function startDeployAgentServer(options: {
   tlsCert?: string;
   tlsKey?: string;
   requireHash?: boolean;
+  requireSignature?: boolean;
+  trustedPublicKey?: string;
 }): ReturnType<typeof createServer> {
   const statePath = options.statePath ?? defaultAgentStatePath();
   const state = readAgentStateFromDisk(statePath);
   if (!state.target) state.target = options.target;
   if (options.token) state.token = options.token;
   if (options.requireHash) state.requireHash = true;
+  if (options.requireSignature) state.requireSignature = true;
+  if (options.trustedPublicKey) state.trustedPublicKey = options.trustedPublicKey;
   writeAgentStateToDisk(state, statePath);
   const requestHandler = (req: IncomingMessage, res: ServerResponse) => {
     void handleRequest(req, res, state, statePath);

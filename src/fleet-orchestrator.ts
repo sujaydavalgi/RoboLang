@@ -20,12 +20,21 @@ export type FleetMemberState = {
   peerHandoffs?: string[];
 };
 
+export type PeerDelivery = {
+  fromRobot: string;
+  toRobot: string;
+  topic: string;
+  step: string;
+  delivered: boolean;
+};
+
 export type FleetOrchestrationReport = {
   fleetName: string;
   members: FleetMemberState[];
   coordinationMode: string;
   stepsAdvanced: number;
   peerMessages?: string[];
+  peerDeliveries?: PeerDelivery[];
 };
 
 export type FleetOrchestrationResult = {
@@ -51,6 +60,7 @@ export function orchestrateFleets(program: Program, programPath: string): FleetO
     const members: FleetMemberState[] = [];
     let stepsAdvanced = 0;
     const peerMessages: string[] = [];
+    const peerDeliveries: PeerDelivery[] = [];
 
     for (const memberName of fleet.members) {
       const robot = program.robots.find((r) => r.name === memberName);
@@ -74,6 +84,16 @@ export function orchestrateFleets(program: Program, programPath: string): FleetO
           step ? [`${memberName}->${peer.name}:step=${step}`] : [],
         );
         peerMessages.push(...peerHandoffs);
+        for (const peer of robot.peerRobots ?? []) {
+          if (!step) continue;
+          peerDeliveries.push({
+            fromRobot: memberName,
+            toRobot: peer.name,
+            topic: "mission_step",
+            step,
+            delivered: true,
+          });
+        }
         members.push({
           robotName: memberName,
           missionName: runtime.name,
@@ -93,14 +113,18 @@ export function orchestrateFleets(program: Program, programPath: string): FleetO
       }
     }
 
+    const hasPeerLink = members.some((m) => m.hasPeerLink);
     reports.push({
       fleetName: fleet.name,
       members,
-      coordinationMode: members.some((m) => m.hasPeerLink)
-        ? "peer_round_robin_mission"
-        : "round_robin_mission",
+      coordinationMode: peerDeliveries.length > 0
+        ? "peer_mesh_mission"
+        : hasPeerLink
+          ? "peer_round_robin_mission"
+          : "round_robin_mission",
       stepsAdvanced,
       peerMessages,
+      peerDeliveries,
     });
   }
 

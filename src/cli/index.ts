@@ -40,6 +40,11 @@ import {
   type RolloutStrategy,
 } from "../deploy-service.js";
 import {
+  buildDeployBundle,
+  signDeployBundle,
+  type DeployArtifactBundle,
+} from "../deploy-bundle.js";
+import {
   agentHealth,
   defaultAgentsPath,
   executeRemoteRollback,
@@ -872,10 +877,20 @@ async function handleDeployOta(
   const { abs, program } = compileProgramOrExit(filePath ?? "");
   const version = flagStr(flags, "version") ?? "1.0.0";
   const plan = buildDeployPlan(program, abs, version);
+  let bundle: DeployArtifactBundle = buildDeployBundle(plan);
+  const signKey = flagStr(flags, "sign-key") ?? process.env.SPANDA_DEPLOY_SIGN_KEY;
+  if (signKey) {
+    bundle = await signDeployBundle(bundle, signKey);
+  }
 
   if (subcommand === "plan") {
+    const bundleOut = flagStr(flags, "bundle-out");
+    if (bundleOut) {
+      writeFileSync(resolve(bundleOut), JSON.stringify(bundle, null, 2));
+      console.log(`Wrote signed deploy bundle to ${bundleOut}`);
+    }
     if (json) {
-      console.log(JSON.stringify(plan, null, 2));
+      console.log(JSON.stringify(bundle.signature ? bundle : plan, null, 2));
       return;
     }
     console.log(`Deploy plan for ${abs} (version ${version})`);
@@ -887,6 +902,9 @@ async function handleDeployOta(
     }
     if (plan.programHash) {
       console.log(`  program_hash: ${plan.programHash}`);
+    }
+    if (bundle.signature) {
+      console.log(`  artifact_signature: ${bundle.signature}`);
     }
     return;
   }
@@ -910,7 +928,7 @@ async function handleDeployOta(
     };
     const registry = readAgentRegistryFromDisk(agentsRegistryPath());
     const result = remote
-      ? await executeRemoteRollout(plan, options, registry)
+      ? await executeRemoteRollout(plan, options, registry, bundle)
       : planRollout(plan, options);
     if (!dryRun) {
       const state = readDeployStateFromDisk();
@@ -1000,6 +1018,8 @@ function handleDeployAgent(subcommand: string | undefined, args: string[], json:
     let tlsCert: string | undefined;
     let tlsKey: string | undefined;
     let requireHash = false;
+    let requireSignature = false;
+    let trustedPublicKey: string | undefined;
     for (let i = 0; i < args.length; i++) {
       if (args[i] === "--bind" && args[i + 1]) {
         bind = args[++i]!;
@@ -1013,6 +1033,10 @@ function handleDeployAgent(subcommand: string | undefined, args: string[], json:
         tlsKey = args[++i];
       } else if (args[i] === "--require-hash") {
         requireHash = true;
+      } else if (args[i] === "--require-signature") {
+        requireSignature = true;
+      } else if (args[i] === "--trust-key" && args[i + 1]) {
+        trustedPublicKey = args[++i];
       }
     }
     if (!target) {
@@ -1023,7 +1047,20 @@ function handleDeployAgent(subcommand: string | undefined, args: string[], json:
       console.error("Both --tls-cert and --tls-key are required for HTTPS agents");
       process.exit(1);
     }
-    startDeployAgentServer({ bind, target, token, tlsCert, tlsKey, requireHash });
+    if (requireSignature && !trustedPublicKey) {
+      console.error("Missing --trust-key when --require-signature is set");
+      process.exit(1);
+    }
+    startDeployAgentServer({
+      bind,
+      target,
+      token,
+      tlsCert,
+      tlsKey,
+      requireHash,
+      requireSignature,
+      trustedPublicKey,
+    });
     return;
   }
 
@@ -1125,6 +1162,11 @@ function handleFleetOrchestrate(filePath: string | undefined, json: boolean): vo
     }
     for (const message of fleet.peerMessages ?? []) {
       console.log(`    peer: ${message}`);
+    }
+    for (const delivery of fleet.peerDeliveries ?? []) {
+      console.log(
+        `    mesh: ${delivery.fromRobot} -> ${delivery.toRobot} topic=${delivery.topic} step=${delivery.step} delivered=${delivery.delivered}`,
+      );
     }
   }
 }

@@ -14,6 +14,7 @@ import {
   type RolloutResult,
   type RolloutStep,
 } from "./deploy-service.js";
+import type { DeployArtifactBundle } from "./deploy-bundle.js";
 
 export type DeployAgentEntry = {
   target: string;
@@ -124,6 +125,7 @@ export async function executeRemoteRollout(
   plan: DeployPlan,
   options: RolloutOptions,
   registry: DeployAgentRegistry,
+  bundle: DeployArtifactBundle,
 ): Promise<RolloutResult> {
   const local = planRollout(plan, options);
   if (options.dryRun) return local;
@@ -149,9 +151,16 @@ export async function executeRemoteRollout(
         "/v1/rollout",
         JSON.stringify({
           target: key,
-          version: step.version,
-          program: plan.program,
-          program_hash: plan.programHash,
+          version: bundle.version,
+          program: bundle.program,
+          program_hash: bundle.programHash,
+        assignments: bundle.assignments.map((assignment) => ({
+          robot_name: assignment.robotName,
+          hardware: assignment.hardware,
+        })),
+          certifications: bundle.certifications,
+          artifact_signature: bundle.signature,
+          artifact_public_key: bundle.publicKey,
         }),
       );
       const body = (await response.json()) as { ok?: boolean; version?: string };

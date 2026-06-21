@@ -318,11 +318,11 @@ Runnable programs under `examples/robotics/`:
 
 | Item | Target |
 |------|--------|
-| Distributed fleet orchestrator | **Partial** — `spanda fleet orchestrate` with peer handoff messages in `peer_round_robin_mission` mode |
+| Distributed fleet orchestrator | **Partial** — `spanda fleet orchestrate` with peer mesh delivery (`peer_mesh_mission`) |
 | `navigate { … }` statement sugar | **Done** — parser sugar over `navigation.goal()` + Nav2 `/cmd_vel` publish |
 | Safety zone speed enforcement at runtime | **Done** — `SafetyMonitor.clamp_speed_at_pose()` (Rust + TS) |
 | `certify ISO13849` / IEC 61508 / ISO 26262 | **Partial** — program `certify` metadata (+ optional `level`) + verify reporting |
-| OTA rollout/canary/rollback | **Partial** — local deploy CLI + remote HTTP(S) agents with `program_hash` artifact digests |
+| OTA rollout/canary/rollback | **Partial** — local deploy CLI + remote HTTP(S) agents with `program_hash` and optional Ed25519 signed bundles |
 | Swarm coordinator runtime | Experimental; build on fleet + peer robots |
 | World model runtime | Explicitly deferred in product strategy |
 | Production SLAM/nav package implementations | **Partial** — `slam.localize()` / `slam.map()` stub hooks when SLAM imports declared |
