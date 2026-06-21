@@ -894,6 +894,7 @@ pub struct Interpreter<B: RobotBackend> {
     fusion_sensors: Vec<String>,
     hardware_monitor: HardwareMonitor,
     topic_path_to_name: HashMap<String, String>,
+    topic_path_to_message_type: HashMap<String, String>,
     ai_confidence_low_active: bool,
     twin_faults_dispatched: std::collections::HashSet<String>,
     audit_runtime: Option<AuditRuntime>,
@@ -974,6 +975,7 @@ impl<B: RobotBackend> Interpreter<B> {
             fusion_sensors: Vec::new(),
             hardware_monitor: HardwareMonitor::default(),
             topic_path_to_name: HashMap::new(),
+            topic_path_to_message_type: HashMap::new(),
             ai_confidence_low_active: false,
             twin_faults_dispatched: std::collections::HashSet::new(),
             audit_runtime: None,
@@ -1753,7 +1755,7 @@ impl<B: RobotBackend> Interpreter<B> {
             twin_sync,
             agent_channels,
             secure_comm,
-            trust_boundaries: _trust_boundaries,
+            trust_boundaries,
             ..
         } = robot;
         self.env = Environment::new();
@@ -1779,6 +1781,7 @@ impl<B: RobotBackend> Interpreter<B> {
         self.fusion_sensors.clear();
         self.hardware_monitor = HardwareMonitor::default();
         self.topic_path_to_name.clear();
+        self.topic_path_to_message_type.clear();
         self.ai_confidence_low_active = false;
         self.twin_faults_dispatched.clear();
         self.audit_runtime = None;
@@ -1815,6 +1818,14 @@ impl<B: RobotBackend> Interpreter<B> {
             self.log(format!("HAL configured: {} bus(es)/pin(s)", members.len()));
         }
 
+        // Register declared trust boundaries for runtime enforcement.
+        for tb in trust_boundaries {
+            let crate::foundations::TrustBoundaryDecl::TrustBoundaryDecl { name, .. } = tb;
+            if let Ok(kind) = name.parse::<spanda_security::TrustBoundaryKind>() {
+                self.security.trust_boundaries.declare(kind);
+            }
+        }
+
         // Process each bus.
         for bus in buses {
             let crate::comm::BusDecl::BusDecl {
@@ -1822,6 +1833,7 @@ impl<B: RobotBackend> Interpreter<B> {
                 encryption,
                 authentication,
                 integrity,
+                broker_url,
                 ..
             } = bus;
             self.default_transport = *transport;
@@ -1879,10 +1891,23 @@ impl<B: RobotBackend> Interpreter<B> {
                 bus_security.cert_path.clone(),
                 bus_security.key_secret.clone(),
             );
+            let transport_boundary =
+                spanda_security::boundary_for_transport_name(transport.as_str());
+            self.security.set_transport_context(
+                transport_boundary,
+                bus_security.encryption,
+                bus_security.authentication,
+                bus_security.integrity,
+            );
+            let resolved_broker =
+                crate::transport_security::TransportSecurityConfig::resolve_broker_url(
+                    broker_url.as_deref(),
+                );
             self.comm_bus
                 .configure(TransportConfig {
                     node_name: Some(robot_name.clone()),
                     security: bus_security.clone(),
+                    broker_url: resolved_broker,
                     ..Default::default()
                 })
                 .map_err(|e| RuntimeError::new(format!("transport configure: {e}"), 1).into_spanda())?;
@@ -2980,6 +3005,8 @@ impl<B: RobotBackend> Interpreter<B> {
         }
         self.comm_bus.subscribe(&path, name);
         self.topic_path_to_name.insert(path.clone(), name.clone());
+        self.topic_path_to_message_type
+            .insert(path.clone(), message_type.clone());
         if let Some(qos_decl) = qos {
             self.topic_qos.insert(path.clone(), qos_decl.clone());
         }
@@ -4540,6 +4567,10 @@ impl<B: RobotBackend> Interpreter<B> {
                 &payload,
                 envelope.source_id.as_deref(),
                 None,
+                self.topic_path_to_message_type
+                    .get(&topic_path)
+                    .map(String::as_str)
+                    .unwrap_or("Unknown"),
             ) {
                 if let Some(rt) = self.audit_runtime.as_mut() {
                     let _ = self.security.audit_security_event(
@@ -5051,7 +5082,7 @@ impl<B: RobotBackend> Interpreter<B> {
 
                     if let Err(e) = self
                         .security
-                        .prepare_publish(&topic_path, &payload, &source_id)
+                        .prepare_publish(&topic_path, &payload, &source_id, &message_type)
                     {
                         if let Some(rt) = self.audit_runtime.as_mut() {
                             let _ = self.security.audit_security_event(
@@ -5250,6 +5281,10 @@ impl<B: RobotBackend> Interpreter<B> {
                         &payload,
                         envelope.source_id.as_deref(),
                         None,
+                        self.topic_path_to_message_type
+                            .get(&path)
+                            .map(String::as_str)
+                            .unwrap_or("Unknown"),
                     ) {
                         return Err(self.security_error(e, line));
                     }

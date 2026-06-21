@@ -2802,6 +2802,7 @@ impl Parser {
         if self.check(TokenType::Lbrace) {
             self.advance();
             let mut transport_name = bus_name.lexeme.clone();
+            let mut broker_url = None;
             let mut encryption = None;
             let mut authentication = None;
             let mut integrity = None;
@@ -2812,6 +2813,9 @@ impl Parser {
                 match key.as_str() {
                     "transport" => {
                         transport_name = self.parse_config_value_string()?;
+                    }
+                    "url" => {
+                        broker_url = Some(self.parse_config_value_string()?);
                     }
                     "encryption" => {
                         encryption = Some(
@@ -2849,6 +2853,7 @@ impl Parser {
                 name: bus_name.lexeme,
                 transport,
                 transport_name: Some(transport_name),
+                broker_url,
                 encryption,
                 authentication,
                 integrity,
@@ -2862,6 +2867,7 @@ impl Parser {
                 name: bus_name.lexeme.clone(),
                 transport,
                 transport_name: None,
+                broker_url: None,
                 encryption: None,
                 authentication: None,
                 integrity: None,

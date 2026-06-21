@@ -1,6 +1,8 @@
 //! Secure communication language and validation tests.
 
 use spanda_core::{check, lexer::tokenize, parser::parse, security_check};
+use spanda_core::ast::RobotDecl;
+use spanda_core::comm::BusDecl;
 use spanda_security::{
     EncryptedMessage, EncryptionMode, SecurePolicy, TrustBoundaryKind,
     TrustBoundaryRegistry,
@@ -305,11 +307,62 @@ fn inbound_trusted_source_enforced() {
         },
     );
     assert!(ctx
-        .verify_inbound_message("/motion", "payload", Some("BadAgent"), None)
+        .verify_inbound_message("/motion", "payload", Some("BadAgent"), None, "Velocity")
         .is_err());
     assert!(ctx
-        .verify_inbound_message("/motion", "payload", Some("Navigator"), None)
+        .verify_inbound_message("/motion", "payload", Some("Navigator"), None, "Velocity")
         .is_ok());
+}
+
+#[test]
+fn runtime_trust_boundary_rejects_unencrypted_robot_to_robot_publish() {
+    let source = r#"
+robot R {
+  trust trusted;
+  trust_boundary robot_to_robot;
+  topic motion_cmd: Velocity publish on "/motion";
+  bus mesh {
+    transport: "mqtt";
+  };
+  behavior run() {
+    publish motion_cmd with velocity(linear: 0.5 m/s, angular: 0.0 rad/s);
+  }
+}
+"#;
+    let err = spanda_core::run(
+        source,
+        spanda_core::RunOptions {
+            max_loop_iterations: 1,
+            ..Default::default()
+        },
+    )
+    .expect_err("unencrypted publish over mqtt should fail robot_to_robot boundary");
+    assert!(
+        err.to_string().to_lowercase().contains("encryption"),
+        "got: {err}"
+    );
+}
+
+#[test]
+fn bus_url_field_parses() {
+    let source = r#"
+robot R {
+  bus mesh {
+    transport: "mqtt";
+    url: "mqtts://broker.example.com:8883";
+    encryption: required;
+  };
+  behavior run() {}
+}
+"#;
+    let tokens = tokenize(source).expect("tokenize");
+    let program = parse(tokens).expect("parse");
+    let RobotDecl::RobotDecl { buses, .. } = &program.robots()[0];
+    let BusDecl::BusDecl { broker_url, .. } = &buses[0];
+    assert_eq!(
+        broker_url.as_deref(),
+        Some("mqtts://broker.example.com:8883")
+    );
 }
 
 #[test]

@@ -30,6 +30,17 @@ impl FromStr for TrustBoundaryKind {
     }
 }
 
+/// Map a transport name to the trust boundary it typically crosses.
+pub fn boundary_for_transport_name(transport: &str) -> Option<TrustBoundaryKind> {
+    match transport {
+        "local" | "sim" | "ble" => Some(TrustBoundaryKind::RobotInternal),
+        "ros2" | "dds" | "mqtt" => Some(TrustBoundaryKind::RobotToRobot),
+        "websocket" => Some(TrustBoundaryKind::OperatorToRobot),
+        "wifi" | "cellular" => Some(TrustBoundaryKind::RobotToCloud),
+        _ => None,
+    }
+}
+
 impl TrustBoundaryKind {
     pub fn required_encryption(self) -> EncryptionMode {
         match self {

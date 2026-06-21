@@ -59,6 +59,18 @@ impl TransportSecurityConfig {
         Ok(())
     }
 
+    /// Resolve broker URL from bus declaration or `SPANDA_BROKER_URL` environment variable.
+    pub fn resolve_broker_url(bus_url: Option<&str>) -> Option<String> {
+        if let Some(url) = bus_url {
+            if !url.is_empty() {
+                return Some(url.to_string());
+            }
+        }
+        std::env::var("SPANDA_BROKER_URL")
+            .ok()
+            .filter(|value| !value.is_empty())
+    }
+
     /// True when broker URL implies TLS (`mqtts://`, `wss://`, etc.).
     pub fn url_requires_tls(broker_url: Option<&str>) -> bool {
         broker_url.is_some_and(|url| {

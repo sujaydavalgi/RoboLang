@@ -337,6 +337,7 @@ pub enum BusDecl {
         name: String,
         transport: TransportKind,
         transport_name: Option<String>,
+        broker_url: Option<String>,
         encryption: Option<String>,
         authentication: Option<String>,
         integrity: Option<String>,

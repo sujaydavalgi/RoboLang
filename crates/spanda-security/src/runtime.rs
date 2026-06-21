@@ -8,6 +8,8 @@ use crate::secrets::SecretStore;
 use crate::secure_comm::{SecureEndpointRegistry, SecurePolicy};
 use crate::signed::SignedMessage;
 use crate::trust::TrustLevel;
+use crate::trust_boundary::{TrustBoundaryKind, TrustBoundaryRegistry};
+use crate::policy::{AuthenticationMode, EncryptionMode, IntegrityMode};
 use serde::{Deserialize, Serialize};
 use spanda_audit::AuditRuntime;
 use std::collections::{HashMap, HashSet};
@@ -20,6 +22,11 @@ pub struct SecurityContext {
     pub secrets: SecretStore,
     pub capabilities: CapabilitySet,
     pub secure_endpoints: SecureEndpointRegistry,
+    pub trust_boundaries: TrustBoundaryRegistry,
+    pub transport_boundary: Option<TrustBoundaryKind>,
+    pub bus_encryption: EncryptionMode,
+    pub bus_authentication: AuthenticationMode,
+    pub bus_integrity: IntegrityMode,
     pub audit_security_events: bool,
     pub strict_permissions: bool,
     pub security_faults_active: HashSet<String>,
@@ -71,6 +78,11 @@ impl SecurityContext {
             secrets: SecretStore::new(),
             capabilities: CapabilitySet::new(),
             secure_endpoints: SecureEndpointRegistry::new(),
+            trust_boundaries: TrustBoundaryRegistry::new(),
+            transport_boundary: None,
+            bus_encryption: EncryptionMode::None,
+            bus_authentication: AuthenticationMode::None,
+            bus_integrity: IntegrityMode::None,
             audit_security_events: true,
             strict_permissions: false,
             security_faults_active: HashSet::new(),
@@ -209,6 +221,54 @@ impl SecurityContext {
         self.secure_endpoints.register(path, policy);
     }
 
+    pub fn set_transport_context(
+        &mut self,
+        boundary: Option<TrustBoundaryKind>,
+        encryption: EncryptionMode,
+        authentication: AuthenticationMode,
+        integrity: IntegrityMode,
+    ) {
+        self.transport_boundary = boundary;
+        self.bus_encryption = encryption;
+        self.bus_authentication = authentication;
+        self.bus_integrity = integrity;
+    }
+
+    pub fn enforce_trust_boundary(
+        &self,
+        message_type: &str,
+        endpoint: &SecurePolicy,
+    ) -> SecurityResult<()> {
+        let Some(boundary) = self.transport_boundary else {
+            return Ok(());
+        };
+        if !self.trust_boundaries.contains(boundary) {
+            return Ok(());
+        }
+        let encryption = if endpoint.encryption != EncryptionMode::None {
+            endpoint.encryption
+        } else {
+            self.bus_encryption
+        };
+        let authentication = if endpoint.authentication != AuthenticationMode::None {
+            endpoint.authentication
+        } else {
+            self.bus_authentication
+        };
+        let integrity = if endpoint.integrity != IntegrityMode::None {
+            endpoint.integrity
+        } else {
+            self.bus_integrity
+        };
+        self.trust_boundaries.validate_channel(
+            boundary,
+            encryption,
+            authentication,
+            integrity,
+            message_type,
+        )
+    }
+
     pub fn sign_outbound(
         &self,
         path: &str,
@@ -287,7 +347,10 @@ impl SecurityContext {
         payload: &str,
         source_id: Option<&str>,
         signed: Option<&SignedMessage>,
+        message_type: &str,
     ) -> SecurityResult<()> {
+        let policy = self.secure_endpoints.policy_or_open(path);
+        self.enforce_trust_boundary(message_type, &policy)?;
         self.authorize_subscribe(path)?;
         self.check_security_faults(path, payload)?;
         self.verify_inbound(path, signed, source_id)
@@ -383,7 +446,10 @@ impl SecurityContext {
         path: &str,
         payload: &str,
         source_id: &str,
+        message_type: &str,
     ) -> SecurityResult<Option<SignedMessage>> {
+        let policy = self.secure_endpoints.policy_or_open(path);
+        self.enforce_trust_boundary(message_type, &policy)?;
         self.authorize_publish(path, source_id)?;
         self.check_security_faults(path, payload)?;
         let policy = self.secure_endpoints.policy_or_open(path);
