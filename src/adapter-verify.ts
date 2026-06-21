@@ -27,15 +27,23 @@ const FRAMEWORK_IMPORT_PACKAGES: Record<string, string> = {
   "connectivity.lte": "spanda-lte",
 };
 
+const FRAMEWORK_ADAPTER_DETAILS: Record<string, string> = {
+  "navigation.nav2": "provides Nav2Adapter/navigate; requires topic.publish + ros2.bridge",
+  "navigation.cartographer": "provides CartographerSlam/slam.*; requires sensor.read",
+  "navigation.rtabmap": "provides RtabmapSlam/slam.*; requires sensor.read + camera.read",
+  "navigation.slam": "provides SlamAdapter/slam.*; requires sensor.read",
+};
+
 export function verifyFrameworkImports(imports: ImportDecl[]): CompatItem[] {
   // Match declared imports against known framework package stubs.
   const items: CompatItem[] = [];
   for (const imp of imports) {
     const pkg = FRAMEWORK_IMPORT_PACKAGES[imp.path];
     if (!pkg) continue;
+    const detail = FRAMEWORK_ADAPTER_DETAILS[imp.path] ?? "stub adapter (orchestration hook only)";
     items.push({
       category: "adapter",
-      message: `Framework import '${imp.path}' maps to ${pkg} — stub adapter (orchestration hook only)`,
+      message: `Framework import '${imp.path}' maps to ${pkg} — ${detail}`,
       severity: "pass",
       line: imp.span.start.line,
       column: imp.span.start.column,

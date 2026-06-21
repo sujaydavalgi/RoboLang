@@ -146,13 +146,29 @@ Use `spanda fleet orchestrate program.sd` for distributed-style mission coordina
 ```bash
 spanda fleet agent start --robot ScoutB --bind 0.0.0.0:8766
 spanda fleet agent register ScoutB http://scout-b.local:8766
-spanda fleet orchestrate --remote examples/robotics/fleet_peer_missions.sd
+spanda fleet mesh start --bind 0.0.0.0:8767
+spanda fleet orchestrate --remote --mesh-url http://mesh.local:8767 examples/robotics/fleet_peer_missions.sd
 ```
 
-Strict certification gates for CI:
+Strict certification gates for CI and runtime:
 
 ```bash
 spanda verify examples/robotics/certified_deployment.sd --strict-certify
+spanda run examples/robotics/certified_deployment.sd --enforce-certify
+```
+
+Production Nav2/SLAM backends (optional subprocess hooks):
+
+```bash
+export SPANDA_NAV2_CMD="/opt/nav2/bridge.sh {goal}"
+export SPANDA_SLAM_CMD="/opt/slam/bridge.sh {op}"
+spanda run examples/robotics/nav2_bridge.sd
+```
+
+Validate adapter package manifests:
+
+```bash
+cd examples/packages/nav2_adapter_package && spanda verify-adapter --import navigation.nav2
 ```
 
 ### Safety zones
@@ -337,7 +353,7 @@ Runnable programs under `examples/robotics/`:
 | OTA rollout/canary/rollback | **Partial** — local deploy CLI + remote HTTP(S) agents with `program_hash` and optional Ed25519 signed bundles |
 | Swarm coordinator runtime | Experimental; build on fleet + peer robots |
 | World model runtime | Explicitly deferred in product strategy |
-| Production SLAM/nav package implementations | **Partial** — `slam.localize()` / `slam.map()` stub hooks when SLAM imports declared |
+| Production SLAM/nav package implementations | **Partial** — `slam.localize()` / `slam.map()` stub hooks; `SPANDA_NAV2_CMD` / `SPANDA_SLAM_CMD` subprocess bridges; `spanda verify-adapter` |
 
 ---
 
@@ -359,7 +375,9 @@ Runnable programs under `examples/robotics/`:
 | OTA deploy service | `crates/spanda-core/src/deploy_service.rs` |
 | Fleet orchestrator | `crates/spanda-core/src/fleet_orchestrator.rs` |
 | Fleet remote agents | `crates/spanda-core/src/fleet_remote.rs`, `fleet_agent.rs` |
-| Certification verify | `crates/spanda-core/src/certify_verify.rs` |
+| Fleet mesh coordinator | `crates/spanda-core/src/fleet_mesh.rs` |
+| Certification verify/runtime | `crates/spanda-core/src/certify_verify.rs`, `certify_runtime.rs` |
+| Adapter bridges | `crates/spanda-core/src/adapter_bridge.rs` |
 | Nav2 adapter hooks | `crates/spanda-core/src/nav2_adapter.rs` |
 | Type checker | `crates/spanda-core/src/types.rs` (`builtin_methods`) |
 | Interpreter | `crates/spanda-core/src/runtime.rs` |

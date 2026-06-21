@@ -29,6 +29,8 @@ Honest snapshot of Spanda capabilities as of **v0.1.0-alpha**. Use this document
 | **Remote OTA agents** | `spanda deploy agent start|register|list` + `deploy rollout --remote` — HTTP agent on devices |
 | **Fleet orchestration** | `spanda fleet orchestrate` — round-robin mission coordination report; `--remote` relays peer steps via HTTP fleet agents |
 | **Fleet peer agents** | `spanda fleet agent start|register|list` — on-device peer relay server (`.spanda/fleet-agents.json`) |
+| **Fleet mesh coordinator** | `spanda fleet mesh start` + `fleet orchestrate --mesh-url` — centralized multi-host peer relay |
+| **Adapter package verify** | `spanda verify-adapter` — validate `[adapter]` provides/requires against registry metadata |
 | **Tooling** | Native CLI (`check`, `verify`, `run`, `sim`, `fleet`, `deploy`, `fmt`, `lint`, `doc`), package manager (`init`, `build`, `test`, `install`), **prebuilt installable packages** (Linux/macOS/Windows via GitHub Releases) |
 | **Security / audit** | Capabilities, secrets, signed messages, audit records |
 | **Secure communication** | `secure_comm`, encrypted buses, trusted-source publish/receive enforcement, AES-GCM wire frames, TLS session + rustls PEM validation, `spanda security check|audit`, TS runtime parity |
@@ -47,8 +49,8 @@ Honest snapshot of Spanda capabilities as of **v0.1.0-alpha**. Use this document
 | **Advanced verification** | Fault injection, compatibility matrix | Matrix may report stub targets |
 | **Multi-agent systems** | Agent-to-agent comm, fleet peer messaging | In-process mesh + HTTP fleet agent relay (`fleet orchestrate --remote`) |
 | **OTA rollout** | Deploy plan/rollout/rollback/status | Local state file + HTTP deploy agents on devices |
-| **Certification metadata** | `certify ISO13849 { level PLd; }` | Verify-only metadata; `--strict-certify` elevates gaps to errors |
-| **Nav2 / SLAM packages** | Registry adapter stubs | External Nav2/Gazebo/OpenCV not bundled |
+| **Certification metadata** | `certify ISO13849 { level PLd; }` | Verify-only metadata; `--strict-certify` elevates gaps to errors; `--enforce-certify` runtime gate |
+| **Nav2 / SLAM packages** | Registry adapter stubs + example packages | External Nav2/Gazebo/OpenCV not bundled; optional `SPANDA_NAV2_CMD` / `SPANDA_SLAM_CMD` bridges |
 | **ROS2 adapter** | Native `rclrs` cdylib, rclpy daemon, CLI bridge | Requires ROS Humble; not default transport |
 | **LLVM / native codegen** | `spanda ir`, `llvm-ir`, `compile-native` | Early stage; not primary execution path |
 | **FFI** | `extern python`/`extern cpp` subprocess bridges | No in-process PyO3/cxx by default |

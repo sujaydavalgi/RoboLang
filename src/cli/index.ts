@@ -54,7 +54,8 @@ import {
   writeAgentRegistryToDisk,
 } from "../deploy-remote.js";
 import { startDeployAgentServer } from "../deploy-agent.js";
-import { orchestrateFleets, orchestrateFleetsRemote } from "../fleet-orchestrator.js";
+import { orchestrateFleets, orchestrateFleetsMesh, orchestrateFleetsRemote } from "../fleet-orchestrator.js";
+import { defaultFleetMeshUrl } from "../fleet-mesh.js";
 import {
   defaultFleetAgentsPath,
   fleetAgentHealth,
@@ -70,8 +71,8 @@ Usage:
   spanda check [--json] <file.sd>
   spanda verify [--json] [--target <Profile>] [--all-targets] [--simulate] [--strict-certify] <file.sd>
   spanda compatibility [flags] <file.sd>     Alias for verify
-  spanda run [--json] [--verbose] [--secure] [--inject-security-faults] <file.sd>
-  spanda sim [--json] [--inject-security-faults] <file.sd>
+  spanda run [--json] [--verbose] [--secure] [--inject-security-faults] [--enforce-certify] <file.sd>
+  spanda sim [--json] [--inject-security-faults] [--enforce-certify] <file.sd>
   spanda security check [--json] <file.sd>
   spanda security audit [--json] <file.sd>
   spanda fmt [--json] <file.sd>
@@ -87,7 +88,8 @@ Usage:
   spanda deploy agent list [--json]
   spanda deploy --target wasm [--out <file.json>] <file.sd>
   spanda fleet run [--json] [--trace-*] <file.sd>
-  spanda fleet orchestrate [--json] [--remote] <file.sd>
+  spanda fleet orchestrate [--json] [--remote] [--mesh-url <url>] [--mesh-token <t>] <file.sd>
+  spanda fleet mesh start [--bind <addr>] [--token <t>]
   spanda fleet agent start [--bind <addr>] [--robot <name>] [--token <t>] [--tls-cert <pem>] [--tls-key <pem>]
   spanda fleet agent register <RobotName> <http(s)://host:port> [--token <t>]
   spanda fleet agent list [--json]
@@ -104,6 +106,7 @@ Package commands (require native CLI: npm run build:rust):
   spanda remove <package>
   spanda install [--project <dir>]
   spanda publish [--project <dir>]
+  spanda verify-adapter [--project <dir>] [--import <path>] [--package <name>]
   spanda registry search <query>
 
 Examples:
@@ -322,6 +325,7 @@ async function main(): Promise<void> {
       case "remove":
       case "install":
       case "publish":
+      case "verify-adapter":
         handlePackage(command, positional, flags, json);
         break;
       case "registry":
@@ -573,6 +577,7 @@ function handleRun(
     if (showVerbose) args.push("--verbose");
     if (flags.get("secure")) args.push("--secure");
     if (flags.get("inject-security-faults")) args.push("--inject-security-faults");
+    if (flags.get("enforce-certify")) args.push("--enforce-certify");
     const result = runNativeCli(args);
     console.log(result.stdout ?? "");
     process.exit(result.status === 0 ? 0 : 1);
@@ -1159,8 +1164,11 @@ function handleFleetOrchestrate(
   filePath: string | undefined,
   json: boolean,
   remote: boolean,
+  flags: Map<string, string | boolean>,
 ): void | Promise<void> {
   // Coordinate fleet missions declared in a Spanda program.
+  const meshUrl = flagStr(flags, "mesh-url") ?? (remote ? defaultFleetMeshUrl() : undefined);
+  const meshToken = flagStr(flags, "mesh-token");
   const { abs, program } = compileProgramOrExit(filePath ?? "");
   const printResult = (result: Awaited<ReturnType<typeof orchestrateFleets>>) => {
     if (json) {
@@ -1186,12 +1194,15 @@ function handleFleetOrchestrate(
           `    mesh: ${delivery.fromRobot} -> ${delivery.toRobot} topic=${delivery.topic} step=${delivery.step} delivered=${delivery.delivered}`,
         );
       }
-      if (remote) {
+      if (remote || meshUrl) {
         console.log(`    remote: relayed=${fleet.remoteRelayed ?? 0} failed=${fleet.remoteFailed ?? 0}`);
       }
     }
   };
 
+  if (meshUrl) {
+    return orchestrateFleetsMesh(program, abs, meshUrl, meshToken).then(printResult);
+  }
   if (remote) {
     const registry = readFleetAgentRegistryFromDisk(defaultFleetAgentsPath());
     return orchestrateFleetsRemote(program, abs, registry).then(printResult);
@@ -1301,7 +1312,7 @@ function handleFleet(
 
   const sub = positional[0];
   if (sub === "orchestrate") {
-    void handleFleetOrchestrate(positional[1], json, flagBool(flags, "remote"));
+    void handleFleetOrchestrate(positional[1], json, flagBool(flags, "remote"), flags);
     return;
   }
   if (sub === "agent") {

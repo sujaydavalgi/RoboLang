@@ -137,6 +137,31 @@ export function orchestrateFleets(program: Program, programPath: string): FleetO
   return { program: programPath, fleets: reports, success };
 }
 
+export async function orchestrateFleetsMesh(
+  program: Program,
+  programPath: string,
+  meshUrl: string,
+  token?: string,
+): Promise<FleetOrchestrationResult> {
+  const { relayDeliveriesViaMesh } = await import("./fleet-mesh.js");
+  const result = orchestrateFleets(program, programPath);
+  let success = result.success;
+  for (const fleet of result.fleets) {
+    if (!fleet.peerDeliveries?.length) continue;
+    try {
+      const resp = await relayDeliveriesViaMesh(meshUrl, fleet.peerDeliveries, token);
+      fleet.remoteRelayed = resp.relayed;
+      fleet.remoteFailed = resp.failed;
+      if (resp.relayed > 0) fleet.coordinationMode = "distributed_peer_mesh";
+      if (resp.failed > 0) success = false;
+    } catch {
+      fleet.remoteFailed = fleet.peerDeliveries.length;
+      success = false;
+    }
+  }
+  return { ...result, success };
+}
+
 export async function orchestrateFleetsRemote(
   program: Program,
   programPath: string,
