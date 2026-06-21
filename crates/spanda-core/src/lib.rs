@@ -5,6 +5,7 @@ pub mod ast;
 pub mod audit;
 pub mod bridge;
 pub mod codegen;
+pub mod certify_verify;
 pub mod comm;
 pub mod concurrency;
 pub mod connectivity_positioning;
@@ -21,6 +22,8 @@ pub mod events;
 pub mod ffi;
 pub mod ffi_registry;
 pub mod fleet_orchestrator;
+pub mod fleet_remote;
+pub mod fleet_agent;
 pub mod format;
 pub mod foundations;
 pub mod hal;
@@ -98,9 +101,20 @@ pub use deploy_agent::{
 };
 pub use deploy_http::{parse_http_url, DeployAgentTls};
 pub use fleet_orchestrator::{
-    fleet_registry_from_program, orchestrate_fleets, FleetMemberState, FleetOrchestrationReport,
-    FleetOrchestrationResult, PeerDelivery,
+    fleet_registry_from_program, orchestrate_fleets, orchestrate_fleets_remote,
+    FleetMemberState, FleetOrchestrationReport, FleetOrchestrationResult, PeerDelivery,
 };
+pub use fleet_remote::{
+    agent_health as fleet_agent_health, default_fleet_agents_path, load_fleet_agent_registry,
+    lookup_fleet_agent, register_fleet_agent, relay_peer_deliveries, save_fleet_agent_registry,
+    FleetAgentEntry, FleetAgentRegistry, PeerRelayResponse,
+};
+pub use fleet_agent::{
+    default_fleet_agent_state_path, fleet_entry_for_port, handle_fleet_agent_request,
+    load_fleet_agent_state, run_fleet_agent_server, save_fleet_agent_state, spawn_test_fleet_agent,
+    FleetAgentState,
+};
+pub use certify_verify::verify_certification_proof;
 pub use debug_session::{DebugMachine, DebugStackFrame, DebugStepKind};
 pub use docs::generate_markdown;
 pub use error::*;
@@ -285,6 +299,7 @@ pub fn verify_compatibility_target(
             target: target.map(str::to_string),
             all_targets: false,
             simulate: false,
+            strict_certify: false,
         },
     )
 }

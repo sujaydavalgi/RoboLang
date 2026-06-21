@@ -2,11 +2,13 @@
 
 use spanda_core::{
     agent_health, apply_rollout, build_deploy_bundle, build_deploy_plan, compile,
-    default_agent_state_path, default_agents_path, default_state_path, execute_remote_rollout,
-    execute_remote_rollback, load_agent_registry, load_deploy_state, orchestrate_fleets,
-    plan_rollout, register_agent, rollback_targets, run_deploy_agent_server, save_agent_registry,
-    save_deploy_state, sign_deploy_bundle, DeployAgentTls, DeployState, RolloutOptions,
-    RolloutStrategy,
+    default_agent_state_path, default_agents_path, default_fleet_agent_state_path,
+    default_fleet_agents_path, default_state_path, execute_remote_rollout,
+    execute_remote_rollback, fleet_agent_health, load_agent_registry, load_deploy_state,
+    load_fleet_agent_registry, orchestrate_fleets, orchestrate_fleets_remote, plan_rollout,
+    register_agent, register_fleet_agent, rollback_targets, run_deploy_agent_server,
+    run_fleet_agent_server, save_agent_registry, save_deploy_state, save_fleet_agent_registry,
+    sign_deploy_bundle, DeployAgentTls, DeployState, RolloutOptions, RolloutStrategy,
 };
 use std::env;
 use std::fs;
@@ -37,6 +39,12 @@ fn agents_path() -> std::path::PathBuf {
     env::var("SPANDA_DEPLOY_AGENTS")
         .map(std::path::PathBuf::from)
         .unwrap_or_else(|_| default_agents_path())
+}
+
+fn fleet_agents_path() -> std::path::PathBuf {
+    env::var("SPANDA_FLEET_AGENTS")
+        .map(std::path::PathBuf::from)
+        .unwrap_or_else(|_| default_fleet_agents_path())
 }
 
 pub fn deploy_dispatch(args: &[String]) {
@@ -470,10 +478,12 @@ fn print_rollout(result: &spanda_core::RolloutResult, json: bool) {
 
 pub fn fleet_orchestrate_dispatch(args: &[String]) {
     let mut json = false;
+    let mut remote = false;
     let mut file: Option<String> = None;
     for arg in args {
         match arg.as_str() {
             "--json" => json = true,
+            "--remote" => remote = true,
             other if !other.starts_with('-') && file.is_none() => file = Some(other.to_string()),
             other => {
                 eprintln!("Unknown argument: {other}");
@@ -487,7 +497,12 @@ pub fn fleet_orchestrate_dispatch(args: &[String]) {
     });
     let source = read_source(&file);
     let program = parse_program(&source, &file);
-    let result = orchestrate_fleets(&program, &file);
+    let result = if remote {
+        let registry = load_fleet_agent_registry(&fleet_agents_path());
+        orchestrate_fleets_remote(&program, &file, &registry)
+    } else {
+        orchestrate_fleets(&program, &file)
+    };
     if json {
         println!("{}", serde_json::to_string_pretty(&result).unwrap());
     } else {
@@ -520,6 +535,153 @@ pub fn fleet_orchestrate_dispatch(args: &[String]) {
                     delivery.delivered
                 );
             }
+            if remote {
+                println!(
+                    "    remote: relayed={} failed={}",
+                    fleet.remote_relayed, fleet.remote_failed
+                );
+            }
         }
+    }
+}
+
+pub fn fleet_agent_dispatch(args: &[String]) {
+    if args.is_empty() {
+        eprintln!("Usage: spanda fleet agent start|register|list");
+        process::exit(1);
+    }
+    match args[0].as_str() {
+        "start" => cmd_fleet_agent_start(&args[1..]),
+        "register" => cmd_fleet_agent_register(&args[1..]),
+        "list" => cmd_fleet_agent_list(&args[1..]),
+        other => {
+            eprintln!("Unknown fleet agent subcommand '{other}'");
+            process::exit(1);
+        }
+    }
+}
+
+fn cmd_fleet_agent_start(args: &[String]) {
+    let mut bind = "127.0.0.1:8766".to_string();
+    let mut robot_name = String::new();
+    let mut token = None;
+    let mut tls_cert = None;
+    let mut tls_key = None;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--bind" if i + 1 < args.len() => {
+                bind = args[i + 1].clone();
+                i += 1;
+            }
+            "--robot" if i + 1 < args.len() => {
+                robot_name = args[i + 1].clone();
+                i += 1;
+            }
+            "--token" if i + 1 < args.len() => {
+                token = Some(args[i + 1].clone());
+                i += 1;
+            }
+            "--tls-cert" if i + 1 < args.len() => {
+                tls_cert = Some(args[i + 1].clone());
+                i += 1;
+            }
+            "--tls-key" if i + 1 < args.len() => {
+                tls_key = Some(args[i + 1].clone());
+                i += 1;
+            }
+            other => {
+                eprintln!("Unknown argument: {other}");
+                process::exit(1);
+            }
+        }
+        i += 1;
+    }
+    if robot_name.is_empty() {
+        eprintln!("Missing --robot <RobotName>");
+        process::exit(1);
+    }
+    let tls = match (tls_cert, tls_key) {
+        (Some(cert_path), Some(key_path)) => Some(DeployAgentTls {
+            cert_path,
+            key_path,
+        }),
+        (None, None) => None,
+        _ => {
+            eprintln!("Both --tls-cert and --tls-key are required for HTTPS fleet agents");
+            process::exit(1);
+        }
+    };
+    if let Err(err) = run_fleet_agent_server(
+        &bind,
+        &robot_name,
+        token,
+        &default_fleet_agent_state_path(),
+        tls,
+    ) {
+        eprintln!("Fleet agent failed: {err}");
+        process::exit(1);
+    }
+}
+
+fn cmd_fleet_agent_register(args: &[String]) {
+    let mut robot_name = None;
+    let mut url = None;
+    let mut token = None;
+    for (idx, arg) in args.iter().enumerate() {
+        match arg.as_str() {
+            "--token" if idx + 1 < args.len() => {
+                token = Some(args[idx + 1].clone());
+            }
+            other if !other.starts_with('-') && robot_name.is_none() => {
+                robot_name = Some(other.to_string());
+            }
+            other if !other.starts_with('-') && url.is_none() => url = Some(other.to_string()),
+            other if other.starts_with('-') => {
+                eprintln!("Unknown argument: {other}");
+                process::exit(1);
+            }
+            _ => {}
+        }
+    }
+    let robot_name = robot_name.unwrap_or_else(|| {
+        eprintln!("Missing robot name");
+        process::exit(1);
+    });
+    let url = url.unwrap_or_else(|| {
+        eprintln!("Missing agent URL (http(s)://host:port)");
+        process::exit(1);
+    });
+    let path = fleet_agents_path();
+    let mut registry = load_fleet_agent_registry(&path);
+    if let Err(err) = register_fleet_agent(&mut registry, robot_name, url, token) {
+        eprintln!("Register failed: {err}");
+        process::exit(1);
+    }
+    if let Err(err) = save_fleet_agent_registry(&path, &registry) {
+        eprintln!("Warning: could not save fleet agent registry: {err}");
+        process::exit(1);
+    }
+    println!("Registered fleet agent in {}", path.display());
+}
+
+fn cmd_fleet_agent_list(args: &[String]) {
+    let json = args.iter().any(|a| a == "--json");
+    let registry = load_fleet_agent_registry(&fleet_agents_path());
+    if json {
+        println!("{}", serde_json::to_string_pretty(&registry).unwrap());
+        return;
+    }
+    println!("Fleet agents ({})", fleet_agents_path().display());
+    if registry.agents.is_empty() {
+        println!("  (no agents registered)");
+        return;
+    }
+    for entry in &registry.agents {
+        let health = fleet_agent_health(entry).unwrap_or(false);
+        println!(
+            "  {} -> {} (healthy={health})",
+            entry.robot_name, entry.url
+        );
     }
 }

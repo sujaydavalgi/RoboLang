@@ -90,14 +90,17 @@ fn usage() {
         "Spanda Programming Language\n\n\
          Usage:\n\
            spanda check [--json] [<file.sd> | --project]\n\
-           spanda verify [--json] [--target <HardwareProfile>] [--all-targets] [--simulate] <file.sd>\n\
-           spanda compatibility [--json] [--target <HardwareProfile>] [--all-targets] [--simulate] <file.sd>\n\
+           spanda verify [--json] [--target <HardwareProfile>] [--all-targets] [--simulate] [--strict-certify] <file.sd>\n\
+           spanda compatibility [--json] [--target <HardwareProfile>] [--all-targets] [--simulate] [--strict-certify] <file.sd>\n\
            spanda run [--json] [--verbose] [--twin-export <replay.json>] [--trace-scheduler] [--trace-tasks] [--trace-triggers] [--trace-events] [--trace-realtime] [--metrics-json] [--record] <file.sd>\n\
            spanda sim [--json] [--replay] [--twin-export <replay.json>] [--trace-realtime] [--metrics-json] [--record] [--trace-scheduler] [--trace-tasks] [--trace-triggers] [--trace-events] <file.sd>\n\
            spanda replay <mission.trace> [--from T+mm:ss] [--deterministic] [--playback]\n\
            spanda twin export <file.sd> --out <replay.json>\n\
            spanda fleet run [--json] [--trace-scheduler] [--trace-tasks] [--trace-triggers] [--trace-events] <file.sd>\n\
-           spanda fleet orchestrate [--json] <file.sd>\n\
+           spanda fleet orchestrate [--json] [--remote] <file.sd>\n\
+           spanda fleet agent start [--bind <addr>] [--robot <name>] [--token <t>] [--tls-cert <pem>] [--tls-key <pem>]\n\
+           spanda fleet agent register <RobotName> <http(s)://host:port> [--token <t>]\n\
+           spanda fleet agent list [--json]\n\
            spanda fmt [--json] <file.sd>\n\
            spanda lint [--json] <file.sd>\n\
            spanda doc [--json] [--out <file.md>] <file.sd>\n\
@@ -829,9 +832,14 @@ fn fleet_dispatch(args: &[String]) {
         deploy_ota::fleet_orchestrate_dispatch(&args[1..]);
         return;
     }
+    if args.first().map(String::as_str) == Some("agent") {
+        deploy_ota::fleet_agent_dispatch(&args[1..]);
+        return;
+    }
     if args.first().map(String::as_str) != Some("run") {
         eprintln!("Usage: spanda fleet run [--json] [--trace-*] <file.sd>");
-        eprintln!("       spanda fleet orchestrate [--json] <file.sd>");
+        eprintln!("       spanda fleet orchestrate [--json] [--remote] <file.sd>");
+        eprintln!("       spanda fleet agent start|register|list");
         process::exit(1);
     }
     let mut json = false;
@@ -1277,6 +1285,7 @@ fn main() {
     let mut target: Option<String> = None;
     let mut all_targets = false;
     let mut simulate = false;
+    let mut strict_certify = false;
     let mut project_mode = false;
     let mut out_path: Option<String> = None;
     let mut man_dir: Option<String> = None;
@@ -1390,6 +1399,7 @@ fn main() {
             }
             "--all-targets" => all_targets = true,
             "--simulate" => simulate = true,
+            "--strict-certify" => strict_certify = true,
             "--out" => {
                 i += 1;
 
@@ -1485,6 +1495,7 @@ fn main() {
                 target: target.clone(),
                 all_targets,
                 simulate,
+                strict_certify,
             };
 
             // Take this path when json.

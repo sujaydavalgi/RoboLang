@@ -43,6 +43,10 @@ pub struct FleetOrchestrationReport {
     pub peer_messages: Vec<String>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub peer_deliveries: Vec<PeerDelivery>,
+    #[serde(default)]
+    pub remote_relayed: u32,
+    #[serde(default)]
+    pub remote_failed: u32,
 }
 
 /// Full orchestration result for a program.
@@ -230,6 +234,8 @@ pub fn orchestrate_fleets(program: &Program, program_path: &str) -> FleetOrchest
             steps_advanced,
             peer_messages,
             peer_deliveries,
+            remote_relayed: 0,
+            remote_failed: 0,
         });
     }
 
@@ -242,4 +248,44 @@ pub fn orchestrate_fleets(program: &Program, program_path: &str) -> FleetOrchest
         fleets: reports,
         success,
     }
+}
+
+/// Orchestrate fleets and relay peer deliveries to registered remote fleet agents.
+pub fn orchestrate_fleets_remote(
+    program: &Program,
+    program_path: &str,
+    registry: &crate::fleet_remote::FleetAgentRegistry,
+) -> FleetOrchestrationResult {
+    // Coordinate locally, then push peer mission steps to remote fleet agents.
+    //
+    // Parameters:
+    // - `program` — parsed Spanda program
+    // - `program_path` — source path for reporting
+    // - `registry` — registered remote fleet agents by robot name
+    //
+    // Returns:
+    // Orchestration report with remote relay counters.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // let result = orchestrate_fleets_remote(&program, "fleet.sd", &registry);
+
+    let mut result = orchestrate_fleets(program, program_path);
+    let mut success = result.success;
+    for fleet in &mut result.fleets {
+        let (relayed, failed) =
+            crate::fleet_remote::relay_peer_deliveries(&fleet.peer_deliveries, registry);
+        fleet.remote_relayed = relayed;
+        fleet.remote_failed = failed;
+        if relayed > 0 {
+            fleet.coordination_mode = "distributed_peer_mesh".into();
+        }
+        if failed > 0 {
+            success = false;
+        }
+    }
+    result.success = success;
+    result
 }
