@@ -66,6 +66,8 @@ connectivity_policy RoverNetwork {
 }
 ```
 
+When the fallback link is also impaired by active simulation faults (for example `NetworkOutage` or `LteOutage`), the runtime automatically escalates to the `emergency` link in the same failover step.
+
 ## Offline and degraded modes
 
 ```spanda
@@ -79,7 +81,7 @@ on network.disconnected { enter offline_mode; }
 
 | Fault | Effect |
 |-------|--------|
-| `NetworkOutage`, `LteOutage` | Zero bandwidth, high latency |
+| `NetworkOutage`, `LteOutage`, `SatelliteOutage` | Zero bandwidth, high latency |
 | `WeakWifi` | Reduced bandwidth |
 | `NetworkLatencySpike`, `LatencySpike` | 2 s latency |
 | `FiveGHandoff` | Brief latency increase |
@@ -94,7 +96,7 @@ Timed faults: `fault GPSLost at T+30s;`, `fault NetworkLatencySpike duration 10s
 |------------|---------|
 | `network.status` | Read link state |
 | `wifi.connect` | Join Wi-Fi networks |
-| `cellular.connect` | Cellular data (placeholder identity) |
+| `cellular.connect` | Read `robot.sim_identity()` (SIM/eSIM attestation) |
 | `network.failover` | Switch preferred link |
 | `bluetooth.scan`, `bluetooth.pair` | Bluetooth discovery and pairing |
 

@@ -41,7 +41,7 @@ npm run build:rust
 spanda verify program.sd --target RoverV1
 ```
 
-TypeScript `verifyViaCli()` delegates to the Rust CLI. The TS parser mirror does not yet parse all hardware constructs locally; use Rust for `check`/`verify` on programs with `hardware`, `deploy`, or `requires_*` blocks.
+TypeScript `verifyViaCli()` prefers the native Rust CLI when available. When the CLI is missing, the npm wrapper falls back to the TypeScript parser and `verifyHardwareProgram()` for `hardware`, `deploy`, `requires_*`, geofence, and connectivity checks.
 
 ## Adding hardware verification to existing robots
 

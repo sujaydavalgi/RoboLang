@@ -308,7 +308,7 @@ npm run spanda -- check examples/rover.sd
 npm run spanda -- run examples/rover.sd
 ```
 
-Hardware verification (`spanda verify`) requires the native Rust CLI.
+Hardware verification (`spanda verify`) uses the native Rust CLI when built; otherwise the npm wrapper runs the TypeScript hardware verify fallback (sensors, connectivity, timing, AI models, topic bandwidth, and simulate faults).
 
 ---
 
@@ -333,7 +333,7 @@ spanda check examples/connectivity/geofence_safety.sd
 spanda verify examples/connectivity/connectivity_hardware_verify.sd --target RoverV2
 ```
 
-See [positioning.md](positioning.md), [connectivity.md](connectivity.md), and [geofencing.md](geofencing.md) for syntax and verification details. The TypeScript parser and interpreter mirror the Rust core for these constructs; hardware verify still requires the native CLI.
+See [positioning.md](positioning.md), [connectivity.md](connectivity.md), and [geofencing.md](geofencing.md) for syntax and verification details. The TypeScript parser, interpreter, and verify fallback mirror the Rust core for these constructs.
 
 ---
 
@@ -354,7 +354,7 @@ Spanda now includes a first-party VS Code extension scaffold at `editor/vscode` 
 |------------|--------|
 | Syntax highlighting | Via TextMate grammar (community); LSP semantic tokens planned |
 | Autocomplete | LSP — symbols, comm keywords, transports |
-| Diagnostics | LSP — type-check + hardware verify (requires native CLI) |
+| Diagnostics | LSP — type-check + hardware verify (native CLI or TS fallback) |
 | Go to definition | LSP |
 | Format on save | LSP `textDocument/formatting` |
 | VS Code extension package | **Experimental** — build from `editor/vscode` |
@@ -408,6 +408,6 @@ code --install-extension spanda-vscode-0.1.0.vsix
 | Problem | Solution |
 |---------|----------|
 | `spanda: command not found` | Run `npm run build:rust` or use `./target/release/spanda` |
-| `verify` not available | Native CLI required; TS fallback does not support verify |
+| `verify` not available | Run `npm run build:rust` for the native CLI, or use the npm wrapper — TS verify fallback covers most checks when the CLI is missing |
 | Compile error on `wheels.execute(proposal)` | Expected — use `safety.validate(proposal)` first |
 | Tests fail after clone | Run `npm install` then `npm run build:rust` before `npm test` |

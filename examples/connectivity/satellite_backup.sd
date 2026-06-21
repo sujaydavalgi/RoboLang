@@ -1,0 +1,46 @@
+// Satellite emergency backhaul when terrestrial links fail.
+//   spanda check examples/connectivity/satellite_backup.sd
+//   spanda run examples/connectivity/satellite_backup.sd
+
+requires_connectivity {
+  gps: required;
+  wifi: optional;
+  cellular: required;
+  satellite: optional;
+}
+
+connectivity_policy RemoteOps {
+  preferred: wifi;
+  fallback: cellular;
+  emergency: satellite;
+}
+
+hardware RoverSat {
+  connectivity [ WiFi6, LTE, Satellite, GPS ];
+  sensors [ GPS, IMU ];
+  actuators [ DifferentialDrive ];
+  network { bandwidth: 2 Mbps; latency: 600 ms; }
+}
+
+robot Rover {
+  sensor gps: GPS on "/fix";
+  actuator wheels: DifferentialDrive;
+
+  permissions [
+    gps.read,
+    network.status,
+    wifi.connect,
+    cellular.connect,
+    network.failover
+  ];
+
+  behavior patrol() {
+    wheels.drive(linear: 0.2 m/s, angular: 0.0 rad/s);
+  }
+}
+
+deploy Rover to RoverSat;
+
+simulate_compatibility {
+  fault NetworkOutage;
+}

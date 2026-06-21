@@ -35,8 +35,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Compiler API index:** `docs/api-reference.md` (Rust/TypeScript modules and public functions)
 - Examples under `examples/realtime/` and `examples/regex/`
 - **GPS/GNSS positioning and wireless connectivity:** `requires_connectivity`, hardware `connectivity [ … ]`, WGS84 `geofence`, `connectivity_policy`, Bluetooth/BLE blocks, connectivity triggers (`on gps.lost`, `on network.disconnected`, `on gps.spoofed`), `std.positioning` / `std.connectivity` namespaces; TypeScript parser/runtime mirror with TS verify fallback and transport rebinding on failover; u-blox NEO-M8N UART GNSS stub in `lib_registry`; docs in `docs/positioning.md`, `docs/connectivity.md`, `docs/geofencing.md`, `docs/bluetooth.md`, `docs/cellular.md`; examples in `examples/connectivity/`
-- **GPS fault simulation at runtime:** `GpsSpoofing` offsets coordinates and degrades fix quality; `GpsDrift` accumulates positional drift over sim time; applied to GPS sensor reads and geofence checks in Rust and TypeScript
-- **TypeScript hardware verify parity:** builtin profile registry, sensor/actuator/network/connectivity checks, timing and mission validation, resource budget, deploy resolution, and `simulate_compatibility` fault injection when Rust CLI is unavailable
+- **GPS fault simulation at runtime:** `GpsSpoofing` offsets coordinates and degrades fix quality; `GpsDrift` accumulates positional drift over sim time; applied to GPS sensor reads and geofence checks in Rust and TypeScript; triggers `on gps.spoofed` and `on gps.drift`
+- **TypeScript hardware verify parity:** builtin profile registry, sensor/actuator/network/connectivity checks, timing and mission validation, resource budget, deploy resolution, AI model memory/GPU checks, adapter mapping, topic bandwidth estimation, and `simulate_compatibility` fault injection when Rust CLI is unavailable
+- **Transport reconnect on connectivity failover:** active transport adapter connects and resubscribes topic paths when `connectivity_policy` switches links; inactive stub adapters disconnect
+- **Cellular SIM identity:** `SimIdentity` type and `robot.sim_identity()` return ICCID/carrier/eSIM/attested fields; gated by `cellular.connect` under strict permissions
+- **Satellite emergency backhaul:** `Satellite` connectivity token maps to websocket transport; `SatelliteOutage` fault and `emergency: satellite` failover policies; example in `examples/connectivity/satellite_backup.sd`
+- **Cascade failover:** when fallback link is fault-impaired (`NetworkOutage`, `LteOutage`, etc.), runtime escalates to `emergency` link in the same step
+- **Documentation sync:** migration and getting-started guides updated for TypeScript hardware verify fallback
 
 ### Changed
 

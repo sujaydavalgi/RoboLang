@@ -31,6 +31,8 @@ describe("connectivity verify (TS fallback)", () => {
       event: "disconnected",
     });
     expect(faultToConnectivity("GpsSpoofing")).toEqual({ domain: "gps", event: "spoofed" });
+    expect(faultToConnectivity("GpsDrift")).toEqual({ domain: "gps", event: "drift" });
+    expect(connectivityLinkToTransport("satellite")).toBe("websocket");
     expect(connectivityLinkToTransport("wifi")).toBe("mqtt");
     expect(connectivityLinkToTransport("cellular")).toBe("dds");
   });
@@ -58,5 +60,77 @@ deploy R to Tiny;
     const result = verifyHardwareProgram(program);
     expect(result.ok).toBe(true);
     expect(result.items.some((i) => i.category === "sensors" && i.severity === "pass")).toBe(true);
+  });
+
+  it("verifies AI models and adapters in full_compat", () => {
+    const source = readFileSync(
+      join(import.meta.dirname, "..", "examples/hardware/full_compat.sd"),
+      "utf8",
+    );
+    const program = parse(tokenize(source));
+    const result = verifyHardwareProgram(program, { target: "RoverV1" });
+    expect(result.items.some((i) => i.category === "ai" && i.severity === "pass")).toBe(true);
+    expect(result.items.some((i) => i.category === "adapter" && i.severity === "pass")).toBe(true);
+  });
+
+  it("estimates topic bandwidth against deploy target", () => {
+    const program = parse(
+      tokenize(`
+hardware RoverV1 {
+  cpu: CortexA78;
+  memory: 4 GB;
+  network { bandwidth: 100 Mbps; latency: 20 ms; }
+  sensors [ Lidar ];
+  actuators [ DifferentialDrive ];
+  timing { min_period: 10 ms; }
+  resource: 15 W;
+}
+robot R {
+  bus sim;
+  topic scans: Scan { qos reliable; rate 20Hz; } on sim;
+  sensor lidar: Lidar on "/scan";
+  actuator wheels: DifferentialDrive;
+}
+deploy R to RoverV1;
+`),
+    );
+    const result = verifyHardwareProgram(program);
+    expect(result.items.some((i) => i.message.includes("Topic 'scans'"))).toBe(true);
+    expect(result.items.some((i) => i.message.includes("within target 100 Mbps"))).toBe(true);
+  });
+
+  it("warns when mission energy leaves low battery margin", () => {
+    const program = parse(
+      tokenize(`
+hardware Tiny {
+  battery { capacity: 100 Wh; }
+  resource: 20 W;
+  sensors [ Camera ];
+  actuators [ DifferentialDrive ];
+  timing { min_period: 10 ms; }
+}
+robot R {
+  mission { duration: 5 h; }
+  actuator wheels: DifferentialDrive;
+}
+deploy R to Tiny;
+`),
+    );
+    const result = verifyHardwareProgram(program);
+    expect(result.items.some((i) => i.category === "power" && i.severity === "warning")).toBe(true);
+  });
+
+  it("fails verify when SatelliteOutage removes required satellite link", () => {
+    const program = parse(
+      tokenize(`
+requires_connectivity { satellite: required; }
+hardware Remote { connectivity [ WiFi6, Satellite ]; sensors [ GPS ]; actuators [ DifferentialDrive ]; timing { min_period: 10 ms; } resource: 10 W; }
+robot R { actuator wheels: DifferentialDrive; }
+deploy R to Remote;
+simulate_compatibility { fault SatelliteOutage; }
+`),
+    );
+    const result = verifyHardwareProgram(program);
+    expect(result.items.some((i) => i.category === "connectivity" && i.severity === "error")).toBe(true);
   });
 });

@@ -3,7 +3,7 @@
  * @module
  */
 
-import type { Program, RobotDecl } from "./ast/nodes.js";
+import type { Program, RobotDecl, TopicDecl, AiConfigEntry } from "./ast/nodes.js";
 import type {
   RequiresHardwareDecl,
   RequiresNetworkDecl,
@@ -22,6 +22,7 @@ import {
   buildProfileRegistry,
   type HardwareProfile,
 } from "./hardware-profile.js";
+import { defaultMessageSize, estimateTopicBandwidthMbps } from "./comm/index.js";
 
 const ESTIMATED_TASK_COST_MS = 5;
 
@@ -170,14 +171,44 @@ function verifyBatteryMission(mission: MissionDecl, profile: HardwareProfile): C
   const line = mission.span.start.line;
   const column = mission.span.start.column;
   if (profile.batteryWh == null) {
-    return [compat("battery", "Target battery capacity unknown — cannot verify mission duration", "warning", line, column)];
+    return [compat("power", "Mission duration declared but target battery capacity unknown", "warning", line, column)];
   }
   const hours = mission.durationHours;
-  const estimatedWh = hours * profile.powerDrawW;
-  if (estimatedWh <= profile.batteryWh) {
-    return [compat("battery", `Mission ${hours}h (~${estimatedWh.toFixed(0)} Wh) within ${profile.batteryWh} Wh capacity`, "pass", line, column)];
+  const energyWh = profile.powerDrawW * hours;
+  const margin = profile.batteryWh - energyWh;
+
+  if (energyWh > profile.batteryWh) {
+    const maxMinutes = (profile.batteryWh / profile.powerDrawW) * 60;
+    return [
+      compat(
+        "power",
+        `Mission requires ${energyWh.toFixed(1)} Wh but battery supports ${profile.batteryWh.toFixed(1)} Wh (${maxMinutes.toFixed(0)} min)`,
+        "error",
+        line,
+        column,
+      ),
+    ];
   }
-  return [compat("battery", `Mission ${hours}h (~${estimatedWh.toFixed(0)} Wh) exceeds ${profile.batteryWh} Wh capacity`, "error", line, column)];
+  if (margin < profile.batteryWh * 0.2) {
+    return [
+      compat(
+        "power",
+        `Battery margin low: mission ${energyWh.toFixed(1)} Wh vs capacity ${profile.batteryWh.toFixed(1)} Wh`,
+        "warning",
+        line,
+        column,
+      ),
+    ];
+  }
+  return [
+    compat(
+      "power",
+      `Mission energy ${energyWh.toFixed(1)} Wh within battery capacity ${profile.batteryWh.toFixed(1)} Wh`,
+      "pass",
+      line,
+      column,
+    ),
+  ];
 }
 
 function verifyTiming(robot: RobotDecl, profile: HardwareProfile): CompatItem[] {
@@ -204,12 +235,160 @@ function verifyTiming(robot: RobotDecl, profile: HardwareProfile): CompatItem[] 
   return items;
 }
 
+function aiConfigNumber(config: AiConfigEntry[], key: string): number | null {
+  for (const entry of config) {
+    if (entry.key === key && typeof entry.value === "number") {
+      return entry.value;
+    }
+  }
+  return null;
+}
+
+function aiConfigBool(config: AiConfigEntry[], key: string): boolean {
+  for (const entry of config) {
+    if (entry.key !== key) continue;
+    if (typeof entry.value === "boolean") return entry.value;
+    if (typeof entry.value === "number") return entry.value > 0;
+  }
+  return false;
+}
+
+function sensorAdapter(sensorType: string): string | null {
+  switch (sensorType) {
+    case "Camera":
+      return "CameraAdapter";
+    case "Lidar":
+      return "LidarAdapter";
+    case "IMU":
+      return "ImuAdapter";
+    case "GPS":
+    case "GNSS":
+      return "GpsAdapter";
+    default:
+      return null;
+  }
+}
+
+function actuatorAdapter(actuatorType: string): string | null {
+  switch (actuatorType) {
+    case "DifferentialDrive":
+      return "MotorAdapter";
+    case "RoboticArm":
+      return "ArmAdapter";
+    case "DroneRotors":
+      return "RotorAdapter";
+    case "Gripper":
+      return "GripperAdapter";
+    default:
+      return null;
+  }
+}
+
+function verifyAiModels(robot: RobotDecl, profile: HardwareProfile): CompatItem[] {
+  const items: CompatItem[] = [];
+  for (const model of robot.ai_models) {
+    const line = model.span.start.line;
+    const column = model.span.start.column;
+    const memReq = aiConfigNumber(model.config, "memory_required");
+    if (memReq != null) {
+      if (profile.memoryMb == null) {
+        items.push(compat("ai", `AI model '${model.name}' memory requirement cannot be verified`, "warning", line, column));
+      } else if (profile.memoryMb >= memReq) {
+        items.push(compat("ai", `AI model '${model.name}' memory ${memReq} MB fits in target ${profile.memoryMb} MB`, "pass", line, column));
+      } else {
+        items.push(compat("ai", `AI model '${model.name}' requires ${memReq} MB but target has ${profile.memoryMb} MB`, "error", line, column));
+      }
+    }
+    if (aiConfigBool(model.config, "gpu_required")) {
+      if (profile.gpuRequired || profile.gpuTops != null) {
+        items.push(compat("ai", `AI model '${model.name}' GPU requirement satisfied on ${profile.name}`, "pass", line, column));
+      } else {
+        items.push(compat("ai", `AI model '${model.name}' requires GPU but '${profile.name}' has no GPU`, "error", line, column));
+      }
+    }
+  }
+  return items;
+}
+
+function verifyAdapters(
+  robot: RobotDecl,
+  profile: HardwareProfile,
+  programTraits: Set<string>,
+): CompatItem[] {
+  const items: CompatItem[] = [];
+  const sensorSet = new Set(profile.sensors);
+  const actuatorSet = new Set(profile.actuators);
+
+  for (const sensor of robot.sensors) {
+    const adapter = sensorAdapter(sensor.sensorType);
+    if (!adapter || !sensorSet.has(sensor.sensorType)) continue;
+    const line = sensor.span.start.line;
+    const column = sensor.span.start.column;
+    const msg = programTraits.has(adapter)
+      ? `Adapter trait '${adapter}' maps sensor '${sensor.name}' (${sensor.sensorType}) to ${profile.name}`
+      : `Builtin adapter '${adapter}' maps sensor '${sensor.name}' (${sensor.sensorType}) to ${profile.name}`;
+    items.push(compat("adapter", msg, "pass", line, column));
+  }
+
+  for (const actuator of robot.actuators) {
+    const adapter = actuatorAdapter(actuator.actuatorType);
+    if (!adapter || !actuatorSet.has(actuator.actuatorType)) continue;
+    const line = actuator.span.start.line;
+    const column = actuator.span.start.column;
+    const msg = programTraits.has(adapter)
+      ? `Adapter trait '${adapter}' maps actuator '${actuator.name}' (${actuator.actuatorType}) to ${profile.name}`
+      : `Builtin adapter '${adapter}' maps actuator '${actuator.name}' (${actuator.actuatorType}) to ${profile.name}`;
+    items.push(compat("adapter", msg, "pass", line, column));
+  }
+
+  return items;
+}
+
+function verifyTopicBandwidth(topics: TopicDecl[], profile: HardwareProfile): CompatItem[] {
+  const items: CompatItem[] = [];
+  let totalMbps = 0;
+
+  for (const topic of topics) {
+    if (topic.role === "subscribe") continue;
+    if (!topic.qos?.rateHz) continue;
+    const msgSize = defaultMessageSize(topic.messageType);
+    const mbps = estimateTopicBandwidthMbps(topic.qos.rateHz, msgSize);
+    totalMbps += mbps;
+    items.push(
+      compat(
+        "network",
+        `Topic '${topic.name}' (${topic.messageType}) at ${topic.qos.rateHz} Hz ≈ ${mbps.toFixed(2)} Mbps`,
+        "pass",
+        topic.span.start.line,
+        topic.span.start.column,
+      ),
+    );
+  }
+
+  if (totalMbps <= 0) return items;
+
+  if (profile.networkBandwidthMbps == null) {
+    items.push(compat("network", `Estimated topic bandwidth ${totalMbps.toFixed(2)} Mbps — target bandwidth unknown`, "warning", 1, 1));
+  } else if (totalMbps <= profile.networkBandwidthMbps) {
+    items.push(compat("network", `Estimated topic bandwidth ${totalMbps.toFixed(2)} Mbps within target ${profile.networkBandwidthMbps} Mbps`, "pass", 1, 1));
+  } else {
+    items.push(compat("network", `Estimated topic bandwidth ${totalMbps.toFixed(2)} Mbps exceeds target ${profile.networkBandwidthMbps} Mbps`, "error", 1, 1));
+  }
+
+  return items;
+}
+
+function traitNames(program: Program): Set<string> {
+  return new Set(program.traits.map((t) => t.name));
+}
+
 function verifyRobotAgainstProfile(
   robot: RobotDecl,
   profile: HardwareProfile,
   programRequiresHw: RequiresHardwareDecl | null,
   programRequiresNet: RequiresNetworkDecl | null,
   programRequiresConn: RequiresConnectivityDecl | null,
+  programTraits: Set<string>,
   spanLine: number,
   spanColumn: number,
 ): CompatItem[] {
@@ -262,6 +441,9 @@ function verifyRobotAgainstProfile(
   }
   if (robot.mission) items.push(...verifyBatteryMission(robot.mission, profile));
   items.push(...verifyTiming(robot, profile));
+  items.push(...verifyAiModels(robot, profile));
+  items.push(...verifyAdapters(robot, profile, programTraits));
+  items.push(...verifyTopicBandwidth(robot.topics, profile));
 
   return items;
 }
@@ -315,6 +497,7 @@ export function verifyHardwareProgram(
 
   const registry = buildProfileRegistry(program);
   const items: CompatItem[] = [];
+  const programTraits = traitNames(program);
 
   for (const geofence of program.geofences) {
     items.push(...validateGeofence(geofence));
@@ -367,6 +550,7 @@ export function verifyHardwareProgram(
       program.requiresHardware,
       program.requiresNetwork,
       program.requiresConnectivity,
+      programTraits,
       line,
       column,
     );

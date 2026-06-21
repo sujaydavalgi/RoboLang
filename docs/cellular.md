@@ -10,7 +10,7 @@ hardware RoverV2 {
 }
 ```
 
-Supported profile tokens: `LTE`, `FourG`, `4G`, `FiveG`, `5G`, `Cellular`, `Satellite` (placeholder).
+Supported profile tokens: `LTE`, `FourG`, `4G`, `FiveG`, `5G`, `Cellular`, `Satellite` (maps to websocket transport for emergency backhaul).
 
 ## Requirements
 
@@ -28,6 +28,7 @@ requires_connectivity {
 | `CellularConnection` | Generic cellular link |
 | `LTEConnection`, `FourGConnection`, `FiveGConnection` | Generation-specific |
 | `RoamingStatus` | Roaming state |
+| `SimIdentity` | SIM/eSIM ICCID and attestation (`iccid`, `carrier`, `esim`, `attested`) |
 
 Namespace: `std.cellular`.
 
@@ -48,12 +49,14 @@ connectivity_policy FleetNet {
 | Fault | Effect |
 |-------|--------|
 | `LteOutage` | Removes cellular connectivity |
+| `SatelliteOutage` | Removes satellite backhaul |
 | `FiveGHandoff` | Temporary latency spike |
 | `NetworkOutage` | Full network loss |
 
 ## Security
 
-- `cellular.connect` — cellular data capability (identity placeholder for SIM/eSIM attestation)
+- `cellular.connect` — required to read `robot.sim_identity()` under strict permissions
+- `robot.sim_identity()` returns `SimIdentity` with deterministic ICCID for simulation attestation
 - Audit connectivity changes via `audit.write`
 
 See also: [Connectivity](connectivity.md).
