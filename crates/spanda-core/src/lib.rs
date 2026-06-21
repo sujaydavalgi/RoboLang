@@ -8,6 +8,7 @@ pub mod codegen;
 pub mod adapter_bridge;
 pub mod certify_verify;
 pub mod certify_runtime;
+pub mod certify_prover;
 pub mod comm;
 pub mod concurrency;
 pub mod connectivity_positioning;
@@ -123,6 +124,9 @@ pub use fleet_mesh::{
     run_fleet_mesh_coordinator, spawn_test_fleet_mesh, FleetMeshState, MeshRelayResponse,
 };
 pub use certify_verify::verify_certification_proof;
+pub use certify_prover::{
+    build_certification_proof, CertificationEntry, CertificationProofReport, DeployTargetEntry,
+};
 pub use certify_runtime::{
     certification_runtime_enabled_from_env, enforce_certification_runtime,
 };

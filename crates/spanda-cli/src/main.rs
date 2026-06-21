@@ -1,5 +1,6 @@
 //! main support for Spanda.
 //!
+mod certify_cli;
 mod deploy_ota;
 mod package;
 
@@ -91,6 +92,7 @@ fn usage() {
          Usage:\n\
            spanda check [--json] [<file.sd> | --project]\n\
            spanda verify [--json] [--target <HardwareProfile>] [--all-targets] [--simulate] [--strict-certify] <file.sd>\n\
+           spanda certify prove [--json] [--strict] [--out <file.json>] <file.sd>\n\
            spanda compatibility [--json] [--target <HardwareProfile>] [--all-targets] [--simulate] [--strict-certify] <file.sd>\n\
            spanda run [--json] [--verbose] [--twin-export <replay.json>] [--trace-scheduler] [--trace-tasks] [--trace-triggers] [--trace-events] [--trace-realtime] [--metrics-json] [--record] [--enforce-certify] <file.sd>\n\
            spanda sim [--json] [--replay] [--twin-export <replay.json>] [--trace-realtime] [--metrics-json] [--record] [--trace-scheduler] [--trace-tasks] [--trace-triggers] [--trace-events] [--enforce-certify] <file.sd>\n\
@@ -1249,6 +1251,12 @@ fn main() {
         process::exit(if args.len() < 2 { 1 } else { 0 });
     }
     let command = args[1].as_str();
+
+    if command == "certify" {
+        certify_cli::certify_dispatch(&args[2..]);
+        let _ = io::stdout().flush();
+        return;
+    }
 
     // Take the branch when command equals "fleet".
     if command == "fleet" {
