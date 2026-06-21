@@ -1,0 +1,15 @@
+// Live OpenAI via Python bridge — requires OPENAI_API_KEY; mock when unset.
+// Run: OPENAI_API_KEY=sk-... spanda run examples/ffi_openai_live.sd
+// Docs: docs/live-ai-provider.md
+
+extern python fn openai_complete(prompt: String) -> String;
+
+robot LiveAI {
+  actuator wheels: DifferentialDrive;
+
+  behavior run() {
+    let reply = openai_complete("Reply with one word: safe");
+    let _ = reply;
+    wheels.stop();
+  }
+}
