@@ -11,17 +11,18 @@ Phased plan to complete the package-first architecture after the initial scaffol
 - Architecture docs and migration guide
 - TypeScript providers mirror and fleet CLI fix
 
-## Phase 2 — Runtime wiring (in progress)
+## Phase 2 — Runtime wiring (complete)
 
 | Task | Status | Notes |
 |------|--------|-------|
 | Attach `ProviderRegistry` to `Interpreter` | Done | Auto-bootstrap when unset |
 | Resolve official deps from `spanda.toml` | Done | `installed_official_packages()` |
-| Load package providers from lockfile at `spanda run` | Planned | Needs resolver hook |
-| Route transport calls through registry | Planned | Replace direct adapter construction |
-| Register GPS/connectivity from installed packages | Planned | After crate extraction |
+| Load package providers from lockfile at `spanda run` | Done | CLI `run_options_for_file()` |
+| Sync comm-bus transports for installed packages | Done | `sync_comm_bus_for_official_packages()` |
+| Package-scoped provider bootstrap | Done | `bootstrap_providers_for_packages()` |
+| Install reports official packages | Done | `spanda install` verbose output |
 
-## Phase 3 — Crate extraction
+## Phase 3 — Crate extraction (next)
 
 Extract optional backends from `spanda-core` into workspace members:
 

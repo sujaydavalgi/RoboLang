@@ -1,7 +1,10 @@
 //! Lean-core framework package registry tests.
 //!
 use spanda_package::adapter::{adapter_metadata_for_package, framework_packages};
-use spanda_package::{installed_official_packages, is_official_package};
+use spanda_package::{
+    installed_official_packages, is_official_package, load_official_packages_for_project,
+};
+use std::path::Path;
 
 #[test]
 fn official_packages_registered_in_framework_list() {
@@ -27,6 +30,14 @@ fn installed_official_packages_filters_dependencies() {
     assert_eq!(found, vec!["spanda-gps", "spanda-ros2"]);
     assert!(is_official_package("spanda-mqtt"));
     assert!(!is_official_package("my-local-lib"));
+}
+
+#[test]
+fn load_official_packages_for_ros2_project() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../examples/packages/ros2_adapter_package");
+    let packages = load_official_packages_for_project(&root).expect("manifest");
+    assert!(packages.contains(&"spanda-ros2".to_string()));
 }
 
 #[test]

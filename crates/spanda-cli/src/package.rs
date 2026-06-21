@@ -6,7 +6,7 @@ use spanda_package::{
     publish_package, registry_info, remove_dependency, resolve_dependencies, search_registry,
     search_registry_merged, validate_package, verify_adapter_package, ApplicationPermissions,
     DependencySpec, Lockfile, PackageManifest, ResolveOptions, LOCKFILE_FILENAME,
-    MANIFEST_FILENAME,
+    MANIFEST_FILENAME, load_official_packages_for_source,
 };
 use std::env;
 use std::fs;
@@ -536,8 +536,21 @@ fn run_install_inner(root: &Path, manifest: &PackageManifest, verbose: bool) -> 
         for w in &result.warnings {
             eprintln!("  ⚠ {w}");
         }
+        let official =
+            spanda_package::official_packages_from_lockfile(&lockfile);
+        if !official.is_empty() {
+            println!(
+                "  official packages: {}",
+                official.join(", ")
+            );
+        }
     }
     lockfile
+}
+
+/// Resolve official lean-core package names for a source file path.
+pub fn official_packages_for_source(source: &Path) -> Vec<String> {
+    load_official_packages_for_source(source)
 }
 
 pub fn cmd_publish(args: &[String]) {

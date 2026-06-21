@@ -21,6 +21,12 @@ use std::io::{self, Write};
 use std::path::Path;
 use std::process;
 
+fn run_options_for_file(file: &str, opts: RunOptions) -> RunOptions {
+    let mut opts = opts;
+    opts.official_packages = package::official_packages_for_source(Path::new(file));
+    opts
+}
+
 #[derive(Serialize)]
 struct CheckResponse {
     ok: bool,
@@ -985,15 +991,18 @@ fn human_fleet_run(
             }
         }
     }
-    let opts = RunOptions {
-        max_loop_iterations: 20,
-        trace_scheduler,
-        trace_tasks,
-        trace_triggers,
-        trace_events,
-        replay_trace: true,
-        ..Default::default()
-    };
+    let opts = run_options_for_file(
+        file,
+        RunOptions {
+            max_loop_iterations: 20,
+            trace_scheduler,
+            trace_tasks,
+            trace_triggers,
+            trace_events,
+            replay_trace: true,
+            ..Default::default()
+        },
+    );
 
     // Match on run and handle each case.
     match run(source, opts) {
@@ -1068,15 +1077,18 @@ fn print_fleet_json(
     // let result = spanda_cli::main::print_fleet_json(source, _file, trace_scheduler, trace_tasks, trace_triggers, trace_events);
 
     // Compute opts for the following logic.
-    let opts = RunOptions {
-        max_loop_iterations: 20,
-        trace_scheduler,
-        trace_tasks,
-        trace_triggers,
-        trace_events,
-        replay_trace: true,
-        ..Default::default()
-    };
+    let opts = run_options_for_file(
+        _file,
+        RunOptions {
+            max_loop_iterations: 20,
+            trace_scheduler,
+            trace_tasks,
+            trace_triggers,
+            trace_events,
+            replay_trace: true,
+            ..Default::default()
+        },
+    );
     print_run_json(run(source, opts));
 }
 
@@ -1550,30 +1562,33 @@ fn main() {
             });
             let source = read_source(&file);
             let max_loop_iterations = if command == "sim" || verbose { 20 } else { 10 };
-            let opts = RunOptions {
-                max_loop_iterations,
-                trace_scheduler: trace_scheduler || trace_realtime,
-                trace_tasks: trace_tasks || trace_realtime,
-                trace_triggers: trace_triggers || trace_realtime,
-                trace_events: trace_events || trace_realtime,
-                trace_realtime,
-                record_trace: record_trace || (command == "sim" && replay_trace),
-                trace_source: Some(file.clone()),
-                trace_output,
-                metrics_json,
-                replay_trace: command == "sim" && replay_trace,
-                replay_deterministic,
-                scheduler_clock: if wall_clock {
-                    SchedulerClock::Wall
-                } else {
-                    SchedulerClock::Sim
+            let opts = run_options_for_file(
+                &file,
+                RunOptions {
+                    max_loop_iterations,
+                    trace_scheduler: trace_scheduler || trace_realtime,
+                    trace_tasks: trace_tasks || trace_realtime,
+                    trace_triggers: trace_triggers || trace_realtime,
+                    trace_events: trace_events || trace_realtime,
+                    trace_realtime,
+                    record_trace: record_trace || (command == "sim" && replay_trace),
+                    trace_source: Some(file.clone()),
+                    trace_output,
+                    metrics_json,
+                    replay_trace: command == "sim" && replay_trace,
+                    replay_deterministic,
+                    scheduler_clock: if wall_clock {
+                        SchedulerClock::Wall
+                    } else {
+                        SchedulerClock::Sim
+                    },
+                    twin_export_path,
+                    secure_mode,
+                    inject_security_faults,
+                    enforce_certify,
+                    ..Default::default()
                 },
-                twin_export_path,
-                secure_mode,
-                inject_security_faults,
-                enforce_certify,
-                ..Default::default()
-            };
+            );
 
             // Take this path when json.
             if json || metrics_json {
