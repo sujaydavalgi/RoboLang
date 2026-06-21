@@ -1,0 +1,29 @@
+// GPS navigation with fix triggers and positioning types.
+//   spanda check examples/connectivity/gps_navigation.sd
+
+hardware RoverV2 {
+  connectivity [ WiFi6, LTE, GPS ];
+  sensors [ GPS, IMU, Lidar ];
+  actuators [ DifferentialDrive ];
+}
+
+robot Navigator {
+  sensor gps: GPS on "/fix";
+  sensor imu: IMU;
+  actuator wheels: DifferentialDrive;
+
+  mode navigating { wheels.drive(linear: 1.0 m/s, angular: 0.0 rad/s); }
+  mode degraded { wheels.stop(); }
+
+  on gps.fix { wheels.stop(); }
+  on gps.lost { enter degraded_mode; }
+  on gps.acquired { enter navigating_mode; }
+
+  behavior patrol() {
+    let home: GeoPoint = geo(30.2672, -97.7431);
+    let _ = home;
+    wheels.drive(linear: 0.5 m/s, angular: 0.0 rad/s);
+  }
+}
+
+deploy Navigator to RoverV2;

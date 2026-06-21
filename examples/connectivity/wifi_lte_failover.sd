@@ -1,0 +1,37 @@
+// Multi-link Wi-Fi / LTE failover policy.
+//   spanda check examples/connectivity/wifi_lte_failover.sd
+
+connectivity_policy RoverNetwork {
+  preferred: wifi;
+  fallback: cellular;
+  emergency: bluetooth;
+  switch_if latency > 200ms;
+  switch_if packet_loss > 5%;
+}
+
+requires_connectivity {
+  wifi: optional;
+  cellular: required;
+  latency <= 200ms;
+}
+
+hardware RoverV2 {
+  connectivity [ WiFi6, Bluetooth5, LTE, GPS ];
+  sensors [ GPS, IMU ];
+  actuators [ DifferentialDrive ];
+  network { bandwidth: 100 Mbps; latency: 15 ms; }
+}
+
+robot Rover {
+  sensor gps: GPS;
+  actuator wheels: DifferentialDrive;
+
+  on network.disconnected { enter offline_mode; }
+
+  mode offline { wheels.stop(); }
+  mode normal { wheels.drive(linear: 1.0 m/s, angular: 0.0 rad/s); }
+
+  behavior run() { wheels.drive(linear: 0.5 m/s, angular: 0.0 rad/s); }
+}
+
+deploy Rover to RoverV2;

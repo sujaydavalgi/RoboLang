@@ -1,0 +1,23 @@
+// Connectivity-aware offline and weak-signal modes.
+//   spanda check examples/connectivity/offline_mode.sd
+
+robot FieldUnit {
+  actuator wheels: DifferentialDrive;
+
+  mode offline {
+    wheels.stop();
+  }
+
+  mode weak_signal {
+    wheels.drive(linear: 0.2 m/s, angular: 0.0 rad/s);
+  }
+
+  mode normal {
+    wheels.drive(linear: 1.0 m/s, angular: 0.0 rad/s);
+  }
+
+  on network.disconnected { enter offline_mode; }
+  on cellular.roaming { enter weak_signal_mode; }
+
+  behavior run() { wheels.drive(linear: 0.5 m/s, angular: 0.0 rad/s); }
+}

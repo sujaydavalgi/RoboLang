@@ -1,0 +1,20 @@
+// Geofence safety zone with exit trigger.
+//   spanda check examples/connectivity/geofence_safety.sd
+
+geofence SafeZone {
+  center: geo(30.2672, -97.7431);
+  radius: 100.0;
+}
+
+robot PatrolBot {
+  sensor gps: GPS on "/fix";
+  actuator wheels: DifferentialDrive;
+
+  on geofence SafeZone exited {
+    stop_all_actuators();
+  }
+
+  behavior patrol() {
+    wheels.drive(linear: 0.3 m/s, angular: 0.0 rad/s);
+  }
+}

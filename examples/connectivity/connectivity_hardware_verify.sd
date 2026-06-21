@@ -1,0 +1,45 @@
+// Hardware connectivity verification with requires_connectivity.
+//   spanda check examples/connectivity/connectivity_hardware_verify.sd
+//   spanda verify examples/connectivity/connectivity_hardware_verify.sd --target RoverV2
+
+requires_connectivity {
+  gps: required;
+  wifi: optional;
+  cellular: required;
+  latency <= 100ms;
+  bandwidth >= 5 Mbps;
+  packet_loss <= 1%;
+}
+
+hardware RoverV2 {
+  connectivity [ WiFi6, Bluetooth5, LTE, GPS ];
+  sensors [ Camera, Lidar, IMU, GPS ];
+  actuators [ DifferentialDrive, RoboticArm ];
+  network { bandwidth: 100 Mbps; latency: 15 ms; }
+}
+
+robot Rover {
+  sensor gps: GPS on "/fix";
+  sensor lidar: Lidar on "/scan";
+  actuator wheels: DifferentialDrive;
+
+  permissions [
+    gps.read,
+    network.status,
+    wifi.connect,
+    cellular.connect,
+    network.failover
+  ];
+
+  behavior navigate() {
+    wheels.drive(linear: 1.0 m/s, angular: 0.0 rad/s);
+  }
+}
+
+deploy Rover to RoverV2;
+
+simulate_compatibility {
+  fault GPSLost;
+  fault WeakWifi;
+  fault NetworkLatencySpike;
+}
