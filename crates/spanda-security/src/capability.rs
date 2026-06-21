@@ -47,7 +47,15 @@ pub fn known_capabilities() -> &'static [&'static str] {
         "audit.read",
         "identity.sign",
         "identity.verify",
+        "identity.read",
         "ledger.anchor",
+        "crypto.encrypt",
+        "crypto.decrypt",
+        "crypto.sign",
+        "crypto.verify",
+        "secret.read",
+        "secure_topic.publish",
+        "secure_topic.subscribe",
     ]
 }
 
@@ -276,8 +284,13 @@ pub fn capability_for_operation(operation: &str) -> Option<&'static str> {
     match operation {
         "audit.record" | "audit.append" => Some("audit.write"),
         "audit.export" | "audit.read" => Some("audit.read"),
-        "sign" | "identity.sign" => Some("identity.sign"),
-        "verify_signature" | "identity.verify" => Some("identity.verify"),
+        "sign" | "identity.sign" | "crypto.sign" => Some("identity.sign"),
+        "verify_signature" | "identity.verify" | "crypto.verify" => Some("identity.verify"),
+        "crypto.encrypt" => Some("crypto.encrypt"),
+        "crypto.decrypt" => Some("crypto.decrypt"),
+        "secret.resolve" | "secret.read" => Some("secret.read"),
+        "secure_topic.publish" => Some("secure_topic.publish"),
+        "secure_topic.subscribe" => Some("secure_topic.subscribe"),
         "ledger.anchor" => Some("ledger.anchor"),
         "actuator.execute" => Some("actuator.execute"),
         "cellular.sim_identity" => Some("cellular.connect"),

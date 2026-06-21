@@ -32,7 +32,7 @@ fn full_security_context_flow() {
     let signed = ctx.sign_outbound("/cmd", "move forward").unwrap().unwrap();
     assert!(signed.verify(ctx.identity.as_ref().unwrap()).unwrap());
 
-    ctx.verify_inbound("/cmd", Some(&signed)).unwrap();
+    ctx.verify_inbound("/cmd", Some(&signed), None).unwrap();
 }
 
 #[test]
@@ -109,9 +109,10 @@ fn trust_level_blocks_restricted_endpoint() {
             signed: false,
             min_trust: Some(TrustLevel::Trusted),
             requires: vec![],
+            ..Default::default()
         },
     );
-    assert!(ctx.verify_inbound("/secure", None).is_err());
+    assert!(ctx.verify_inbound("/secure", None, None).is_err());
 }
 
 #[test]

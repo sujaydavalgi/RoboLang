@@ -19,6 +19,16 @@ pub enum SecurityError {
     SecureEndpoint { endpoint: String, reason: String },
     #[error("identity required for {operation}")]
     IdentityRequired { operation: String },
+    #[error("authentication failed: {reason}")]
+    AuthenticationFailed { reason: String },
+    #[error("replay attack detected on {endpoint}")]
+    ReplayDetected { endpoint: String },
+    #[error("certificate expired: {subject}")]
+    CertificateExpired { subject: String },
+    #[error("untrusted source rejected: {0}")]
+    UntrustedSource(String),
+    #[error("encryption required but not configured for {endpoint}")]
+    EncryptionNotConfigured { endpoint: String },
     #[error("{0}")]
     Other(String),
 }

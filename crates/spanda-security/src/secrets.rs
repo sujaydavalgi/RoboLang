@@ -9,6 +9,7 @@ use std::collections::HashMap;
 #[serde(tag = "source", rename_all = "snake_case")]
 pub enum SecretSource {
     Env { var: String },
+    File { path: String },
     Literal { value: String },
 }
 
@@ -40,6 +41,8 @@ impl SecretHandle {
             SecretSource::Env { var } => std::env::var(var).map_err(|_| {
                 SecurityError::SecretNotFound(format!("environment variable '{var}'"))
             }),
+            SecretSource::File { path } => std::fs::read_to_string(path)
+                .map_err(|_| SecurityError::SecretNotFound(format!("secret file '{path}'"))),
             SecretSource::Literal { value } => Ok(value.clone()),
         }
     }

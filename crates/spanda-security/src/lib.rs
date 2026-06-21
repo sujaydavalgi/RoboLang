@@ -4,23 +4,36 @@
 //! trust levels, package permissions, and secure communication policies.
 
 pub mod capability;
+pub mod encrypted;
 pub mod error;
 pub mod identity;
 pub mod permissions;
+pub mod policy;
 pub mod runtime;
 pub mod secrets;
 pub mod secure_comm;
 pub mod signed;
 pub mod trust;
+pub mod trust_boundary;
+pub mod wire_crypto;
 
 pub use capability::{
     capability_for_operation, is_known_capability, known_capabilities, CapabilitySet, Permission,
 };
+pub use encrypted::{
+    Certificate, EncryptedMessage, PrivateKey, PublicKey, SessionKey, TrustedSource,
+    VerifiedMessage,
+};
 pub use error::{SecurityError, SecurityResult};
 pub use identity::RobotIdentity;
 pub use permissions::PackagePermissions;
+pub use policy::{
+    AuthenticationMode, BusSecurityConfig, EncryptionMode, IntegrityMode, SecureCommPolicy,
+};
 pub use runtime::{SecurityContext, SecuritySnapshot};
 pub use secrets::{SecretHandle, SecretSource, SecretStore};
 pub use secure_comm::{SecureEndpointRegistry, SecurePolicy};
 pub use signed::{Signature, SignedMessage};
 pub use trust::TrustLevel;
+pub use trust_boundary::{TrustBoundaryKind, TrustBoundaryRegistry};
+pub use wire_crypto::WireCryptoSession;

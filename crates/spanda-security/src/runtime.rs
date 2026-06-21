@@ -10,6 +10,7 @@ use crate::signed::SignedMessage;
 use crate::trust::TrustLevel;
 use serde::{Deserialize, Serialize};
 use spanda_audit::AuditRuntime;
+use std::collections::{HashMap, HashSet};
 
 /// Unified security context for the Spanda interpreter.
 #[derive(Debug)]
@@ -20,9 +21,9 @@ pub struct SecurityContext {
     pub capabilities: CapabilitySet,
     pub secure_endpoints: SecureEndpointRegistry,
     pub audit_security_events: bool,
-
-    /// When true, block-level capability auto-grants are disabled.
     pub strict_permissions: bool,
+    pub security_faults_active: HashSet<String>,
+    recent_payload_hashes: HashMap<String, HashSet<String>>,
 }
 
 impl Default for SecurityContext {
@@ -70,6 +71,8 @@ impl SecurityContext {
             secure_endpoints: SecureEndpointRegistry::new(),
             audit_security_events: true,
             strict_permissions: false,
+            security_faults_active: HashSet::new(),
+            recent_payload_hashes: HashMap::new(),
         }
     }
 
@@ -228,13 +231,19 @@ impl SecurityContext {
         policy.prepare_outbound(payload, self.identity.as_ref(), &self.capabilities, path)
     }
 
-    pub fn verify_inbound(&self, path: &str, signed: Option<&SignedMessage>) -> SecurityResult<()> {
+    pub fn verify_inbound(
+        &self,
+        path: &str,
+        signed: Option<&SignedMessage>,
+        source_id: Option<&str>,
+    ) -> SecurityResult<()> {
         // Verify inbound.
         //
         // Parameters:
         // - `self` — method receiver
         // - `path` — input value
         // - `signed` — input value
+        // - `source_id` — optional publisher identity for trusted-source checks
         //
         // Returns:
         // SecurityResult<()>.
@@ -243,11 +252,127 @@ impl SecurityContext {
         // None.
         //
         // Example:
-        // let result = instance.verify_inbound(path, signed);
+        // let result = instance.verify_inbound(path, signed, source_id);
 
         // Compute policy for the following logic.
         let policy = self.secure_endpoints.policy_or_open(path);
-        policy.verify_inbound(signed, self.identity.as_ref(), &self.capabilities, path)
+        policy.verify_inbound(
+            signed,
+            self.identity.as_ref(),
+            &self.capabilities,
+            path,
+            source_id,
+        )
+    }
+
+    pub fn authorize_subscribe(&self, path: &str) -> SecurityResult<()> {
+        let policy = self.secure_endpoints.policy_or_open(path);
+        if policy.encryption != crate::policy::EncryptionMode::None
+            || policy.signed
+            || policy.authentication != crate::policy::AuthenticationMode::None
+            || !policy.trusted_sources.is_empty()
+        {
+            self.capabilities.require("secure_topic.subscribe")?;
+        }
+        Ok(())
+    }
+
+    pub fn verify_inbound_message(
+        &mut self,
+        path: &str,
+        payload: &str,
+        source_id: Option<&str>,
+        signed: Option<&SignedMessage>,
+    ) -> SecurityResult<()> {
+        self.authorize_subscribe(path)?;
+        self.check_security_faults(path, payload)?;
+        self.verify_inbound(path, signed, source_id)
+    }
+
+    pub fn inject_security_fault(&mut self, fault: impl Into<String>) {
+        self.security_faults_active.insert(fault.into());
+    }
+
+    pub fn authorize_publish(&self, path: &str, source_id: &str) -> SecurityResult<()> {
+        let policy = self.secure_endpoints.policy_or_open(path);
+        if !policy.trusted_sources.is_empty() {
+            policy.check_trusted_source(source_id)?;
+            self.capabilities.require("secure_topic.publish")?;
+        } else if policy.encryption != crate::policy::EncryptionMode::None
+            || policy.signed
+            || policy.authentication != crate::policy::AuthenticationMode::None
+        {
+            self.capabilities.require("secure_topic.publish")?;
+        }
+        Ok(())
+    }
+
+    pub fn check_security_faults(&mut self, path: &str, payload: &str) -> SecurityResult<()> {
+        if self.security_faults_active.contains("InvalidSignature") {
+            return Err(SecurityError::SignatureInvalid);
+        }
+        if self.security_faults_active.contains("ExpiredCertificate") {
+            return Err(SecurityError::CertificateExpired {
+                subject: self
+                    .identity
+                    .as_ref()
+                    .map(|i| i.id().to_string())
+                    .unwrap_or_else(|| "unknown".into()),
+            });
+        }
+        if self.security_faults_active.contains("ReplayAttack") {
+            let hash = spanda_audit::sha256(payload).0;
+            let seen = self
+                .recent_payload_hashes
+                .entry(path.to_string())
+                .or_default();
+            if seen.contains(&hash) {
+                return Err(SecurityError::ReplayDetected {
+                    endpoint: path.to_string(),
+                });
+            }
+            seen.insert(hash);
+        }
+        if self.security_faults_active.contains("ManInTheMiddle") {
+            return Err(SecurityError::AuthenticationFailed {
+                reason: "man-in-the-middle detected".into(),
+            });
+        }
+        if self
+            .security_faults_active
+            .contains("SecureHandshakeDropped")
+        {
+            return Err(SecurityError::SecureEndpoint {
+                endpoint: path.to_string(),
+                reason: "secure handshake dropped".into(),
+            });
+        }
+        Ok(())
+    }
+
+    pub fn prepare_publish(
+        &mut self,
+        path: &str,
+        payload: &str,
+        source_id: &str,
+    ) -> SecurityResult<Option<SignedMessage>> {
+        self.authorize_publish(path, source_id)?;
+        self.check_security_faults(path, payload)?;
+        let policy = self.secure_endpoints.policy_or_open(path);
+        if policy.encryption != crate::policy::EncryptionMode::None {
+            self.capabilities.require("crypto.encrypt")?;
+            let _ = policy.encrypt_payload(payload, &self.capabilities)?;
+        }
+        self.sign_outbound(path, payload)
+    }
+
+    pub fn audit_security_event(
+        &self,
+        audit: &mut AuditRuntime,
+        event_type: &str,
+        detail: &str,
+    ) -> SecurityResult<()> {
+        self.audit_event(audit, event_type, detail)
     }
 
     /// Record security-relevant events into the audit log when configured.
