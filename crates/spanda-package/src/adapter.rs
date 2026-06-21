@@ -189,3 +189,73 @@ pub fn nav2_adapter_metadata() -> AdapterMetadata {
         ],
     }
 }
+
+/// Cartographer SLAM adapter metadata for registry stubs and verify.
+pub fn cartographer_adapter_metadata() -> AdapterMetadata {
+    AdapterMetadata {
+        provides: vec![
+            "CartographerSlam".into(),
+            "OccupancyGrid".into(),
+            "PoseGraph".into(),
+            "slam.localize".into(),
+            "slam.map".into(),
+        ],
+        requires: vec![
+            "topic.publish".into(),
+            "sensor.read".into(),
+            "lidar.read".into(),
+        ],
+    }
+}
+
+/// RTAB-Map SLAM adapter metadata for registry stubs and verify.
+pub fn rtabmap_adapter_metadata() -> AdapterMetadata {
+    AdapterMetadata {
+        provides: vec![
+            "RtabmapSlam".into(),
+            "LoopClosure".into(),
+            "VisualOdometry".into(),
+            "slam.localize".into(),
+            "slam.map".into(),
+        ],
+        requires: vec![
+            "topic.publish".into(),
+            "sensor.read".into(),
+            "camera.read".into(),
+        ],
+    }
+}
+
+/// Generic SLAM adapter metadata for `navigation.slam` imports.
+pub fn slam_adapter_metadata() -> AdapterMetadata {
+    AdapterMetadata {
+        provides: vec![
+            "SlamAdapter".into(),
+            "slam.localize".into(),
+            "slam.map".into(),
+        ],
+        requires: vec!["topic.publish".into(), "sensor.read".into()],
+    }
+}
+
+/// Resolve expected adapter metadata for a framework import path.
+pub fn adapter_metadata_for_import(import_path: &str) -> Option<AdapterMetadata> {
+    match import_path {
+        "navigation.nav2" => Some(nav2_adapter_metadata()),
+        "navigation.cartographer" => Some(cartographer_adapter_metadata()),
+        "navigation.rtabmap" => Some(rtabmap_adapter_metadata()),
+        "navigation.slam" => Some(slam_adapter_metadata()),
+        _ => None,
+    }
+}
+
+/// Resolve expected adapter metadata for a registry package name.
+pub fn adapter_metadata_for_package(package_name: &str) -> Option<AdapterMetadata> {
+    match package_name {
+        "spanda-nav2" => Some(nav2_adapter_metadata()),
+        "spanda-cartographer" => Some(cartographer_adapter_metadata()),
+        "spanda-rtabmap" => Some(rtabmap_adapter_metadata()),
+        "spanda-slam" => Some(slam_adapter_metadata()),
+        _ => None,
+    }
+}
