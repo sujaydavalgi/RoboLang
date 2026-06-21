@@ -72,6 +72,7 @@ import {
 } from "../adapter-package-verify.js";
 import {
   coordinateSwarms,
+  coordinateSwarmsMesh,
   readSwarmStateFromDisk,
   writeSwarmStateToDisk,
 } from "../swarm-coordinator.js";
@@ -105,7 +106,7 @@ Usage:
   spanda fleet agent start [--bind <addr>] [--robot <name>] [--token <t>] [--tls-cert <pem>] [--tls-key <pem>]
   spanda fleet agent register <RobotName> <http(s)://host:port> [--token <t>]
   spanda fleet agent list [--json]
-  spanda swarm coordinate [--json] <file.sd>
+  spanda swarm coordinate [--json] [--mesh-url <url>] [--mesh-token <t>] <file.sd>
   spanda debug [--break <line>] <file.sd>
   spanda ir [--json] <file.sd>
   spanda llvm-ir [--out <file.ll>] [--target-triple <triple>] <file.sd>
@@ -323,7 +324,7 @@ async function main(): Promise<void> {
         handleFleet(positional, flags, json);
         break;
       case "swarm":
-        handleSwarm(positional, json);
+        void handleSwarm(positional, flags, json);
         break;
       case "debug":
         handleDebug(positional[0], flags);
@@ -1543,43 +1544,57 @@ function handleDebug(filePath: string | undefined, flags: Map<string, string | b
   process.exit(result.ok ? 0 : 1);
 }
 
-function handleSwarm(positional: string[], json: boolean): void {
+function handleSwarm(
+  positional: string[],
+  flags: Map<string, string | boolean>,
+  json: boolean,
+): void {
   // Route swarm subcommands to the experimental coordinator runtime.
   const sub = positional[0];
   if (sub !== "coordinate") {
-    console.error("Usage: spanda swarm coordinate [--json] <file.sd>");
+    console.error("Usage: spanda swarm coordinate [--json] [--mesh-url <url>] [--mesh-token <t>] <file.sd>");
     process.exit(1);
   }
-  const { abs, program } = compileProgramOrExit(positional[1] ?? "");
-  const state = readSwarmStateFromDisk();
-  const result = coordinateSwarms(program, abs, state);
-  try {
-    writeSwarmStateToDisk(state);
-  } catch (err) {
-    console.error(`Warning: could not save swarm state: ${String(err)}`);
-  }
-  if (json) {
-    console.log(JSON.stringify(result, null, 2));
-  } else {
-    console.log(`Swarm coordination for ${abs}`);
-    for (const swarm of result.swarms) {
-      console.log(
-        `  swarm ${swarm.swarmName} -> fleet ${swarm.fleetName} (${swarm.policy}, cursor=${swarm.roundRobinCursor})`,
-      );
-      if (swarm.activeMember) {
-        console.log(`    active_member: ${swarm.activeMember}`);
-      }
-      for (const member of swarm.members) {
+  const meshUrl = flagStr(flags, "mesh-url");
+  const meshToken = flagStr(flags, "mesh-token");
+  const run = async () => {
+    const { abs, program } = compileProgramOrExit(positional[1] ?? "");
+    const state = readSwarmStateFromDisk();
+    const result = meshUrl
+      ? await coordinateSwarmsMesh(program, abs, state, meshUrl, meshToken)
+      : coordinateSwarms(program, abs, state);
+    try {
+      writeSwarmStateToDisk(state);
+    } catch (err) {
+      console.error(`Warning: could not save swarm state: ${String(err)}`);
+    }
+    if (json) {
+      console.log(JSON.stringify(result, null, 2));
+    } else {
+      console.log(`Swarm coordination for ${abs}`);
+      for (const swarm of result.swarms) {
         console.log(
-          `    ${member.robotName} mission=${member.missionName ?? "null"} state=${member.missionState} step='${member.currentStep}'`,
+          `  swarm ${swarm.swarmName} -> fleet ${swarm.fleetName} (${swarm.policy}, cursor=${swarm.roundRobinCursor})`,
         );
-      }
-      for (const delivery of swarm.peerDeliveries) {
-        console.log(`    follow: ${delivery.fromRobot} -> ${delivery.toRobot} step=${delivery.step}`);
+        if (swarm.activeMember) {
+          console.log(`    active_member: ${swarm.activeMember}`);
+        }
+        for (const member of swarm.members) {
+          console.log(
+            `    ${member.robotName} mission=${member.missionName ?? "null"} state=${member.missionState} step='${member.currentStep}'`,
+          );
+        }
+        for (const delivery of swarm.peerDeliveries) {
+          console.log(`    follow: ${delivery.fromRobot} -> ${delivery.toRobot} step=${delivery.step}`);
+        }
+        if (meshUrl) {
+          console.log(`    mesh: relayed=${swarm.remoteRelayed ?? 0} failed=${swarm.remoteFailed ?? 0}`);
+        }
       }
     }
-  }
-  process.exit(result.success ? 0 : 1);
+    process.exit(result.success ? 0 : 1);
+  };
+  void run();
 }
 
 function handlePackage(

@@ -29,6 +29,8 @@ export type SwarmCoordinationReport = {
   coordinationMode: string;
   peerDeliveries: PeerDelivery[];
   roundRobinCursor: number;
+  remoteRelayed?: number;
+  remoteFailed?: number;
 };
 
 export type SwarmCoordinationResult = {
@@ -228,4 +230,31 @@ export function coordinateSwarms(
       && report.members.every((member) => member.missionState !== "MissingRobot"),
   );
   return { program: programPath, swarms: reports, success };
+}
+
+export async function coordinateSwarmsMesh(
+  program: Program,
+  programPath: string,
+  state: SwarmState,
+  meshUrl: string,
+  token?: string,
+): Promise<SwarmCoordinationResult> {
+  // Execute swarm coordination locally, then push peer deliveries to the mesh coordinator.
+  const { relayDeliveriesViaMesh } = await import("./fleet-mesh.js");
+  const result = coordinateSwarms(program, programPath, state);
+  let success = result.success;
+  for (const swarm of result.swarms) {
+    if (swarm.peerDeliveries.length === 0) continue;
+    try {
+      const resp = await relayDeliveriesViaMesh(meshUrl, swarm.peerDeliveries, token);
+      swarm.remoteRelayed = resp.relayed;
+      swarm.remoteFailed = resp.failed;
+      if (resp.relayed > 0) swarm.coordinationMode = `${swarm.coordinationMode}_mesh`;
+      if (resp.failed > 0) success = false;
+    } catch {
+      swarm.remoteFailed = swarm.peerDeliveries.length;
+      success = false;
+    }
+  }
+  return { ...result, success };
 }
