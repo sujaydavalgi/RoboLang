@@ -69,8 +69,8 @@ Usage:
   spanda deploy rollout [--json] [--remote] [--strategy all|canary|staged] [--canary-percent N] [--version <ver>] [--dry-run] <file.sd>
   spanda deploy rollback [--json] [--remote] <file.sd>
   spanda deploy status [--json]
-  spanda deploy agent start [--bind <addr>] [--target <Robot@Hardware>] [--token <t>]
-  spanda deploy agent register <Robot@Hardware> <http://host:port> [--token <t>]
+  spanda deploy agent start [--bind <addr>] [--target <Robot@Hardware>] [--token <t>] [--tls-cert <pem>] [--tls-key <pem>] [--require-hash]
+  spanda deploy agent register <Robot@Hardware> <http(s)://host:port> [--token <t>]
   spanda deploy agent list [--json]
   spanda deploy --target wasm [--out <file.json>] <file.sd>
   spanda fleet run [--json] [--trace-*] <file.sd>
@@ -885,6 +885,9 @@ async function handleDeployOta(
     if (plan.certifications.length > 0) {
       console.log(`  certifications: ${plan.certifications.join(", ")}`);
     }
+    if (plan.programHash) {
+      console.log(`  program_hash: ${plan.programHash}`);
+    }
     return;
   }
 
@@ -994,6 +997,9 @@ function handleDeployAgent(subcommand: string | undefined, args: string[], json:
     let bind = "127.0.0.1:8765";
     let target = "";
     let token: string | undefined;
+    let tlsCert: string | undefined;
+    let tlsKey: string | undefined;
+    let requireHash = false;
     for (let i = 0; i < args.length; i++) {
       if (args[i] === "--bind" && args[i + 1]) {
         bind = args[++i]!;
@@ -1001,13 +1007,23 @@ function handleDeployAgent(subcommand: string | undefined, args: string[], json:
         target = args[++i]!;
       } else if (args[i] === "--token" && args[i + 1]) {
         token = args[++i];
+      } else if (args[i] === "--tls-cert" && args[i + 1]) {
+        tlsCert = args[++i];
+      } else if (args[i] === "--tls-key" && args[i + 1]) {
+        tlsKey = args[++i];
+      } else if (args[i] === "--require-hash") {
+        requireHash = true;
       }
     }
     if (!target) {
       console.error("Missing --target Robot@Hardware");
       process.exit(1);
     }
-    startDeployAgentServer({ bind, target, token });
+    if ((tlsCert && !tlsKey) || (!tlsCert && tlsKey)) {
+      console.error("Both --tls-cert and --tls-key are required for HTTPS agents");
+      process.exit(1);
+    }
+    startDeployAgentServer({ bind, target, token, tlsCert, tlsKey, requireHash });
     return;
   }
 
@@ -1018,7 +1034,7 @@ function handleDeployAgent(subcommand: string | undefined, args: string[], json:
     const tokenIdx = args.indexOf("--token");
     const token = tokenIdx >= 0 ? args[tokenIdx + 1] : undefined;
     if (!target || !url) {
-      console.error("Usage: spanda deploy agent register <Robot@Hardware> <http://host:port> [--token <t>]");
+      console.error("Usage: spanda deploy agent register <Robot@Hardware> <http(s)://host:port> [--token <t>]");
       process.exit(1);
     }
     const registry = readAgentRegistryFromDisk(agentsRegistryPath());
@@ -1103,6 +1119,12 @@ function handleFleetOrchestrate(filePath: string | undefined, json: boolean): vo
       console.log(
         `    ${member.robotName} mission=${member.missionName ?? "null"} state=${member.missionState} step='${member.currentStep}' peer=${member.hasPeerLink}`,
       );
+      for (const handoff of member.peerHandoffs ?? []) {
+        console.log(`      handoff: ${handoff}`);
+      }
+    }
+    for (const message of fleet.peerMessages ?? []) {
+      console.log(`    peer: ${message}`);
     }
   }
 }

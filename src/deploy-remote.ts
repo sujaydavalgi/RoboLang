@@ -72,8 +72,8 @@ export function registerAgent(
   url: string,
   token?: string,
 ): DeployAgentRegistry {
-  if (!url.startsWith("http://")) {
-    throw new Error(`deploy agent URL must start with http:// (got ${url})`);
+  if (!url.startsWith("http://") && !url.startsWith("https://")) {
+    throw new Error(`deploy agent URL must start with http:// or https:// (got ${url})`);
   }
   const agents = registry.agents.filter((entry) => entry.target !== target);
   agents.push({ target, url, token });
@@ -147,7 +147,12 @@ export async function executeRemoteRollout(
         agent,
         "POST",
         "/v1/rollout",
-        JSON.stringify({ target: key, version: step.version, program: plan.program }),
+        JSON.stringify({
+          target: key,
+          version: step.version,
+          program: plan.program,
+          program_hash: plan.programHash,
+        }),
       );
       const body = (await response.json()) as { ok?: boolean; version?: string };
       if (response.ok && body.ok) {

@@ -3,6 +3,8 @@
  * @module
  */
 
+import { createHash } from "node:crypto";
+import { readFileSync, existsSync } from "node:fs";
 import type { Program } from "./ast/nodes.js";
 
 export type RolloutStrategy = "all" | "canary" | "staged";
@@ -15,6 +17,7 @@ export type DeployAssignment = {
 export type DeployPlan = {
   program: string;
   version: string;
+  programHash?: string;
   assignments: DeployAssignment[];
   certifications: string[];
 };
@@ -67,6 +70,13 @@ export function deployTargetKey(robot: string, hardware: string): string {
   return assignmentKey(robot, hardware);
 }
 
+export function hashProgramArtifact(programPath: string): string | undefined {
+  // Hash the deployment source file when it exists locally.
+  if (!existsSync(programPath)) return undefined;
+  const bytes = readFileSync(programPath);
+  return createHash("sha256").update(bytes).digest("hex");
+}
+
 export function buildDeployPlan(program: Program, programPath: string, version: string): DeployPlan {
   // Extract deploy targets and certification metadata from the program AST.
   const assignments: DeployAssignment[] = [];
@@ -81,7 +91,13 @@ export function buildDeployPlan(program: Program, programPath: string, version: 
   const certifications = (program.certifications ?? []).map((cert) =>
     cert.level ? `${cert.standard}:${cert.level}` : cert.standard,
   );
-  return { program: programPath, version, assignments, certifications };
+  return {
+    program: programPath,
+    version,
+    programHash: hashProgramArtifact(programPath),
+    assignments,
+    certifications,
+  };
 }
 
 export function planRollout(plan: DeployPlan, options: RolloutOptions): RolloutResult {

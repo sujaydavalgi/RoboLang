@@ -17,6 +17,7 @@ export type FleetMemberState = {
   missionState: string;
   currentStep: string;
   hasPeerLink: boolean;
+  peerHandoffs?: string[];
 };
 
 export type FleetOrchestrationReport = {
@@ -24,6 +25,7 @@ export type FleetOrchestrationReport = {
   members: FleetMemberState[];
   coordinationMode: string;
   stepsAdvanced: number;
+  peerMessages?: string[];
 };
 
 export type FleetOrchestrationResult = {
@@ -48,6 +50,7 @@ export function orchestrateFleets(program: Program, programPath: string): FleetO
   for (const fleet of program.fleets) {
     const members: FleetMemberState[] = [];
     let stepsAdvanced = 0;
+    const peerMessages: string[] = [];
 
     for (const memberName of fleet.members) {
       const robot = program.robots.find((r) => r.name === memberName);
@@ -67,12 +70,17 @@ export function orchestrateFleets(program: Program, programPath: string): FleetO
         missionStart(runtime);
         const step = missionAdvance(runtime);
         if (step) stepsAdvanced += 1;
+        const peerHandoffs = (robot.peerRobots ?? []).flatMap((peer) =>
+          step ? [`${memberName}->${peer.name}:step=${step}`] : [],
+        );
+        peerMessages.push(...peerHandoffs);
         members.push({
           robotName: memberName,
           missionName: runtime.name,
           missionState: runtime.state,
           currentStep: step,
           hasPeerLink: (robot.peerRobots?.length ?? 0) > 0,
+          peerHandoffs,
         });
       } else {
         members.push({
@@ -92,6 +100,7 @@ export function orchestrateFleets(program: Program, programPath: string): FleetO
         ? "peer_round_robin_mission"
         : "round_robin_mission",
       stepsAdvanced,
+      peerMessages,
     });
   }
 
