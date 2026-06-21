@@ -122,7 +122,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "bundle": "bash ../../scripts/bundle-vscode-extension.sh",
-    "prepackage": "npm run bundle",
+    "vscode:prepublish": "npm run bundle",
     "package": "npx @vscode/vsce package --allow-star-activation",
     "package:ci": "npm run build && npm run bundle && npm run package",
     "publish:marketplace": "npx @vscode/vsce publish --allow-star-activation"

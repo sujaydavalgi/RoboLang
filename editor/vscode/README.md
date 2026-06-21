@@ -60,8 +60,10 @@ code --install-extension spanda-vscode-0.1.0.vsix
 
 1. Create publisher `spanda-lang` on [Visual Studio Marketplace](https://marketplace.visualstudio.com/manage)
 2. Generate a Personal Access Token with **Marketplace → Manage**
-3. `npx vsce login spanda-lang`
+3. `npx vsce login spanda-lang` (or set `VSCE_PAT`)
 4. From `editor/vscode`: `npm run publish:marketplace`
+
+`vscode:prepublish` runs `bundle-vscode-extension.sh` automatically before `vsce package` / `vsce publish` — no separate bundle step needed.
 
 CI builds the VSIX on every release (`release.yml`). Add `VSCE_PAT` as a repository secret to automate `vsce publish` in the release workflow.
 

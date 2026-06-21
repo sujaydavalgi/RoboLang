@@ -1,6 +1,0 @@
-src/**
-tsconfig.json
-node_modules/**
-!server/node_modules/**
-.vscode/**
-*.vsix
