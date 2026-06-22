@@ -40,6 +40,8 @@ Runtime telemetry (`RuntimeTelemetry`, mission traces, trigger metrics) remains 
 - Full ROS replacement
 - Complete self-hosted compiler
 
+**Priority and timeline:** [tier-3-priority-plan.md](./tier-3-priority-plan.md)
+
 ## Related
 
 - [phase-18-security-hardening.md](./phase-18-security-hardening.md)

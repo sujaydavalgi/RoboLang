@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Tier 3 priority plan:** [tier-3-priority-plan.md](docs/tier-3-priority-plan.md) documents P0–P4 ordering (v0.5 beta → Phase 23 hardening → v1.0 optional → post-v1.0 production); Phase 23 planned in [lean-core-roadmap.md](docs/lean-core-roadmap.md).
+
 - **Phase 22 Tier 3 experimental:** world-model runtime (`world_model.update`/`belief`/`export`), ledger provider wired to `MockLedgerBackend`, cloud upload via `SPANDA_CLOUD_UPLOAD_URL`, LLVM golden path script, self-host bootstrap example, and [tier-3-experimental.md](docs/tier-3-experimental.md).
 - **Phase 18 P2/P3 closure:** performance (slim CLI, bridge timeouts, `cargo audit`) and observability (pipeline benchmark) marked complete in docs.
 

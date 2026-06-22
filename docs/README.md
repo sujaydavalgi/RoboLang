@@ -23,6 +23,7 @@ Spanda is an AI-native autonomous systems programming language. Source files use
 | [lean-core-roadmap.md](./lean-core-roadmap.md) | **Phased plan for crate extraction and runtime wiring** |
 | [phase-18-security-hardening.md](./phase-18-security-hardening.md) | **Post–Phase 17 security/stability/performance hardening** |
 | [tier-3-experimental.md](./tier-3-experimental.md) | **Tier 3 experimental foundations (Phase 22)** |
+| [tier-3-priority-plan.md](./tier-3-priority-plan.md) | **Priority plan: beta → experimental hardening → v1.0 → production Tier 3** |
 | [provider-interfaces.md](./provider-interfaces.md) | **Provider trait contracts for packages** |
 | [official-packages.md](./official-packages.md) | **Official package catalog** |
 | [security-architecture.md](./security-architecture.md) | **Security contracts vs package backends** |

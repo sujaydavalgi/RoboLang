@@ -286,3 +286,20 @@ Goal: promote deferred product-strategy items to experimental with minimal runti
 
 See [tier-3-experimental.md](./tier-3-experimental.md).
 
+## Phase 23 — Planned (experimental Tier 3 hardening)
+
+Goal: CI golden paths and provider wiring for each experimental Tier 3 item; no regression to v0.5 beta P0 work.
+
+| Step | Status |
+|------|--------|
+| Fleet multi-host CI + golden path docs | Planned |
+| MQTT live Mosquitto CI | Planned |
+| Twin cloud export CI | Planned |
+| `cpp-native` golden path CI | Planned |
+| LLVM golden path in CI | Planned |
+| Ledger community package scaffold | Planned |
+| World model parser + fusion hook | Planned |
+| Self-host lexer milestone | Planned |
+
+See [tier-3-priority-plan.md](./tier-3-priority-plan.md) for full P0–P4 ordering and release windows.
+

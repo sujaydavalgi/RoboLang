@@ -142,7 +142,7 @@ Every major feature is classified for prioritization. See [feature-status.md](./
 
 ### Tier 3 — Experimental (Phase 22)
 
-Promoted from deferred to experimental with minimal runtimes and golden paths. See [tier-3-experimental.md](./tier-3-experimental.md).
+Promoted from deferred to experimental with minimal runtimes and golden paths. See [tier-3-experimental.md](./tier-3-experimental.md). **Execution order:** [tier-3-priority-plan.md](./tier-3-priority-plan.md).
 
 - LLVM native codegen (`spanda compile-native`, `scripts/llvm_golden_path.sh`)
 - Blockchain / ledger (`spanda-ledger` → `MockLedgerBackend`)
