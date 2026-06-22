@@ -429,6 +429,18 @@ impl TriggerRegistry {
             .collect()
     }
 
+    pub fn handlers_for_kill_switch(&self, name: &str) -> Vec<&RegisteredTrigger> {
+        self.handlers
+            .iter()
+            .filter(|h| {
+                matches!(
+                    &h.kind,
+                    TriggerKind::KillSwitch { name: n } if n == name
+                )
+            })
+            .collect()
+    }
+
     pub fn handlers_for_sensor_event(&self, sensor: &str, event: &str) -> Vec<&RegisteredTrigger> {
         self.handlers
             .iter()
@@ -533,6 +545,7 @@ pub fn trigger_display_name(kind: &TriggerKind, agent: Option<&str>) -> String {
         TriggerKind::Connectivity { domain, event } => format!("connectivity:{domain}.{event}"),
         TriggerKind::Geofence { name, phase } => format!("geofence:{name}:{phase}"),
         TriggerKind::SensorEvent { sensor, event } => format!("sensor:{sensor}.{event}"),
+        TriggerKind::KillSwitch { name } => format!("kill_switch:{name}"),
     };
 
     // Emit output when agent provides a agent.

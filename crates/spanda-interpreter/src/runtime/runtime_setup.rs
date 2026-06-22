@@ -636,7 +636,7 @@ impl<B: RobotBackend> Interpreter<B> {
                 .unwrap_or_else(|| "unknown".into());
             let public_key = fields
                 .iter()
-                .find(|(k, _)| k == "public_key")
+                .find(|(k, _)| k == "public_key" || k == "signing_key")
                 .map(|(_, v)| v.clone())
                 .unwrap_or_default();
             let robot_id =

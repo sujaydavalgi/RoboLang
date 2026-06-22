@@ -251,6 +251,9 @@ pub struct InterpreterOptions {
     /// Activate named kill switch at simulation start.
     pub trigger_kill_switch: Option<String>,
 
+    /// JSON-encoded SignedMessage for remote_signed kill switch activation.
+    pub kill_switch_signature: Option<String>,
+
     /// Inject health fault scenarios during simulation.
     pub inject_health_faults: bool,
 
@@ -301,6 +304,7 @@ impl Default for InterpreterOptions {
             secure_mode: false,
             inject_security_faults: false,
             trigger_kill_switch: None,
+            kill_switch_signature: None,
             inject_health_faults: false,
             provider_registry: None,
             official_packages: Vec::new(),
@@ -383,6 +387,8 @@ pub struct Interpreter<B: RobotBackend> {
     health_program: Option<Program>,
     last_health_overall: Option<String>,
     applied_health_reactions: std::collections::HashSet<String>,
+    kill_switch_defs: HashMap<String, spanda_ast::foundations::KillSwitchDecl>,
+    program_swarms: Vec<spanda_ast::robotics_decl::SwarmDecl>,
 }
 
 impl<B: RobotBackend> Interpreter<B> {
@@ -491,6 +497,8 @@ impl<B: RobotBackend> Interpreter<B> {
             health_program: None,
             last_health_overall: None,
             applied_health_reactions: std::collections::HashSet::new(),
+            kill_switch_defs: HashMap::new(),
+            program_swarms: Vec::new(),
         }
     }
 
@@ -954,6 +962,9 @@ impl<B: RobotBackend> Interpreter<B> {
         }
         self.load_program_metadata(program);
         self.cache_health_program(program);
+        self.cache_kill_switches(program);
+        let Program::Program { swarms, .. } = program;
+        self.program_swarms = swarms.clone();
         if !self
             .provider_registry
             .borrow()
@@ -986,6 +997,11 @@ impl<B: RobotBackend> Interpreter<B> {
             self.log("security: injected default security fault scenarios".into());
         }
 
+        // Register robot hardware, identity, and triggers before optional kill-switch activation.
+        for robot in robots {
+            self.setup_robot(robot)?;
+        }
+
         if self.options.inject_health_faults {
             for fault in ["GPSDegraded", "CameraOffline", "RobotHealthCritical"] {
                 self.hardware_monitor.inject_fault(fault.to_string());
@@ -995,20 +1011,12 @@ impl<B: RobotBackend> Interpreter<B> {
             self.poll_runtime_health_changes();
         }
 
-        if let Some(ks) = &self.options.trigger_kill_switch {
-            self.backend.set_emergency_stop(true);
-            self.log(format!("kill_switch: activated {ks}"));
-            self.record_debug_event(
-                1,
-                "kill_switch_activated",
-                &[("kill_switch", ks.clone())],
-            );
+        if let Some(ks) = self.options.trigger_kill_switch.clone() {
+            self.activate_kill_switch(&ks)?;
         }
 
         // Handle each robot declared in the program.
         for robot in robots {
-            self.setup_robot(robot)?;
-
             // Inject each configured hardware fault.
             for fault in &sim_faults {
                 self.hardware_monitor.inject_fault(fault.clone());
@@ -1595,6 +1603,7 @@ pub(super) fn trigger_category_label(kind: &TriggerKind) -> &'static str {
         TriggerKind::Connectivity { .. } => "connectivity",
         TriggerKind::Geofence { .. } => "geofence",
         TriggerKind::SensorEvent { .. } => "sensor_event",
+        TriggerKind::KillSwitch { .. } => "kill_switch",
     }
 }
 
@@ -1914,3 +1923,5 @@ mod runtime_twin;
 mod runtime_world_model;
 #[path = "runtime_health.rs"]
 mod runtime_health;
+#[path = "runtime_kill_switch.rs"]
+mod runtime_kill_switch;

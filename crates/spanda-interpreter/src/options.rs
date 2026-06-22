@@ -67,6 +67,7 @@ pub struct RunOptions {
     #[serde(default)]
     pub trigger_kill_switch: Option<String>,
     #[serde(default)]
+    pub kill_switch_signature: Option<String>,
     pub inject_health_faults: bool,
     #[serde(skip)]
     pub ffi_registry: Option<FfiRegistry>,
