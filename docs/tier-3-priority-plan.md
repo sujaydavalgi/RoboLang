@@ -33,13 +33,15 @@ flowchart TD
 
 Not Tier 3 — these gate everything else. **Target: Q4 2026 beta.**
 
-| # | Work item | Acceptance criteria |
-|---|-----------|---------------------|
-| 1 | **Publish VS Code extension** | Marketplace install; LSP `check` + `verify` work out of the box |
-| 2 | **Curate killer demo** | `examples/showcase/killer_demo.sd`; [killer-demo.md](./killer-demo.md); CI (`killer-demo-golden-path`) |
-| 3 | **One live AI provider path** | `OPENAI_API_KEY` → live call; mock fallback — [live-ai-provider.md](./live-ai-provider.md); CI (`live-ai-golden-path`) |
-| 4 | **One ROS2 golden path** | [ros2-golden-path.md](./ros2-golden-path.md); `/cmd_vel` validated; CI (`ros2-golden-path`) |
-| 5 | **Remote package registry (minimal)** | `spanda install` from hosted index; 2+ curated packages; CI (`registry-golden-path`) |
+| # | Work item | Acceptance criteria | Status |
+|---|-----------|---------------------|--------|
+| 1 | **Publish VS Code extension** | Marketplace install; LSP `check` + `verify` work out of the box | **Partial** — release workflow publishes when `VSCE_PAT` is set |
+| 2 | **Curate killer demo** | `examples/showcase/killer_demo.sd`; [killer-demo.md](./killer-demo.md); CI (`killer-demo-golden-path`) | **Complete** |
+| 3 | **One live AI provider path** | `OPENAI_API_KEY` → live call; mock fallback — [live-ai-provider.md](./live-ai-provider.md); CI (`live-ai-golden-path`) | **Complete** |
+| 4 | **One ROS2 golden path** | [ros2-golden-path.md](./ros2-golden-path.md); `/cmd_vel` validated; CI (`ros2-golden-path`) | **Complete** |
+| 5 | **Remote package registry (minimal)** | `spanda install` from hosted index; 2+ curated packages; CI (`registry-golden-path`) | **Complete** |
+
+Golden path index: [tier-3-golden-paths.md](./tier-3-golden-paths.md) § v0.5 beta (P0).
 
 See [product-strategy.md](./product-strategy.md) § v0.5 beta — prioritized work items (P0).
 

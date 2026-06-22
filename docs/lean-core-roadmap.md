@@ -337,7 +337,7 @@ Goal: close v0.5 beta blockers with CI-backed golden paths for killer demo, live
 | `ros2_cmd_vel_ping.sd` + `ros2_golden_path.sh` CI | **Complete** |
 | `registry_golden_path.sh` (file:// + signatures) CI | **Complete** |
 | VS Code extension marketplace publish | **Partial** — release workflow publishes when `VSCE_PAT` secret is set |
-| P0 acceptance tracking in [tier-3-priority-plan.md](./tier-3-priority-plan.md) | Planned |
+| P0 acceptance tracking in [tier-3-priority-plan.md](./tier-3-priority-plan.md) | **Complete** |
 
 See [killer-demo.md](./killer-demo.md), [live-ai-provider.md](./live-ai-provider.md), [ros2-golden-path.md](./ros2-golden-path.md), [registry.md](./registry.md).
 
