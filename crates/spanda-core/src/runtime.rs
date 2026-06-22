@@ -1195,8 +1195,26 @@ impl<B: RobotBackend> Interpreter<B> {
             let TraitDecl::TraitDecl { name, .. } = trait_decl;
             let _ = name;
         }
-        self.nav2_enabled = crate::nav2_adapter::program_uses_nav2(imports);
-        self.slam_enabled = crate::slam_adapter::program_uses_slam(imports);
+        self.nav2_enabled = {
+            let paths: Vec<&str> = imports
+                .iter()
+                .map(|imp| {
+                    let crate::ast::ImportDecl::ImportDecl { path, .. } = imp;
+                    path.as_str()
+                })
+                .collect();
+            spanda_runtime::imports_enable_navigation(&paths, crate::runtime_host::core_runtime_host())
+        };
+        self.slam_enabled = {
+            let paths: Vec<&str> = imports
+                .iter()
+                .map(|imp| {
+                    let crate::ast::ImportDecl::ImportDecl { path, .. } = imp;
+                    path.as_str()
+                })
+                .collect();
+            spanda_runtime::imports_enable_slam(&paths, crate::runtime_host::core_runtime_host())
+        };
     }
 
     fn load_connectivity_metadata(

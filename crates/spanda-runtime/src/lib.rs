@@ -3,6 +3,7 @@
 pub mod classification;
 pub mod environment;
 pub mod error;
+pub mod host;
 pub mod provider_types;
 pub mod robotics;
 pub mod scheduler;
@@ -13,6 +14,7 @@ pub use classification::{
 };
 pub use environment::Environment;
 pub use error::RuntimeError;
+pub use host::{imports_enable_navigation, imports_enable_slam, RuntimeHost};
 pub use provider_types::{
     ProviderCapability, ProviderCapabilitySet, ProviderError, ProviderId, ProviderMetadata,
     ProviderResult, ProviderSafetyLevel,
