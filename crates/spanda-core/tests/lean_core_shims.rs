@@ -58,6 +58,42 @@ fn interpreter_runtime_uses_workspace_ast_paths() {
 }
 
 #[test]
+fn providers_bootstrap_shim_reexports_spanda_providers() {
+    for module in [
+        "providers/bootstrap.rs",
+        "providers/package_stubs.rs",
+        "providers/transport_adapter.rs",
+    ] {
+        let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("src").join(module);
+        let source = fs::read_to_string(&path).expect(module);
+        assert!(
+            source.lines().count() <= 8,
+            "{module} should be a thin re-export shim"
+        );
+        assert!(
+            source.contains("spanda_providers"),
+            "{module} shim should re-export from spanda-providers"
+        );
+    }
+}
+
+#[test]
+fn concurrency_shim_reexports_spanda_concurrency() {
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/concurrency.rs");
+    let source = fs::read_to_string(&path).expect("concurrency.rs");
+    assert!(source.lines().count() <= 8);
+    assert!(source.contains("spanda_concurrency"));
+}
+
+#[test]
+fn debug_shim_reexports_spanda_debug() {
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/debug.rs");
+    let source = fs::read_to_string(&path).expect("debug.rs");
+    assert!(source.lines().count() <= 8);
+    assert!(source.contains("spanda_debug"));
+}
+
+#[test]
 fn ai_shim_reexports_spanda_ai() {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/ai.rs");
     let source = fs::read_to_string(&path).expect("ai.rs");

@@ -1,0 +1,13 @@
+[package]
+name = "spanda-concurrency"
+version.workspace = true
+edition.workspace = true
+description = "Spanda cooperative channels, spawn handles, and select for concurrent tasks"
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+homepage.workspace = true
+
+[dependencies]
+spanda-error = { path = "../spanda-error" }
+spanda-runtime = { path = "../spanda-runtime" }

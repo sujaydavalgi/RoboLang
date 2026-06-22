@@ -1,8 +1,4 @@
-//! Lean-core provider contracts and registry — compatibility shims over `spanda-runtime`.
-//!
-//! Spanda Core wires optional domain packages through `bootstrap` and `package_stubs`.
-//! Trait definitions, registry, and shared types live in `spanda-runtime` for the
-//! Phase 4 lean-core split.
+//! Lean-core provider contracts and registry — compatibility shims over workspace crates.
 //!
 pub mod bootstrap;
 pub mod classification;

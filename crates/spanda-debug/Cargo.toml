@@ -1,0 +1,13 @@
+[package]
+name = "spanda-debug"
+version.workspace = true
+edition.workspace = true
+description = "Spanda debugger controller, breakpoints, and statement line helpers"
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+homepage.workspace = true
+
+[dependencies]
+spanda-ast = { path = "../spanda-ast" }
+serde = { version = "1", features = ["derive"] }

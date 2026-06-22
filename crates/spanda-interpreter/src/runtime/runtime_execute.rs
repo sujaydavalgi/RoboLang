@@ -7,6 +7,7 @@ use super::{
 use spanda_ast::nodes::{Expr, SpandaType, Stmt};
 use spanda_comm::CommBus;
 use spanda_ast::comm_decl::DiscoverFilter;
+use spanda_debug::stmt_line;
 use spanda_error::SpandaError;
 use spanda_runtime::triggers::SystemTriggerCategory;
 use std::collections::HashMap;
@@ -55,7 +56,7 @@ impl<B: RobotBackend> Interpreter<B> {
 
         // Emit output when debug provides a debug.
         if let Some(debug) = &self.options.debug {
-            let line = crate::debug::stmt_line(stmt);
+            let line = stmt_line(stmt);
 
             // Take this path when debug.should pause(line).
             if debug.should_pause(line) {

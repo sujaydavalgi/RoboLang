@@ -10,6 +10,9 @@ use spanda_ast::nodes::{
 };
 use spanda_audit::{AuditRuntime, MockLedgerBackend};
 use spanda_comm::CommBus;
+use spanda_concurrency::ConcurrencyRuntime;
+use spanda_debug::DebugController;
+use spanda_providers::{bootstrap_providers_for_packages, sync_comm_bus_for_official_packages};
 use spanda_ast::comm_decl::{QosDecl, TransportKind};
 use spanda_error::SpandaError;
 use spanda_runtime::robot_state::{PoseState, RobotState, VelocityState};
@@ -236,7 +239,7 @@ pub struct InterpreterOptions {
     pub on_motion_blocked: Option<MotionBlockedCallback>,
     pub on_log: Option<LogCallback>,
     pub module_registry: Option<crate::modules::ModuleRegistry>,
-    pub debug: Option<crate::debug::DebugController>,
+    pub debug: Option<DebugController>,
     pub ffi_registry: crate::ffi::FfiRegistry,
     pub trace_scheduler: bool,
     pub trace_tasks: bool,
@@ -350,7 +353,7 @@ pub struct Interpreter<B: RobotBackend> {
     module_functions: HashMap<String, spanda_ast::foundations::ModuleFnDecl>,
     imported_functions: HashMap<String, spanda_ast::foundations::ModuleFnDecl>,
     extern_functions: HashMap<String, spanda_ast::foundations::ExternFnDecl>,
-    concurrency: crate::concurrency::ConcurrencyRuntime,
+    concurrency: ConcurrencyRuntime,
     telemetry: spanda_runtime::telemetry::RuntimeTelemetry,
     active_mode: String,
     task_heartbeats: HashMap<String, f64>,
@@ -401,7 +404,7 @@ impl<B: RobotBackend> Interpreter<B> {
                 .provider_registry
                 .take()
                 .unwrap_or_else(|| {
-                    crate::providers::bootstrap_providers_for_packages(
+                    bootstrap_providers_for_packages(
                         &options
                             .official_packages
                             .iter()
@@ -457,7 +460,7 @@ impl<B: RobotBackend> Interpreter<B> {
             module_functions: HashMap::new(),
             imported_functions: HashMap::new(),
             extern_functions: HashMap::new(),
-            concurrency: crate::concurrency::ConcurrencyRuntime::new(),
+            concurrency: ConcurrencyRuntime::new(),
             telemetry: spanda_runtime::telemetry::RuntimeTelemetry::default(),
             active_mode: "normal".into(),
             task_heartbeats: HashMap::new(),
@@ -943,7 +946,7 @@ impl<B: RobotBackend> Interpreter<B> {
         }
         self.load_program_metadata(program);
         if !self.provider_registry.borrow().official_packages().is_empty() {
-            crate::providers::sync_comm_bus_for_official_packages(
+            sync_comm_bus_for_official_packages(
                 &mut self.comm_bus,
                 &mut self.provider_registry.borrow_mut(),
             );

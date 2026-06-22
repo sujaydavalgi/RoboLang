@@ -29,6 +29,9 @@ members = [
     "crates/spanda-transport-routing",
     "crates/spanda-error",
     "crates/spanda-ai",
+    "crates/spanda-providers",
+    "crates/spanda-concurrency",
+    "crates/spanda-debug",
     "crates/spanda-interpreter",
     "crates/spanda-transport",
 ]
