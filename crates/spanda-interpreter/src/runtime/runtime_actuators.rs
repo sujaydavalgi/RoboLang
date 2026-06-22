@@ -8,7 +8,7 @@ use super::{
 use crate::ai::{is_action_proposal, is_safe_action};
 use spanda_ast::nodes::Expr;
 use crate::error::SpandaError;
-use crate::safety::Pose2d;
+use spanda_safety::Pose2d;
 
 impl<B: RobotBackend> Interpreter<B> {
     pub(super) fn execute_actuator_method(

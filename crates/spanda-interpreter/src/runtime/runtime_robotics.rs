@@ -7,7 +7,7 @@ use crate::ai::{
 };
 use spanda_ast::nodes::{Expr, UnitKind};
 use crate::error::SpandaError;
-use crate::safety::{Pose2d, ValidateActionResult};
+use spanda_safety::{Pose2d, ValidateActionResult};
 use spanda_runtime::triggers::SystemTriggerCategory;
 
 impl<B: RobotBackend> Interpreter<B> {

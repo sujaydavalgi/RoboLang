@@ -1235,6 +1235,7 @@ dependencies = [
  "spanda-ota",
  "spanda-package",
  "spanda-runtime",
+ "spanda-safety",
  "spanda-security",
  "spanda-transport",
  "spanda-transport-dds",
@@ -1292,6 +1293,7 @@ dependencies = [
  "spanda-connectivity",
  "spanda-core",
  "spanda-runtime",
+ "spanda-safety",
  "spanda-security",
  "spanda-transport",
  "spanda-typecheck",
@@ -1368,6 +1370,14 @@ dependencies = [
  "serde_json",
  "serde_yaml",
  "spanda-ast",
+]
+
+[[package]]
+name = "spanda-safety"
+version = "0.1.0"
+dependencies = [
+ "spanda-ast",
+ "spanda-runtime",
 ]
 
 [[package]]

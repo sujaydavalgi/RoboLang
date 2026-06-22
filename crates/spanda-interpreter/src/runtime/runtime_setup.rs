@@ -15,7 +15,7 @@ use crate::error::SpandaError;
 use spanda_runtime::events::EventBus;
 use crate::hal::{hal_member_from_decl, HalBackend};
 use crate::hardware_monitor::HardwareMonitor;
-use crate::safety::{create_safety_config_from_robot, SafetyMonitor};
+use spanda_safety::{create_safety_config_from_robot, SafetyMonitor};
 use spanda_security::{RobotIdentity, SecretHandle, SecretSource, SecurityContext, TrustLevel};
 use crate::soc::get_soc_profile;
 use spanda_runtime::state_machine::StateMachineRuntime;

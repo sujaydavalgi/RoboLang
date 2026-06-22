@@ -7,7 +7,7 @@ use super::{
 use spanda_ast::nodes::Expr;
 use spanda_comm::CommBus;
 use crate::error::SpandaError;
-use crate::safety::Pose2d;
+use spanda_safety::Pose2d;
 
 impl<B: RobotBackend> Interpreter<B> {
     pub(super) fn eval_robot_method(

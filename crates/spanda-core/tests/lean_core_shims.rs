@@ -58,6 +58,20 @@ fn interpreter_runtime_uses_workspace_ast_paths() {
 }
 
 #[test]
+fn safety_shim_reexports_spanda_safety() {
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/safety.rs");
+    let source = fs::read_to_string(&path).expect("safety.rs");
+    assert!(
+        source.lines().count() <= 8,
+        "safety.rs should be a thin re-export shim"
+    );
+    assert!(
+        source.contains("spanda_safety"),
+        "safety shim should re-export from spanda-safety"
+    );
+}
+
+#[test]
 fn comm_shim_reexports_spanda_comm() {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/comm.rs");
     let source = fs::read_to_string(&path).expect("comm.rs");

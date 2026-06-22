@@ -24,7 +24,7 @@ use spanda_runtime::reliability_runtime::{
     WatchdogRuntime,
 };
 use spanda_runtime::replay::MissionTrace;
-use crate::safety::{
+use spanda_safety::{
     Pose2d, SafetyMonitor, SafetyZoneRuntime,
 };
 use spanda_runtime::scheduler::SchedulerClock;

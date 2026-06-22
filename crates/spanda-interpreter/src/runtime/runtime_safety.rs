@@ -4,7 +4,7 @@
 use super::{get_number, Interpreter, RobotBackend};
 use spanda_ast::nodes::{SafetyZoneDecl, ZoneShape};
 use crate::error::SpandaError;
-use crate::safety::{SafetyZoneRuntime, SafetyZoneShape};
+use spanda_safety::{SafetyZoneRuntime, SafetyZoneShape};
 
 impl<B: RobotBackend> Interpreter<B> {
     pub(super) fn eval_safety_zone(

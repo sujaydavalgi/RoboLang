@@ -1,0 +1,13 @@
+[package]
+name = "spanda-safety"
+version.workspace = true
+edition.workspace = true
+description = "Spanda runtime safety monitor, zones, and motion validation"
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+homepage.workspace = true
+
+[dependencies]
+spanda-ast = { path = "../spanda-ast" }
+spanda-runtime = { path = "../spanda-runtime" }
