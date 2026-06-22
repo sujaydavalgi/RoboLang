@@ -47,6 +47,26 @@ fn transport_live_no_direct_python_bridge() {
 }
 
 #[test]
+fn runtime_connectivity_logic_is_extracted() {
+    let runtime = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/runtime.rs");
+    let connectivity = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/runtime_connectivity.rs");
+    let runtime_source = fs::read_to_string(&runtime).expect("runtime.rs");
+    let connectivity_source = fs::read_to_string(&connectivity).expect("runtime_connectivity.rs");
+    assert!(
+        connectivity_source.contains("fn run_geofence_triggers"),
+        "runtime_connectivity.rs should own geofence trigger dispatch"
+    );
+    assert!(
+        !runtime_source.contains("fn run_geofence_triggers"),
+        "runtime.rs should delegate geofence triggers to runtime_connectivity.rs"
+    );
+    assert!(
+        !runtime_source.contains("connectivity_positioning::apply_gps_reading_faults"),
+        "runtime.rs should route GPS reading faults through RuntimeHost"
+    );
+}
+
+#[test]
 fn interpreter_accepts_injected_runtime_host() {
     use spanda_core::runtime::{Interpreter, InterpreterOptions};
     use spanda_core::simulator::{create_default_simulator, SimulatorConfig};

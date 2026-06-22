@@ -49,6 +49,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Lean-core connectivity runtime split:** moved geofence math, connectivity/fault trigger mapping, GPS drift/spoof simulation, and link impairment checks from `spanda-core::connectivity_positioning` to `spanda-connectivity::runtime_sim`; core keeps compatibility wrappers for AST/runtime value conversions
 - **Interpreter extraction staging:** expanded `spanda-runtime::RuntimeHost` with connectivity/geofence/GPS-fault hooks and routed `spanda-core::runtime` trigger/failover/geofence callsites through host methods to reduce direct core coupling
 - **Interpreter host injection:** `Interpreter` now stores an injectable `RuntimeHost` (`InterpreterOptions::runtime_host`); remaining GPS reading and SIM identity paths route through host hooks; `spanda-interpreter` re-exports `RuntimeHost`
+- **Interpreter module split:** connectivity trigger, geofence, and failover logic extracted from `runtime.rs` into `runtime_connectivity.rs` as a staging step toward `spanda-interpreter`
 
 ### Changed
 
