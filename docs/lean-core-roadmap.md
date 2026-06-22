@@ -60,14 +60,14 @@ Break circular `spanda-package` → `spanda-core` dependency:
 | `spanda-hardware` | Done | Builtin profile catalog; `spanda-package` no longer depends on `spanda-core` |
 | `spanda-ast` | Done | `nodes`, `foundations`, `comm_decl`, `robotics_decl`, `regex` — core `ast`/`foundations` shims |
 | `spanda-lexer` | Done | Tokenization + `LexerError`; core `tokenize` shim maps to `SpandaError` |
-| `spanda-typecheck` | Planned | `spanda-package` target dependency |
+| `spanda-typecheck` | In progress | `units` + `type_system` in crate; program `TypeChecker` still in core |
 | `spanda-runtime` | Planned | Interpreter, scheduler, providers |
 
 ```
 spanda-hardware          (profile catalog — done)
 spanda-ast               (AST + foundation + comm decl types — done)
 spanda-lexer             (tokenization — done)
-spanda-typecheck         (next) ← spanda-package depends here
+spanda-typecheck         (units + type_system — in progress)
 spanda-runtime     ← interpreter, scheduler, providers
 spanda-core        ← thin facade re-exporting above
 ```

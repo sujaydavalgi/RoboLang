@@ -29,6 +29,7 @@ spanda-ota = { path = "../spanda-ota" }
 spanda-hardware = { path = "../spanda-hardware" }
 spanda-ast = { path = "../spanda-ast" }
 spanda-lexer = { path = "../spanda-lexer" }
+spanda-typecheck = { path = "../spanda-typecheck" }
 pyo3 = { version = "0.23", optional = true, features = ["auto-initialize", "abi3-py310"] }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]

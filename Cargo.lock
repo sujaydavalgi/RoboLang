@@ -1211,6 +1211,7 @@ dependencies = [
  "spanda-transport-mqtt",
  "spanda-transport-ros2",
  "spanda-transport-websocket",
+ "spanda-typecheck",
  "thiserror 2.0.18",
  "webpki-roots 0.26.11",
 ]
@@ -1358,6 +1359,13 @@ dependencies = [
  "serde",
  "serde_json",
  "tungstenite",
+]
+
+[[package]]
+name = "spanda-typecheck"
+version = "0.1.0"
+dependencies = [
+ "spanda-ast",
 ]
 
 [[package]]
