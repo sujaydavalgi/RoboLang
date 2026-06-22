@@ -64,6 +64,6 @@ All 20 previously skipped examples now pass `spanda check`. The manifest retains
 - [x] Example regression script in CI (162 + 2 negative tests)
 - [x] `spanda-package` does not depend on `spanda-core`
 - [x] Every official package has bootstrap registration or documented stub status
-- [ ] Zero protocol-specific code in core except traits + wire types (ongoing shim deprecation)
+- [ ] Zero protocol-specific code in core except traits + wire types (ongoing shim deprecation — ROS2/MQTT live bridges moved to `spanda-transport-ros2` / `spanda-transport-mqtt`)
 
 See also: [lean-core.md](./lean-core.md), [migration.md](./migration.md#lean-core-package-first-refactor)

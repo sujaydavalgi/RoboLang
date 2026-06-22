@@ -1,11 +1,11 @@
-//! Compatibility shim: ROS2 transport orchestration (core retains Python bridge fallback).
+//! Compatibility shim: ROS2 transport orchestration (delegates to `spanda-transport-ros2`).
 //!
 use crate::runtime::RuntimeValue;
-use crate::transport_live::{
-    try_ros2_bridge_publish, try_ros2_bridge_service_call, try_ros2_bridge_subscribe,
-};
 use crate::transport_rclrs_daemon::{daemon_publish, daemon_service_call, daemon_subscribe};
 use crate::transport_rclrs_native as native;
+use spanda_transport_ros2::live_bridge::{
+    try_ros2_bridge_publish, try_ros2_bridge_service_call, try_ros2_bridge_subscribe,
+};
 
 pub use spanda_transport_ros2::{rclrs_available, rclrs_enabled};
 
@@ -28,7 +28,7 @@ pub fn try_rclrs_publish(topic: &str, value: &RuntimeValue) -> bool {
     if daemon_publish(topic, value) {
         return true;
     }
-    try_ros2_bridge_publish(topic, value)
+    try_ros2_bridge_publish(topic, &payload_string(value))
 }
 
 pub fn try_rclrs_subscribe(topic: &str) -> bool {
