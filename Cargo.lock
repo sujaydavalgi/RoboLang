@@ -1208,6 +1208,7 @@ dependencies = [
  "spanda-package",
  "spanda-runtime",
  "spanda-security",
+ "spanda-transport",
  "spanda-transport-dds",
  "spanda-transport-mqtt",
  "spanda-transport-ros2",
@@ -1335,6 +1336,22 @@ dependencies = [
  "sha2",
  "spanda-audit",
  "thiserror 2.0.18",
+]
+
+[[package]]
+name = "spanda-transport"
+version = "0.1.0"
+dependencies = [
+ "hex",
+ "rustls 0.23.40",
+ "rustls-pemfile",
+ "serde",
+ "serde_json",
+ "sha2",
+ "spanda-ast",
+ "spanda-runtime",
+ "spanda-security",
+ "webpki-roots 0.26.11",
 ]
 
 [[package]]

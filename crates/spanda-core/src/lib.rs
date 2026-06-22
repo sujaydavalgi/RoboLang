@@ -70,7 +70,6 @@ pub mod transport_rclrs;
 mod transport_rclrs_daemon;
 mod transport_rclrs_native;
 pub mod transport_security;
-mod transport_tls;
 pub mod transport_websocket;
 pub mod transport_wire;
 pub mod triggers;
