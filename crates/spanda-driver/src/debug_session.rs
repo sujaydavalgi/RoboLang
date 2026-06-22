@@ -76,7 +76,7 @@ impl DebugMachine {
             line: 1,
         })?;
         interpreter.setup_robot_for_debug(robot)?;
-        let (name, body) = behavior_body(robot)?;
+        let (name, body) = debug_entry_body(robot)?;
         let locals = interpreter.env().snapshot_display();
         Ok(Self {
             interpreter,
@@ -483,6 +483,38 @@ impl DebugMachine {
         }
         Ok(false)
     }
+}
+
+fn debug_entry_body(robot: &RobotDecl) -> Result<(String, Vec<Stmt>), SpandaError> {
+    use spanda_ast::foundations::{TaskDecl, TriggerHandlerDecl, TriggerKind};
+    use spanda_ast::nodes::BehaviorDecl;
+
+    let RobotDecl::RobotDecl {
+        behaviors,
+        tasks,
+        trigger_handlers,
+        ..
+    } = robot;
+    if let Some(BehaviorDecl::BehaviorDecl { name, body, .. }) = behaviors.first() {
+        return Ok((name.clone(), body.clone()));
+    }
+    if let Some(TaskDecl::TaskDecl { name, body, .. }) = tasks.first() {
+        return Ok((name.clone(), body.clone()));
+    }
+    for handler in trigger_handlers {
+        let TriggerHandlerDecl::TriggerHandlerDecl {
+            trigger_kind,
+            body,
+            ..
+        } = handler;
+        if matches!(trigger_kind, TriggerKind::Timer { .. }) {
+            return Ok(("every".into(), body.clone()));
+        }
+    }
+    Err(SpandaError::Runtime {
+        message: "robot has no behavior, task, or every-trigger body to debug".into(),
+        line: 1,
+    })
 }
 
 fn behavior_body(robot: &RobotDecl) -> Result<(String, Vec<Stmt>), SpandaError> {
