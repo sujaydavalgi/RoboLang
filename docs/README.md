@@ -21,6 +21,7 @@ Spanda is an AI-native autonomous systems programming language. Source files use
 | [lean-core.md](./lean-core.md) | **Lean-core workspace architecture (Phases 1–17)** |
 | [crates/README.md](../crates/README.md) | **Workspace crate index and dependency rules** |
 | [lean-core-roadmap.md](./lean-core-roadmap.md) | **Phased plan for crate extraction and runtime wiring** |
+| [phase-18-security-hardening.md](./phase-18-security-hardening.md) | **Post–Phase 17 security/stability/performance hardening** |
 | [provider-interfaces.md](./provider-interfaces.md) | **Provider trait contracts for packages** |
 | [official-packages.md](./official-packages.md) | **Official package catalog** |
 | [security-architecture.md](./security-architecture.md) | **Security contracts vs package backends** |

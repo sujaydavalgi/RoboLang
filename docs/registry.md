@@ -15,7 +15,7 @@ spanda registry search openai
 
 ## Curated packages (hosted)
 
-All 20 official packages under `packages/registry/` are published in the hosted index. Tarballs live at `registry/packages/<name>/<version>`. Rebuild with `./scripts/build-registry.sh`.
+All 20 official packages under `packages/registry/` are published in the hosted index. Tarballs live at `registry/packages/<name>/<version>` with SHA-256 digests in `registry/index.json` (`version_checksums`). Rebuild with `./scripts/build-registry.sh` (runs `scripts/update_registry_checksums.py`).
 
 | Package | Category | Import paths |
 |---------|----------|--------------|

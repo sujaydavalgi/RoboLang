@@ -215,3 +215,20 @@ Goal: drop redundant `spanda_core::transport_{mqtt,dds,websocket,live}` modules 
 | Update migration docs and shim guard tests | **Complete** |
 | Keep `transport`, `transport_rclrs`, `transport_wire`, `transport_security` shims | **Complete** |
 | Documentation ground-up refresh (`crates/README.md`, per-crate READMEs, lean-core.md) | **Complete** |
+
+## Phase 18 — Complete ✓ (security & hardening)
+
+Goal: address post–Phase 17 audit findings without changing the lean-core dependency graph.
+
+| Step | Status |
+|------|--------|
+| Registry tarball SHA-256 + safe extraction (`spanda-package`) | **Complete** |
+| Agent auth required on non-loopback bind | **Complete** |
+| Bridge subprocess timeouts (`SPANDA_BRIDGE_TIMEOUT_SECS`) | **Complete** |
+| `cargo audit` in CI | **Complete** |
+| Pipeline benchmark (`spanda-driver`) | **Complete** |
+| Slim CLI feature (`--no-default-features` + `--features slim`) | **Complete** |
+| Panic audit (`runtime_twin`, agent helpers) | **Complete** |
+| Phase 19 shim sunset plan (`transport*` remaining shims) | **Planned** |
+
+See [phase-18-security-hardening.md](./phase-18-security-hardening.md).
