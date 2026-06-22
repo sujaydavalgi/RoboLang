@@ -1206,6 +1206,7 @@ dependencies = [
  "spanda-lexer",
  "spanda-ota",
  "spanda-package",
+ "spanda-runtime",
  "spanda-security",
  "spanda-transport-dds",
  "spanda-transport-mqtt",
@@ -1312,6 +1313,13 @@ version = "0.1.0"
 dependencies = [
  "serde",
  "serde_json",
+]
+
+[[package]]
+name = "spanda-runtime"
+version = "0.1.0"
+dependencies = [
+ "serde",
 ]
 
 [[package]]

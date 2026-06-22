@@ -1,0 +1,12 @@
+[package]
+name = "spanda-runtime"
+version.workspace = true
+edition.workspace = true
+description = "Spanda runtime kernel — scheduler, provider types, and robotics runtime state"
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+homepage.workspace = true
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }

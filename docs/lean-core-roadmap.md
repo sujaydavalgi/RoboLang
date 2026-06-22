@@ -61,16 +61,15 @@ Break circular `spanda-package` → `spanda-core` dependency:
 | `spanda-ast` | Done | `nodes`, `foundations`, `comm_decl`, `robotics_decl`, `regex` — core `ast`/`foundations` shims |
 | `spanda-lexer` | Done | Tokenization + `LexerError`; core `tokenize` shim maps to `SpandaError` |
 | `spanda-typecheck` | Done | Full `TypeChecker` + `TypeCheckHost`; core `CoreTypeCheckHost` wiring |
-| `spanda-runtime` | Planned | Interpreter, scheduler, providers |
+| `spanda-runtime` | In progress | Scheduler, provider types, robotics runtime state; interpreter still in core |
 
 ```
 spanda-hardware          (profile catalog — done)
 spanda-ast               (AST + foundation + comm decl types — done)
 spanda-lexer             (tokenization — done)
 spanda-typecheck         (program checker + host hooks — done)
-spanda-runtime           (next)
-spanda-runtime     ← interpreter, scheduler, providers
-spanda-core        ← thin facade re-exporting above
+spanda-runtime           (scheduler + provider types + robotics state — in progress)
+spanda-core              ← thin facade; interpreter migration next
 ```
 
 ## Phase 5 — Live package backends

@@ -22,6 +22,7 @@ members = [
     "crates/spanda-ast",
     "crates/spanda-lexer",
     "crates/spanda-typecheck",
+    "crates/spanda-runtime",
 ]
 exclude = ["crates/spanda-ros2-rclrs-native"]
 resolver = "2"
