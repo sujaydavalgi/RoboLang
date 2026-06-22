@@ -4053,8 +4053,8 @@ impl<B: RobotBackend> Interpreter<B> {
         // Process each poll new event.
         for event in self.hardware_monitor.poll_new_events() {
             self.dispatch_system_trigger(SystemTriggerCategory::Hardware, &event)?;
-            if let Some((domain, evt)) =
-                crate::connectivity_positioning::hardware_event_to_connectivity(&event)
+            if let Some((domain, evt)) = crate::runtime_host::core_runtime_host()
+                .hardware_event_to_connectivity(&event)
             {
                 self.dispatch_connectivity_trigger(domain, evt)?;
             }
@@ -4117,7 +4117,7 @@ impl<B: RobotBackend> Interpreter<B> {
     fn run_connectivity_triggers(&mut self) -> Result<(), SpandaError> {
         for fault in self.comm_bus.active_faults() {
             if let Some((domain, event)) =
-                crate::connectivity_positioning::fault_to_connectivity(&fault)
+                crate::runtime_host::core_runtime_host().fault_to_connectivity(&fault)
             {
                 let key = format!("fault:{domain}.{event}");
                 if self.connectivity_events_seen.insert(key) {
@@ -4189,10 +4189,8 @@ impl<B: RobotBackend> Interpreter<B> {
 
             if let Some(em) = &emergency {
                 if self.active_connectivity_link != *em
-                    && crate::connectivity_positioning::is_link_impaired(
-                        &self.active_connectivity_link,
-                        &faults,
-                    )
+                    && crate::runtime_host::core_runtime_host()
+                        .is_link_impaired(&self.active_connectivity_link, &faults)
                 {
                     self.activate_connectivity_link(
                         &policy_name,
@@ -4207,7 +4205,7 @@ impl<B: RobotBackend> Interpreter<B> {
     fn current_gps_lat_lon(&self) -> (f64, f64) {
         let state = self.backend.get_state();
         let faults = self.hardware_monitor.injected_faults();
-        let (lat, lon, _) = crate::connectivity_positioning::apply_gps_position_faults(
+        let (lat, lon, _) = crate::runtime_host::core_runtime_host().apply_gps_position_faults(
             faults,
             state.pose.x,
             state.pose.y,
@@ -4224,7 +4222,13 @@ impl<B: RobotBackend> Interpreter<B> {
         let mut entered = Vec::new();
         let mut exited = Vec::new();
         for fence in &self.geofences {
-            let inside = crate::connectivity_positioning::geofence_contains(fence, lat, lon);
+            let inside = crate::runtime_host::core_runtime_host().geofence_contains(
+                fence.center_lat,
+                fence.center_lon,
+                fence.radius_m,
+                lat,
+                lon,
+            );
             let was_inside = self.geofence_active.contains(&fence.name);
             if inside && !was_inside {
                 self.geofence_active.insert(fence.name.clone());
@@ -7757,7 +7761,13 @@ impl<B: RobotBackend> Interpreter<B> {
                 let (lat, lon) = self.current_gps_lat_lon();
                 let inside = self.geofences.iter().any(|f| {
                     f.name == name
-                        && crate::connectivity_positioning::geofence_contains(f, lat, lon)
+                        && crate::runtime_host::core_runtime_host().geofence_contains(
+                            f.center_lat,
+                            f.center_lon,
+                            f.radius_m,
+                            lat,
+                            lon,
+                        )
                 });
                 Ok(RuntimeValue::Bool { value: inside })
             }

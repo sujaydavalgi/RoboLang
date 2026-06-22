@@ -2,6 +2,7 @@
 //!
 
 use spanda_ast::comm_decl::TransportKind;
+use std::collections::HashSet;
 
 /// Domain-specific runtime services supplied by the embedding application.
 pub trait RuntimeHost {
@@ -27,6 +28,49 @@ pub trait RuntimeHost {
     fn connectivity_link_to_transport(&self, link: &str) -> TransportKind {
         let _ = link;
         TransportKind::Sim
+    }
+
+    /// Map a hardware event to a connectivity trigger `(domain, event)` pair.
+    fn hardware_event_to_connectivity(&self, event: &str) -> Option<(&'static str, &'static str)> {
+        let _ = event;
+        None
+    }
+
+    /// Map a fault string to a connectivity trigger `(domain, event)` pair.
+    fn fault_to_connectivity(&self, fault: &str) -> Option<(&'static str, &'static str)> {
+        let _ = fault;
+        None
+    }
+
+    /// Return true when the active link should be considered impaired by current faults.
+    fn is_link_impaired(&self, link: &str, faults: &HashSet<String>) -> bool {
+        let _ = (link, faults);
+        false
+    }
+
+    /// Apply GPS drift/spoof faults to the true lat/lon at simulation time.
+    fn apply_gps_position_faults(
+        &self,
+        faults: &HashSet<String>,
+        true_lat: f64,
+        true_lon: f64,
+        sim_time_ms: f64,
+    ) -> (f64, f64, f64) {
+        let _ = (faults, sim_time_ms);
+        (true_lat, true_lon, 1.0)
+    }
+
+    /// Return true when `(lat, lon)` is inside a geofence circle.
+    fn geofence_contains(
+        &self,
+        center_lat: f64,
+        center_lon: f64,
+        radius_m: f64,
+        lat: f64,
+        lon: f64,
+    ) -> bool {
+        let _ = (center_lat, center_lon, radius_m, lat, lon);
+        false
     }
 }
 

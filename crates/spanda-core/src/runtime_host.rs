@@ -5,6 +5,7 @@ use crate::nav2_adapter;
 use crate::slam_adapter;
 use spanda_connectivity::adapter_bridge;
 use spanda_runtime::RuntimeHost;
+use std::collections::HashSet;
 
 /// Default host wiring domain adapters from `spanda-core` into `spanda-runtime`.
 pub struct CoreRuntimeHost;
@@ -28,6 +29,45 @@ impl RuntimeHost for CoreRuntimeHost {
 
     fn connectivity_link_to_transport(&self, link: &str) -> TransportKind {
         crate::connectivity_positioning::connectivity_link_to_transport(link)
+    }
+
+    fn hardware_event_to_connectivity(&self, event: &str) -> Option<(&'static str, &'static str)> {
+        spanda_connectivity::hardware_event_to_connectivity(event)
+    }
+
+    fn fault_to_connectivity(&self, fault: &str) -> Option<(&'static str, &'static str)> {
+        spanda_connectivity::fault_to_connectivity(fault)
+    }
+
+    fn is_link_impaired(&self, link: &str, faults: &HashSet<String>) -> bool {
+        spanda_connectivity::is_link_impaired(link, faults)
+    }
+
+    fn apply_gps_position_faults(
+        &self,
+        faults: &HashSet<String>,
+        true_lat: f64,
+        true_lon: f64,
+        sim_time_ms: f64,
+    ) -> (f64, f64, f64) {
+        spanda_connectivity::apply_gps_position_faults(faults, true_lat, true_lon, sim_time_ms)
+    }
+
+    fn geofence_contains(
+        &self,
+        center_lat: f64,
+        center_lon: f64,
+        radius_m: f64,
+        lat: f64,
+        lon: f64,
+    ) -> bool {
+        let fence = spanda_connectivity::GeofenceRuntime {
+            name: "runtime".into(),
+            center_lat,
+            center_lon,
+            radius_m,
+        };
+        spanda_connectivity::geofence_contains(&fence, lat, lon)
     }
 }
 
