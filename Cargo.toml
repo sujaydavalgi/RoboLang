@@ -21,6 +21,8 @@ members = [
     "crates/spanda-hardware",
     "crates/spanda-ast",
     "crates/spanda-lexer",
+    "crates/spanda-parser",
+    "crates/spanda-driver",
     "crates/spanda-typecheck",
     "crates/spanda-runtime",
     "crates/spanda-comm",

@@ -1,0 +1,17 @@
+[package]
+name = "spanda-parser"
+version.workspace = true
+edition.workspace = true
+description = "Spanda language parser — builds AST from lexer tokens"
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+homepage.workspace = true
+
+[dependencies]
+spanda-ast = { path = "../spanda-ast" }
+spanda-lexer = { path = "../spanda-lexer" }
+spanda-error = { path = "../spanda-error" }
+spanda-regex-lang = { path = "../spanda-regex-lang" }
+spanda-typecheck = { path = "../spanda-typecheck" }
+spanda-connectivity-runtime = { path = "../spanda-connectivity-runtime" }

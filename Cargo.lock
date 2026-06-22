@@ -1262,6 +1262,7 @@ dependencies = [
  "spanda-connectivity-runtime",
  "spanda-debug",
  "spanda-deploy-http",
+ "spanda-driver",
  "spanda-error",
  "spanda-ffi",
  "spanda-fleet",
@@ -1272,6 +1273,7 @@ dependencies = [
  "spanda-lib-registry",
  "spanda-ota",
  "spanda-package",
+ "spanda-parser",
  "spanda-providers",
  "spanda-regex-lang",
  "spanda-runtime",
@@ -1312,6 +1314,19 @@ dependencies = [
  "rustls",
  "rustls-pemfile",
  "webpki-roots 0.26.11",
+]
+
+[[package]]
+name = "spanda-driver"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "spanda-ast",
+ "spanda-error",
+ "spanda-lexer",
+ "spanda-parser",
+ "spanda-runtime-host",
+ "spanda-typecheck",
 ]
 
 [[package]]
@@ -1455,6 +1470,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "spanda-parser"
+version = "0.1.0"
+dependencies = [
+ "spanda-ast",
+ "spanda-connectivity-runtime",
+ "spanda-error",
+ "spanda-lexer",
+ "spanda-regex-lang",
+ "spanda-typecheck",
+]
+
+[[package]]
 name = "spanda-providers"
 version = "0.1.0"
 dependencies = [
@@ -1499,11 +1526,17 @@ dependencies = [
 name = "spanda-runtime-host"
 version = "0.1.0"
 dependencies = [
+ "spanda-ai",
  "spanda-ast",
  "spanda-comm",
  "spanda-connectivity",
  "spanda-connectivity-runtime",
+ "spanda-ffi",
+ "spanda-hal",
+ "spanda-lib-registry",
  "spanda-runtime",
+ "spanda-security",
+ "spanda-typecheck",
 ]
 
 [[package]]

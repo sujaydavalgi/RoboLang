@@ -25,6 +25,8 @@ spanda-ota = { path = "../spanda-ota" }
 spanda-hardware = { path = "../spanda-hardware" }
 spanda-ast = { path = "../spanda-ast" }
 spanda-lexer = { path = "../spanda-lexer" }
+spanda-parser = { path = "../spanda-parser" }
+spanda-driver = { path = "../spanda-driver" }
 spanda-typecheck = { path = "../spanda-typecheck" }
 spanda-runtime = { path = "../spanda-runtime" }
 spanda-comm = { path = "../spanda-comm" }
