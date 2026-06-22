@@ -35,6 +35,7 @@
 - **Verification & DX (Phase 32):** in-memory IoT hub; task return types; agent can[] enforcement; VSIX verify script
 - **Verification & DX (Phase 33):** trigger handler return types; live Modbus/OPC-UA IoT paths; live OpenAI provider for ai_model
 - **Verification & DX (Phase 34):** event handler I/O verification; kill switch `remote_signed` enforcement and `on kill_switch` handlers; VS Code extension CI; IoT protocol dispatch; live Anthropic provider; fleet/swarm health runtime coordination
+- **Verification & DX (Phase 35):** TS build parity; live IoT bridges; fleet health requirements; ONNX provider; registry mirror publish; kill-switch verify errors; debugger every-task entry
 
 ## In progress
 

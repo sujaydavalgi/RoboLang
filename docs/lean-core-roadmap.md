@@ -464,3 +464,19 @@ Goal: fully close the six remaining partial areas from the 14-item verification/
 | Fleet-target health refinement via `apply_fleet_health_checks` + swarm coordination hooks | **Complete** |
 | Integration tests (`phase34_gaps.rs`) | **Complete** |
 
+## Phase 35 — Complete ✓ (beta hardening: TS build, IoT live bridges, fleet requirements, ONNX, registry mirror)
+
+Goal: close remaining gaps except VS Code Marketplace publish — TS build parity, live IoT protocol bridges, fleet health requirements, ONNX provider, registry mirror publish, kill-switch verify severity, debugger `every` entry.
+
+| Step | Status |
+|------|--------|
+| TypeScript `tsc` build green (`compile.ts` stub, `void` types, foundations import) | **Complete** |
+| Live IoT env gates + Python bridge for zigbee/lora/matter/canbus | **Complete** |
+| Extended `scripts/live_iot_golden_path.sh` | **Complete** |
+| Fleet `require` clause parsing + runtime evaluation (`at_least N%`) | **Complete** |
+| `remote_signed` kill switch verification diagnostic upgraded to **error** | **Complete** |
+| Debugger entry from `every` trigger bodies | **Complete** |
+| ONNX provider (`SPANDA_ONNX_MODEL_PATH`, `spanda-onnx` package) | **Complete** |
+| `spanda publish` mirrors bundle to `registry/packages/` | **Complete** |
+| Integration tests (`phase35_gaps.rs`) | **Complete** |
+

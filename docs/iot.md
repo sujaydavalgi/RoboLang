@@ -72,6 +72,9 @@ Enable live reads with environment flags (build with `--features live-iot` on `s
 | `SPANDA_MODBUS_PORT` | Modbus port (default `502`) |
 | `SPANDA_MODBUS_UNIT` | Modbus unit/slave id (default `1`) |
 | `SPANDA_LIVE_OPCUA=1` | Read nodes via Python bridge (`asyncua`) |
-| `SPANDA_OPCUA_ENDPOINT` | OPC-UA endpoint (default `opc.tcp://127.0.0.1:4840`) |
+| `SPANDA_LIVE_ZIGBEE=1` | Read Zigbee attributes via Python bridge |
+| `SPANDA_LIVE_LORA=1` | Read LoRa payloads via Python bridge |
+| `SPANDA_LIVE_MATTER=1` | Read Matter clusters via Python bridge |
+| `SPANDA_LIVE_CANBUS=1` | Read CAN frames via Python bridge |
 
 Golden path (mock fallback without hardware): `./scripts/live_iot_golden_path.sh`

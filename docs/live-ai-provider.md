@@ -6,6 +6,7 @@ Spanda v0.5 beta includes **real AI provider paths** for `ai_model` blocks:
 |----------|-----------|----------|
 | `openai` | `OPENAI_API_KEY` set | Mock provider |
 | `anthropic` | `ANTHROPIC_API_KEY` set | Mock provider |
+| `onnx` | `SPANDA_ONNX_MODEL_PATH` set | Mock provider |
 
 When the key is set, `planner.reason(...)` calls the provider via the Python bridge; otherwise it falls back to the deterministic mock provider.
 

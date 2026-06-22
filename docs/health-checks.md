@@ -37,8 +37,11 @@ health_check WheelsHealth for actuator wheels {
 health_check FleetHealth for fleet WarehouseFleet {
     require at_least 80% robots Healthy;
     require no robot Unsafe;
+    check rover.status == Healthy;
 }
 ```
+
+Fleet `require` clauses are parsed and evaluated at runtime against fleet membership and monitor faults.
 
 ## Health policies
 
