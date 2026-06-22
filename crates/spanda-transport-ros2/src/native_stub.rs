@@ -1,4 +1,4 @@
-//! Stub native rclrs loader for WASM targets (no dynamic library loading).
+//! Stub native rclrs loader for WASM targets.
 
 pub fn sdk_available() -> bool {
     false

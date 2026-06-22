@@ -1175,7 +1175,6 @@ dependencies = [
  "libloading",
  "pyo3",
  "regex",
- "rumqttc",
  "rustls 0.23.40",
  "rustls-pemfile",
  "serde",
@@ -1185,6 +1184,8 @@ dependencies = [
  "spanda-audit",
  "spanda-package",
  "spanda-security",
+ "spanda-transport-mqtt",
+ "spanda-transport-ros2",
  "thiserror 2.0.18",
  "tungstenite",
  "webpki-roots 0.26.11",
@@ -1252,6 +1253,22 @@ dependencies = [
  "sha2",
  "spanda-audit",
  "thiserror 2.0.18",
+]
+
+[[package]]
+name = "spanda-transport-mqtt"
+version = "0.1.0"
+dependencies = [
+ "rumqttc",
+]
+
+[[package]]
+name = "spanda-transport-ros2"
+version = "0.1.0"
+dependencies = [
+ "libloading",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]

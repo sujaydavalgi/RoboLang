@@ -19,6 +19,7 @@ rustls = { version = "0.23", default-features = false, features = ["ring", "std"
 webpki-roots = "0.26"
 sha2 = "0.10"
 spanda-transport-mqtt = { path = "../spanda-transport-mqtt" }
+spanda-transport-ros2 = { path = "../spanda-transport-ros2" }
 tungstenite = { version = "0.24", optional = true, default-features = false, features = ["rustls-tls-webpki-roots"] }
 pyo3 = { version = "0.23", optional = true, features = ["auto-initialize", "abi3-py310"] }
 

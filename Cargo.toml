@@ -11,6 +11,7 @@ members = [
     "crates/spanda-llvm",
     "crates/spanda-rt",
     "crates/spanda-transport-mqtt",
+    "crates/spanda-transport-ros2",
 ]
 exclude = ["crates/spanda-ros2-rclrs-native"]
 resolver = "2"
