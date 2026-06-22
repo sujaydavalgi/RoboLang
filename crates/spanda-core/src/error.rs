@@ -27,6 +27,15 @@ pub enum SpandaError {
     DebugPause { line: u32, reason: String },
 }
 
+impl From<spanda_runtime::RuntimeError> for SpandaError {
+    fn from(err: spanda_runtime::RuntimeError) -> Self {
+        Self::Runtime {
+            message: err.message,
+            line: err.line,
+        }
+    }
+}
+
 impl SpandaError {
     pub fn diagnostics(&self) -> Vec<Diagnostic> {
         // Diagnostics.

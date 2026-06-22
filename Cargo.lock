@@ -1320,6 +1320,7 @@ name = "spanda-runtime"
 version = "0.1.0"
 dependencies = [
  "serde",
+ "spanda-ast",
 ]
 
 [[package]]

@@ -1,7 +1,7 @@
 //! Cooperative channels, spawn handles, and select for concurrent Spanda tasks.
 
 use crate::error::SpandaError;
-use crate::runtime::{RuntimeError, RuntimeValue};
+use crate::runtime::{IntoSpandaError, RuntimeError, RuntimeValue};
 use std::cell::RefCell;
 use std::collections::{HashMap, VecDeque};
 use std::rc::Rc;

@@ -2,8 +2,7 @@
 
 use crate::ast::UnitKind;
 use crate::error::SpandaError;
-use crate::runtime::RuntimeError;
-use crate::runtime::RuntimeValue;
+use crate::runtime::{IntoSpandaError, RuntimeError, RuntimeValue};
 use serde_json::{json, Value as JsonValue};
 use std::collections::HashMap;
 
