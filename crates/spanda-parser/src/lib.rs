@@ -1149,12 +1149,10 @@ impl Parser {
                 let status = self.parse_label("Expected health status")?;
                 self.expect(TokenType::Lbrace, "Expected '{' after status")?;
                 let body = self.parse_block()?;
-                let action = body
-                    .iter()
-                    .map(|s| format!("{s:?}"))
-                    .collect::<Vec<_>>()
-                    .join("; ");
-                reactions.push((status, action));
+                reactions.push(spanda_ast::foundations::HealthPolicyReaction {
+                    status,
+                    body,
+                });
                 self.expect(TokenType::Rbrace, "Expected '}' after health policy action")?;
             } else {
                 let t = self.peek();
@@ -5933,12 +5931,19 @@ impl Parser {
         let name = self.expect(TokenType::Ident, "Expected behavior name")?;
         self.expect(TokenType::Lparen, "Expected '(' after behavior name")?;
         self.expect(TokenType::Rparen, "Expected ')' after behavior parameters")?;
+        let return_type = if self.check(TokenType::Arrow) {
+            self.advance();
+            self.parse_type_annotation()?
+        } else {
+            spanda_ast::nodes::SpandaType::Void
+        };
         let (requires, ensures, invariant) = self.parse_contract_clauses()?;
         self.expect(TokenType::Lbrace, "Expected '{' after behavior signature")?;
         let body = self.parse_block()?;
         let end = self.expect(TokenType::Rbrace, "Expected '}' to close behavior")?;
         Ok(BehaviorDecl::BehaviorDecl {
             name: name.lexeme,
+            return_type,
             requires,
             ensures,
             invariant,

@@ -230,8 +230,14 @@ pub fn health_traceability(program: &Program) -> Vec<HealthTraceRow> {
         .iter()
         .flat_map(|p| {
             let HealthPolicyDecl::HealthPolicyDecl { name, reactions, .. } = p;
-            reactions.iter().map(move |(status, action)| {
-                (format!("{name}:{status}"), action.clone())
+            reactions.iter().map(move |reaction| {
+                let action = reaction
+                    .body
+                    .iter()
+                    .map(|s| format!("{s:?}"))
+                    .collect::<Vec<_>>()
+                    .join("; ");
+                (format!("{name}:{}", reaction.status), action)
             })
         })
         .collect();

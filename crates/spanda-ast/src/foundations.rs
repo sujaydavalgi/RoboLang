@@ -885,13 +885,20 @@ pub enum HealthCheckDecl {
     },
 }
 
+/// Single health-policy reaction for a status level.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct HealthPolicyReaction {
+    pub status: String,
+    pub body: Vec<crate::nodes::Stmt>,
+}
+
 /// Automatic reaction policy for health status transitions.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "kind")]
 pub enum HealthPolicyDecl {
     HealthPolicyDecl {
         name: String,
-        reactions: Vec<(String, String)>,
+        reactions: Vec<HealthPolicyReaction>,
         span: Span,
     },
 }

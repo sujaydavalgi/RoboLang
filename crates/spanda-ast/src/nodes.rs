@@ -878,12 +878,18 @@ pub enum ZoneShape {
 pub enum BehaviorDecl {
     BehaviorDecl {
         name: String,
+        #[serde(default = "default_void_spanda_type")]
+        return_type: SpandaType,
         requires: Option<Expr>,
         ensures: Option<Expr>,
         invariant: Option<Expr>,
         body: Vec<Stmt>,
         span: Span,
     },
+}
+
+fn default_void_spanda_type() -> SpandaType {
+    SpandaType::Void
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
