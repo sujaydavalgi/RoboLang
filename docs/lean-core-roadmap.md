@@ -386,3 +386,15 @@ Goal: close verification/DX gaps from Phase 27 audit — in-language compile-fai
 | Integration tests in `crates/spanda-core/tests/p1_features.rs` | **Complete** |
 | `tests/capability-parser.test.ts` | **Complete** |
 
+## Phase 29 — Complete ✓ (LSP verification diagnostics, runtime health, kill-switch tests)
+
+Goal: wire capability/traceability/health analysis into the IDE, connect runtime health to `HardwareMonitor`, and add kill-switch integration coverage.
+
+| Step | Status |
+|------|--------|
+| `collect_verification_diagnostics` with source spans (`spanda-capability`) | **Complete** |
+| CLI `spanda check --verification-json` | **Complete** |
+| LSP diagnostics for capability/traceability/health/kill-switch | **Complete** |
+| Runtime health evaluation via `evaluate_runtime_health` + `HardwareMonitor` | **Complete** |
+| Integration tests (`phase29_verification.rs`, diagnostics unit tests) | **Complete** |
+
