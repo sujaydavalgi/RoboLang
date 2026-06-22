@@ -12,7 +12,9 @@ Spanda Core defines **contracts** (types, safety, verification, provider traits)
 
 ```mermaid
 flowchart LR
-  CORE["spanda-core\nlexer · parser · types · safety · providers"]
+  CORE["spanda-core\nfacade · certify · FFI · shims"]
+  DRIVER["spanda-driver\ncompile pipeline"]
+  PARSER["spanda-parser"]
   PKG["Official packages\nspanda-ros2 · spanda-mqtt · spanda-gps · …"]
   CLI["spanda-cli"]
   CORE --> CLI
@@ -83,7 +85,7 @@ flowchart TB
 
 ## Parser
 
-The lexer and parser are hand-written recursive descent implementations in Rust (`crates/spanda-core/src/lexer.rs`, `parser.rs`). A TypeScript mirror exists for tests and fallback execution.
+The lexer lives in `spanda-lexer`; the parser in `spanda-parser` (~8k LOC); compile orchestration in `spanda-driver`. A TypeScript mirror exists in `src/` for tests and fallback execution.
 
 ```mermaid
 flowchart LR
@@ -166,7 +168,7 @@ See [spanda-type-system.md](./spanda-type-system.md).
 
 The tree-walking **interpreter** executes typed AST with integrated subsystems. Implementation lives in **`crates/spanda-interpreter/src/runtime/`** (21 modules, ~10.7k LOC): orchestrator, eval/execute, scheduler, triggers, robotics, sensors, safety, security, and related child files.
 
-**Composition root:** `spanda-interpreter` compiles the runtime tree natively (`cargo build -p spanda-interpreter`). `spanda-core` depends one-way on `spanda-interpreter` and re-exports `spanda_core::runtime` from `spanda_interpreter::runtime`. `run_program` and `run_tests_with_registry` live in `spanda-interpreter`; `run(source)` remains in core (lex/parse/typecheck + certify gate + FFI bridge wiring).
+**Composition root:** `spanda-interpreter` compiles the runtime tree natively (`cargo build -p spanda-interpreter`). `spanda-driver` owns the compile pipeline (`lexer` → `spanda-parser` → `spanda-typecheck` with `CoreTypeCheckHost` in `spanda-runtime-host`). `spanda-core` depends one-way on both crates and re-exports their APIs. `run_program` lives in `spanda-interpreter`; `run(source)` remains in core (compile via driver + certify gate + FFI bridge wiring).
 
 `CoreRuntimeHost` in `spanda-runtime-host` implements `spanda_runtime::RuntimeHost` and wires domain hooks (connectivity, fleet, transport adapters) into the interpreter.
 

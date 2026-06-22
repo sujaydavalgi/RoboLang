@@ -1,5 +1,11 @@
 /**
- * compile module (compile.ts).
+ * Spanda compile and run pipeline (TypeScript mirror of the Rust split).
+ *
+ * - **Compile path** (`compile`, `check`, `compileWithRegistry`): lexer → parser → type checker,
+ *   aligned with `spanda-driver` + workspace crates in Rust.
+ * - **Run path** (`run`, `runSource`): parsed program → certification gate → interpreter,
+ *   aligned with `spanda-interpreter::run_program` with `spanda-core::run(source)` as the facade.
+ *
  * @module
  */
 

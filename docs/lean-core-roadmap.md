@@ -93,3 +93,32 @@ Goal: `cargo build -p spanda-interpreter` compiles the runtime tree natively; `s
 | Add `spanda-interpreter` integration tests (not only re-exports) | **Complete** (`tests/native_smoke.rs`) |
 | Drop `#[path]` shim in `spanda-core` | **Complete** — `runtime.rs` re-exports `spanda_interpreter::runtime` |
 | Update `lean_core_shims` for native re-export | **Complete** (`runtime_shim_reexports_spanda_interpreter`) |
+
+## Phase 9 — Complete ✓ (compile pipeline extraction)
+
+Goal: extract parser and compile driver so `spanda-driver` owns the lexer → parser → type-check pipeline; `spanda-core` keeps `run(source)` (certify + FFI) as facade.
+
+| Step | Status |
+|------|--------|
+| Extract `spanda-parser` (~8k LOC) | **Complete** |
+| Move `CoreTypeCheckHost` to `spanda-runtime-host` | **Complete** |
+| Create `spanda-driver` (`compile`, `check`, `CompileResult`) | **Complete** |
+| Thin `spanda-core` shims for parser, compile, type-check host | **Complete** |
+| TypeScript `compile.ts` documents Rust parity | **Complete** |
+| Move `run(source)` into `spanda-driver` or `spanda-interpreter` | Deferred — needs certify/FFI extraction |
+
+### Remaining `spanda-core` bodies (shrink candidates)
+
+| Module | ~LOC | Notes |
+|--------|------|-------|
+| `sir.rs` | 2.2k | SIR lowering — candidate for `spanda-sir` |
+| `hardware.rs` | 2.1k | Verifier — partially in `spanda-hardware` |
+| `pretty.rs` | 1.8k | Formatter |
+| `debug_session.rs` | 900 | Debugger session driver |
+| `language_reference.rs` | 830 | Doc generation |
+| `lint.rs` | 590 | Linter |
+| `codegen.rs` | 360 | Codegen metadata |
+| `modules.rs` | 280 | Project module loader |
+| `certify_*` | 440 | Certification gate — blocks `run(source)` move |
+| `ffi.rs` | — | Python/C++ bridges — blocks `run(source)` move |
+| 40+ thin shims | ≤25 each | `pub use spanda_*` re-exports — keep until callers migrate |
