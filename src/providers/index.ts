@@ -3,11 +3,13 @@
  * @module
  */
 
-/** Stable identifier for a registered provider implementation. */
-export type ProviderId = {
-  package: string;
-  name: string;
-};
+export {
+  bootstrapDefaultProviders,
+  bootstrapProvidersForPackages,
+  officialPackageForTransport,
+  syncCommBusForOfficialPackages,
+} from "./bootstrap.js";
+export { ProviderRegistry, transportRegistryKey, type ProviderId, type TransportProvider } from "./registry.js";
 
 /** Where a module or feature belongs in the lean-core architecture. */
 export enum ModuleOwnership {
@@ -50,71 +52,78 @@ export const OFFICIAL_PACKAGE_NAMES: readonly string[] = [
   "spanda-openai",
 ] as const;
 
-/** Static audit table aligned with Rust `providers/classification.rs`. */
+/** Static audit table aligned with Rust `spanda-runtime/src/classification.rs`. */
 export const MODULE_CLASSIFICATIONS: readonly ModuleClassification[] = [
   { module: "lexer", ownership: ModuleOwnership.Core, targetPackage: null, notes: "Compiler front-end" },
   { module: "parser", ownership: ModuleOwnership.Core, targetPackage: null, notes: "Compiler front-end" },
-  { module: "type_system", ownership: ModuleOwnership.Core, targetPackage: null, notes: "Type checker" },
+  { module: "type_system", ownership: ModuleOwnership.Core, targetPackage: null, notes: "Type checker and std namespace registry" },
   { module: "safety", ownership: ModuleOwnership.Core, targetPackage: null, notes: "ActionProposal / SafeAction gate" },
-  { module: "providers", ownership: ModuleOwnership.Core, targetPackage: null, notes: "Extension trait contracts" },
+  { module: "scheduler", ownership: ModuleOwnership.Core, targetPackage: null, notes: "Task and trigger scheduling interfaces" },
+  { module: "providers", ownership: ModuleOwnership.Core, targetPackage: null, notes: "Extension trait contracts for packages" },
   {
     module: "connectivity_positioning",
     ownership: ModuleOwnership.CompatibilityShim,
     targetPackage: "spanda-gps / spanda-wifi / spanda-ble / spanda-cellular",
-    notes: "Type names in core; drivers in packages",
+    notes: "Type names stay in core; drivers move to connectivity packages",
   },
   {
     module: "transport_mqtt",
     ownership: ModuleOwnership.CompatibilityShim,
     targetPackage: "spanda-mqtt",
-    notes: "Use spanda-mqtt package",
+    notes: "Live MQTT adapter; use spanda-mqtt package",
   },
   {
     module: "transport_rclrs",
     ownership: ModuleOwnership.CompatibilityShim,
     targetPackage: "spanda-ros2",
-    notes: "Use spanda-ros2 package",
+    notes: "ROS2 transport; use spanda-ros2 package",
+  },
+  {
+    module: "transport_dds",
+    ownership: ModuleOwnership.CompatibilityShim,
+    targetPackage: "spanda-dds",
+    notes: "DDS transport; use spanda-dds package",
+  },
+  {
+    module: "transport_websocket",
+    ownership: ModuleOwnership.CompatibilityShim,
+    targetPackage: "spanda-mqtt",
+    notes: "WebSocket transport; use spanda-transport-websocket crate",
+  },
+  {
+    module: "nav2_adapter",
+    ownership: ModuleOwnership.CompatibilityShim,
+    targetPackage: "spanda-nav",
+    notes: "Nav2 bridge subprocess adapter",
+  },
+  {
+    module: "slam_adapter",
+    ownership: ModuleOwnership.CompatibilityShim,
+    targetPackage: "spanda-slam",
+    notes: "SLAM bridge subprocess adapter",
+  },
+  {
+    module: "ai",
+    ownership: ModuleOwnership.CompatibilityShim,
+    targetPackage: "spanda-opencv / spanda-yolo / spanda-openai",
+    notes: "AiProvider trait stays; vendor registries move to packages",
   },
   {
     module: "fleet_orchestrator",
     ownership: ModuleOwnership.CompatibilityShim,
     targetPackage: "spanda-fleet",
-    notes: "Fleet orchestration CLI; logic moves to package",
+    notes: "Fleet orchestration CLI remains; heavy logic moves to package",
+  },
+  {
+    module: "deploy_service",
+    ownership: ModuleOwnership.CompatibilityShim,
+    targetPackage: "spanda-ota",
+    notes: "OTA deploy/rollout moves to spanda-ota",
+  },
+  {
+    module: "simulator",
+    ownership: ModuleOwnership.Core,
+    targetPackage: null,
+    notes: "Default in-memory sim; Gazebo/Webots via simulation packages",
   },
 ] as const;
-
-/** In-memory registry of installed provider keys (TS fallback; Rust owns live backends). */
-export class ProviderRegistry {
-  private readonly transports = new Set<string>();
-  private readonly capabilities = new Set<string>();
-
-  grantCapability(cap: string): void {
-    this.capabilities.add(cap);
-  }
-
-  hasCapability(cap: string): boolean {
-    return this.capabilities.has(cap);
-  }
-
-  registerTransport(id: ProviderId): void {
-    this.transports.add(`${id.package}::${id.name}`);
-  }
-
-  listTransports(): ProviderId[] {
-    return [...this.transports].map((key) => {
-      const [pkg, name] = key.split("::");
-      return { package: pkg, name: name ?? "default" };
-    });
-  }
-}
-
-/** Register default compatibility-shim providers for known official packages. */
-export function bootstrapDefaultProviders(): ProviderRegistry {
-  const registry = new ProviderRegistry();
-  registry.grantCapability("mqtt.publish");
-  registry.grantCapability("comm.ros2.publish");
-  registry.registerTransport({ package: "spanda-mqtt", name: "stub" });
-  registry.registerTransport({ package: "spanda-ros2", name: "stub" });
-  registry.registerTransport({ package: "spanda-dds", name: "stub" });
-  return registry;
-}

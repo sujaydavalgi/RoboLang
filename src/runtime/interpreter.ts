@@ -28,6 +28,11 @@ import { MemoryStore } from "../ai/MemoryStore.js";
 import { mockAnalyzeFrame, mockCameraFrame } from "../ai/MockAIProvider.js";
 import { getSocProfile } from "../soc/index.js";
 import { RoutingCommBus, type TransportKind, TlsTransportSession, effectiveTransportPolicy, transportSecurityFromBusFields, resolveBrokerUrl, type SecureCommPolicy } from "../transport/index.js";
+import {
+  bootstrapProvidersForPackages,
+  syncCommBusForOfficialPackages,
+  type ProviderRegistry,
+} from "../providers/index.js";
 import { parseTrustBoundary, boundaryForTransportName } from "../security/trust-boundary.js";
 import { SafetyMonitor, createSafetyConfigFromRobot, interpolatePoses } from "../safety/index.js";
 import type { SafetyZoneRuntime } from "../safety/index.js";
@@ -175,6 +180,10 @@ export type InterpreterOptions = {
   schedulerClock?: "sim" | "wall";
   secure?: boolean;
   injectSecurityFaults?: boolean;
+  /** Official package dependency names from the enclosing project manifest. */
+  officialPackages?: readonly string[];
+  /** Optional domain provider registry; defaults to package-scoped bootstrap when unset. */
+  providerRegistry?: ProviderRegistry;
 };
 
 export class Environment {
@@ -334,8 +343,13 @@ export class Interpreter {
   private gpsAvailable = true;
   private fleets = new FleetRegistry();
   private programSafetyZones = new ProgramSafetyZoneRegistry();
+  private providerRegistry: ProviderRegistry;
 
-  constructor(private options: InterpreterOptions) {}
+  constructor(private options: InterpreterOptions) {
+    this.providerRegistry =
+      options.providerRegistry ??
+      bootstrapProvidersForPackages(options.officialPackages ?? []);
+  }
 
   run(program: Program, entryBehavior?: string): RobotState {
     // Run the operation.
@@ -356,6 +370,13 @@ export class Interpreter {
 
     this.currentProgram = program;
     this.loadProgramMetadata(program);
+    if (this.providerRegistry.officialPackages().length > 0) {
+      this.commBus.attachProviderRegistry(this.providerRegistry);
+      syncCommBusForOfficialPackages(this.commBus, this.providerRegistry);
+      this.options.onLog?.(
+        `providers: ${this.providerRegistry.officialPackages().length} official package(s) active`,
+      );
+    }
     if (this.options.secure) {
       this.security.enableStrictPermissions();
     }
@@ -1501,6 +1522,10 @@ export class Interpreter {
     this.security = new SecurityContext();
     this.currentAgent = null;
     this.commBus = new RoutingCommBus();
+    this.commBus.attachProviderRegistry(this.providerRegistry);
+    if (this.providerRegistry.officialPackages().length > 0) {
+      syncCommBusForOfficialPackages(this.commBus, this.providerRegistry);
+    }
     for (const fault of this.injectedFaults) {
       this.commBus.injectFault(fault);
     }

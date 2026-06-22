@@ -28,6 +28,7 @@ import { decodeWireValue, encodeWireValue, type FullTransportConfig } from "./tr
 import { LiveMqttBridge, liveMqttEnabled } from "./live-mqtt.js";
 import { LiveWebsocketBridge, liveWebsocketEnabled } from "./live-websocket.js";
 import { LiveDdsBridge, liveDdsEnabled } from "./live-dds.js";
+import type { ProviderRegistry, TransportProvider } from "../providers/registry.js";
 
 export type { TransportKind, SecureCommPolicy, TransportSecurityConfig, FullTransportConfig };
 export { TlsTransportSession, defaultTransportSecurity, transportSecurityFromBusFields, resolveBrokerUrl };
@@ -58,7 +59,8 @@ type StubState = {
   published: AdapterMessage[];
 };
 
-function createStubAdapter(kind: TransportKind): TransportAdapter {
+/** Create an in-memory transport adapter stub for tests and package bootstrap. */
+export function createTransportStub(kind: TransportKind): TransportProvider & TransportAdapter {
   // CreateStubAdapter.
   //
   // Parameters:
@@ -210,10 +212,10 @@ export type TransportConfig = FullTransportConfig;
 
 export class RoutingCommBus {
   private memory = new InMemoryCommBus();
-  private ros2 = createStubAdapter("ros2");
-  private mqtt = createStubAdapter("mqtt");
-  private dds = createStubAdapter("dds");
-  private websocket = createStubAdapter("websocket");
+  private ros2 = createTransportStub("ros2");
+  private mqtt = createTransportStub("mqtt");
+  private dds = createTransportStub("dds");
+  private websocket = createTransportStub("websocket");
   private config: FullTransportConfig = {
     security: defaultTransportSecurity(),
     tls: new TlsTransportSession(),
@@ -221,6 +223,41 @@ export class RoutingCommBus {
   private liveMqtt: LiveMqttBridge | null = null;
   private liveWebsocket: LiveWebsocketBridge | null = null;
   private liveDds: LiveDdsBridge | null = null;
+  private providerRegistry: ProviderRegistry | null = null;
+  private registryBacked = new Set<TransportKind>();
+  private registryKeys = new Map<TransportKind, string>();
+
+  attachProviderRegistry(registry: ProviderRegistry): void {
+    this.providerRegistry = registry;
+  }
+
+  markRegistryBacked(kind: TransportKind, key: string): void {
+    this.registryBacked.add(kind);
+    this.registryKeys.set(kind, key);
+  }
+
+  clearRegistryBacked(): void {
+    this.registryBacked.clear();
+    this.registryKeys.clear();
+  }
+
+  isRegistryBacked(kind: TransportKind): boolean {
+    return this.registryBacked.has(kind);
+  }
+
+  private usesRegistryTransport(kind: TransportKind): boolean {
+    return this.registryBacked.has(kind) && this.providerRegistry !== null;
+  }
+
+  private withRegistryTransport<R>(
+    kind: TransportKind,
+    fn: (provider: TransportProvider) => R,
+  ): R | undefined {
+    if (!this.usesRegistryTransport(kind) || !this.providerRegistry) return undefined;
+    const key = this.registryKeys.get(kind);
+    if (!key) return undefined;
+    return this.providerRegistry.withTransport(key, fn);
+  }
 
   private initLiveTransports(config: FullTransportConfig): void {
     // Connect optional live transport bridges when env flags are enabled.
@@ -412,6 +449,26 @@ export class RoutingCommBus {
     // bus.publish("/motion", "Velocity", val, "mqtt", "Navigator");
 
     this.memory.publish(topicPath, messageType, value, transport, sourceId);
+    if (this.usesRegistryTransport(transport)) {
+      this.withRegistryTransport(transport, (provider) => {
+        if (provider.isConnected()) {
+          try {
+            const wireValue = encodeWireValue(
+              this.config,
+              topicPath,
+              messageType,
+              value,
+              sourceId,
+              transport,
+            );
+            provider.publish(topicPath, messageType, wireValue);
+          } catch {
+            provider.publish(topicPath, messageType, value);
+          }
+        }
+      });
+      return;
+    }
     const adapter = this.adapter(transport);
     if (!adapter) return;
     try {
@@ -509,6 +566,27 @@ export class RoutingCommBus {
     const kinds = new Set<TransportKind>([transport, "ros2", "mqtt", "dds", "websocket"]);
     for (const path of paths) {
       for (const kind of kinds) {
+        if (this.usesRegistryTransport(kind)) {
+          const raw = this.withRegistryTransport(kind, (provider) =>
+            provider.isConnected() ? provider.receive(path) : null,
+          );
+          if (raw) {
+            try {
+              const decoded = decodeWireValue(this.config, raw);
+              const envelope: CommEnvelope = {
+                value: decoded.value,
+                sourceId: decoded.sourceId,
+              };
+              this.memory.pushInbound(path, envelope.value, envelope.sourceId);
+              inbound.push([path, envelope]);
+            } catch {
+              const envelope: CommEnvelope = { value: raw, sourceId: null };
+              this.memory.pushInbound(path, raw, null);
+              inbound.push([path, envelope]);
+            }
+          }
+          continue;
+        }
         const adapter = this.adapter(kind);
         if (!adapter?.isConnected()) continue;
         const raw = adapter.receive(path);
