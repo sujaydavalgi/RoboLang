@@ -139,3 +139,27 @@ Goal: move formatter, linter, codegen metadata, module loader, hardware verify, 
 | Extract `spanda-docs` (program docs + language reference) | **Complete** |
 | Move `swarm_coordinator` to `spanda-fleet` | **Complete** |
 | `lean_core_shims` guards for Phase 12 extractions | **Complete** |
+
+## Phase 13 — Complete ✓ (facade slim-down)
+
+Goal: move remaining non-shim bodies into workspace crates; `spanda-driver` owns the high-level pipeline API; `spanda-core` is a thin facade.
+
+| Step | Status |
+|------|--------|
+| Move `build_deploy_plan` AST extraction to `spanda-ota` (+ certify wrapper in `spanda-driver`) | **Complete** |
+| Move reliability validators to `spanda-typecheck::reliability_validation` | **Complete** |
+| Move type-check host wiring to `spanda-driver::type_check` | **Complete** |
+| Move `verify_compatibility`, `lower_to_sir`, replay/debug helpers to `spanda-driver` | **Complete** |
+| Move `validate_certification_standard` to `spanda-runtime-host` | **Complete** |
+| Guard compatibility shims and Phase 13 extractions in `lean_core_shims` | **Complete** |
+
+### `spanda-core` after Phase 13
+
+| Area | Location |
+|------|----------|
+| Compile / verify / run / SIR / replay / debug | `spanda-driver` (re-exported by core) |
+| OTA plan extraction | `spanda-ota::plan` + `spanda-driver::deploy_plan` |
+| Type-check host wiring | `spanda-driver::type_check` |
+| Reliability validators | `spanda-typecheck` |
+| Provider bootstrap | `spanda-core::providers` (intentional composition root) |
+| Transport / fleet / deploy agent shims | Thin `pub use` re-exports |

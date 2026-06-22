@@ -165,9 +165,11 @@ fn error_shim_reexports_spanda_error() {
         source.contains("spanda_error"),
         "error.rs should re-export SpandaError from spanda-error"
     );
+    let lib = fs::read_to_string(Path::new(env!("CARGO_MANIFEST_DIR")).join("src/lib.rs"))
+        .expect("lib.rs");
     assert!(
-        source.contains("RunOptions"),
-        "error.rs should retain RunOptions and related run API types in core"
+        lib.contains("RunOptions"),
+        "core facade should re-export RunOptions from spanda-driver"
     );
 }
 
@@ -496,6 +498,87 @@ fn compile_pipeline_lives_in_spanda_driver() {
     assert!(source.contains("spanda_lexer::tokenize"));
     assert!(source.contains("spanda_parser::parse"));
     assert!(source.contains("spanda_typecheck::"));
+}
+
+#[test]
+fn facade_pipeline_lives_in_spanda_driver() {
+    for module in [
+        "../spanda-driver/src/verify.rs",
+        "../spanda-driver/src/pipeline.rs",
+        "../spanda-driver/src/replay.rs",
+        "../spanda-driver/src/debug_run.rs",
+        "../spanda-driver/src/type_check.rs",
+        "../spanda-ota/src/plan.rs",
+        "../spanda-driver/src/deploy_plan.rs",
+    ] {
+        let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(module);
+        assert!(path.exists(), "{module} should exist in workspace crate");
+    }
+}
+
+#[test]
+fn phase13_extractions_use_thin_shims() {
+    for (module, crate_name) in [
+        ("deploy_service.rs", "spanda_driver"),
+        ("reliability.rs", "spanda_typecheck"),
+        ("robotics_platform.rs", "spanda_runtime"),
+        ("types.rs", "spanda_driver"),
+    ] {
+        let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("src").join(module);
+        let source = fs::read_to_string(&path).expect(module);
+        assert!(
+            source.lines().count() <= 12,
+            "{module} should be a thin re-export shim"
+        );
+        assert!(
+            source.contains(crate_name),
+            "{module} shim should re-export from {crate_name}"
+        );
+    }
+}
+
+#[test]
+fn compatibility_shims_stay_thin() {
+    for module in [
+        "deploy_agent.rs",
+        "deploy_bundle.rs",
+        "deploy_http.rs",
+        "deploy_remote.rs",
+        "fleet_agent.rs",
+        "fleet_mesh.rs",
+        "fleet_orchestrator.rs",
+        "fleet_remote.rs",
+        "nav2_adapter.rs",
+        "slam_adapter.rs",
+        "connectivity_positioning.rs",
+        "ffi_registry.rs",
+        "transport_wire.rs",
+        "transport_security.rs",
+    ] {
+        let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("src").join(module);
+        let source = fs::read_to_string(&path).expect(module);
+        assert!(
+            source.lines().count() <= 8,
+            "{module} should remain a compatibility shim"
+        );
+    }
+    for module in [
+        "transport_mqtt.rs",
+        "transport_dds.rs",
+        "transport_websocket.rs",
+        "transport_rclrs.rs",
+    ] {
+        let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("src").join(module);
+        let source = fs::read_to_string(&path).expect(module);
+        assert!(
+            source.lines().count() <= 40,
+            "{module} should remain a thin transport compatibility shim"
+        );
+        assert!(
+            source.contains("spanda_transport"),
+            "{module} should delegate to spanda-transport-* crates"
+        );
+    }
 }
 
 #[test]
