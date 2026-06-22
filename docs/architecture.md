@@ -166,22 +166,24 @@ See [spanda-type-system.md](./spanda-type-system.md).
 
 The tree-walking **interpreter** executes typed AST with integrated subsystems. Implementation lives in **`crates/spanda-interpreter/src/runtime/`** (21 modules, ~10.7k LOC): orchestrator, eval/execute, scheduler, triggers, robotics, sensors, safety, security, and related child files.
 
-**Composition root:** `spanda-core` exposes `spanda_core::runtime` via a thin `#[path]` include shim (`crates/spanda-core/src/runtime.rs` → `orchestrator.rs`). Sources are authored once under `spanda-interpreter`; core compiles them in-process so auxiliary modules (`ai`, `safety`, `transport`, `providers`, …) stay available without a `spanda-core` ↔ `spanda-interpreter` Cargo dependency cycle. The `spanda-interpreter` crate re-exports the public run API (`Interpreter`, `run`, `run_program`, …) for downstream dependents.
+**Composition root:** `spanda-interpreter` compiles the runtime tree natively (`cargo build -p spanda-interpreter`). `spanda-core` depends one-way on `spanda-interpreter` and re-exports `spanda_core::runtime` from `spanda_interpreter::runtime`. `run_program` and `run_tests_with_registry` live in `spanda-interpreter`; `run(source)` remains in core (lex/parse/typecheck + certify gate + FFI bridge wiring).
 
-`CoreRuntimeHost` in `spanda-core/src/runtime_host.rs` implements `spanda_runtime::RuntimeHost` and wires domain hooks (connectivity, fleet, transport adapters) into the interpreter.
+`CoreRuntimeHost` in `spanda-runtime-host` implements `spanda_runtime::RuntimeHost` and wires domain hooks (connectivity, fleet, transport adapters) into the interpreter.
 
 ```mermaid
 flowchart TB
-  subgraph sources ["spanda-interpreter/src/runtime/"]
-    ORCH["orchestrator.rs"]
+  subgraph sources ["spanda-interpreter"]
+    ORCH["runtime/orchestrator.rs"]
     EVAL["runtime_eval / runtime_execute"]
     SCHED["runtime_scheduler / runtime_triggers"]
     DOM["robotics / sensors / safety / …"]
+    RUN["run.rs / simulator"]
     ORCH --> EVAL
     ORCH --> SCHED
     ORCH --> DOM
+    RUN --> ORCH
   end
-  CORE["spanda-core (path shim)"]
+  CORE["spanda-core (re-export)"]
   HOST["CoreRuntimeHost"]
   sources --> CORE
   HOST --> ORCH

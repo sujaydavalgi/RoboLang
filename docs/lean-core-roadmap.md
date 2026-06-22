@@ -86,10 +86,12 @@ Goal: `cargo build -p spanda-interpreter` compiles the runtime tree natively; `s
 
 | Step | Status |
 |------|--------|
-| Route runtime imports through workspace crates (`spanda-ast`, `spanda-runtime`, …) instead of `crate::` | **Complete** — interpreter runtime has zero `crate::` imports; remaining `spanda-core` `#[path]` shim compiles runtime inside core for `run()` |
-| Move `run()` / `run_program()` from `spanda-core` into `spanda-interpreter` | Planned |
-| Add `spanda-interpreter` integration tests (not only re-exports) | Planned |
-| `spanda-core` feature-gated `pub use spanda_interpreter::runtime::*` | Planned — drop `#[path]` shim |
+| Route runtime imports through workspace crates (`spanda-ast`, `spanda-runtime`, …) instead of `crate::` | **Complete** |
+| Native `cargo build -p spanda-interpreter` | **Complete** |
+| Move `run()` / `run_program()` from `spanda-core` into `spanda-interpreter` | **Complete** (`run_program`, `run_tests_with_registry`; `run(source)` stays in core for compile) |
+| `spanda-core` one-way dependency on `spanda-interpreter` | **Complete** |
+| Add `spanda-interpreter` integration tests (not only re-exports) | **Complete** (`tests/native_smoke.rs`) |
+| Drop `#[path]` shim in `spanda-core` | **Complete** — `runtime.rs` re-exports `spanda_interpreter::runtime` |
 | Update `lean_core_shims` `runtime_shim_stays_thin` assertion for native re-export | Planned |
 
 Cargo cannot enable `spanda-core → spanda-interpreter` while `spanda-interpreter → spanda-core` until auxiliary domain modules finish extracting from core.
