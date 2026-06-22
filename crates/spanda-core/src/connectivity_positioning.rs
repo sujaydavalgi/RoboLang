@@ -12,19 +12,12 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
 
 pub use spanda_connectivity::{
-    connectivity_capabilities, connectivity_faults, connectivity_key_to_profile_tokens,
-    connectivity_options, connectivity_types, positioning_types, ConnectivityRequirement,
-    is_cellular_link, is_modem_bearer, is_satellite_link, is_wifi_link,
+    apply_gps_position_faults, connectivity_capabilities, connectivity_faults,
+    connectivity_key_to_profile_tokens, connectivity_options, connectivity_types,
+    fault_to_connectivity, geofence_contains, hardware_event_to_connectivity, haversine_m,
+    is_cellular_link, is_link_impaired, is_modem_bearer, is_satellite_link, is_wifi_link,
+    positioning_types, ConnectivityRequirement, GeofenceRuntime,
 };
-
-/// Runtime geofence circle loaded from a program declaration.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct GeofenceRuntime {
-    pub name: String,
-    pub center_lat: f64,
-    pub center_lon: f64,
-    pub radius_m: f64,
-}
 
 /// Runtime connectivity failover policy.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -35,21 +28,6 @@ pub struct ConnectivityPolicyRuntime {
     pub emergency: Option<String>,
     pub switch_if_latency_ms: Option<f64>,
     pub switch_if_packet_loss_pct: Option<f64>,
-}
-
-/// Haversine distance in meters between two WGS84 points.
-pub fn haversine_m(lat1: f64, lon1: f64, lat2: f64, lon2: f64) -> f64 {
-    const R: f64 = 6_371_000.0;
-    let d_lat = (lat2 - lat1).to_radians();
-    let d_lon = (lon2 - lon1).to_radians();
-    let a = (d_lat / 2.0).sin().powi(2)
-        + lat1.to_radians().cos() * lat2.to_radians().cos() * (d_lon / 2.0).sin().powi(2);
-    2.0 * R * a.sqrt().asin()
-}
-
-/// Return true when `(lat, lon)` is inside the geofence circle.
-pub fn geofence_contains(fence: &GeofenceRuntime, lat: f64, lon: f64) -> bool {
-    haversine_m(lat, lon, fence.center_lat, fence.center_lon) <= fence.radius_m
 }
 
 /// Build runtime geofence from AST declaration.
@@ -88,46 +66,6 @@ pub fn connectivity_policy_from_decl(decl: &ConnectivityPolicyDecl) -> Connectiv
         switch_if_latency_ms: *switch_if_latency_ms,
         switch_if_packet_loss_pct: *switch_if_packet_loss_pct,
     }
-}
-
-/// Map hardware monitor events to connectivity trigger `(domain, event)` pairs.
-pub fn hardware_event_to_connectivity(event: &str) -> Option<(&'static str, &'static str)> {
-    match event {
-        "GpsFailure" => Some(("gps", "lost")),
-        _ => None,
-    }
-}
-
-/// Map comm bus fault names to connectivity trigger pairs.
-pub fn fault_to_connectivity(fault: &str) -> Option<(&'static str, &'static str)> {
-    match fault {
-        "NetworkOutage" | "LteOutage" | "SatelliteOutage" | "WeakWifi" => {
-            Some(("network", "disconnected"))
-        }
-        "BluetoothDisconnect" => Some(("bluetooth", "device_disconnected")),
-        "FiveGHandoff" => Some(("cellular", "roaming")),
-        "GpsSpoofing" => Some(("gps", "spoofed")),
-        "GpsDrift" => Some(("gps", "drift")),
-        _ => None,
-    }
-}
-
-/// Apply GPS drift/spoofing simulation to WGS84 coordinates.
-pub fn apply_gps_position_faults(
-    faults: &HashSet<String>,
-    true_lat: f64,
-    true_lon: f64,
-    sim_time_ms: f64,
-) -> (f64, f64, f64) {
-    if faults.contains("GpsSpoofing") {
-        return (true_lat + 0.009, true_lon + 0.012, 0.3);
-    }
-    if faults.contains("GpsDrift") {
-        let drift_m = (sim_time_ms / 1000.0) * 0.05;
-        let d_deg = drift_m / 111_000.0;
-        return (true_lat + d_deg, true_lon + d_deg * 0.5, 0.8);
-    }
-    (true_lat, true_lon, 1.0)
 }
 
 /// Rewrite a GpsFix object's coordinates after applying GPS simulation faults.
@@ -234,32 +172,6 @@ pub fn runtime_gps_fix(
             ),
         ]),
     }
-}
-
-/// Return true when simulation faults disable the given connectivity link.
-pub fn is_link_impaired(link: &str, faults: &HashSet<String>) -> bool {
-    let link = link.to_ascii_lowercase();
-    for fault in faults {
-        match fault.as_str() {
-            "NetworkOutage" => {
-                if is_satellite_link(&link) || link == "bluetooth" || link == "ble" {
-                    continue;
-                }
-                if is_wifi_link(&link)
-                    || is_cellular_link(&link)
-                    || link == "network"
-                    || link == "ethernet"
-                {
-                    return true;
-                }
-            }
-            "WeakWifi" if is_wifi_link(&link) || link == "network" => return true,
-            "LteOutage" if is_cellular_link(&link) => return true,
-            "SatelliteOutage" if is_satellite_link(&link) => return true,
-            _ => {}
-        }
-    }
-    false
 }
 
 /// Produce a [`SimIdentity`]-shaped runtime object for SIM/eSIM attestation simulation.

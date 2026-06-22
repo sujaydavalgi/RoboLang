@@ -56,6 +56,7 @@ TypeScript parity: `bootstrapProvidersForPackages()`, registry-backed `RoutingCo
 | Clippy / visibility / API hygiene | Fixed across hardware, fleet, ota, core, cli |
 | Transport `TransportAdapter` impls | Moved to `spanda-transport-{ros2,mqtt,dds,websocket}`; `lean_core_shims` guards `transport.rs` |
 | Nav2/SLAM adapter bridge | Moved from `spanda-core` to `spanda-connectivity::adapter_bridge` |
+| Connectivity runtime helpers | Geofence math + GPS fault simulation + link impairment moved to `spanda-connectivity::runtime_sim` (core keeps AST/runtime conversion shims) |
 | ROS2 rclrs transport | Consolidated in `spanda-transport-ros2` (`rclrs.rs`); removed `transport_rclrs*.rs` from core |
 | Fleet orchestration | Moved to `spanda-fleet::orchestrator`; core shim re-exports |
 | `ProviderRegistry` / traits | Moved to `spanda-runtime`; bootstrap stays in core |

@@ -1,10 +1,15 @@
 //! Connectivity and positioning type catalogs extracted from Spanda core.
 //!
 pub mod adapter_bridge;
+pub mod runtime_sim;
 
 use serde::{Deserialize, Serialize};
 
 pub use adapter_bridge::{invoke_nav2_bridge, invoke_slam_bridge};
+pub use runtime_sim::{
+    apply_gps_position_faults, fault_to_connectivity, geofence_contains,
+    hardware_event_to_connectivity, haversine_m, is_link_impaired, GeofenceRuntime,
+};
 
 /// Requirement level for a connectivity channel in `requires_connectivity`.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]

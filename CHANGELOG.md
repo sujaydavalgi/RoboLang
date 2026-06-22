@@ -46,6 +46,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Lean-core transport shims:** ROS2/MQTT live bridge logic moved from `spanda-core/src/transport_live.rs` into `spanda-transport-ros2` and `spanda-transport-mqtt`; core retains a thin `RuntimeValue` shim with `lean_core_shims` guard tests
 - **Lean-core transport adapters:** `TransportAdapter` implementations moved from `spanda-core/src/transport.rs` into `spanda-transport-{ros2,mqtt,dds,websocket}`; ROS2 rclrs consolidated in `spanda-transport-ros2`; Nav2/SLAM subprocess bridge moved to `spanda-connectivity::adapter_bridge`; unused TLS deps removed from `spanda-core` (TLS remains in `spanda-transport` and deploy crates)
 - **Lean-core provider kernel:** `ProviderRegistry` and provider trait contracts moved to `spanda-runtime`; new `spanda-transport` crate for adapter traits and wire security; `spanda-interpreter` staging crate; fleet orchestration moved to `spanda-fleet`
+- **Lean-core connectivity runtime split:** moved geofence math, connectivity/fault trigger mapping, GPS drift/spoof simulation, and link impairment checks from `spanda-core::connectivity_positioning` to `spanda-connectivity::runtime_sim`; core keeps compatibility wrappers for AST/runtime value conversions
 
 ### Changed
 
