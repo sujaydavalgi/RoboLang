@@ -9,6 +9,10 @@ export {
   officialPackageForTransport,
   syncCommBusForOfficialPackages,
 } from "./bootstrap.js";
+export {
+  dispatchOfficialPackageCall,
+  officialPackageForModule,
+} from "./package_dispatch.js";
 export { ProviderRegistry, transportRegistryKey, type ProviderId, type TransportProvider } from "./registry.js";
 
 /** Where a module or feature belongs in the lean-core architecture. */

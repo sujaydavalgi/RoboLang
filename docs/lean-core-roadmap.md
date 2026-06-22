@@ -286,12 +286,19 @@ Goal: promote deferred product-strategy items to experimental with minimal runti
 
 See [tier-3-experimental.md](./tier-3-experimental.md).
 
-## Phase 23 — Planned (experimental Tier 3 hardening)
+## Phase 23 — In progress (platform integration + experimental Tier 3 hardening)
 
-Goal: CI golden paths and provider wiring for each experimental Tier 3 item; no regression to v0.5 beta P0 work.
+Goal: complete package→provider→runtime wiring, transitive dependencies, replay observability, and CI golden paths for experimental Tier 3 items.
 
 | Step | Status |
 |------|--------|
+| Runtime provider dispatch (`package_dispatch.rs`) for GPS, connectivity, MQTT, nav, fleet, SLAM, vision, simulation | **Complete** |
+| Transitive dependency resolution in `spanda-package` resolver | **Complete** |
+| Provider capability alignment in validation + security | **Complete** |
+| `provider_call` frames in mission trace (`--record`) | **Complete** |
+| `spanda update`, `--trace-providers`, flagship `autonomous_rover` demo | **Complete** |
+| Project-aware `check`/`build`/`run`/`verify` module registry | **Complete** |
+| TS mirror `package_dispatch.ts` | **Complete** |
 | Fleet multi-host CI + golden path docs | Planned |
 | MQTT live Mosquitto CI | Planned |
 | Twin cloud export CI | Planned |

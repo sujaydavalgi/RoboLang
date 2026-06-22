@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "package": {
+    "name": "autonomous_rover",
+    "version": "0.1.0"
+  },
+  "dependencies": {
+    "spanda-gps": {
+      "name": "spanda-gps",
+      "version": "0.1.0",
+      "source": {
+        "kind": "registry",
+        "registry": "remote"
+      },
+      "checksum": null
+    },
+    "spanda-mqtt": {
+      "name": "spanda-mqtt",
+      "version": "0.1.0",
+      "source": {
+        "kind": "registry",
+        "registry": "local"
+      },
+      "checksum": null
+    },
+    "spanda-nav": {
+      "name": "spanda-nav",
+      "version": "0.1.0",
+      "source": {
+        "kind": "registry",
+        "registry": "local"
+      },
+      "checksum": null
+    },
+    "spanda-wifi": {
+      "name": "spanda-wifi",
+      "version": "0.1.0",
+      "source": {
+        "kind": "registry",
+        "registry": "remote"
+      },
+      "checksum": null
+    }
+  }
+}

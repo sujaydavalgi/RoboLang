@@ -1,0 +1,43 @@
+{
+  "version": 1,
+  "source": "src/rover.sd",
+  "deterministic": true,
+  "frames": [
+    {
+      "sim_time_ms": 0.0,
+      "event": "provider_call",
+      "payload": {
+        "category": "connectivity",
+        "failed": false,
+        "function": "connect",
+        "module": "connectivity.wifi",
+        "provider_key": "spanda-wifi::project"
+      },
+      "state": null
+    },
+    {
+      "sim_time_ms": 0.0,
+      "event": "provider_call",
+      "payload": {
+        "category": "positioning",
+        "failed": false,
+        "function": "read",
+        "module": "positioning.gps",
+        "provider_key": "spanda-gps::project"
+      },
+      "state": null
+    },
+    {
+      "sim_time_ms": 0.0,
+      "event": "provider_call",
+      "payload": {
+        "category": "transport",
+        "failed": false,
+        "function": "publish_topic",
+        "module": "communication.mqtt",
+        "provider_key": "spanda-mqtt::project"
+      },
+      "state": null
+    }
+  ]
+}

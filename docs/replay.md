@@ -8,7 +8,7 @@ Record and replay simulation traces for regression and incident analysis.
 spanda sim rover.sd --record
 ```
 
-Produces a JSON mission trace (`.trace`, version 2 when state snapshots are present) with scheduler events and embedded robot state (pose, velocity, e-stop, active mode) on each recorded frame.
+Produces a JSON mission trace (`.trace`, version 2 when state snapshots are present) with scheduler events, **provider dispatch events** (`provider_call` with module, function, and provider key), and embedded robot state (pose, velocity, e-stop, active mode) on each recorded frame.
 
 ## Replay modes
 

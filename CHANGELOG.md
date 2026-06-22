@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Platform integration:** runtime provider dispatch from official package imports (`dispatch_official_package_call`); connectivity provider stubs for Wi-Fi/BLE/cellular; `--trace-providers` observability flag; `spanda update` command; flagship demo at `examples/showcase/autonomous_rover/`; guides [how-packages-work.md](docs/how-packages-work.md), [how-providers-work.md](docs/how-providers-work.md), [how-runtime-resolution-works.md](docs/how-runtime-resolution-works.md).
+- **Platform integration (phase 2):** transitive dependency resolution; SLAM/vision/simulation provider dispatch; `provider_call` mission-trace frames; aligned provider capabilities in validation/security; TS `package_dispatch.ts` mirror; project-aware module registry for check/build/test/run/verify.
+
 - **Tier 3 priority plan:** [tier-3-priority-plan.md](docs/tier-3-priority-plan.md) documents P0–P4 ordering (v0.5 beta → Phase 23 hardening → v1.0 optional → post-v1.0 production); Phase 23 planned in [lean-core-roadmap.md](docs/lean-core-roadmap.md).
 
 - **Phase 22 Tier 3 experimental:** world-model runtime (`world_model.update`/`belief`/`export`), ledger provider wired to `MockLedgerBackend`, cloud upload via `SPANDA_CLOUD_UPLOAD_URL`, LLVM golden path script, self-host bootstrap example, and [tier-3-experimental.md](docs/tier-3-experimental.md).

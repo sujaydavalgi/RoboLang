@@ -26,6 +26,9 @@ Spanda is an AI-native autonomous systems programming language. Source files use
 | [tier-3-priority-plan.md](./tier-3-priority-plan.md) | **Priority plan: beta → experimental hardening → v1.0 → production Tier 3** |
 | [provider-interfaces.md](./provider-interfaces.md) | **Provider trait contracts for packages** |
 | [official-packages.md](./official-packages.md) | **Official package catalog** |
+| [how-packages-work.md](./how-packages-work.md) | **Package loading pipeline and CLI workflow** |
+| [how-providers-work.md](./how-providers-work.md) | **Provider registry, traits, and dispatch** |
+| [how-runtime-resolution-works.md](./how-runtime-resolution-works.md) | **Runtime resolution from imports to providers** |
 | [security-architecture.md](./security-architecture.md) | **Security contracts vs package backends** |
 | [triggers.md](./triggers.md) | **Unified trigger-driven execution** (`on`, `every`, `when`, safety, state, AI) |
 | [concurrency.md](./concurrency.md) | **Tasks, spawn, channels, fleet CLI, and runtime telemetry** |

@@ -1,6 +1,8 @@
 import { describe, it, expect } from "vitest";
 import {
   bootstrapDefaultProviders,
+  bootstrapProvidersForPackages,
+  dispatchOfficialPackageCall,
   MODULE_CLASSIFICATIONS,
   ModuleOwnership,
   OFFICIAL_PACKAGE_NAMES,
@@ -32,5 +34,17 @@ describe("lean-core providers (TypeScript mirror)", () => {
     const ids = registry.listTransports();
     expect(ids.some((id) => id.package === "spanda-mqtt")).toBe(true);
     expect(ids.some((id) => id.package === "spanda-ros2")).toBe(true);
+  });
+
+  it("dispatches GPS read when package installed", () => {
+    const registry = bootstrapProvidersForPackages(["spanda-gps"]);
+    const value = dispatchOfficialPackageCall(
+      registry,
+      "positioning.gps",
+      "read",
+      [],
+    );
+    expect(value).not.toBeNull();
+    expect(value && "typeName" in value && value.typeName).toBe("GeoPoint");
   });
 });

@@ -81,6 +81,12 @@ export function bootstrapProvidersForPackages(packageNames: readonly string[]): 
   if (names.has("spanda-ota")) {
     registry.grantCapability("deploy.rollout");
   }
+  if (names.has("spanda-opencv") || names.has("spanda-yolo")) {
+    registry.grantCapability("vision.detect");
+  }
+  if (names.has("spanda-gazebo") || names.has("spanda-webots")) {
+    registry.grantCapability("simulation.step");
+  }
   if (names.has("spanda-ledger")) {
     registry.grantCapability("audit.append");
   }

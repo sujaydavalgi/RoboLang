@@ -55,6 +55,7 @@ spanda verify examples/showcase/killer_demo.sd --simulate
 | File | Role |
 |------|------|
 | [`killer_demo.sd`](./killer_demo.sd) | Patrol loop, lidar stop, AI planner, deploy + verify + sim |
+| [`autonomous_rover/`](./autonomous_rover/) | **Flagship platform demo** — GPS, MQTT, WiFi, providers, replay |
 
 Record and replay: [`examples/end_to_end/replay_mission.sd`](../end_to_end/replay_mission.sd)
 

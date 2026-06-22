@@ -4,12 +4,15 @@ Spanda projects are organized as **packages** — self-contained units with a ma
 
 Spanda uses a **lean-core** architecture: the language core defines types, safety, and [provider interfaces](./provider-interfaces.md). Domain features (ROS2, MQTT, GPS, SLAM, vision, simulation, fleet, cloud) ship as [official packages](./official-packages.md) under `packages/registry/`.
 
+See [How Packages Work](./how-packages-work.md), [How Providers Work](./how-providers-work.md), and [How Runtime Resolution Works](./how-runtime-resolution-works.md) for the full platform integration pipeline.
+
 ## Quick start
 
 ```bash
 spanda init my_robot
 cd my_robot
 spanda install    # resolve dependencies → spanda.lock
+spanda update     # refresh lockfile to latest compatible versions
 spanda check      # type-check all sources
 spanda build      # compile the project
 spanda test       # run tests/
