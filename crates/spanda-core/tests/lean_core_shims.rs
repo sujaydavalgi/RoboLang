@@ -58,6 +58,30 @@ fn interpreter_runtime_uses_workspace_ast_paths() {
 }
 
 #[test]
+fn runtime_kernel_modules_reexport_from_spanda_runtime() {
+    for (module, export) in [
+        ("telemetry.rs", "spanda_runtime::telemetry"),
+        ("replay.rs", "spanda_runtime::replay"),
+        ("twin.rs", "spanda_runtime::twin"),
+        ("events.rs", "spanda_runtime::events"),
+        ("state_machine.rs", "spanda_runtime::state_machine"),
+        ("reliability_runtime.rs", "spanda_runtime::reliability_runtime"),
+        ("serialize.rs", "spanda_runtime::serialize"),
+    ] {
+        let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("src").join(module);
+        let source = fs::read_to_string(&path).expect(module);
+        assert!(
+            source.lines().count() <= 8,
+            "{module} should stay a thin re-export shim"
+        );
+        assert!(
+            source.contains(export),
+            "{module} should re-export from spanda-runtime"
+        );
+    }
+}
+
+#[test]
 fn triggers_shim_reexports_spanda_runtime() {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/triggers.rs");
     let source = fs::read_to_string(&path).expect("triggers.rs");

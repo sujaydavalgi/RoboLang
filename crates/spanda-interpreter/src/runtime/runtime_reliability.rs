@@ -7,10 +7,10 @@ use super::{
 };
 use spanda_ast::nodes::{Expr, RobotDecl};
 use crate::error::SpandaError;
-use crate::reliability_runtime::{
+use spanda_runtime::reliability_runtime::{
     recover_handlers_from_decls, ModeRuntime, PipelineRuntime, RetryRuntime, WatchdogRuntime,
 };
-use crate::replay::MissionTrace;
+use spanda_runtime::replay::MissionTrace;
 use spanda_runtime::scheduler::SchedulerClock;
 
 impl<B: RobotBackend> Interpreter<B> {
@@ -165,7 +165,7 @@ impl<B: RobotBackend> Interpreter<B> {
         }
     }
 
-    fn capture_replay_state(&self) -> crate::replay::ReplayStateSnapshot {
+    fn capture_replay_state(&self) -> spanda_runtime::replay::ReplayStateSnapshot {
         // Capture the current robot snapshot for mission trace playback.
         //
         // Parameters:
@@ -181,7 +181,7 @@ impl<B: RobotBackend> Interpreter<B> {
         // let snapshot = interp.capture_replay_state();
 
         let state = self.backend.get_state();
-        crate::replay::ReplayStateSnapshot {
+        spanda_runtime::replay::ReplayStateSnapshot {
             pose: state.pose,
             velocity: state.velocity,
             emergency_stop: state.emergency_stop,

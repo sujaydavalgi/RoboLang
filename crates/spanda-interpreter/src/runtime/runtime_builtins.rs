@@ -395,7 +395,7 @@ impl<B: RobotBackend> Interpreter<B> {
                 } else {
                     get_string(&self.get_named_arg_value(named_args, "format")?, "json")
                 };
-                crate::serialize::serialize_value(&value, &format)
+                spanda_runtime::serialize::serialize_value(&value, &format).map_err(Into::into)
             }
             "deserialize" => {
                 let data = args
@@ -410,7 +410,7 @@ impl<B: RobotBackend> Interpreter<B> {
                 } else {
                     get_string(&self.get_named_arg_value(named_args, "format")?, "json")
                 };
-                crate::serialize::deserialize_value(&data, &format)
+                spanda_runtime::serialize::deserialize_value(&data, &format).map_err(Into::into)
             }
             "assert" => {
                 let condition = args

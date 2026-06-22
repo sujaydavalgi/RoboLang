@@ -13,23 +13,23 @@ use crate::comm::CommBus;
 use spanda_ast::comm_decl::{QosDecl, TransportKind};
 use crate::error::SpandaError;
 use spanda_runtime::robot_state::{PoseState, RobotState, VelocityState};
-use crate::events::EventBus;
+use spanda_runtime::events::EventBus;
 use spanda_ast::foundations::{
     CapabilityDecl, TaskDecl, TaskPriority, TriggerKind,
 };
 use crate::hal::{create_sim_hal, HalBackend, SimHalBackend};
 use crate::hardware_monitor::HardwareMonitor;
-use crate::reliability_runtime::{
+use spanda_runtime::reliability_runtime::{
     ModeRuntime, PipelineRuntime, RecoverHandlers, RetryRuntime,
     WatchdogRuntime,
 };
-use crate::replay::MissionTrace;
+use spanda_runtime::replay::MissionTrace;
 use crate::safety::{
     Pose2d, SafetyMonitor, SafetyZoneRuntime,
 };
 use spanda_runtime::scheduler::SchedulerClock;
 use spanda_security::SecurityContext;
-use crate::state_machine::StateMachineRuntime;
+use spanda_runtime::state_machine::StateMachineRuntime;
 use crate::transport::RoutingCommBus;
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -37,7 +37,7 @@ use spanda_runtime::triggers::{
     ConditionTriggerState,
     TriggerRegistry, TriggerTimerSchedule, MAX_TRIGGERS_PER_TICK,
 };
-use crate::twin::TwinRuntime;
+use spanda_runtime::twin::TwinRuntime;
 use std::collections::HashMap;
 
 type AgentTraitImplBody = (Vec<spanda_ast::foundations::TraitParamDecl>, Vec<Stmt>);
@@ -351,7 +351,7 @@ pub struct Interpreter<B: RobotBackend> {
     imported_functions: HashMap<String, spanda_ast::foundations::ModuleFnDecl>,
     extern_functions: HashMap<String, spanda_ast::foundations::ExternFnDecl>,
     concurrency: crate::concurrency::ConcurrencyRuntime,
-    telemetry: crate::telemetry::RuntimeTelemetry,
+    telemetry: spanda_runtime::telemetry::RuntimeTelemetry,
     active_mode: String,
     task_heartbeats: HashMap<String, f64>,
     sim_time_ms: f64,
@@ -458,7 +458,7 @@ impl<B: RobotBackend> Interpreter<B> {
             imported_functions: HashMap::new(),
             extern_functions: HashMap::new(),
             concurrency: crate::concurrency::ConcurrencyRuntime::new(),
-            telemetry: crate::telemetry::RuntimeTelemetry::default(),
+            telemetry: spanda_runtime::telemetry::RuntimeTelemetry::default(),
             active_mode: "normal".into(),
             task_heartbeats: HashMap::new(),
             sim_time_ms: 0.0,
@@ -489,14 +489,14 @@ impl<B: RobotBackend> Interpreter<B> {
         self.host
     }
 
-    pub fn telemetry(&self) -> &crate::telemetry::RuntimeTelemetry {
+    pub fn telemetry(&self) -> &spanda_runtime::telemetry::RuntimeTelemetry {
         // Telemetry.
         //
         // Parameters:
         // - `self` — method receiver
         //
         // Returns:
-        // &crate::telemetry::RuntimeTelemetry.
+        // &spanda_runtime::telemetry::RuntimeTelemetry.
         //
         // Options:
         // None.
@@ -526,14 +526,14 @@ impl<B: RobotBackend> Interpreter<B> {
         self.provider_registry.borrow()
     }
 
-    pub fn take_telemetry(&mut self) -> crate::telemetry::RuntimeTelemetry {
+    pub fn take_telemetry(&mut self) -> spanda_runtime::telemetry::RuntimeTelemetry {
         // Take telemetry.
         //
         // Parameters:
         // - `self` — method receiver
         //
         // Returns:
-        // crate::telemetry::RuntimeTelemetry.
+        // spanda_runtime::telemetry::RuntimeTelemetry.
         //
         // Options:
         // None.

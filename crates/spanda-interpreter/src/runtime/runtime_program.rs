@@ -8,7 +8,7 @@ use super::{
 use crate::error::SpandaError;
 use spanda_ast::foundations::{TriggerHandlerDecl, TriggerKind};
 use spanda_runtime::triggers::{priority_rank, trigger_display_name, SystemTriggerCategory};
-use crate::twin::TwinRuntime;
+use spanda_runtime::twin::TwinRuntime;
 
 impl<B: RobotBackend> Interpreter<B> {
     pub(super) fn update_twin_snapshot(&mut self) {
