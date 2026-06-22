@@ -1,5 +1,5 @@
 # spanda-typecheck
 
-Physical unit algebra (`units`) and compile-time type name resolution (`type_system`) extracted for the Phase 4 compiler split.
+Physical unit algebra, compile-time type name resolution, message/module registries, and the full program `TypeChecker`.
 
-The full program type checker (`TypeChecker` in `spanda-core::types`) remains in core for now; it depends on this crate for primitives.
+Domain-specific validation (libraries, SoC, security capabilities, reliability) is injected through [`TypeCheckHost`](src/host.rs); `spanda-core` supplies [`CoreTypeCheckHost`](../spanda-core/src/type_check_host.rs).

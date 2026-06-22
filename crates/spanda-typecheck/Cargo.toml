@@ -9,4 +9,5 @@ authors.workspace = true
 homepage.workspace = true
 
 [dependencies]
+serde = { version = "1", features = ["derive"] }
 spanda-ast = { path = "../spanda-ast" }

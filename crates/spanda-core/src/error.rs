@@ -1,15 +1,9 @@
 //! error support for Spanda.
 //!
 use crate::ast::Program;
+pub use spanda_typecheck::Diagnostic;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
-
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct Diagnostic {
-    pub message: String,
-    pub line: u32,
-    pub column: u32,
-}
 
 #[derive(Debug, Error)]
 pub enum SpandaError {
