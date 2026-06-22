@@ -16,5 +16,9 @@ sha2 = "0.10"
 spanda-audit = { path = "../spanda-audit" }
 spanda-hardware = { path = "../spanda-hardware" }
 
+[[bin]]
+name = "registry-index-maintain"
+path = "src/bin/registry_index_maintain.rs"
+
 [dev-dependencies]
 tempfile = "3"

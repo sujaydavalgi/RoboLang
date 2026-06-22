@@ -115,6 +115,7 @@ fn final_phase8_shims_reexport_workspace_crates() {
 }
 
 #[test]
+#[cfg(feature = "bridge")]
 fn ffi_shim_reexports_spanda_ffi_with_core_bridges() {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/ffi.rs");
     let source = fs::read_to_string(&path).expect("ffi.rs");
@@ -595,7 +596,25 @@ fn fleet_and_ota_are_optional_embedder_features() {
         );
     }
     assert!(manifest.contains("default = [\"full\"]"));
-    assert!(manifest.contains("full = [\"ota\", \"fleet\"]"));
+    assert!(manifest.contains("full = [\"ota\", \"fleet\", \"certify\", \"bridge\"]"));
+}
+
+#[test]
+fn certify_and_bridge_are_optional_embedder_features() {
+    let manifest = fs::read_to_string(
+        Path::new(env!("CARGO_MANIFEST_DIR")).join("Cargo.toml"),
+    )
+    .expect("Cargo.toml");
+    for crate_name in ["spanda-certify", "spanda-bridge", "spanda-ffi"] {
+        assert!(
+            manifest.contains(&format!(
+                "{crate_name} = {{ path = \"../{crate_name}\", optional = true }}"
+            )),
+            "{crate_name} should be an optional dependency for minimal embedder builds"
+        );
+    }
+    assert!(manifest.contains("certify = [\"dep:spanda-certify\"]"));
+    assert!(manifest.contains("bridge = [\"dep:spanda-bridge\", \"dep:spanda-ffi\"]"));
 }
 
 #[test]

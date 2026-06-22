@@ -258,5 +258,15 @@ Goal: move domain integration tests into owning crates and optional `spanda-core
 | Optional `ota` / `fleet` features on `spanda-core` (`--no-default-features` = minimal) | **Complete** |
 | CI builds minimal `spanda-core` without fleet/OTA | **Complete** |
 
-Embedders that only need compile/run/check can depend on `spanda-core` with `default-features = false`. Enable `features = ["ota"]`, `["fleet"]`, or `["full"]` as needed.
+Embedders that only need compile/run/check can depend on `spanda-core` with `default-features = false`. Enable `features = ["ota"]`, `["fleet"]`, `["certify"]`, `["bridge"]`, or `["full"]` as needed.
+
+## Phase 21 — Complete ✓ (hosted registry signing + embedder slimming)
+
+Goal: sign curated hosted registry tarballs in CI and make certification / FFI shims optional on `spanda-core`.
+
+| Step | Status |
+|------|--------|
+| `registry-index-maintain` refreshes checksums + Ed25519 `version_signatures` | **Complete** |
+| CI verifies hosted registry signatures against `registry/TRUST_KEY` | **Complete** |
+| Optional `certify` / `bridge` features on `spanda-core` | **Complete** |
 

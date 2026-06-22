@@ -23,8 +23,8 @@ Follow-up to the post–Phase 17 audit (security **B**, stability **A−**, perf
 | ID | Item | Implementation |
 |----|------|----------------|
 | P1.1 | **Shim sunset** | **Complete** (Phase 19) — removed remaining `transport*` shims |
-| P1.2 | **Panic audit** | Replace `.unwrap()` on twin state in `runtime_twin.rs`; audit CLI hot paths |
-| P1.3 | **Test distribution** | Package security tests in `spanda-package`; agent auth tests in `spanda-ota` / `spanda-fleet` |
+| P1.2 | **Panic audit** | **Complete** — replaced `.unwrap()` on twin state in `runtime_twin.rs`; audited CLI hot paths |
+| P1.3 | **Test distribution** | **Complete** (Phase 20) — package security tests in `spanda-package`; agent auth tests in `spanda-ota` / `spanda-fleet` |
 
 ## P2 — Performance
 
@@ -48,10 +48,21 @@ Follow-up to the post–Phase 17 audit (security **B**, stability **A−**, perf
 | B2 | Verify on install (`SPANDA_REGISTRY_TRUST_KEY`, `SPANDA_REGISTRY_REQUIRE_SIGNATURE`) | **Complete** |
 | B3 | `version_signatures` in registry index | **Complete** |
 
-## Deferred (Phase 21+)
+## Phase 21 — Complete ✓ (hosted registry signing + embedder slimming)
 
-- Sign hosted registry packages in CI
-- Further slim `spanda-core` optional surfaces (certify, bridge FFI) if embedders need smaller graphs
+Goal: sign curated hosted registry tarballs in CI and make certification / FFI shims optional on `spanda-core`.
+
+| Step | Status |
+|------|--------|
+| `registry-index-maintain` binary refreshes checksums + Ed25519 `version_signatures` | **Complete** |
+| CI verifies hosted registry signatures (`registry/TRUST_KEY`) | **Complete** |
+| Optional `certify` / `bridge` features on `spanda-core` (`default-features = false` omits FFI + certify shims) | **Complete** |
+
+Hosted packages are signed with material `spanda-hosted-registry-v1` unless `SPANDA_REGISTRY_SIGN_KEY` is set. Trust key: `registry/TRUST_KEY`.
+
+## Deferred (post–Phase 21)
+
+_None from the Phase 18 hardening plan. Product strategy Tier 3 items (LLVM primary path, blockchain, world models, etc.) remain intentionally out of scope._
 
 ## Verification
 
@@ -62,7 +73,8 @@ cargo test -p spanda-deploy-http
 cargo test -p spanda-bridge
 cargo test --workspace
 cargo clippy --workspace -- -D warnings
-python3 scripts/update_registry_checksums.py   # refresh hosted index checksums
+python3 scripts/update_registry_checksums.py   # refresh hosted index checksums + signatures
+cargo run -p spanda-package --bin registry-index-maintain -- --verify
 ```
 
 ## Related

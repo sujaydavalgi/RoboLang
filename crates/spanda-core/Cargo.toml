@@ -28,8 +28,8 @@ spanda-lint = { path = "../spanda-lint" }
 spanda-codegen = { path = "../spanda-codegen" }
 spanda-modules = { path = "../spanda-modules" }
 spanda-docs = { path = "../spanda-docs" }
-spanda-certify = { path = "../spanda-certify" }
-spanda-bridge = { path = "../spanda-bridge" }
+spanda-certify = { path = "../spanda-certify", optional = true }
+spanda-bridge = { path = "../spanda-bridge", optional = true }
 spanda-typecheck = { path = "../spanda-typecheck" }
 spanda-runtime = { path = "../spanda-runtime" }
 spanda-comm = { path = "../spanda-comm" }
@@ -44,7 +44,7 @@ spanda-regex-lang = { path = "../spanda-regex-lang" }
 spanda-lib-registry = { path = "../spanda-lib-registry" }
 spanda-connectivity-runtime = { path = "../spanda-connectivity-runtime" }
 spanda-runtime-host = { path = "../spanda-runtime-host" }
-spanda-ffi = { path = "../spanda-ffi" }
+spanda-ffi = { path = "../spanda-ffi", optional = true }
 spanda-interpreter = { path = "../spanda-interpreter" }
 pyo3 = { version = "0.29", optional = true, features = ["auto-initialize", "abi3-py310"] }
 
@@ -53,11 +53,13 @@ libloading = "0.8"
 
 [features]
 default = ["full"]
-full = ["ota", "fleet"]
+full = ["ota", "fleet", "certify", "bridge"]
 ota = ["dep:spanda-ota", "dep:spanda-deploy-http"]
 fleet = ["dep:spanda-fleet"]
-python-native = ["spanda-bridge/python-native"]
-cpp-native = ["spanda-bridge/cpp-native"]
+certify = ["dep:spanda-certify"]
+bridge = ["dep:spanda-bridge", "dep:spanda-ffi"]
+python-native = ["bridge", "spanda-bridge/python-native"]
+cpp-native = ["bridge", "spanda-bridge/cpp-native"]
 
 [dev-dependencies]
 glob = "0.3"
@@ -65,3 +67,8 @@ spanda-package = { path = "../spanda-package" }
 spanda-transport = { path = "../spanda-transport" }
 spanda-transport-routing = { path = "../spanda-transport-routing" }
 spanda-transport-ros2 = { path = "../spanda-transport-ros2" }
+
+[[test]]
+name = "p3_features"
+path = "tests/p3_features.rs"
+required-features = ["bridge"]

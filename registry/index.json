@@ -12,6 +12,12 @@
     ],
     "version_checksums": {
       "0.1.0": "f0c8ac64ac85df989bb2ce7518b4e2ddc373259a05d2c8f4e4125b5a78adcac0"
+    },
+    "version_signatures": {
+      "0.1.0": {
+        "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
+        "signature": "a8c367978f97fd2a6c6de0e0297a83c7fc52dccccf503d97f9f05e6e2bdf4d267e2add727c29a0cfbb53d70b0070e74cb921985f705317d5f6ecedd0fc5e660b"
+      }
     }
   },
   {
@@ -27,6 +33,12 @@
     ],
     "version_checksums": {
       "0.1.0": "fe33633b1c83b6d5c03e942b0fa4b6292e577df62600d9f55cc739f1404850e7"
+    },
+    "version_signatures": {
+      "0.1.0": {
+        "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
+        "signature": "594505d15700ef5b5f0aa7ddc8b09d1411b10f9c6254691e4b1941d9880070a4a3e36d2bd60e7adbf73ee0f0f052a195792975f191727c853ff88ba47214e10a"
+      }
     }
   },
   {
@@ -42,6 +54,12 @@
     ],
     "version_checksums": {
       "0.1.0": "56fde9209f8bdfe7f38323c6c213365661579e0beb2a28fe17b0860242656c12"
+    },
+    "version_signatures": {
+      "0.1.0": {
+        "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
+        "signature": "a1c19c6ec970a8ba16151d48707f2a25528597cb54e7adc71bbe3d042fba35d37875d2f516ab19cc4b4bbc6094eb7f5dd123bf5dfa2c86175f303b0683974903"
+      }
     }
   },
   {
@@ -57,6 +75,12 @@
     ],
     "version_checksums": {
       "0.1.0": "2fcc5d21f40af0faca54c2d70af2f36c9294b03413c68b4ec2c855c30231d735"
+    },
+    "version_signatures": {
+      "0.1.0": {
+        "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
+        "signature": "15784d059b5fecdf0b0f014776648bb7dd45d00d366aa5437c61c0e7383429e771c66eefc75b36ab917a02ad46152772e4aa7fb6d5af88fc317dbe343ca22504"
+      }
     }
   },
   {
@@ -72,6 +96,12 @@
     ],
     "version_checksums": {
       "0.1.0": "0bf39e5487ebada2a3874129125d72d46d07d7e87826d29e5ea31bbbbac7b8d5"
+    },
+    "version_signatures": {
+      "0.1.0": {
+        "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
+        "signature": "eabb7d1f7f90c71a90b4878a3c95fae697a10988c7fa23b87d4e2e92aea7929bc33875e331e821ca4cc3a2c19cd21d59d7d39a3b8e1feca83abf9e9625ccdd0f"
+      }
     }
   },
   {
@@ -87,6 +117,12 @@
     ],
     "version_checksums": {
       "0.1.0": "4188693550fa73d67f32bd469149bbef3fee495063c562007f0a81f2c7f97df5"
+    },
+    "version_signatures": {
+      "0.1.0": {
+        "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
+        "signature": "7f806081c6c5e32a6695243f65c08102e2446b134d6b55c7ad3e361c578aeca23f477bf77a678c44d170adbf2d3d4a976b3d33ee0c1622da09911ba7a94fcd01"
+      }
     }
   },
   {
@@ -102,6 +138,12 @@
     ],
     "version_checksums": {
       "0.1.0": "ff7fa9be9935d098658f58f79ec48b0c5b109c6b70d43d19a5b1769a9914123c"
+    },
+    "version_signatures": {
+      "0.1.0": {
+        "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
+        "signature": "e96c51c1e0c9d4becba6fa4bb79d0c8eefa10b6fa02f6da718f9889e6ea178808d7814a30e404ba30d817e845663c0cce29e86bb97faf13f0059c36170b5860c"
+      }
     }
   },
   {
@@ -117,6 +159,12 @@
     ],
     "version_checksums": {
       "0.1.0": "21dfe481d4cdd6a0a72c9a6b1fb757845152384d55ee5211d712fa3a6331eadf"
+    },
+    "version_signatures": {
+      "0.1.0": {
+        "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
+        "signature": "349cf9ae89fda02f81f96a01e5dbf923c2402811afab8adf3f44cea02092b34d4d8132d6c2f92d4da2ae3d325cc8f1d5c5532304502d1de8c46ab23049fb3f0d"
+      }
     }
   },
   {
@@ -132,6 +180,12 @@
     ],
     "version_checksums": {
       "0.1.0": "9da31949084098f2a491d906cdce0f19326f7b5ceec70e2520fc02f22d72caf3"
+    },
+    "version_signatures": {
+      "0.1.0": {
+        "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
+        "signature": "588f5b72d1f9c082edff9a91af97ddf0604c863592dd95772c24442e7f18f430f8bf36a4ed902c3c6770487a98f5fa6c50740dadb76ed4d9d9004aaf698a0d07"
+      }
     }
   },
   {
@@ -147,6 +201,12 @@
     ],
     "version_checksums": {
       "0.1.0": "7b1a57b96c49edeb09fc427ce35b2e9284b339e660832c03a5450321e7a05942"
+    },
+    "version_signatures": {
+      "0.1.0": {
+        "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
+        "signature": "e40c325d6680058e926351d50fb5b7b7a69bbfe2d9cc0932bf8f8abf2597e09a4f4ea2262ea35b9446c89cec12260eab297a6fedaae3be3e43c02b83cd7c660c"
+      }
     }
   },
   {
@@ -162,6 +222,12 @@
     ],
     "version_checksums": {
       "0.1.0": "21fdd5e7ac33939deea7180597b132ab1cfd65c399f29c901fab1b32ccd263b2"
+    },
+    "version_signatures": {
+      "0.1.0": {
+        "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
+        "signature": "5df3ba76535c09a16d36fee880aca1f910acb4dd420299eeff8d2a125df502fe55db69d3edbffe7622e3ae27e78bdc3ecde3b8300e2c5f3b53a7532c97a52a06"
+      }
     }
   },
   {
@@ -177,6 +243,12 @@
     ],
     "version_checksums": {
       "0.1.0": "cd544d15d7086d410d9d07de0eeb8322fa5057ccdd276cb793eebfe0cd69566e"
+    },
+    "version_signatures": {
+      "0.1.0": {
+        "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
+        "signature": "a7e7fce277c36f97c06c5911bafbcd5bc6bb0b2021fc679ec1acb27365b3246f8e30d111675773ca32123329ae25371d7164baec103f3ce17efce7debbb5ab03"
+      }
     }
   },
   {
@@ -192,6 +264,12 @@
     ],
     "version_checksums": {
       "0.1.0": "23dca45dbeaa12d34548ecdfabeb0894b8e6116b6ae99d76e54942bf7e14d64f"
+    },
+    "version_signatures": {
+      "0.1.0": {
+        "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
+        "signature": "2b4988e21e00feedc360c8995717ce01a21ba29be483caca48405f455d1fde52f8df0547421f3e1dbd149c6404d7e63a4936f83a88c13551a9927255f86e030a"
+      }
     }
   },
   {
@@ -207,6 +285,12 @@
     ],
     "version_checksums": {
       "0.1.0": "0db510e5d381c6a4ce412b9eddbb08ad645f3f7cb198b20010533fe8b76c3794"
+    },
+    "version_signatures": {
+      "0.1.0": {
+        "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
+        "signature": "eb84a341a9c40a892efe70a4f98cb49f87f0d10b749e7c73190ebfa04408a76b459ea3be916985dd9652c40ff59c9f4c47acafdf2d1fa75bdb7cb5eed9352608"
+      }
     }
   },
   {
@@ -222,6 +306,12 @@
     ],
     "version_checksums": {
       "0.1.0": "a4c3d240cc831fc384bfd0ff43728e757d80caafd60ac622a9c719c251af08d4"
+    },
+    "version_signatures": {
+      "0.1.0": {
+        "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
+        "signature": "7ca611f9328274b0107d94c64db9ea288dc2db45beb3852b43400e690109ea99aa5535fe0911342dd73a9af4de3b6e1c94616e5c4955b67905f0aa6b141b7507"
+      }
     }
   },
   {
@@ -237,6 +327,12 @@
     ],
     "version_checksums": {
       "0.1.0": "c6715e2d6243a19da3b7b53b7614277b3a85168166a371d0b3fb6336cbdb1f51"
+    },
+    "version_signatures": {
+      "0.1.0": {
+        "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
+        "signature": "0b328a0e993b519a6a5ca4555f578e692308b56e17faf993ca720665762ab5daf2cbe854ce1550c6103825ee4c1bd43c5f14e26f231c8bce086df9ceb493fe0e"
+      }
     }
   },
   {
@@ -252,6 +348,12 @@
     ],
     "version_checksums": {
       "0.1.0": "e5034f5f8cbaae4c3d00fb87737a100417b68aeda4ab33bbf03e5d35b03955d6"
+    },
+    "version_signatures": {
+      "0.1.0": {
+        "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
+        "signature": "1a32ca0d738efb241177297e28b1f54cef5f4d01f5dfb653973d70fa4d7d84466693d9f468bcbf4fd0c0c368f7df933135afccd6c24aaea90c9e1f08c61fe104"
+      }
     }
   },
   {
@@ -267,6 +369,12 @@
     ],
     "version_checksums": {
       "0.1.0": "5a1bbea0a42063d236d86bc3c4962be0ec7d21a06902529173cce7ec51f1c57c"
+    },
+    "version_signatures": {
+      "0.1.0": {
+        "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
+        "signature": "b3f7afe973e9e80727944ac53ccc7ff2beaeeb4e8aecac27db70aa9baceabe318bc88caea3aa683bcc09c3c0d6cf6ccf5dfe9b9d19eb3814e4414c751f8f1409"
+      }
     }
   },
   {
@@ -282,6 +390,12 @@
     ],
     "version_checksums": {
       "0.1.0": "0feb057a970e030b0bcb432acc8a46ed3578c03d6bbde45c77cfbec1646c4792"
+    },
+    "version_signatures": {
+      "0.1.0": {
+        "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
+        "signature": "37448f4c6717e3d5cc874c9d5623abb86f0c13711a972f1b4c0925b5d77152a2473f7b1479ade2d8dfd1c20af6e64d9d8252455ef349bfcd8e4aafaba6cc380a"
+      }
     }
   },
   {
@@ -297,6 +411,12 @@
     ],
     "version_checksums": {
       "0.1.0": "4a4729d9f2ffc7957feebcfadcfc6b5549da75e391cfdaefd2f5e12437bb4412"
+    },
+    "version_signatures": {
+      "0.1.0": {
+        "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
+        "signature": "6d19a4ecdf914ea00d1dee88f28df2d31df0f62def51a0471c6e745f0b4fec474a717b4ecaa325a71dd9ed039e6894fdab916d7c6a96c426143413a6a93a3d0d"
+      }
     }
   }
 ]

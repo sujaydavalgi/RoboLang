@@ -135,3 +135,47 @@ fn hosted_registry_tarballs_match_index_checksums() {
         }
     }
 }
+
+#[test]
+fn hosted_registry_index_carries_valid_signatures() {
+    use spanda_package::registry_sign::verify_registry_signature;
+
+    let index_path = repo_root().join("registry/index.json");
+    let body = fs::read_to_string(&index_path).expect("registry/index.json");
+    let entries: Vec<RemoteRegistryEntry> =
+        serde_json::from_str(&body).expect("parse hosted index.json");
+    let trust_key = fs::read_to_string(repo_root().join("registry/TRUST_KEY"))
+        .expect("registry/TRUST_KEY")
+        .trim()
+        .to_string();
+
+    for entry in entries {
+        for version in &entry.versions {
+            let digest = entry
+                .version_checksums
+                .get(version)
+                .unwrap_or_else(|| panic!("missing checksum for {}/{}", entry.name, version));
+            let signature = entry
+                .version_signatures
+                .get(version)
+                .unwrap_or_else(|| panic!("missing signature for {}/{}", entry.name, version));
+            assert_eq!(
+                signature.public_key, trust_key,
+                "unexpected signing key for {}/{}",
+                entry.name, version
+            );
+            assert!(
+                verify_registry_signature(
+                    &entry.name,
+                    version,
+                    digest,
+                    signature,
+                    &trust_key
+                ),
+                "invalid signature for {}/{}",
+                entry.name,
+                version
+            );
+        }
+    }
+}

@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Phase 21 hosted registry signing:** `registry-index-maintain` binary updates checksums and Ed25519 `version_signatures` in `registry/index.json`; CI verifies against `registry/TRUST_KEY`; `scripts/update_registry_checksums.py` delegates to the Rust tool.
+- **Phase 21 embedder slimming:** optional `certify` and `bridge` features on `spanda-core` (`default-features = false` omits certification and FFI shims; `full` remains default).
+
 - **Automated version bumps:** `scripts/bump_version.py` bumps `Cargo.toml`, npm packages, and finalizes `CHANGELOG.md`. **Auto release** runs after CI on `main` when a merged PR has `release:major`, `release:minor`, or `release:patch`; **Bump version** (manual Actions workflow) is available for ad-hoc releases. Both push `v*` tags that trigger cargo-dist **Release** builds.
 
 - **Phase 18 security hardening:** registry tarball SHA-256 verification and tar-slip-safe extraction in `spanda-package`; deploy/fleet/mesh agents require `--token` on non-loopback binds; bridge subprocess timeouts; `cargo audit` CI job; slim CLI build (`--no-default-features --features slim`); pipeline benchmark test; [phase-18-security-hardening.md](docs/phase-18-security-hardening.md).

@@ -45,20 +45,22 @@ These paths no longer exist on `spanda_core`:
 | `spanda_core::transport_security` | `spanda_transport::security` |
 | `spanda_core::transport_rclrs` | `spanda_transport_ros2::rclrs` |
 
-## Embedder feature bundles (Phase 20)
+## Embedder feature bundles (Phase 20–21)
 
-`spanda-core` defaults to `full` (`ota` + `fleet`). For a slimmer dependency graph:
+`spanda-core` defaults to `full` (`ota` + `fleet` + `certify` + `bridge`). For a slimmer dependency graph:
 
 ```toml
 spanda-core = { path = "...", default-features = false }
-# optional: features = ["ota"], ["fleet"], or ["full"]
+# optional: features = ["ota"], ["fleet"], ["certify"], ["bridge"], or ["full"]
 ```
 
 | Feature | Enables |
 |---------|---------|
 | `ota` | Deploy agents, bundles, remote rollout (`spanda-ota`, `spanda-deploy-http`) |
 | `fleet` | Fleet mesh, orchestrator, swarm coordinator (`spanda-fleet`) |
-| `full` | Both (default) |
+| `certify` | Certification proof and runtime gate shims (`spanda-certify`) |
+| `bridge` | Python/C++ FFI registry shims (`spanda-bridge`, `spanda-ffi`) |
+| `full` | All optional surfaces (default) |
 
 ## Tests
 

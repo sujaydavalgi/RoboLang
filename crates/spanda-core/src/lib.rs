@@ -4,9 +4,13 @@ pub mod adapter_verify;
 pub mod ai;
 pub mod ast;
 pub mod audit;
+#[cfg(feature = "bridge")]
 pub mod bridge;
+#[cfg(feature = "certify")]
 pub mod certify_prover;
+#[cfg(feature = "certify")]
 pub mod certify_runtime;
+#[cfg(feature = "certify")]
 pub mod certify_verify;
 pub mod codegen;
 pub mod comm;
@@ -27,7 +31,9 @@ pub mod deploy_service;
 pub mod docs;
 mod error;
 pub mod events;
+#[cfg(feature = "bridge")]
 pub mod ffi;
+#[cfg(feature = "bridge")]
 pub mod ffi_registry;
 #[cfg(feature = "fleet")]
 pub mod fleet_agent;
@@ -81,11 +87,14 @@ pub mod units;
 
 pub use spanda_connectivity::adapter_bridge::{invoke_nav2_bridge, invoke_slam_bridge};
 pub use ast::*;
+#[cfg(feature = "certify")]
 pub use certify_prover::{
     build_certification_proof, build_certification_proof_summary, CertificationEntry,
     CertificationProofReport, CertificationProofSummary, DeployTargetEntry,
 };
+#[cfg(feature = "certify")]
 pub use certify_runtime::{certification_runtime_enabled_from_env, enforce_certification_runtime};
+#[cfg(feature = "certify")]
 pub use certify_verify::verify_certification_proof;
 pub use codegen::{generate as codegen, wasm_deploy_manifest, CodegenTarget};
 pub use debug::{DebugCommand, DebugController, DebugOptions, DebugPause, DebugSession};
@@ -120,6 +129,7 @@ pub use deploy_service::{
 };
 pub use docs::generate_markdown;
 pub use error::*;
+#[cfg(feature = "bridge")]
 pub use ffi::{new_with_core_bridges, FfiRegistry};
 #[cfg(feature = "fleet")]
 pub use fleet_agent::{

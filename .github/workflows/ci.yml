@@ -30,6 +30,7 @@ jobs:
       - run: cargo fmt --all -- --check
       - run: cargo clippy --workspace -- -D warnings
       - run: cargo build -p spanda-core --no-default-features
+      - run: cargo run -q -p spanda-package --bin registry-index-maintain -- --verify
       - run: cargo test --workspace
       - run: cargo build -p spanda-cli --release
       - run: chmod +x scripts/check_all_examples.sh
