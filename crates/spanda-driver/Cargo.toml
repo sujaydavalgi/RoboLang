@@ -1,0 +1,18 @@
+[package]
+name = "spanda-driver"
+version.workspace = true
+edition.workspace = true
+description = "Spanda compile driver — lexer, parser, and type-check pipeline"
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+homepage.workspace = true
+
+[dependencies]
+spanda-ast = { path = "../spanda-ast" }
+spanda-error = { path = "../spanda-error" }
+spanda-lexer = { path = "../spanda-lexer" }
+spanda-parser = { path = "../spanda-parser" }
+spanda-runtime-host = { path = "../spanda-runtime-host" }
+spanda-typecheck = { path = "../spanda-typecheck" }
+serde = { version = "1", features = ["derive"] }

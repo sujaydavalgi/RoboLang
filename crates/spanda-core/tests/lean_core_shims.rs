@@ -476,3 +476,21 @@ fn interpreter_accepts_injected_runtime_host() {
         &STUB as *const StubHost as *const dyn RuntimeHost,
     ));
 }
+
+#[test]
+fn parser_shim_reexports_spanda_parser() {
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("src/parser.rs");
+    let source = fs::read_to_string(path).expect("parser.rs shim");
+    assert!(source.lines().count() <= 5, "parser.rs should be a thin re-export shim");
+    assert!(source.contains("spanda_parser::parse"));
+}
+
+#[test]
+fn compile_pipeline_lives_in_spanda_driver() {
+    let driver = Path::new(env!("CARGO_MANIFEST_DIR")).join("../spanda-driver/src/compile.rs");
+    assert!(driver.exists(), "compile pipeline should live in spanda-driver");
+    let source = fs::read_to_string(driver).expect("spanda-driver compile.rs");
+    assert!(source.contains("spanda_lexer::tokenize"));
+    assert!(source.contains("spanda_parser::parse"));
+    assert!(source.contains("spanda_typecheck::"));
+}

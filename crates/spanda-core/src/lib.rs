@@ -167,100 +167,22 @@ use runtime::RobotBackend;
 use simulator::{create_default_simulator, SimulatorConfig};
 
 pub fn compile(source: &str) -> Result<CompileResult, SpandaError> {
-    // Compile.
-    //
-    // Parameters:
-    // - `source` — input value
-    //
-    // Returns:
-    // Success value on completion, or an error.
-    //
-    // Options:
-    // None.
-    //
-    // Example:
-    // let result = spanda_core::compile(source);
-
-    // Tokenize the source before parsing.
-    let tokens = lexer::tokenize(source)?;
-    let program = parser::parse(tokens)?;
-    types::type_check(&program)?;
-    Ok(CompileResult {
-        program,
-        source: source.to_string(),
-    })
+    spanda_driver::compile(source)
 }
 
 pub fn check(source: &str) -> Result<(), SpandaError> {
-    // Check input.
-    //
-    // Parameters:
-    // - `source` — input value
-    //
-    // Returns:
-    // Success value on completion, or an error.
-    //
-    // Options:
-    // None.
-    //
-    // Example:
-    // let result = spanda_core::check(source);
-
-    // Tokenize the source before parsing.
-    let tokens = lexer::tokenize(source)?;
-    let program = parser::parse(tokens)?;
-    types::check(&program)
+    spanda_driver::check(source)
 }
 
 pub fn check_with_registry(source: &str, registry: &ModuleRegistry) -> Result<(), SpandaError> {
-    // Check with registry.
-    //
-    // Parameters:
-    // - `source` — input value
-    // - `registry` — input value
-    //
-    // Returns:
-    // Success value on completion, or an error.
-    //
-    // Options:
-    // None.
-    //
-    // Example:
-    // let result = spanda_core::check_with_registry(source, registry);
-
-    // Tokenize the source before parsing.
-    let tokens = lexer::tokenize(source)?;
-    let program = parser::parse(tokens)?;
-    types::check_with_registry(&program, registry)
+    spanda_driver::check_with_registry(source, registry)
 }
 
 pub fn compile_with_registry(
     source: &str,
     registry: &ModuleRegistry,
 ) -> Result<CompileResult, SpandaError> {
-    // Compile with registry.
-    //
-    // Parameters:
-    // - `source` — input value
-    // - `registry` — input value
-    //
-    // Returns:
-    // Success value on completion, or an error.
-    //
-    // Options:
-    // None.
-    //
-    // Example:
-    // let result = spanda_core::compile_with_registry(source, registry);
-
-    // Tokenize the source before parsing.
-    let tokens = lexer::tokenize(source)?;
-    let program = parser::parse(tokens)?;
-    types::check_with_registry(&program, registry)?;
-    Ok(CompileResult {
-        program,
-        source: source.to_string(),
-    })
+    spanda_driver::compile_with_registry(source, registry)
 }
 
 pub fn verify_compatibility(
