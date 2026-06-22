@@ -31,7 +31,8 @@ Phased plan to complete the package-first architecture after the initial scaffol
 | `spanda-connectivity` | Done | Type catalogs and link classification extracted |
 | `spanda-transport-dds` | Done | Live UDP multicast bridge extracted; core shim retained |
 | `spanda-transport-websocket` | Done | Live tungstenite bridge extracted; core shim retained |
-| `spanda-fleet` | Planned | Orchestrator, agents, mesh |
+| `spanda-deploy-http` | Done | Shared HTTP/TLS helpers for agents and OTA |
+| `spanda-fleet` | Done | Remote relay, agents, mesh extracted; orchestrator shim in core |
 | `spanda-ota` | Planned | Deploy service, agents |
 
 Extract optional backends from `spanda-core` into workspace members:
@@ -41,9 +42,10 @@ crates/spanda-transport-mqtt/   (feature: live-mqtt)
 crates/spanda-transport-ros2/   (optional rclrs)
 crates/spanda-transport-dds/        (feature: live-dds)
 crates/spanda-transport-websocket/  (feature: live-websocket)
+crates/spanda-deploy-http/          (shared agent HTTP/TLS)
+crates/spanda-fleet/                (agents, mesh, remote relay)
 crates/spanda-connectivity/         (GPS, WiFi, BLE, cellular sim)
-crates/spanda-fleet/            (orchestrator, agents, mesh)
-crates/spanda-ota/              (deploy service, agents)
+crates/spanda-ota/                  (deploy service, agents)
 ```
 
 Each crate implements core provider traits and registers via `ProviderRegistry`. Core re-exports shims behind `#[deprecated]` aliases for one release cycle.

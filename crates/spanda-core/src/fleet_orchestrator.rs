@@ -9,6 +9,7 @@ use crate::foundations::MissionDecl;
 use crate::robotics_platform::{FleetDecl, FleetRegistry, MissionRuntime};
 use crate::runtime::RuntimeValue;
 use serde::{Deserialize, Serialize};
+pub use spanda_fleet::PeerDelivery;
 
 /// Per-member coordination state during orchestration.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -20,16 +21,6 @@ pub struct FleetMemberState {
     pub has_peer_link: bool,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub peer_handoffs: Vec<String>,
-}
-
-/// One peer message delivered over the in-process fleet mesh bus.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct PeerDelivery {
-    pub from_robot: String,
-    pub to_robot: String,
-    pub topic: String,
-    pub step: String,
-    pub delivered: bool,
 }
 
 /// Orchestration report for one fleet group.
@@ -254,7 +245,7 @@ pub fn orchestrate_fleets(program: &Program, program_path: &str) -> FleetOrchest
 pub fn orchestrate_fleets_remote(
     program: &Program,
     program_path: &str,
-    registry: &crate::fleet_remote::FleetAgentRegistry,
+    registry: &spanda_fleet::FleetAgentRegistry,
 ) -> FleetOrchestrationResult {
     // Coordinate locally, then push peer mission steps to remote fleet agents.
     //
@@ -276,7 +267,7 @@ pub fn orchestrate_fleets_remote(
     let mut success = result.success;
     for fleet in &mut result.fleets {
         let (relayed, failed) =
-            crate::fleet_remote::relay_peer_deliveries(&fleet.peer_deliveries, registry);
+            spanda_fleet::relay_peer_deliveries(&fleet.peer_deliveries, registry);
         fleet.remote_relayed = relayed;
         fleet.remote_failed = failed;
         if relayed > 0 {
@@ -320,7 +311,7 @@ pub fn orchestrate_fleets_mesh(
         if fleet.peer_deliveries.is_empty() {
             continue;
         }
-        match crate::fleet_mesh::relay_deliveries_via_mesh(
+        match spanda_fleet::relay_deliveries_via_mesh(
             mesh_url,
             &fleet.peer_deliveries,
             token,

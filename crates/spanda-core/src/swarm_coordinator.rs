@@ -295,7 +295,7 @@ pub fn coordinate_swarms_mesh(
         if swarm.peer_deliveries.is_empty() {
             continue;
         }
-        match crate::fleet_mesh::relay_deliveries_via_mesh(mesh_url, &swarm.peer_deliveries, token)
+        match spanda_fleet::relay_deliveries_via_mesh(mesh_url, &swarm.peer_deliveries, token)
         {
             Ok(resp) => {
                 swarm.remote_relayed = resp.relayed;

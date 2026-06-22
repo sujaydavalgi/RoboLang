@@ -1,0 +1,15 @@
+[package]
+name = "spanda-fleet"
+version.workspace = true
+edition.workspace = true
+description = "Fleet peer relay agents and mesh coordination for Spanda"
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+homepage.workspace = true
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+rustls = { version = "0.23", default-features = false, features = ["ring", "std"] }
+spanda-deploy-http = { path = "../spanda-deploy-http" }
