@@ -9,7 +9,7 @@ use spanda_ast::nodes::{
     Stmt,
 };
 use spanda_audit::{AuditRuntime, MockLedgerBackend};
-use crate::comm::CommBus;
+use spanda_comm::CommBus;
 use spanda_ast::comm_decl::{QosDecl, TransportKind};
 use crate::error::SpandaError;
 use spanda_runtime::robot_state::{PoseState, RobotState, VelocityState};

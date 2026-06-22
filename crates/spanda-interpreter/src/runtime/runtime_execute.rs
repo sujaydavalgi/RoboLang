@@ -5,7 +5,7 @@ use super::{
     IntoSpandaError, Interpreter, MotionCommand, RobotBackend, RuntimeError, RuntimeValue,
 };
 use spanda_ast::nodes::{Expr, SpandaType, Stmt};
-use crate::comm::CommBus;
+use spanda_comm::CommBus;
 use spanda_ast::comm_decl::DiscoverFilter;
 use crate::error::SpandaError;
 use spanda_runtime::triggers::SystemTriggerCategory;

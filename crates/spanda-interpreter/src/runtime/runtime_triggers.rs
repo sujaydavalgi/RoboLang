@@ -2,7 +2,7 @@
 //!
 
 use super::{trigger_category_label, Interpreter, RobotBackend, RuntimeValue};
-use crate::comm::CommBus;
+use spanda_comm::CommBus;
 use crate::error::SpandaError;
 use spanda_ast::nodes::Expr;
 use spanda_ast::foundations::TriggerKind;

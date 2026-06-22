@@ -1197,6 +1197,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "spanda-comm"
+version = "0.1.0"
+dependencies = [
+ "spanda-ast",
+ "spanda-runtime",
+ "spanda-typecheck",
+]
+
+[[package]]
 name = "spanda-connectivity"
 version = "0.1.0"
 dependencies = [
@@ -1217,6 +1226,7 @@ dependencies = [
  "sha2",
  "spanda-ast",
  "spanda-audit",
+ "spanda-comm",
  "spanda-connectivity",
  "spanda-deploy-http",
  "spanda-fleet",
@@ -1278,6 +1288,7 @@ version = "0.1.0"
 dependencies = [
  "spanda-ast",
  "spanda-audit",
+ "spanda-comm",
  "spanda-connectivity",
  "spanda-core",
  "spanda-runtime",

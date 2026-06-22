@@ -23,6 +23,7 @@ members = [
     "crates/spanda-lexer",
     "crates/spanda-typecheck",
     "crates/spanda-runtime",
+    "crates/spanda-comm",
     "crates/spanda-interpreter",
     "crates/spanda-transport",
 ]

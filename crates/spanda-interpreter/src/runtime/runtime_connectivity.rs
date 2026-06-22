@@ -2,7 +2,7 @@
 //!
 
 use super::{Interpreter, RobotBackend};
-use crate::comm::CommBus;
+use spanda_comm::CommBus;
 use crate::error::SpandaError;
 
 impl<B: RobotBackend> Interpreter<B> {

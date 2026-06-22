@@ -12,6 +12,7 @@ homepage.workspace = true
 spanda-ast = { path = "../spanda-ast" }
 spanda-audit = { path = "../spanda-audit" }
 spanda-connectivity = { path = "../spanda-connectivity" }
+spanda-comm = { path = "../spanda-comm" }
 spanda-core = { path = "../spanda-core" }
 spanda-runtime = { path = "../spanda-runtime" }
 spanda-security = { path = "../spanda-security" }
