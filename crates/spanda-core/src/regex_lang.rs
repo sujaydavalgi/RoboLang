@@ -2,9 +2,8 @@
 //!
 use crate::ast::Span;
 use crate::error::SpandaError;
-pub use spanda_ast::{RegexCompileError, RegexPattern};
+pub use spanda_ast::{CaptureResult, RegexCompileError, RegexPattern};
 use regex::Regex;
-use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 impl From<RegexCompileError> for SpandaError {
@@ -15,14 +14,6 @@ impl From<RegexCompileError> for SpandaError {
             column: err.column,
         }
     }
-}
-
-/// Named capture groups extracted from a regex match.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
-pub struct CaptureResult {
-    pub full: String,
-    #[serde(default)]
-    pub groups: HashMap<String, String>,
 }
 
 pub fn regex_matches(pattern: &RegexPattern, text: &str) -> Result<bool, SpandaError> {

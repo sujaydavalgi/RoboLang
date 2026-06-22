@@ -6,4 +6,4 @@ pub mod nodes;
 pub mod regex;
 pub mod robotics_decl;
 
-pub use regex::{RegexCompileError, RegexPattern};
+pub use regex::{CaptureResult, RegexCompileError, RegexPattern};

@@ -3,6 +3,15 @@
 use crate::nodes::Span;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
+
+/// Named capture groups extracted from a regex match.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
+pub struct CaptureResult {
+    pub full: String,
+    #[serde(default)]
+    pub groups: HashMap<String, String>,
+}
 
 /// Source-location diagnostic returned when regex compilation fails.
 #[derive(Debug, Clone, PartialEq, Eq)]
