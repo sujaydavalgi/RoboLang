@@ -51,13 +51,13 @@ export function remoteFetch(url: string, init: RequestInit = {}): Promise<Respon
       upstreamSignal?.removeEventListener("abort", upstreamAbortHandler);
     }
   };
+  const resolveAbortReason = (signal: AbortSignal): unknown =>
+    signal.reason === undefined
+      ? new DOMException("Remote fetch operation was aborted.", "AbortError")
+      : signal.reason;
 
   if (upstreamSignal?.aborted) {
-    const reason =
-      upstreamSignal.reason === undefined
-        ? new DOMException("Remote fetch operation was aborted.", "AbortError")
-        : upstreamSignal.reason;
-    return Promise.reject(reason);
+    return Promise.reject(resolveAbortReason(upstreamSignal));
   }
 
   // Bound the full fetch lifecycle (connect + response/body read); expiry aborts via AbortController.
@@ -75,16 +75,13 @@ export function remoteFetch(url: string, init: RequestInit = {}): Promise<Respon
     upstreamAbortHandler = () => {
       detachUpstreamAbortListener();
       clearTimeout(timeoutId);
-      const reason =
-        upstreamSignal.reason === undefined
-          ? new DOMException("Remote fetch operation was aborted.", "AbortError")
-          : upstreamSignal.reason;
-      controller.abort(reason);
+      controller.abort(resolveAbortReason(upstreamSignal));
     };
-    upstreamSignal.addEventListener("abort", upstreamAbortHandler, { once: true });
     if (upstreamSignal.aborted) {
       upstreamAbortHandler();
+      return Promise.reject(resolveAbortReason(upstreamSignal));
     }
+    upstreamSignal.addEventListener("abort", upstreamAbortHandler, { once: true });
   }
 
   return fetch(url, { ...restInit, signal: controller.signal }).finally(() => {
