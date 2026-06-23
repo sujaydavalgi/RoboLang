@@ -1386,7 +1386,7 @@ fn main() {
 
     if command == "deploy" && args.len() > 2 {
         match args[2].as_str() {
-            "plan" | "rollout" | "rollback" | "status" => {
+            "plan" | "rollout" | "rollback" | "status" | "agent" => {
                 deploy_ota::deploy_dispatch(&args[2..]);
                 let _ = io::stdout().flush();
                 return;
