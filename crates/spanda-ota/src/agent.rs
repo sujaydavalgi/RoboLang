@@ -66,6 +66,12 @@ pub fn default_agent_state_path() -> PathBuf {
     PathBuf::from(".spanda/agent-state.json")
 }
 
+pub fn agent_state_path_for(target: &str) -> PathBuf {
+    // Keep one state file per deploy target so concurrent agents do not clobber identity.
+    let safe_target = target.replace(['/', '\\', '@', ':'], "_");
+    PathBuf::from(format!(".spanda/agent-state/{safe_target}.json"))
+}
+
 pub fn load_agent_state(path: &Path) -> AgentState {
     if !path.exists() {
         return AgentState::default();
@@ -173,9 +179,6 @@ pub fn handle_agent_request(state: &mut AgentState, request: HttpRequest) -> Htt
                             .into(),
                     };
                 }
-            }
-            if state.target.is_empty() {
-                state.target = payload.target.clone();
             }
             if !state.current_version.is_empty() {
                 state.previous_version = Some(state.current_version.clone());
@@ -312,9 +315,7 @@ pub fn run_deploy_agent_server(options: &DeployAgentServerOptions) -> Result<(),
     let target = target.as_str();
     let state_path = state_path.as_path();
     let mut state = load_agent_state(state_path);
-    if state.target.is_empty() {
-        state.target = target.to_string();
-    }
+    state.target = target.to_string();
     state.token = token.clone().or(state.token);
     state.require_hash = *require_hash || state.require_hash;
     state.require_signature = *require_signature || state.require_signature;
@@ -386,5 +387,18 @@ pub fn agent_entry_for_port(target: &str, port: u16, token: Option<String>) -> D
         target: target.to_string(),
         url: format!("http://127.0.0.1:{port}"),
         token,
+    }
+}
+
+#[cfg(test)]
+mod agent_state_path_tests {
+    use super::*;
+
+    #[test]
+    fn distinct_targets_use_distinct_paths() {
+        assert_ne!(
+            agent_state_path_for("Rover@JetsonOrin"),
+            agent_state_path_for("Scout@Pi4")
+        );
     }
 }

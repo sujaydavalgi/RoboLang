@@ -139,7 +139,10 @@ pub fn handle_fleet_agent_request(
                 };
             }
             if state.robot_name.is_empty() {
-                state.robot_name = payload.to_robot.clone();
+                return HttpResponse {
+                    status: 500,
+                    body: r#"{"ok":false,"error":"fleet agent missing robot identity"}"#.into(),
+                };
             }
             let message = format!(
                 "{}->{}:{}={}",
@@ -270,5 +273,18 @@ pub fn fleet_entry_for_port(robot_name: &str, port: u16, token: Option<String>) 
         robot_name: robot_name.to_string(),
         url: format!("http://127.0.0.1:{port}"),
         token,
+    }
+}
+
+#[cfg(test)]
+mod agent_state_path_tests {
+    use super::*;
+
+    #[test]
+    fn distinct_robots_use_distinct_paths() {
+        assert_ne!(
+            fleet_agent_state_path_for("ScoutB"),
+            fleet_agent_state_path_for("ScoutC")
+        );
     }
 }

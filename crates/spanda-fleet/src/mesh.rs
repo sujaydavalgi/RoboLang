@@ -62,6 +62,36 @@ fn load_registry(backing: &MeshRegistryBacking) -> FleetAgentRegistry {
     }
 }
 
+fn mesh_relay_http_response(relayed: u32, failed: u32) -> HttpResponse {
+    let ok = failed == 0;
+    HttpResponse {
+        status: 200,
+        body: serde_json::to_string(&MeshRelayResponse {
+            ok,
+            relayed,
+            failed,
+            error: if failed > 0 {
+                Some(format!("{failed} peer relay(s) failed"))
+            } else {
+                None
+            },
+        })
+        .unwrap_or_else(|_| "{}".into()),
+    }
+}
+
+fn finish_mesh_relay(
+    state: &mut FleetMeshState,
+    registry_backing: &MeshRegistryBacking,
+    deliveries: &[PeerDelivery],
+) -> HttpResponse {
+    let registry = load_registry(registry_backing);
+    let (relayed, failed) = relay_peer_deliveries(deliveries, &registry);
+    state.relayed_total += relayed;
+    state.failed_total += failed;
+    mesh_relay_http_response(relayed, failed)
+}
+
 pub fn handle_fleet_mesh_request(
     state: &mut FleetMeshState,
     registry_backing: &MeshRegistryBacking,
@@ -101,31 +131,48 @@ pub fn handle_fleet_mesh_request(
                     body: r#"{"ok":false,"error":"invalid mesh relay payload"}"#.into(),
                 };
             };
-            let registry = load_registry(registry_backing);
-            let (relayed, failed) = relay_peer_deliveries(&payload.deliveries, &registry);
-            state.relayed_total += relayed;
-            state.failed_total += failed;
-            let ok = failed == 0;
-            HttpResponse {
-                status: 200,
-                body: serde_json::to_string(&MeshRelayResponse {
-                    ok,
-                    relayed,
-                    failed,
-                    error: if failed > 0 {
-                        Some(format!("{failed} peer relay(s) failed"))
-                    } else {
-                        None
-                    },
-                })
-                .unwrap_or_else(|_| "{}".into()),
-            }
+            finish_mesh_relay(state, registry_backing, &payload.deliveries)
         }
         _ => HttpResponse {
             status: 404,
             body: r#"{"ok":false,"error":"not found"}"#.into(),
         },
     }
+}
+
+fn dispatch_mesh_request(
+    state: Arc<Mutex<FleetMeshState>>,
+    registry_backing: &MeshRegistryBacking,
+    request: HttpRequest,
+) -> HttpResponse {
+    // Relay peer deliveries without holding the mesh mutex during outbound HTTP.
+    if request.method == "POST" && request.path == "/v1/mesh/relay" {
+        let deliveries = {
+            let locked = state.lock().expect("fleet mesh state lock");
+            if unauthorized(&request, &locked) {
+                return HttpResponse {
+                    status: 401,
+                    body: r#"{"ok":false,"error":"unauthorized"}"#.into(),
+                };
+            }
+            let Ok(payload) = serde_json::from_str::<MeshRelayRequest>(&request.body) else {
+                return HttpResponse {
+                    status: 400,
+                    body: r#"{"ok":false,"error":"invalid mesh relay payload"}"#.into(),
+                };
+            };
+            payload.deliveries
+        };
+        let registry = load_registry(registry_backing);
+        let (relayed, failed) = relay_peer_deliveries(&deliveries, &registry);
+        let mut locked = state.lock().expect("fleet mesh state lock");
+        locked.relayed_total += relayed;
+        locked.failed_total += failed;
+        return mesh_relay_http_response(relayed, failed);
+    }
+
+    let mut locked = state.lock().expect("fleet mesh state lock");
+    handle_fleet_mesh_request(&mut locked, registry_backing, request)
 }
 
 fn handle_connection(
@@ -138,8 +185,7 @@ fn handle_connection(
         let shared = Arc::clone(&state);
         let backing = registry_backing.clone();
         let _ = serve_tls_connection(&server_config, stream, move |request| {
-            let mut locked = shared.lock().expect("fleet mesh state lock");
-            handle_fleet_mesh_request(&mut locked, &backing, request)
+            dispatch_mesh_request(Arc::clone(&shared), &backing, request)
         });
         return;
     }
@@ -157,10 +203,7 @@ fn handle_connection(
             .write_all(http_response(400, r#"{"ok":false,"error":"bad request"}"#).as_bytes());
         return;
     };
-    let response = {
-        let mut locked = state.lock().expect("fleet mesh state lock");
-        handle_fleet_mesh_request(&mut locked, &registry_backing, request)
-    };
+    let response = dispatch_mesh_request(state, &registry_backing, request);
     let _ = write_plain_response(&mut stream, &response);
 }
 
