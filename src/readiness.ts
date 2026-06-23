@@ -182,13 +182,32 @@ export function evaluateReadinessTs(
   factors.push(factorRow("Health", health.score, weightFor("Health")));
   issues.push(...health.issues);
 
-  factors.push(factorRow("Connectivity", hw.compatible ? 90 : 70, weightFor("Connectivity")));
-  factors.push(factorRow("Safety", hw.compatible ? 95 : 45, weightFor("Safety")));
-  factors.push(factorRow("Battery", 90, weightFor("Battery")));
-  factors.push(factorRow("Storage", 90, weightFor("Storage")));
-  factors.push(factorRow("Compute", 88, weightFor("Compute")));
-  factors.push(factorRow("Packages", 88, weightFor("Packages")));
-  factors.push(factorRow("Providers", 88, weightFor("Providers")));
+  const CONNECTIVITY_SCORE_COMPATIBLE = 90;
+  const CONNECTIVITY_SCORE_INCOMPATIBLE = 70;
+  const SAFETY_SCORE_COMPATIBLE = 95;
+  const SAFETY_SCORE_INCOMPATIBLE = 45;
+  const DEFAULT_HIGH_FACTOR_SCORE = 90;
+  const DEFAULT_STANDARD_FACTOR_SCORE = 88;
+
+  factors.push(
+    factorRow(
+      "Connectivity",
+      hw.compatible ? CONNECTIVITY_SCORE_COMPATIBLE : CONNECTIVITY_SCORE_INCOMPATIBLE,
+      weightFor("Connectivity"),
+    ),
+  );
+  factors.push(
+    factorRow(
+      "Safety",
+      hw.compatible ? SAFETY_SCORE_COMPATIBLE : SAFETY_SCORE_INCOMPATIBLE,
+      weightFor("Safety"),
+    ),
+  );
+  factors.push(factorRow("Battery", DEFAULT_HIGH_FACTOR_SCORE, weightFor("Battery")));
+  factors.push(factorRow("Storage", DEFAULT_HIGH_FACTOR_SCORE, weightFor("Storage")));
+  factors.push(factorRow("Compute", DEFAULT_STANDARD_FACTOR_SCORE, weightFor("Compute")));
+  factors.push(factorRow("Packages", DEFAULT_STANDARD_FACTOR_SCORE, weightFor("Packages")));
+  factors.push(factorRow("Providers", DEFAULT_STANDARD_FACTOR_SCORE, weightFor("Providers")));
   factors.push(factorRow("Mission Requirements", capScore, weightFor("Mission Requirements")));
 
   const total = weightedTotal(factors);
