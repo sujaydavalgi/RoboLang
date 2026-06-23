@@ -18,6 +18,11 @@ export function defaultFleetAgentStatePath(): string {
   return process.env.SPANDA_FLEET_AGENT_STATE ?? ".spanda/fleet-agent-state.json";
 }
 
+export function fleetAgentStatePathFor(robotName: string): string {
+  const safeName = robotName.replace(/[/\\]/g, "_");
+  return process.env.SPANDA_FLEET_AGENT_STATE ?? `.spanda/fleet-agent-state/${safeName}.json`;
+}
+
 export function emptyFleetAgentState(): FleetAgentState {
   return { robotName: "", lastPeerMessages: [] };
 }
@@ -110,8 +115,10 @@ async function handleRequest(
       res.end(JSON.stringify({ ok: false, error: "robot mismatch" }));
       return;
     }
-    if (!state.robotName && payload.to_robot) {
-      state.robotName = payload.to_robot;
+    if (!state.robotName) {
+      res.writeHead(500, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ ok: false, error: "fleet agent missing robot identity" }));
+      return;
     }
     const message = `${payload.from_robot ?? ""}->${payload.to_robot ?? ""}:${payload.topic ?? ""}=${payload.step ?? ""}`;
     state.lastPeerMessages = [...(state.lastPeerMessages ?? []), message];
@@ -140,9 +147,9 @@ export function startFleetAgentServer(options: {
   tlsCert?: string;
   tlsKey?: string;
 }): ReturnType<typeof createServer> {
-  const statePath = options.statePath ?? defaultFleetAgentStatePath();
+  const statePath = options.statePath ?? fleetAgentStatePathFor(options.robotName);
   const state = readFleetAgentStateFromDisk(statePath);
-  if (!state.robotName) state.robotName = options.robotName;
+  state.robotName = options.robotName;
   if (options.token) state.token = options.token;
   writeFleetAgentStateToDisk(state, statePath);
   const requestHandler = (req: IncomingMessage, res: ServerResponse) => {

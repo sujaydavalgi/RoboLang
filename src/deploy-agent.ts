@@ -25,6 +25,11 @@ export function defaultAgentStatePath(): string {
   return process.env.SPANDA_AGENT_STATE ?? ".spanda/agent-state.json";
 }
 
+export function agentStatePathFor(target: string): string {
+  const safeTarget = target.replace(/[/\\@:]/g, "_");
+  return process.env.SPANDA_AGENT_STATE ?? `.spanda/agent-state/${safeTarget}.json`;
+}
+
 export function emptyAgentState(): AgentState {
   return { target: "", currentVersion: "0.0.0" };
 }
@@ -164,7 +169,6 @@ async function handleRequest(
         return;
       }
     }
-    if (payload.target) state.target = payload.target;
     if (state.currentVersion) state.previousVersion = state.currentVersion;
     state.currentVersion = payload.version ?? state.currentVersion;
     state.program = payload.program;
@@ -230,9 +234,9 @@ export function startDeployAgentServer(options: {
   requireCertify?: boolean;
   trustedPublicKey?: string;
 }): ReturnType<typeof createServer> {
-  const statePath = options.statePath ?? defaultAgentStatePath();
+  const statePath = options.statePath ?? agentStatePathFor(options.target);
   const state = readAgentStateFromDisk(statePath);
-  if (!state.target) state.target = options.target;
+  state.target = options.target;
   if (options.token) state.token = options.token;
   if (options.requireHash) state.requireHash = true;
   if (options.requireSignature) state.requireSignature = true;
