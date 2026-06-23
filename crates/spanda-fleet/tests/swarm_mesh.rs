@@ -9,13 +9,16 @@ use spanda_fleet::{
 use std::thread;
 use std::time::Duration;
 
+const MESH_READY_TIMEOUT_SECS: u64 = 2;
+const MESH_READY_POLL_INTERVAL_MS: u64 = 20;
+
 fn coordinate_mesh_when_ready(
     program: &Program,
     program_path: &str,
     state: &mut SwarmState,
     mesh_url: &str,
 ) -> SwarmCoordinationResult {
-    let deadline = std::time::Instant::now() + Duration::from_secs(2);
+    let deadline = std::time::Instant::now() + Duration::from_secs(MESH_READY_TIMEOUT_SECS);
     loop {
         let result = coordinate_swarms_mesh(program, program_path, state, mesh_url, None);
         if result.success {
@@ -24,7 +27,7 @@ fn coordinate_mesh_when_ready(
         if std::time::Instant::now() >= deadline {
             panic!("mesh/agent did not become ready before timeout");
         }
-        thread::sleep(Duration::from_millis(20));
+        thread::sleep(Duration::from_millis(MESH_READY_POLL_INTERVAL_MS));
     }
 }
 

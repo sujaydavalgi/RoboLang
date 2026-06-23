@@ -12,22 +12,19 @@ export function remoteFetch(url: string, init: RequestInit = {}): Promise<Respon
 
   const { signal: upstreamSignal, ...restInit } = init;
   let onAbort: (() => void) | undefined;
-  let hasUpstreamAbortListener = false;
 
   if (upstreamSignal) {
     if (upstreamSignal.aborted) {
       clearTimeout(timeoutId);
-      controller.abort();
-    } else {
-      onAbort = () => controller.abort();
-      upstreamSignal.addEventListener("abort", onAbort, { once: true });
-      hasUpstreamAbortListener = true;
+      return Promise.reject(new DOMException("The operation was aborted.", "AbortError"));
     }
+    onAbort = () => controller.abort();
+    upstreamSignal.addEventListener("abort", onAbort, { once: true });
   }
 
   return fetch(url, { ...restInit, signal: controller.signal }).finally(() => {
     clearTimeout(timeoutId);
-    if (upstreamSignal && onAbort && hasUpstreamAbortListener) {
+    if (upstreamSignal && onAbort) {
       upstreamSignal.removeEventListener("abort", onAbort);
     }
   });
