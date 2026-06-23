@@ -3,7 +3,8 @@
 use spanda_lexer::tokenize;
 use spanda_parser::parse;
 use spanda_readiness::{
-    analyze_failure, audit_program, evaluate_fleet_readiness, evaluate_readiness,
+    analyze_failure, audit_program, build_runtime_context, evaluate_fleet_readiness,
+    evaluate_readiness, evaluate_readiness_with_runtime, readiness_options_from_flags,
     readiness_traceability, verify_approvals, verify_fleet, verify_mission, ReadinessOptions,
 };
 
@@ -56,6 +57,41 @@ fn readiness_engine_produces_score() {
     let report = evaluate_readiness(&program, &ReadinessOptions::default());
     assert!(report.score.total > 0);
     assert!(!report.robots.is_empty());
+}
+
+#[test]
+fn readiness_runtime_injects_health_faults() {
+    let program = parse_source(ROVER);
+    let options = ReadinessOptions {
+        include_runtime: true,
+        inject_health_faults: true,
+        ..ReadinessOptions::default()
+    };
+    let ctx = build_runtime_context(&program, true);
+    let report = evaluate_readiness_with_runtime(&program, &options, Some(&ctx));
+    assert!(
+        report
+            .issues
+            .iter()
+            .any(|issue| issue.factor == "Health" && issue.message.contains("Runtime status")),
+        "expected runtime health issues: {:?}",
+        report.issues
+    );
+    assert!(report
+        .score
+        .factors
+        .iter()
+        .any(|f| f.factor == "Health" && f.score < 100));
+}
+
+#[test]
+fn readiness_target_flag_selects_deploy_profile() {
+    let program = parse_source(FLEET);
+    let options =
+        readiness_options_from_flags(&program, Some("edge".into()), false, false, false, false);
+    assert_eq!(options.target.as_deref(), Some("edge"));
+    let report = evaluate_readiness(&program, &options);
+    assert_eq!(report.target.as_deref(), Some("edge"));
 }
 
 #[test]

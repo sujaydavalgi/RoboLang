@@ -128,6 +128,12 @@ pub struct ReadinessOptions {
     pub policy: Option<ReadinessPolicy>,
     pub simulate: bool,
     pub strict: bool,
+    /// Evaluate health using runtime fault/event signals (live or injected).
+    #[serde(default)]
+    pub include_runtime: bool,
+    /// When `include_runtime`, inject standard health fault scenarios.
+    #[serde(default)]
+    pub inject_health_faults: bool,
 }
 
 /// Twin readiness comparison status.

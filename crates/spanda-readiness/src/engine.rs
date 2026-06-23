@@ -1,19 +1,29 @@
 //! Readiness evaluation engine composing verification subsystems.
 
+use crate::runtime::{build_runtime_context, RuntimeReadinessContext};
 use crate::types::{
     ReadinessFactorScore, ReadinessIssue, ReadinessOptions, ReadinessReport, ReadinessScore,
     ReadinessSeverity, ReadinessStatus,
 };
 use spanda_ast::nodes::Program;
 use spanda_capability::{
-    capability_traceability, check_minimum_capabilities, evaluate_health_checks,
-    infer_robot_capabilities,
+    apply_fleet_health_checks, capability_traceability, check_minimum_capabilities,
+    evaluate_health_checks, evaluate_runtime_health, infer_robot_capabilities, HealthStatus,
 };
 use spanda_hardware::{verify_program_compatibility, CompatSeverity, VerifyOptions};
 use spanda_security::validate::{security_check, SecuritySeverity};
 
 /// Evaluate operational readiness for a parsed program.
 pub fn evaluate_readiness(program: &Program, options: &ReadinessOptions) -> ReadinessReport {
+    evaluate_readiness_with_runtime(program, options, None)
+}
+
+/// Evaluate readiness with optional live runtime health context.
+pub fn evaluate_readiness_with_runtime(
+    program: &Program,
+    options: &ReadinessOptions,
+    runtime: Option<&RuntimeReadinessContext>,
+) -> ReadinessReport {
     let policy = options.policy.clone().unwrap_or_default();
     let mut issues = Vec::new();
     let mut factor_scores = Vec::new();
@@ -82,17 +92,59 @@ pub fn evaluate_readiness(program: &Program, options: &ReadinessOptions) -> Read
         });
     }
 
-    let health_report = evaluate_health_checks(program);
+    let health_report = if let Some(ctx) = runtime {
+        evaluate_runtime_health(&ctx.faults, &ctx.events, program)
+    } else {
+        evaluate_health_checks(program)
+    };
+    let mut health_report = health_report;
+    if runtime.is_some() {
+        let Program::Program { fleets, .. } = program;
+        if !fleets.is_empty() {
+            let mut fleet_registry = spanda_runtime::robotics::FleetRegistry::default();
+            for fleet in fleets {
+                let spanda_ast::robotics_decl::FleetDecl::FleetDecl { name, members, .. } = fleet;
+                fleet_registry.register(name, members.clone());
+            }
+            let faults = runtime.map(|c| c.faults.as_slice()).unwrap_or(&[]);
+            apply_fleet_health_checks(&mut health_report, program, &fleet_registry, faults);
+        }
+    }
     let health_score = match health_report.overall {
-        spanda_capability::HealthStatus::Healthy => 100,
-        spanda_capability::HealthStatus::Degraded | spanda_capability::HealthStatus::Warning => 70,
-        spanda_capability::HealthStatus::Critical | spanda_capability::HealthStatus::Failed => 30,
-        spanda_capability::HealthStatus::Unsafe => 0,
+        HealthStatus::Healthy => 100,
+        HealthStatus::Degraded | HealthStatus::Warning => 70,
+        HealthStatus::Critical | HealthStatus::Failed => 30,
+        HealthStatus::Unsafe => 0,
         _ => 85,
     };
     factor_scores.push(factor_row("Health", health_score, policy.weights.health));
     for check in &health_report.checks {
-        if check
+        if matches!(
+            check.status,
+            HealthStatus::Degraded
+                | HealthStatus::Warning
+                | HealthStatus::Critical
+                | HealthStatus::Failed
+                | HealthStatus::Unsafe
+                | HealthStatus::Offline
+        ) {
+            issues.push(ReadinessIssue {
+                factor: "Health".into(),
+                severity: match check.status {
+                    HealthStatus::Critical | HealthStatus::Failed | HealthStatus::Unsafe => {
+                        ReadinessSeverity::High
+                    }
+                    HealthStatus::Degraded | HealthStatus::Warning | HealthStatus::Offline => {
+                        ReadinessSeverity::Medium
+                    }
+                    _ => ReadinessSeverity::Low,
+                },
+                message: check.message.clone().unwrap_or_else(|| {
+                    format!("{} {} {}", check.metric, check.operator, check.threshold)
+                }),
+                suggested_action: Some("Review health policy reactions".into()),
+            });
+        } else if check
             .message
             .as_deref()
             .unwrap_or("")
@@ -247,7 +299,14 @@ pub fn evaluate_readiness_source(
 ) -> Result<ReadinessReport, spanda_error::SpandaError> {
     let tokens = spanda_lexer::tokenize(source)?;
     let program = spanda_parser::parse(tokens)?;
-    Ok(evaluate_readiness(&program, options))
+    let runtime = options
+        .include_runtime
+        .then(|| build_runtime_context(&program, options.inject_health_faults));
+    Ok(evaluate_readiness_with_runtime(
+        &program,
+        options,
+        runtime.as_ref(),
+    ))
 }
 
 fn factor_row(factor: &str, score: u32, weight: u32) -> ReadinessFactorScore {
