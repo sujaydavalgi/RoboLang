@@ -20,7 +20,26 @@ export function defaultFleetAgentStatePath(): string {
 
 export function fleetAgentStatePathFor(robotName: string): string {
   const safeName = robotName.replace(/[/\\]/g, "_");
-  return process.env.SPANDA_FLEET_AGENT_STATE ?? `.spanda/fleet-agent-state/${safeName}.json`;
+  return `.spanda/fleet-agent-state/${safeName}.json`;
+}
+
+function clearFleetAgentOnIdentityChange(state: FleetAgentState, newRobotName: string): void {
+  if (state.robotName && state.robotName !== newRobotName) {
+    state.lastPeerMessages = [];
+    delete state.token;
+  }
+}
+
+function createRequestLock(): <T>(fn: () => Promise<T>) => Promise<T> {
+  let chain: Promise<void> = Promise.resolve();
+  return <T>(fn: () => Promise<T>) => {
+    const run = chain.then(fn, fn);
+    chain = run.then(
+      () => undefined,
+      () => undefined,
+    );
+    return run;
+  };
 }
 
 export function emptyFleetAgentState(): FleetAgentState {
@@ -149,11 +168,13 @@ export function startFleetAgentServer(options: {
 }): ReturnType<typeof createServer> {
   const statePath = options.statePath ?? fleetAgentStatePathFor(options.robotName);
   const state = readFleetAgentStateFromDisk(statePath);
+  clearFleetAgentOnIdentityChange(state, options.robotName);
   state.robotName = options.robotName;
   if (options.token) state.token = options.token;
   writeFleetAgentStateToDisk(state, statePath);
+  const withRequestLock = createRequestLock();
   const requestHandler = (req: IncomingMessage, res: ServerResponse) => {
-    void handleRequest(req, res, state, statePath);
+    void withRequestLock(() => handleRequest(req, res, state, statePath));
   };
   const scheme = options.tlsCert && options.tlsKey ? "https" : "http";
   const server =

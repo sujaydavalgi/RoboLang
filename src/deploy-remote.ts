@@ -16,6 +16,7 @@ import {
 } from "./deploy-service.js";
 import type { DeployArtifactBundle } from "./deploy-bundle.js";
 import type { CertificationProofSummary } from "./certify-prover.js";
+import { remoteFetch } from "./http-fetch.js";
 
 function certificationProofPayload(
   proof?: CertificationProofSummary,
@@ -110,7 +111,7 @@ async function agentFetch(
   const headers: Record<string, string> = { Accept: "application/json" };
   if (body) headers["Content-Type"] = "application/json";
   if (entry.token) headers.Authorization = `Bearer ${entry.token}`;
-  return fetch(`${base}${path}`, { method, headers, body });
+  return remoteFetch(`${base}${path}`, { method, headers, body });
 }
 
 export async function agentHealth(entry: DeployAgentEntry): Promise<boolean> {

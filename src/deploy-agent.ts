@@ -27,7 +27,33 @@ export function defaultAgentStatePath(): string {
 
 export function agentStatePathFor(target: string): string {
   const safeTarget = target.replace(/[/\\@:]/g, "_");
-  return process.env.SPANDA_AGENT_STATE ?? `.spanda/agent-state/${safeTarget}.json`;
+  return `.spanda/agent-state/${safeTarget}.json`;
+}
+
+function clearAgentDeploymentOnIdentityChange(state: AgentState, newTarget: string): void {
+  if (state.target && state.target !== newTarget) {
+    state.currentVersion = "0.0.0";
+    delete state.previousVersion;
+    delete state.program;
+    delete state.programHash;
+    delete state.requireHash;
+    delete state.requireSignature;
+    delete state.requireCertify;
+    delete state.trustedPublicKey;
+    delete state.token;
+  }
+}
+
+function createRequestLock(): <T>(fn: () => Promise<T>) => Promise<T> {
+  let chain: Promise<void> = Promise.resolve();
+  return <T>(fn: () => Promise<T>) => {
+    const run = chain.then(fn, fn);
+    chain = run.then(
+      () => undefined,
+      () => undefined,
+    );
+    return run;
+  };
 }
 
 export function emptyAgentState(): AgentState {
@@ -214,11 +240,12 @@ async function handleRequest(
 
 export function createDeployAgentServer(
   state: AgentState,
-  statePath = defaultAgentStatePath(),
+  statePath = state.target ? agentStatePathFor(state.target) : defaultAgentStatePath(),
 ): ReturnType<typeof createServer> {
   // Serve the deploy agent protocol over HTTP/1.1.
+  const withRequestLock = createRequestLock();
   return createServer((req, res) => {
-    void handleRequest(req, res, state, statePath);
+    void withRequestLock(() => handleRequest(req, res, state, statePath));
   });
 }
 
@@ -236,6 +263,7 @@ export function startDeployAgentServer(options: {
 }): ReturnType<typeof createServer> {
   const statePath = options.statePath ?? agentStatePathFor(options.target);
   const state = readAgentStateFromDisk(statePath);
+  clearAgentDeploymentOnIdentityChange(state, options.target);
   state.target = options.target;
   if (options.token) state.token = options.token;
   if (options.requireHash) state.requireHash = true;
@@ -243,8 +271,9 @@ export function startDeployAgentServer(options: {
   if (options.requireCertify) state.requireCertify = true;
   if (options.trustedPublicKey) state.trustedPublicKey = options.trustedPublicKey;
   writeAgentStateToDisk(state, statePath);
+  const withRequestLock = createRequestLock();
   const requestHandler = (req: IncomingMessage, res: ServerResponse) => {
-    void handleRequest(req, res, state, statePath);
+    void withRequestLock(() => handleRequest(req, res, state, statePath));
   };
   const scheme = options.tlsCert && options.tlsKey ? "https" : "http";
   const server =

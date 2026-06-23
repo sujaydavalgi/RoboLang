@@ -4,6 +4,7 @@
  */
 
 import type { PeerDelivery } from "./fleet-orchestrator.js";
+import { remoteFetch } from "./http-fetch.js";
 
 export type MeshRelayResponse = {
   ok: boolean;
@@ -28,7 +29,7 @@ async function meshFetch(
     "Content-Type": "application/json",
   };
   if (token) headers.Authorization = `Bearer ${token}`;
-  return fetch(`${base}${path}`, { method: "POST", headers, body });
+  return remoteFetch(`${base}${path}`, { method: "POST", headers, body });
 }
 
 export async function relayDeliveriesViaMesh(

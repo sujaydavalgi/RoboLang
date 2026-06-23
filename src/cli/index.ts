@@ -1400,6 +1400,33 @@ function handleFleet(
     return;
   }
 
+  if (sub === "mesh") {
+    if (positional[1] !== "start") {
+      console.error("Usage: spanda fleet mesh start [--bind <addr>] [--token <t>] [--tls-cert <pem>] [--tls-key <pem>]");
+      process.exit(1);
+    }
+    requireNative("Fleet mesh start requires the native Rust CLI.");
+    const args = ["fleet", "mesh", "start", ...positional.slice(2)];
+    for (const [key, value] of flags) {
+      if (value === true) {
+        args.push(`--${key}`);
+      } else if (typeof value === "string") {
+        args.push(`--${key}`, value);
+      }
+    }
+    const result = runNativeCli(args);
+    if (json) {
+      console.log(result.stdout ?? "");
+    } else {
+      process.stdout.write(result.stdout ?? "");
+      process.stderr.write(result.stderr ?? "");
+    }
+    if (result.status !== 0) {
+      process.exit(result.status ?? 1);
+    }
+    return;
+  }
+
   if (sub === "run") {
     requireNative("Fleet run requires the native Rust CLI.");
     const abs = absPath(positional[1]);
@@ -1429,6 +1456,7 @@ function handleFleet(
   console.error("Usage: spanda fleet run [--json] [--trace-*] <file.sd>");
   console.error("       spanda fleet orchestrate [--json] [--remote] <file.sd>");
   console.error("       spanda fleet agent start|register|list");
+  console.error("       spanda fleet mesh start [--bind <addr>] [--token <t>]");
   process.exit(1);
 }
 

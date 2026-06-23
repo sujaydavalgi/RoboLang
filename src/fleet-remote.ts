@@ -6,6 +6,7 @@
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import type { PeerDelivery } from "./fleet-orchestrator.js";
+import { remoteFetch } from "./http-fetch.js";
 
 export type FleetAgentEntry = {
   robotName: string;
@@ -111,7 +112,7 @@ async function agentFetch(
   const headers: Record<string, string> = { Accept: "application/json" };
   if (body) headers["Content-Type"] = "application/json";
   if (entry.token) headers.Authorization = `Bearer ${entry.token}`;
-  return fetch(`${base}${path}`, { method, headers, body });
+  return remoteFetch(`${base}${path}`, { method, headers, body });
 }
 
 export async function fleetAgentHealth(entry: FleetAgentEntry): Promise<boolean> {
