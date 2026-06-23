@@ -10,7 +10,7 @@ export function remoteFetch(url: string, init: RequestInit = {}): Promise<Respon
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), REMOTE_HTTP_TIMEOUT_MS);
 
-  const upstreamSignal = init.signal;
+  const { signal: upstreamSignal, ...restInit } = init;
   let onAbort: (() => void) | undefined;
 
   if (upstreamSignal) {
@@ -22,7 +22,7 @@ export function remoteFetch(url: string, init: RequestInit = {}): Promise<Respon
     }
   }
 
-  return fetch(url, { ...init, signal: controller.signal }).finally(() => {
+  return fetch(url, { ...restInit, signal: controller.signal }).finally(() => {
     clearTimeout(timeoutId);
     if (upstreamSignal && onAbort) {
       upstreamSignal.removeEventListener("abort", onAbort);
