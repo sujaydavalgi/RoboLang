@@ -5,22 +5,17 @@
 
 export const REMOTE_HTTP_TIMEOUT_MS = 30_000;
 
+/**
+ * Produces a sanitized URL string for error messages by removing query strings
+ * and fragments. Returns a placeholder when parsing fails.
+ *
+ * @param url - Raw request URL.
+ * @returns Origin plus pathname, or `"[unparseable-url]"` if parsing fails.
+ * @example
+ * safeUrlForError("https://api.example.com/deploy?token=secret")
+ * // => "https://api.example.com/deploy"
+ */
 function safeUrlForError(url: string): string {
-  // Redact query strings and fragments from URLs embedded in fetch error messages.
-  //
-  // Parameters:
-  // - `url` — raw request URL
-  //
-  // Returns:
-  // Origin plus pathname, or a placeholder when parsing fails.
-  //
-  // Options:
-  // None.
-  //
-  // Example:
-  // safeUrlForError("https://api.example.com/deploy?token=secret")
-  // => "https://api.example.com/deploy"
-
   try {
     const parsed = new URL(url);
     return `${parsed.origin}${parsed.pathname}`;
@@ -50,10 +45,10 @@ export function remoteFetch(url: string, init: RequestInit = {}): Promise<Respon
   // Issue one HTTP request with a bounded wait for connect and response body.
   const controller = new AbortController();
   const { signal: upstreamSignal, ...restInit } = init;
-  let onAbort: (() => void) | undefined;
+  let upstreamAbortHandler: (() => void) | undefined;
   const detachUpstreamAbortListener = () => {
-    if (upstreamSignal && onAbort) {
-      upstreamSignal.removeEventListener("abort", onAbort);
+    if (upstreamAbortHandler) {
+      upstreamSignal?.removeEventListener("abort", upstreamAbortHandler);
     }
   };
 
@@ -77,7 +72,7 @@ export function remoteFetch(url: string, init: RequestInit = {}): Promise<Respon
   }, REMOTE_HTTP_TIMEOUT_MS);
 
   if (upstreamSignal) {
-    onAbort = () => {
+    upstreamAbortHandler = () => {
       detachUpstreamAbortListener();
       clearTimeout(timeoutId);
       const reason =
@@ -86,7 +81,7 @@ export function remoteFetch(url: string, init: RequestInit = {}): Promise<Respon
           : upstreamSignal.reason;
       controller.abort(reason);
     };
-    upstreamSignal.addEventListener("abort", onAbort, { once: true });
+    upstreamSignal.addEventListener("abort", upstreamAbortHandler, { once: true });
   }
 
   return fetch(url, { ...restInit, signal: controller.signal }).finally(() => {
