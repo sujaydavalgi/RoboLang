@@ -217,13 +217,14 @@ export function evaluateReadinessTs(
   const total = weightedTotal(factors);
   const hasHigh = issues.some((i) => i.severity === "High" || i.severity === "Critical");
   const mission_ready = total >= 80 && (hw.compatible ?? false) && !hasHigh;
-  const status: ReadinessStatus = mission_ready
-    ? issues.length > 0
-      ? "Degraded"
-      : "Ready"
-    : total >= 65
-      ? "Degraded"
-      : "NotReady";
+  let status: ReadinessStatus;
+  if (mission_ready) {
+    status = issues.length > 0 ? "Degraded" : "Ready";
+  } else if (total >= 65) {
+    status = "Degraded";
+  } else {
+    status = "NotReady";
+  }
 
   const robots = (program.robots ?? []).map((r) => r.name);
 
