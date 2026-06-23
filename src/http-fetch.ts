@@ -58,9 +58,11 @@ export function remoteFetch(url: string, init: RequestInit = {}): Promise<Respon
   };
 
   if (upstreamSignal?.aborted) {
-    return Promise.reject(
-      new DOMException("Remote fetch operation was aborted.", "AbortError"),
-    );
+    const reason =
+      upstreamSignal.reason === undefined
+        ? new DOMException("Remote fetch operation was aborted.", "AbortError")
+        : upstreamSignal.reason;
+    return Promise.reject(reason);
   }
 
   // Bound the full fetch lifecycle (connect + response/body read); expiry aborts via AbortController.
