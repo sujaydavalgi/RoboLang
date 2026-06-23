@@ -68,10 +68,6 @@ function defaultDeployTarget(program: Program): string | undefined {
   return first.targets[0];
 }
 
-function parseProgramSource(source: string): Program {
-  return parse(tokenize(source));
-}
-
 function lineColumnForFactor(program: Program, factor: string): { line: number; column: number } {
   const robot = program.robots[0];
   const deploy = program.deployments[0];
