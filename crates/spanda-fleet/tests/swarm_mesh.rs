@@ -25,14 +25,17 @@ fn coordinate_mesh_when_ready(
             return result;
         }
         if std::time::Instant::now() >= deadline {
-            panic!("mesh/agent did not become ready before timeout");
+            panic!(
+                "mesh and/or agent did not become ready within {}s timeout",
+                MESH_READY_TIMEOUT_SECS
+            );
         }
         thread::sleep(Duration::from_millis(MESH_READY_POLL_INTERVAL_MS));
     }
 }
 
 #[test]
-#[should_panic(expected = "mesh/agent did not become ready before timeout")]
+#[should_panic(expected = "mesh and/or agent did not become ready within")]
 fn coordinate_mesh_when_ready_panics_on_timeout() {
     let (port, _agent) = spawn_test_fleet_agent("ScoutB", None).expect("spawn agent");
     let mut registry = FleetAgentRegistry::default();
