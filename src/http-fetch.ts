@@ -19,6 +19,7 @@ function safeUrlForError(url: string): string {
   //
   // Example:
   // safeUrlForError("https://api.example.com/deploy?token=secret")
+  // => "https://api.example.com/deploy"
 
   try {
     const parsed = new URL(url);
