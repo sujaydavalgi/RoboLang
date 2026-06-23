@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Documentation audit:** new guides [verification-diagnostics.md](docs/verification-diagnostics.md), [typed-handler-io.md](docs/typed-handler-io.md), [testing.md](docs/testing.md); expanded [fleet-health.md](docs/fleet-health.md), [swarm-health.md](docs/swarm-health.md), [kill-switch.md](docs/kill-switch.md), [capability-traceability.md](docs/capability-traceability.md), [agentic-programming.md](docs/agentic-programming.md); example indexes under [examples/hardware/README.md](examples/hardware/README.md), [examples/iot/README.md](examples/iot/README.md).
+- **Examples (Phase 27–35 coverage):** `features/kill_switch.sd`, `fleet_health_require.sd`, `typed_handler_returns.sd`, `agent_can_deny.sd`, `live_openai.sd`, `live_anthropic.sd`, `live_onnx.sd`, `security/remote_signed_kill_switch.sd`, `integration/debugger_every.sd`, `basics/12_compile_fail_tests.sd`, `iot/modbus_dispatch/`, `packages/publish_mirror_project/`.
+
+### Added
+
 - **Verification & DX (Phase 28):** `expect_compile_error { }` blocks in test bodies — validated at test-run time; module function return type enforcement in the typechecker; TypeScript parser mirror for Phase 27 syntax (`kill_switch`, `health_check`, `health_policy`, `requires_capability`, hardware components, robot `uses hardware` / `exposes capabilities`); IoT protocol package stubs (`spanda-opcua`, `spanda-modbus`, `spanda-zigbee`, `spanda-lora`, `spanda-matter`, `spanda-canbus`); integration tests in `p1_features.rs` and `tests/capability-parser.test.ts`.
 - **Verification & DX (Phase 29):** span-aware verification diagnostics for capability, traceability, minimum-hardware, health, and kill-switch checks; `spanda check --verification-json`; LSP integration; runtime health evaluation wired to `HardwareMonitor`; kill-switch and health-fault sim integration tests.
 - **Verification & DX (Phase 30):** `suggested_fix` hints on verification diagnostics; LSP quick-fix code actions; continuous runtime health polling during trigger maintenance; debugger pause events for kill switch (`kill_switch_activated`) and critical health (`health_critical`).

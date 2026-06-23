@@ -10,13 +10,21 @@ Spanda v0.5 beta includes **real AI provider paths** for `ai_model` blocks:
 
 When the key is set, `planner.reason(...)` calls the provider via the Python bridge; otherwise it falls back to the deterministic mock provider.
 
-For FFI `extern python fn openai_complete` / `anthropic_complete`, the same bridge applies.
+**Examples (ai_model provider):**
+
+| Provider | File |
+|----------|------|
+| OpenAI | [`examples/features/live_openai.sd`](../examples/features/live_openai.sd) |
+| Anthropic | [`examples/features/live_anthropic.sd`](../examples/features/live_anthropic.sd) |
+| ONNX | [`examples/features/live_onnx.sd`](../examples/features/live_onnx.sd) |
+
+FFI bridge (no `ai_model` block): [`examples/ffi_openai_live.sd`](../examples/ffi_openai_live.sd)
 
 ## Anthropic quick start
 
 ```bash
 export ANTHROPIC_API_KEY=sk-ant-your-key
-spanda run examples/ffi_openai_live.sd  # swap provider to "anthropic" in ai_model
+spanda run examples/features/live_anthropic.sd
 ```
 
 With the `spanda-anthropic` registry package:
@@ -58,7 +66,7 @@ Requires `onnxruntime` in the Python environment when using the bridge path.
 
 ```bash
 export OPENAI_API_KEY=sk-your-key
-spanda run examples/ffi_openai_live.sd
+spanda run examples/features/live_openai.sd
 ```
 
 With the `spanda-openai` registry package:

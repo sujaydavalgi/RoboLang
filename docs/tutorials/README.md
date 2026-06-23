@@ -84,6 +84,16 @@ Deep dives on one capability. Read after a beginner track.
 | Mission replay | [replay.md](../replay.md) | `examples/end_to_end/replay_mission.sd` |
 | Regex | [regex.md](../regex.md) | `examples/regex/` |
 | Hardware & deploy | [hardware-compatibility.md](../hardware-compatibility.md) | `examples/hardware/` |
+| Health & kill switch | [health-checks.md](../health-checks.md), [kill-switch.md](../kill-switch.md) | `examples/hardware/capability_verification.sd` |
+| Capability traceability | [capability-traceability.md](../capability-traceability.md) | `spanda trace capabilities …` |
+| Fleet / swarm health | [fleet-health.md](../fleet-health.md), [swarm-health.md](../swarm-health.md) | `examples/features/fleet_health_require.sd` |
+| Verification diagnostics | [verification-diagnostics.md](../verification-diagnostics.md) | `--verification-json` |
+| Testing | [testing.md](../testing.md) | `examples/basics/12_compile_fail_tests.sd` |
+| Typed handler I/O | [typed-handler-io.md](../typed-handler-io.md) | `examples/features/typed_handler_returns.sd` |
+| IoT & live bridges | [iot.md](../iot.md) | `examples/iot/modbus_dispatch.sd`, `./scripts/live_iot_golden_path.sh` |
+| Live AI | [live-ai-provider.md](../live-ai-provider.md) | `examples/features/live_openai.sd` |
+| Debugging (DAP) | [debugging.md](../debugging.md) | `examples/integration/debugger_every.sd` |
+| Registry & publish | [registry.md](../registry.md), [packages.md](../packages.md) | `examples/packages/publish_mirror_project/` |
 | Packages | [packages.md](../packages.md) | [examples/packages/](../../examples/packages/README.md) |
 | Official packages | [official-packages.md](../official-packages.md) | `packages/registry/`, adapter examples |
 | Lean-core / crates | [lean-core.md](../lean-core.md) | [crates/README.md](../../crates/README.md) |

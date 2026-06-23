@@ -25,8 +25,16 @@ agent Planner {
 
 - Agents cannot directly execute actuators unless permitted and safety-gated
 - High-risk actions require approval or `SafeAction`
+- Empty `can []` **default-denies** `propose_motion` and `execute` at runtime (Phase 32)
+- Capability grant/deny events are written to the audit trail when configured (Phase 31)
 - Reasoning traces captured for audit when `audit` is configured
 - `ActionProposal` must pass through `safety.validate` before actuator execution
+- Agent `plan` blocks with motion grants must return `SafeAction` — see [typed-handler-io.md](./typed-handler-io.md)
+
+**Examples:**
+
+- [`examples/features/agent_capabilities.sd`](../examples/features/agent_capabilities.sd) — populated `can[]`
+- [`examples/features/agent_can_deny.sd`](../examples/features/agent_can_deny.sd) — empty `can[]` denial
 
 ## Runtime
 

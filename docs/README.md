@@ -53,9 +53,19 @@ Spanda is an AI-native autonomous systems programming language. Source files use
 | [kill-switch.md](./kill-switch.md) | **Kill switch syntax, `remote_signed`, and `on kill_switch` handlers** |
 | [iot.md](./iot.md) | **IoT provider contracts, package dispatch, live bridge env flags** |
 | [capability-traceability.md](./capability-traceability.md) | **Capability exposure and traceability matrices** |
+| [verification-diagnostics.md](./verification-diagnostics.md) | **`spanda check --verification-json`, LSP quick-fixes, kill-switch severity** |
+| [typed-handler-io.md](./typed-handler-io.md) | **Return types on behavior, task, trigger, event, and agent plan handlers** |
+| [testing.md](./testing.md) | **`expect_compile_error`, `spanda test --json`, compile-fail tests** |
+| [agentic-programming.md](./agentic-programming.md) | **Safety-gated agents, `can[]`, audit hooks** |
+| [fleet-health.md](./fleet-health.md) | **Fleet health `require` clauses and runtime evaluation** |
+| [swarm-health.md](./swarm-health.md) | **Swarm quorum and mesh health checks** |
+| [minimum-hardware-safety.md](./minimum-hardware-safety.md) | **Minimum-hardware safety analysis** |
+| [hardware-capabilities.md](./hardware-capabilities.md) | **Hardware capability exposure** |
+| [robot-capabilities.md](./robot-capabilities.md) | **Robot `exposes capabilities` and mission grants** |
+| [hardware-traceability.md](./hardware-traceability.md) | **Hardware-to-code traceability mapping** |
+| [packages.md](./packages.md) | **Package manager, `spanda publish`, capabilities** |
 | [registry.md](./registry.md) | **Hosted package registry, `spanda publish` mirror, and `spanda install`** |
 | [feature-status.md](./feature-status.md) | **v0.1.0-alpha support matrix** |
-| [release-announcement-v0.1.0-alpha.md](./release-announcement-v0.1.0-alpha.md) | Announcement copy for launch channels |
 | [hardware-compatibility.md](./hardware-compatibility.md) | **Hardware profiles, deploy targets, and compile-time verification** |
 | [positioning.md](./positioning.md) | **GPS/GNSS types, sensors, and simulation faults** |
 | [connectivity.md](./connectivity.md) | **Wi-Fi, LTE, failover policies, and offline modes** |
@@ -77,7 +87,6 @@ Spanda is an AI-native autonomous systems programming language. Source files use
 | [ffi-and-ecosystem.md](./ffi-and-ecosystem.md) | **Python/C++/ROS2 interoperability strategy** |
 | [migration.md](./migration.md) | Migration from legacy syntax and dual-backend notes |
 | [test-plan.md](./test-plan.md) | Test coverage plan |
-| [api-contract.json](./api-contract.json) | JSON schema for diagnostics, run results, and verify output |
 
 ## Repository layout
 

@@ -376,6 +376,10 @@ Rust and TypeScript sources use **inline API documentation** (inside function bo
 | [docs/iot.md](docs/iot.md) | IoT packages, dispatch, live bridge env flags |
 | [docs/live-ai-provider.md](docs/live-ai-provider.md) | OpenAI, Anthropic, ONNX live paths |
 | [docs/debugging.md](docs/debugging.md) | VS Code DAP — `behavior`, `task every`, `every` triggers |
+| [docs/capability-traceability.md](docs/capability-traceability.md) | Capability exposure and traceability matrices |
+| [docs/verification-diagnostics.md](docs/verification-diagnostics.md) | `--verification-json` and LSP quick-fixes |
+| [docs/typed-handler-io.md](docs/typed-handler-io.md) | Handler return type annotations |
+| [docs/testing.md](docs/testing.md) | `expect_compile_error` and test CLI |
 | [docs/packages.md](docs/packages.md) | Package manager, `spanda publish`, capabilities |
 | [docs/registry.md](docs/registry.md) | Hosted registry, signatures, golden path |
 | [docs/killer-demo.md](docs/killer-demo.md) | 5-minute safety + verify + sim walkthrough |

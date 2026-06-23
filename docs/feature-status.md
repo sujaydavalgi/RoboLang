@@ -231,3 +231,14 @@ See [architecture.md](./architecture.md) for diagrams.
 - [product-strategy.md](./product-strategy.md) — v0.5 beta priorities
 - [ffi-and-ecosystem.md](./ffi-and-ecosystem.md) — Python/C++/ROS2 interop
 - [compiler-backend-roadmap.md](./compiler-backend-roadmap.md) — LLVM evolution
+- [health-checks.md](./health-checks.md) — health checks and fleet requirements
+- [kill-switch.md](./kill-switch.md) — kill switch syntax and handlers
+- [capability-traceability.md](./capability-traceability.md) — traceability matrices
+- [verification-diagnostics.md](./verification-diagnostics.md) — `--verification-json` and LSP quick-fixes
+- [typed-handler-io.md](./typed-handler-io.md) — handler return type annotations
+- [testing.md](./testing.md) — `expect_compile_error` and test CLI
+- [iot.md](./iot.md) — IoT packages and live bridges
+- [live-ai-provider.md](./live-ai-provider.md) — OpenAI, Anthropic, ONNX
+- [debugging.md](./debugging.md) — VS Code DAP workflow
+- [registry.md](./registry.md) — hosted registry and publish mirror
+- [packages.md](./packages.md) — package manager

@@ -42,9 +42,7 @@ device TemperatureSensor {
 
 Install packages via `spanda add spanda-mqtt`.
 
-## Agent capability enforcement
-
-When an agent declares `can [ ... ]`, runtime enforces the list. An empty `can []` denies high-risk actions (`execute`, `propose_motion`) by default. Capability grant/deny events are written to the audit trail when configured.
+**Example:** [`examples/iot/modbus_dispatch.sd`](../examples/iot/modbus_dispatch.sd) · Golden path: `./scripts/live_iot_golden_path.sh`
 
 ## Runtime dispatch
 

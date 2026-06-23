@@ -491,6 +491,11 @@ Guides: [health-checks.md](./health-checks.md) · [kill-switch.md](./kill-switch
 - [architecture.md](./architecture.md) — how the compiler works
 - [health-checks.md](./health-checks.md) — health checks and fleet requirements
 - [live-ai-provider.md](./live-ai-provider.md) — OpenAI, Anthropic, ONNX live paths
+- [health-checks.md](./health-checks.md) — health checks and fleet `require` clauses
+- [testing.md](./testing.md) — `expect_compile_error` and test CLI
+- [verification-diagnostics.md](./verification-diagnostics.md) — structured verification output
+- [typed-handler-io.md](./typed-handler-io.md) — handler return types
+- [registry.md](./registry.md) — hosted registry and publish mirror
 - [feature-status.md](./feature-status.md) — what is stable vs experimental
 
 ---

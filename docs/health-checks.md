@@ -55,27 +55,15 @@ health_policy SafetyPolicy {
 
 At runtime, matching reactions execute when health status transitions (wired to `HardwareMonitor` polling). Fleet-target checks are refined against fleet membership and member faults via `apply_fleet_health_checks`. Swarm programs log coordination events when fleet health is critical. Policies latch per `(policy, status)` until health returns to `Healthy`.
 
-## Event handler return types
+**Example:** [`examples/hardware/capability_verification.sd`](../examples/hardware/capability_verification.sd) · Fleet requires: [`examples/features/fleet_health_require.sd`](../examples/features/fleet_health_require.sd)
 
-```spanda
-event Alert;
+---
 
-on Alert -> Bool {
-    return true;
-}
-```
+## Typed handler returns
 
-## Behavior and task return types
+Return type annotations on behaviors, tasks, triggers, and events are documented in [typed-handler-io.md](./typed-handler-io.md).
 
-```spanda
-behavior status() -> Bool {
-    return true;
-}
-
-task Monitor every 50ms -> Bool {
-    return battery_ok;
-}
-```
+---
 
 ## Health triggers
 
