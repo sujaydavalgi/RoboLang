@@ -5,7 +5,6 @@ import { tokenize } from "../src/lexer/index.js";
 import { parse } from "../src/parser/index.js";
 import { verifyHardwareProgram } from "../src/hardware-verify.js";
 import {
-  applyGpsPositionFaults,
   faultToConnectivity,
   connectivityLinkToTransport,
   verifyRequiresConnectivity,

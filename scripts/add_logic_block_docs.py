@@ -407,8 +407,6 @@ def describe_block_rust(line: str) -> str:
     if s.startswith("self.register("):
         arg = s.split("(", 1)[1].split(")", 1)[0].strip()
         return f"Register the {humanize(arg)} handler."
-        target = s[7:].strip().rstrip(";")
-        return f"Return {rust_tail(target)} to the caller."
     if s.startswith("Ok("):
         return "Return the success value to the caller."
     if s.startswith("Err("):

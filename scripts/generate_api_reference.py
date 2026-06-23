@@ -127,11 +127,6 @@ RUST_OPTIONAL = [
     ("crates/spanda-ros2-rclrs-native", "spanda-ros2-rclrs-native"),
 ]
 
-# Flat list for iteration (preserves group order)
-RUST_ROOTS: list[tuple[str, str]] = [
-    crate for _group, crates in RUST_GROUPS for crate in crates
-] + RUST_OPTIONAL
-
 # `spanda_core::` path → canonical workspace crate (for embedders migrating off the facade)
 FACADE_MAP: list[tuple[str, str, str]] = [
     ("check / compile / run", "spanda_core::", "spanda_driver::"),

@@ -145,7 +145,7 @@ export function parseTlsEndpoint(url: string): TlsEndpoint | null {
   // Parse broker URLs into host/port TLS endpoints.
   const lower = url.toLowerCase();
   let useTls = false;
-  let stripped = lower;
+  let stripped: string;
   let defaultPort = 1883;
   if (lower.startsWith("mqtts://")) {
     useTls = true;

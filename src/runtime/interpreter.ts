@@ -47,7 +47,6 @@ import {
   getPoseFields,
   getString,
   getTrajectoryWaypoints,
-  getVelocityFields,
   poseFromState,
   runtimePose,
   runtimeTrajectory,

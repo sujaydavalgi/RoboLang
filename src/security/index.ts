@@ -7,7 +7,7 @@ import { sha256 } from "@noble/hashes/sha256";
 import { sha512 } from "@noble/hashes/sha512";
 import * as ed from "@noble/ed25519";
 import { bytesToHex, hexToBytes } from "@noble/hashes/utils";
-import { TrustBoundaryRegistry, parseTrustBoundary, boundaryForTransportName } from "./trust-boundary.js";
+import { TrustBoundaryRegistry } from "./trust-boundary.js";
 import type { AuthenticationMode, EncryptionMode, IntegrityMode } from "../transport/transport-security.js";
 
 export { TrustBoundaryRegistry, parseTrustBoundary, boundaryForTransportName } from "./trust-boundary.js";

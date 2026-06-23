@@ -3,7 +3,6 @@
  * @module
  */
 
-import { createHash } from "node:crypto";
 import type { DeployAssignment, DeployPlan } from "./deploy-service.js";
 
 export type DeployArtifactBundle = {
@@ -52,10 +51,6 @@ export function buildDeployBundle(plan: DeployPlan): DeployArtifactBundle {
 
 export function bundleCanonicalJson(bundle: DeployArtifactBundle): string {
   return JSON.stringify(canonicalBody(bundle));
-}
-
-function seedBytes(material: string): Uint8Array {
-  return createHash("sha256").update(material).digest();
 }
 
 export async function signDeployBundle(

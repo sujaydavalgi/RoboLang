@@ -458,7 +458,7 @@ export function allLibrarySensorTypes(): Record<string, {
  roboType: { kind: "named"; name: string }; library: string }> {
   const result: Record<string, { roboType: { kind: "named"; name: string }; library: string }> = {};
   for (const [libId, mod] of Object.entries(LIB_REGISTRY)) {
-    for (const [typeName, driver] of Object.entries(mod.sensors)) {
+    for (const typeName of Object.keys(mod.sensors)) {
       result[typeName] = { roboType: { kind: "named", name: typeName }, library: libId };
     }
   }

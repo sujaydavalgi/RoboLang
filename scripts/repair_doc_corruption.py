@@ -33,7 +33,7 @@ def repair_text(text: str) -> tuple[str, int]:
         if m and not stripped.lstrip().startswith("//"):
             indent = re.match(r"^(\s*)", line).group(1)
             head = m.group("head")
-            out.append(f"{head} {{\n")
+            out.append(f"{indent}{head} {{\n")
             fixes += 1
             i += 1
             # Drop orphaned trailing doc fragment until real body starts.

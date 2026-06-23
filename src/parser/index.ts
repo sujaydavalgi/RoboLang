@@ -4793,7 +4793,7 @@ class Parser {
     // const result = parseSafetyZone();
     const start = this.advance();
     const name = this.expect("IDENT", "Expected zone name");
-    let shape: "circle" | "rect" = "circle";
+    let shape: "circle" | "rect";
 
     // continue when this.match("CIRCLE").
     if (this.match("CIRCLE")) shape = "circle";
