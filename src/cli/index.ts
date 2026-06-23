@@ -1254,8 +1254,9 @@ function handleDeployAgent(subcommand: string | undefined, args: string[], json:
         if (json) {
           console.log(JSON.stringify(body, null, 2));
         } else {
-          const missionReady = body.mission_ready ?? body.readiness?.mission_ready;
-          const score = body.readiness?.score?.total ?? 0;
+          const readiness = body.readiness as { mission_ready?: boolean; score?: { total?: number } } | undefined;
+          const missionReady = body.mission_ready ?? readiness?.mission_ready;
+          const score = readiness?.score?.total ?? 0;
           console.log(`Agent readiness for ${target}`);
           console.log(`Mission Ready: ${missionReady ? "YES" : "NO"}`);
           console.log(`Score: ${score}/100`);

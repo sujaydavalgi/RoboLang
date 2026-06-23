@@ -70,7 +70,12 @@ swarm ReconLeader {
         .port();
     drop(ephemeral_listener);
     let unavailable_mesh_url = format!("http://127.0.0.1:{sink_port}/");
-    coordinate_mesh_when_ready(&program, "swarm_leader.sd", &mut state, &unavailable_mesh_url);
+    coordinate_mesh_when_ready(
+        &program,
+        "swarm_leader.sd",
+        &mut state,
+        &unavailable_mesh_url,
+    );
 }
 
 #[test]

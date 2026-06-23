@@ -6,9 +6,8 @@ use spanda_ast::nodes::Program;
 /// Resolve a display line/column for a readiness issue factor.
 pub fn line_column_for_factor(program: &Program, factor: &str) -> (u32, u32) {
     match factor {
-        "Hardware" | "Battery" | "Connectivity" | "Storage" | "Compute" | "Packages" | "Providers" => {
-            deploy_span(program).unwrap_or_else(|| first_robot_span(program))
-        }
+        "Hardware" | "Battery" | "Connectivity" | "Storage" | "Compute" | "Packages"
+        | "Providers" => deploy_span(program).unwrap_or_else(|| first_robot_span(program)),
         "Health" => first_health_check_span(program).unwrap_or_else(|| first_robot_span(program)),
         "Capabilities" | "Mission Requirements" => {
             mission_span(program).unwrap_or_else(|| first_robot_span(program))

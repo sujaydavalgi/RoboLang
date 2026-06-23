@@ -202,10 +202,10 @@ export function verifyMissionTs(program: Program, target?: string): MissionVerif
       required_capabilities: required,
       hardware_satisfied: hwOk,
       capabilities_satisfied: capsOk,
-      connectivity_satisfied: hw.compatible,
+      connectivity_satisfied: Boolean(hw.compatible),
       battery_sufficient: batteryOk,
       compute_sufficient: true,
-      safety_satisfied: hw.compatible,
+      safety_satisfied: Boolean(hw.compatible),
       issues,
     });
   }
@@ -334,7 +334,7 @@ export function generateSafetyReportTs(program: Program, label: string): SafetyC
   const hw = verifyHardwareProgram(program);
   const known_risks = hw.items.filter((i) => i.severity === "warning").map((i) => i.message);
   const deployable =
-    hw.compatible && missions.every((m) => m.achievable) && known_risks.length === 0;
+    Boolean(hw.compatible) && missions.every((m) => m.achievable) && known_risks.length === 0;
   return {
     program: label,
     deployable,

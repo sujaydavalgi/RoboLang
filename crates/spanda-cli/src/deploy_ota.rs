@@ -5,17 +5,18 @@ use spanda_deploy_http::{ensure_agent_auth, DeployAgentTls};
 use spanda_driver::{build_deploy_plan, compile};
 use spanda_fleet::{
     agent_health as fleet_agent_health, agent_readiness as fleet_agent_readiness,
-    default_fleet_agents_path, fleet_agent_state_path_for,
-    load_fleet_agent_registry, lookup_fleet_agent, mesh_registry_path, orchestrate_fleets, orchestrate_fleets_mesh,
+    default_fleet_agents_path, fleet_agent_state_path_for, load_fleet_agent_registry,
+    lookup_fleet_agent, mesh_registry_path, orchestrate_fleets, orchestrate_fleets_mesh,
     orchestrate_fleets_remote, register_fleet_agent, run_fleet_agent_server,
     run_fleet_mesh_coordinator, save_fleet_agent_registry,
 };
 use spanda_ota::{
-    agent_health, agent_readiness, agent_state_path_for, apply_rollout, build_deploy_bundle, default_agents_path,
-    default_state_path, execute_remote_rollback, execute_remote_rollout, load_agent_registry,
-    load_deploy_state, lookup_agent, plan_rollout, register_agent, rollback_targets, run_deploy_agent_server,
-    save_agent_registry, save_deploy_state, sign_deploy_bundle, validate_rollout_certification,
-    DeployAgentServerOptions, DeployState, RolloutOptions, RolloutResult, RolloutStrategy,
+    agent_health, agent_readiness, agent_state_path_for, apply_rollout, build_deploy_bundle,
+    default_agents_path, default_state_path, execute_remote_rollback, execute_remote_rollout,
+    load_agent_registry, load_deploy_state, lookup_agent, plan_rollout, register_agent,
+    rollback_targets, run_deploy_agent_server, save_agent_registry, save_deploy_state,
+    sign_deploy_bundle, validate_rollout_certification, DeployAgentServerOptions, DeployState,
+    RolloutOptions, RolloutResult, RolloutStrategy,
 };
 use std::env;
 use std::fs;
@@ -487,7 +488,9 @@ fn cmd_agent_readiness(args: &[String]) {
                 inject_health_faults = true;
             }
             "--json" => json = true,
-            other if !other.starts_with('-') && target.is_none() => target = Some(other.to_string()),
+            other if !other.starts_with('-') && target.is_none() => {
+                target = Some(other.to_string())
+            }
             other => {
                 eprintln!("Unknown argument: {other}");
                 process::exit(1);
@@ -522,7 +525,10 @@ fn cmd_agent_readiness(args: &[String]) {
             .and_then(|v| v.as_u64())
             .unwrap_or(0);
         println!("Agent readiness for {target}");
-        println!("Mission Ready: {}", if mission_ready { "YES" } else { "NO" });
+        println!(
+            "Mission Ready: {}",
+            if mission_ready { "YES" } else { "NO" }
+        );
         println!("Score: {score}/100");
     }
     let mission_ready = body
@@ -912,7 +918,10 @@ fn cmd_fleet_agent_readiness(args: &[String]) {
             .and_then(|v| v.as_u64())
             .unwrap_or(0);
         println!("Fleet agent readiness for {robot}");
-        println!("Mission Ready: {}", if mission_ready { "YES" } else { "NO" });
+        println!(
+            "Mission Ready: {}",
+            if mission_ready { "YES" } else { "NO" }
+        );
         println!("Score: {score}/100");
     }
     let mission_ready = body
