@@ -1,0 +1,20 @@
+[package]
+name = "autonomous_rover"
+version = "0.1.0"
+description = "Flagship autonomous rover — GPS, MQTT, AI planning, safety, verify, replay"
+license = "Apache-2.0"
+
+[dependencies]
+spanda-gps = "0.1"
+spanda-mqtt = "0.1"
+spanda-wifi = "0.1"
+spanda-nav = "0.1"
+
+[hardware]
+targets = ["RoverV1"]
+
+[capabilities]
+required = ["lidar.read", "motion.propose", "gps.read", "wifi.connect", "ros2.publish"]
+
+[safety]
+level = "experimental"

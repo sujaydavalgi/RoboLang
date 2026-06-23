@@ -1,0 +1,113 @@
+// Flagship autonomous rover — primary Spanda platform demo
+//
+//   spanda verify examples/showcase/autonomous_rover/src/rover.sd
+//   spanda sim examples/showcase/autonomous_rover/src/rover.sd --record
+//   spanda run examples/showcase/autonomous_rover/src/rover.sd --trace-providers
+//   spanda replay examples/showcase/autonomous_rover/src/rover.trace
+//
+// Walkthrough: examples/showcase/autonomous_rover/README.md
+
+module autonomous_rover;
+
+import positioning.gps;
+import communication.mqtt;
+import connectivity.wifi;
+
+requires_hardware {
+  memory >= 2 GB;
+  sensors [ Camera, Lidar, GPS ];
+}
+
+requires_connectivity {
+  wifi: required;
+  gps: required;
+}
+
+hardware RoverV1 {
+  cpu: CortexA78;
+  memory: 4 GB;
+  sensors [ Camera, Lidar, IMU, GPS ];
+  actuators [ DifferentialDrive ];
+  connectivity [ WiFi6, GPS, LTE ];
+  battery { capacity: 100 Wh; }
+  timing { min_period: 10 ms; }
+  network { bandwidth: 50 Mbps; latency: 20 ms; }
+}
+
+connectivity_policy RoverLink {
+  preferred: wifi;
+  fallback: cellular;
+  switch_if latency > 200ms;
+}
+
+robot AutonomousRover {
+  sensor camera: Camera on "/camera";
+  sensor lidar: Lidar on "/scan";
+  sensor gps_sensor: GPS on "/fix";
+  actuator wheels: DifferentialDrive;
+
+  topic telemetry_msg: String {
+    qos reliable;
+    rate 1Hz;
+  }
+
+  ai_model planner: LLM {
+    provider: "mock";
+    model: "rover-nav-planner";
+    temperature: 0.1;
+  }
+
+  safety {
+    max_speed = 0.5 m/s;
+    stop_if lidar.nearest_distance < 0.5 m;
+  }
+
+  mission { duration: 2 h; }
+
+  on gps.lost { enter hold_position_mode; }
+  on network.disconnected { enter offline_mode; }
+
+  mode hold_position_mode { wheels.stop(); }
+  mode offline_mode { wheels.stop(); }
+  mode normal_mode { }
+
+  task gps_telemetry every 1000ms {
+    budget { cpu <= 10%; memory <= 64 MB; }
+    let fix = read();
+    let _ = fix;
+  }
+
+  task control_loop every 50ms {
+    budget { cpu <= 25%; memory <= 256 MB; }
+    let scan = lidar.read();
+    let _ = scan;
+  }
+
+  behavior patrol() {
+    let _ = connect();
+    let fix = read();
+    let _ = fix;
+    loop every 100ms {
+      let scan = lidar.read();
+      let scene = camera.analyze();
+      let proposal = planner.reason(
+        prompt: "Plan safe forward motion toward waypoint",
+        input: scene
+      );
+      let action = safety.validate(proposal);
+      wheels.execute(action);
+      publish_topic("/telemetry", "patrol_ok");
+    }
+  }
+
+  verify {
+    robot.velocity().linear <= 2.0 m/s;
+  }
+}
+
+simulate_compatibility {
+  fault BatteryDegradation;
+  fault GpsSignalLoss;
+}
+
+deploy AutonomousRover to RoverV1;

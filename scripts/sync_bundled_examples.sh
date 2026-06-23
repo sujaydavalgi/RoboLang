@@ -11,6 +11,16 @@ for d in unsafe_ai hardware_verification capability_verification health_monitori
   cp -R "${ROOT}/examples/showcase/${d}" "${DEST}/"
 done
 
+# Autonomous rover: source only (no vendored .spanda/ — `spanda demo rover` runs install).
+rm -rf "${DEST}/autonomous_rover"
+mkdir -p "${DEST}/autonomous_rover"
+cp "${ROOT}/examples/showcase/autonomous_rover/spanda.toml" "${DEST}/autonomous_rover/"
+if [[ -f "${ROOT}/examples/showcase/autonomous_rover/spanda.lock" ]]; then
+  cp "${ROOT}/examples/showcase/autonomous_rover/spanda.lock" "${DEST}/autonomous_rover/"
+fi
+cp -R "${ROOT}/examples/showcase/autonomous_rover/src" "${DEST}/autonomous_rover/"
+cp "${ROOT}/examples/showcase/autonomous_rover/README.md" "${DEST}/autonomous_rover/"
+
 for f in killer_demo.sd ai_safety_violation.sd hardware_compatibility.sd README.md; do
   cp "${ROOT}/examples/showcase/${f}" "${DEST}/"
 done
