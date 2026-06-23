@@ -15,6 +15,7 @@ export function remoteFetch(url: string, init: RequestInit = {}): Promise<Respon
 
   if (upstreamSignal) {
     if (upstreamSignal.aborted) {
+      controller.abort();
       clearTimeout(timeoutId);
       return Promise.reject(new DOMException("The operation was aborted.", "AbortError"));
     }

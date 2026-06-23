@@ -63,14 +63,14 @@ swarm ReconLeader {
     let program = compile(source).expect("compile").program;
     let mut state = SwarmState::default();
     // Reserve an ephemeral port, then release it so mesh HTTP has no server to talk to.
-    let sink_listener = TcpListener::bind("127.0.0.1:0").expect("bind sink listener");
-    let sink_port = sink_listener
+    let ephemeral_listener = TcpListener::bind("127.0.0.1:0").expect("bind ephemeral listener");
+    let sink_port = ephemeral_listener
         .local_addr()
-        .expect("sink listener local addr")
+        .expect("ephemeral listener local addr")
         .port();
-    drop(sink_listener);
-    let sink_url = format!("http://127.0.0.1:{sink_port}/");
-    coordinate_mesh_when_ready(&program, "swarm_leader.sd", &mut state, &sink_url);
+    drop(ephemeral_listener);
+    let unavailable_mesh_url = format!("http://127.0.0.1:{sink_port}/");
+    coordinate_mesh_when_ready(&program, "swarm_leader.sd", &mut state, &unavailable_mesh_url);
 }
 
 #[test]
