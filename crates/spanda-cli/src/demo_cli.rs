@@ -219,7 +219,7 @@ fn demo_fleet(root: &Path) {
 
     println!("== Fleet — multi-robot coordination ==\n");
     run_spanda("check", fleet_sd, &[]);
-    run_spanda("verify", fleet_sd, &["--health"]);
+    run_spanda_args(&["fleet", "run", fleet_sd.to_str().unwrap()]);
 
     println!("\nDemo complete. See examples/showcase/fleet_management/README.md");
 }

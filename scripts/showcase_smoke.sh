@@ -25,8 +25,7 @@ echo "== showcase smoke: health =="
 "${SPANDA}" demo health
 
 echo "== showcase smoke: fleet =="
-"${SPANDA}" check examples/showcase/fleet_management/fleet.sd
-"${SPANDA}" verify examples/showcase/fleet_management/fleet.sd --health
+"${SPANDA}" demo fleet
 
 echo "== showcase smoke: capability =="
 "${SPANDA}" check examples/showcase/capability_verification/rover.sd

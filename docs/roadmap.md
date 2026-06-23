@@ -32,6 +32,7 @@ Current release line: **v0.2.0** (lean-core Phases 1–35 complete).
 
 | Item | Tier |
 |------|------|
+| `spanda fleet run` multi-robot scoping | **Stable** | Per-robot setup/execute in interpreter |
 | VS Code Marketplace publish | Experimental → Stable |
 | LSP verification quick-fixes in editor | Experimental |
 | Hover help + snippets coverage | Experimental |

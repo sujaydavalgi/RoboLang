@@ -6,8 +6,7 @@ Honest constraints for **v0.2.0** evaluators. For capability tiers see [feature-
 
 - The **tree-walking interpreter** is the primary execution path. LLVM native codegen is experimental (`spanda compile-native`, `spanda llvm-ir`).
 - Simulation is **physics-lite 2D** — suitable for logic and safety testing, not high-fidelity Gazebo-class physics.
-- Multi-robot **fleet** examples default to **in-process** simulation. Distributed orchestration uses HTTP fleet agents and optional mesh coordinator — not a production fleet OS.
-- `spanda fleet run` on multi-robot programs may hit actuator scoping limits in the interpreter; prefer `spanda verify --health` and per-robot `spanda sim` for stable demos.
+- Multi-robot **fleet** examples default to **in-process** simulation with per-robot setup/execute. Distributed orchestration uses HTTP fleet agents and optional mesh coordinator — not a production fleet OS.
 
 ## AI and providers
 

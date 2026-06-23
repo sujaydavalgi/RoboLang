@@ -995,104 +995,49 @@ impl<B: RobotBackend> Interpreter<B> {
             self.log("security: injected default security fault scenarios".into());
         }
 
-        // Register robot hardware, identity, and triggers before optional kill-switch activation.
-        for robot in robots {
-            self.setup_robot(robot)?;
-        }
+        let multi_robot = robots.len() > 1;
 
-        if self.options.inject_health_faults {
-            for fault in ["GPSDegraded", "CameraOffline", "RobotHealthCritical"] {
-                self.hardware_monitor.inject_fault(fault.to_string());
-                self.comm_bus.inject_fault(fault);
-            }
-            self.log("health: injected default health fault scenarios".into());
-            self.poll_runtime_health_changes();
-        }
-
-        if let Some(ks) = self.options.trigger_kill_switch.clone() {
-            self.activate_kill_switch(&ks)?;
-        }
-
-        // Handle each robot declared in the program.
-        for robot in robots {
-            // Inject each configured hardware fault.
-            for fault in &sim_faults {
-                self.hardware_monitor.inject_fault(fault.clone());
-                self.comm_bus.inject_fault(fault);
-                if matches!(
-                    fault.as_str(),
-                    "InvalidSignature"
-                        | "ExpiredCertificate"
-                        | "ReplayAttack"
-                        | "UnknownDevice"
-                        | "ManInTheMiddle"
-                        | "SecureHandshakeDropped"
-                ) {
-                    self.security.inject_security_fault(fault);
+        if multi_robot {
+            // Each robot gets a fresh runtime env; setup then execute before the next robot.
+            for (index, robot) in robots.iter().enumerate() {
+                self.setup_robot(robot)?;
+                if index == 0 {
+                    if self.options.inject_health_faults {
+                        for fault in ["GPSDegraded", "CameraOffline", "RobotHealthCritical"] {
+                            self.hardware_monitor.inject_fault(fault.to_string());
+                            self.comm_bus.inject_fault(fault);
+                        }
+                        self.log("health: injected default health fault scenarios".into());
+                        self.poll_runtime_health_changes();
+                    }
+                    if let Some(ks) = self.options.trigger_kill_switch.clone() {
+                        self.activate_kill_switch(&ks)?;
+                    }
                 }
+                self.execute_robot_entry(robot, entry_behavior, &sim_faults)?;
+            }
+        } else {
+            // Register robot hardware, identity, and triggers before optional kill-switch activation.
+            for robot in robots {
+                self.setup_robot(robot)?;
             }
 
-            // Skip further work when !sim faults is empty.
-            if !sim_faults.is_empty() {
-                self.log(format!(
-                    "simulate_compatibility: {} fault(s) active",
-                    sim_faults.len()
-                ));
-                self.run_retry_policies()?;
-            }
-            let RobotDecl::RobotDecl {
-                behaviors, tasks, ..
-            } = robot;
-
-            // Skip further work when behaviors is empty.
-            if behaviors.is_empty() && tasks.len() > 1 && entry_behavior.is_none() {
-                self.execute_multiplexed_tasks(robot.all_task_schedules())?;
-                continue;
-            }
-
-            // Skip further work when behaviors is empty.
-            if behaviors.is_empty()
-                && tasks.is_empty()
-                && entry_behavior.is_none()
-                && self.has_standalone_triggers()
-            {
-                self.execute_trigger_only_loop()?;
-                continue;
-            }
-            let behavior_name = entry_behavior
-                .map(String::from)
-                .or_else(|| robot.first_behavior_name());
-
-            // Emit output when behavior name provides a name.
-            if let Some(name) = behavior_name {
-                // Take this path when let Some((body, requires, ensures, invariant)) =.
-                if let Some((body, requires, ensures, invariant)) =
-                    robot.behavior_with_contracts(&name)
-                {
-                    self.execute_with_contracts(&body, &requires, &ensures, &invariant)?;
-                } else if let Some((body, interval_ms, requires, ensures, invariant)) =
-                    robot.task_with_contracts(&name)
-                {
-                    let schedule = robot
-                        .all_task_schedules()
-                        .into_iter()
-                        .find(|schedule| schedule.name == name);
-                    let priority = schedule
-                        .as_ref()
-                        .map(|s| s.priority)
-                        .unwrap_or(TaskPriority::Normal);
-                    let budget = schedule.as_ref().and_then(|s| s.budget.clone());
-                    self.execute_task_loop_with_contracts(
-                        &name,
-                        priority,
-                        &body,
-                        interval_ms,
-                        &requires,
-                        &ensures,
-                        &invariant,
-                        budget,
-                    )?;
+            if self.options.inject_health_faults {
+                for fault in ["GPSDegraded", "CameraOffline", "RobotHealthCritical"] {
+                    self.hardware_monitor.inject_fault(fault.to_string());
+                    self.comm_bus.inject_fault(fault);
                 }
+                self.log("health: injected default health fault scenarios".into());
+                self.poll_runtime_health_changes();
+            }
+
+            if let Some(ks) = self.options.trigger_kill_switch.clone() {
+                self.activate_kill_switch(&ks)?;
+            }
+
+            // Handle each robot declared in the program.
+            for robot in robots {
+                self.execute_robot_entry(robot, entry_behavior, &sim_faults)?;
             }
         }
         self.process_spawn_queue()?;
@@ -1108,6 +1053,104 @@ impl<B: RobotBackend> Interpreter<B> {
             }
         }
         Ok(self.backend.get_state())
+    }
+
+    fn execute_robot_entry(
+        &mut self,
+        robot: &RobotDecl,
+        entry_behavior: Option<&str>,
+        sim_faults: &[String],
+    ) -> Result<(), SpandaError> {
+        // Run one robot's tasks/behaviors after setup_robot has bound its env.
+        //
+        // Parameters:
+        // - `self` — interpreter
+        // - `robot` — robot declaration to execute
+        // - `entry_behavior` — optional behavior override from debug/CLI
+        // - `sim_faults` — simulate_compatibility fault names
+        //
+        // Returns:
+        // Ok when execution completes, or a runtime error.
+        //
+        // Options:
+        // None.
+        //
+        // Example:
+        // interpreter.execute_robot_entry(robot, None, &[])?;
+
+        for fault in sim_faults {
+            self.hardware_monitor.inject_fault(fault.clone());
+            self.comm_bus.inject_fault(fault);
+            if matches!(
+                fault.as_str(),
+                "InvalidSignature"
+                    | "ExpiredCertificate"
+                    | "ReplayAttack"
+                    | "UnknownDevice"
+                    | "ManInTheMiddle"
+                    | "SecureHandshakeDropped"
+            ) {
+                self.security.inject_security_fault(fault);
+            }
+        }
+
+        if !sim_faults.is_empty() {
+            self.log(format!(
+                "simulate_compatibility: {} fault(s) active",
+                sim_faults.len()
+            ));
+            self.run_retry_policies()?;
+        }
+        let RobotDecl::RobotDecl {
+            behaviors, tasks, ..
+        } = robot;
+
+        if behaviors.is_empty() && tasks.len() > 1 && entry_behavior.is_none() {
+            self.execute_multiplexed_tasks(robot.all_task_schedules())?;
+            return Ok(());
+        }
+
+        if behaviors.is_empty()
+            && tasks.is_empty()
+            && entry_behavior.is_none()
+            && self.has_standalone_triggers()
+        {
+            self.execute_trigger_only_loop()?;
+            return Ok(());
+        }
+        let behavior_name = entry_behavior
+            .map(String::from)
+            .or_else(|| robot.first_behavior_name());
+
+        if let Some(name) = behavior_name {
+            if let Some((body, requires, ensures, invariant)) = robot.behavior_with_contracts(&name)
+            {
+                self.execute_with_contracts(&body, &requires, &ensures, &invariant)?;
+            } else if let Some((body, interval_ms, requires, ensures, invariant)) =
+                robot.task_with_contracts(&name)
+            {
+                let schedule = robot
+                    .all_task_schedules()
+                    .into_iter()
+                    .find(|schedule| schedule.name == name);
+                let priority = schedule
+                    .as_ref()
+                    .map(|s| s.priority)
+                    .unwrap_or(TaskPriority::Normal);
+                let budget = schedule.as_ref().and_then(|s| s.budget.clone());
+                self.execute_task_loop_with_contracts(
+                    &name,
+                    priority,
+                    &body,
+                    interval_ms,
+                    &requires,
+                    &ensures,
+                    &invariant,
+                    budget,
+                )?;
+            }
+        }
+        Ok(())
     }
 
     pub fn run_tests(&mut self, program: &Program) -> Result<(), SpandaError> {

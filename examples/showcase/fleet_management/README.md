@@ -4,10 +4,9 @@ Multi-robot fleet with health requirements, safety zones, and fleet communicatio
 
 ```bash
 spanda check examples/showcase/fleet_management/fleet.sd
+spanda fleet run examples/showcase/fleet_management/fleet.sd
 spanda verify examples/showcase/fleet_management/fleet.sd --health
 ```
-
-Note: `spanda fleet run` for multi-robot programs is experimental; health verification is the stable evaluator path.
 
 One command: `spanda demo fleet`
 

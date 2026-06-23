@@ -71,6 +71,35 @@ robot Coordinator {
 }
 
 #[test]
+fn fleet_coordinator_without_actuators_runs_member_behaviors() {
+    let source = r#"
+robot PickerA {
+  actuator wheels: DifferentialDrive;
+  behavior pick() { wheels.stop(); }
+}
+
+robot PickerB {
+  actuator wheels: DifferentialDrive;
+  behavior pick() { wheels.stop(); }
+}
+
+fleet Warehouse {
+  PickerA;
+  PickerB;
+}
+
+robot Coordinator {
+  topic fleet_status: String publish on "/fleet/status";
+  behavior coordinate() {
+    let members = fleet.members("Warehouse");
+    let _ = members;
+  }
+}
+"#;
+    run(source, RunOptions::default()).expect("fleet members should run with per-robot env");
+}
+
+#[test]
 fn fleet_unknown_member_rejected() {
     let source = r#"
 robot Picker1 {

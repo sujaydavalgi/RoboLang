@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Productization (credibility & demos):** `spanda demo {rover,safety,verify,fleet,health}`; showcase directories under `examples/showcase/{unsafe_ai,hardware_verification,capability_verification,health_monitoring,fleet_management,replay}`; `scripts/install.sh`, `scripts/benchmark.sh`, `scripts/showcase_smoke.sh`; docs [benchmarks.md](docs/benchmarks.md), [known-limitations.md](docs/known-limitations.md), [demo-script.md](docs/demo-script.md), [diagrams/](docs/diagrams/); README trust table; roadmap v0.2–v1.0; improved `SafeAction` type errors with hints; VS Code snippets; CI `showcase-smoke` job.
 
+### Fixed
+
+- **Multi-robot fleet runtime:** interpreter now setup+executes each robot in isolation so `spanda fleet run` works when the last robot lacks member actuators (e.g. coordinator-only programs).
+
 ## [0.2.0] - 2026-06-23
 ### Added
 
