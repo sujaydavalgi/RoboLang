@@ -10,6 +10,7 @@ use std::io::{BufReader, Read, Write};
 use std::net::{Shutdown, TcpListener, TcpStream};
 use std::path::Path;
 use std::sync::Arc;
+use std::time::Duration;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ParsedUrl {
@@ -133,14 +134,24 @@ pub fn http_request(
     }
     request.push_str("\r\n");
     request.push_str(payload);
+    let timeout = Duration::from_secs(30);
+    let connect_timeout = Duration::from_secs(10);
+    let socket_addr = format!("{}:{}", parsed.host, parsed.port);
 
     if parsed.use_tls {
         let config = build_deploy_client_config()?;
         let host = parsed.host.clone();
         let server_name = ServerName::try_from(host)
             .map_err(|_| format!("invalid TLS server name '{}'", parsed.host))?;
-        let tcp = TcpStream::connect(format!("{}:{}", parsed.host, parsed.port))
-            .map_err(|e| format!("connect to {}:{} failed: {e}", parsed.host, parsed.port))?;
+        let tcp = TcpStream::connect_timeout(
+            &socket_addr
+                .parse()
+                .map_err(|_| format!("invalid address '{socket_addr}'"))?,
+            connect_timeout,
+        )
+        .map_err(|e| format!("connect to {socket_addr} failed: {e}"))?;
+        tcp.set_read_timeout(Some(timeout))
+            .map_err(|e| format!("read timeout: {e}"))?;
         let conn = ClientConnection::new(config, server_name)
             .map_err(|e| format!("TLS client connection: {e}"))?;
         let mut tls = StreamOwned::new(conn, tcp);
@@ -155,8 +166,16 @@ pub fn http_request(
         return parse_http_response(&raw);
     }
 
-    let mut stream = TcpStream::connect(format!("{}:{}", parsed.host, parsed.port))
-        .map_err(|e| format!("connect to {}:{} failed: {e}", parsed.host, parsed.port))?;
+    let mut stream = TcpStream::connect_timeout(
+        &socket_addr
+            .parse()
+            .map_err(|_| format!("invalid address '{socket_addr}'"))?,
+        connect_timeout,
+    )
+    .map_err(|e| format!("connect to {socket_addr} failed: {e}"))?;
+    stream
+        .set_read_timeout(Some(timeout))
+        .map_err(|e| format!("read timeout: {e}"))?;
     stream
         .write_all(request.as_bytes())
         .map_err(|e| format!("write request failed: {e}"))?;
@@ -252,6 +271,7 @@ pub fn serve_once(
 }
 
 pub fn read_plain_request(stream: &mut TcpStream) -> Result<String, String> {
+    let _ = stream.set_read_timeout(Some(Duration::from_secs(30)));
     let mut raw = String::new();
     stream
         .read_to_string(&mut raw)

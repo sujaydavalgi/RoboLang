@@ -194,12 +194,12 @@ pub fn run_fleet_mesh_coordinator(
     );
     for connection in listener.incoming() {
         let Ok(stream) = connection else { continue };
-        handle_connection(
-            Arc::clone(&shared_state),
-            registry_backing.clone(),
-            stream,
-            server_config.clone(),
-        );
+        let shared_state = Arc::clone(&shared_state);
+        let registry_backing = registry_backing.clone();
+        let server_config = server_config.clone();
+        thread::spawn(move || {
+            handle_connection(shared_state, registry_backing, stream, server_config);
+        });
     }
     Ok(())
 }
