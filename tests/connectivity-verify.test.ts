@@ -99,7 +99,7 @@ robot R { actuator wheels: DifferentialDrive; behavior run() { wheels.stop(); } 
 
   it("verifies AI models and adapters in full_compat", () => {
     const source = readFileSync(
-      join(import.meta.dirname, "..", "examples/hardware/full_compat.sd"),
+      join(examplesDir, "..", "hardware", "full_compat.sd"),
       "utf8",
     );
     const program = parse(tokenize(source));
