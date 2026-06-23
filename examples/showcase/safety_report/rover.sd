@@ -1,0 +1,44 @@
+// Safety case report showcase
+//
+//   spanda safety-report examples/showcase/safety_report/rover.sd --html
+//   spanda safety-report examples/showcase/safety_report/rover.sd --json
+
+hardware RoverV1 {
+  sensors [ GPS, Lidar ];
+  actuators [ DifferentialDrive ];
+  connectivity [ LTE ];
+}
+
+kill_switch EmergencyStop {
+  priority: critical;
+  action {
+    stop_all_actuators();
+  }
+}
+
+robot Rover {
+  uses hardware RoverV1;
+  sensor gps: GPS;
+  sensor lidar: Lidar;
+  actuator wheels: DifferentialDrive;
+
+  exposes capabilities [ gps_navigation, obstacle_avoidance ];
+
+  safety {
+    max_speed = 0.8 m/s;
+    stop_if lidar.nearest_distance < 0.5 m;
+  }
+
+  behavior patrol() {
+    loop every 100ms {
+      wheels.drive(linear: 0.2 m/s, angular: 0.0 rad/s);
+    }
+  }
+}
+
+health_check RoverHealth for robot Rover {
+  check gps.status == Healthy;
+  check lidar.status == Healthy;
+}
+
+deploy Rover to RoverV1;

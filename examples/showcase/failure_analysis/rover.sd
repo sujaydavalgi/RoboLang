@@ -1,0 +1,28 @@
+// Failure impact analysis showcase
+//
+//   spanda analyze-failure examples/showcase/failure_analysis/rover.sd
+
+hardware RoverV1 {
+  sensors [ GPS, Lidar, Camera ];
+  actuators [ DifferentialDrive ];
+  connectivity [ WiFi, LTE ];
+}
+
+robot Rover {
+  uses hardware RoverV1;
+  sensor gps: GPS;
+  sensor lidar: Lidar;
+  sensor camera: Camera;
+  actuator wheels: DifferentialDrive;
+
+  exposes capabilities [ gps_navigation, obstacle_avoidance ];
+
+  behavior patrol() {
+    loop every 100ms {
+      let _ = lidar.read();
+      wheels.drive(linear: 0.2 m/s, angular: 0.0 rad/s);
+    }
+  }
+}
+
+deploy Rover to RoverV1;

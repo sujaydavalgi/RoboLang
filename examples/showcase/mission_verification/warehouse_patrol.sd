@@ -1,0 +1,43 @@
+// Mission verification showcase
+//
+//   spanda verify mission examples/showcase/mission_verification/warehouse_patrol.sd
+//   spanda readiness examples/showcase/mission_verification/warehouse_patrol.sd
+
+hardware RoverV1 {
+  sensors [ GPS, Lidar ];
+  actuators [ DifferentialDrive ];
+  connectivity [ LTE ];
+}
+
+robot Rover {
+  uses hardware RoverV1;
+  sensor gps: GPS;
+  sensor lidar: Lidar;
+  actuator wheels: DifferentialDrive;
+
+  exposes capabilities [
+    obstacle_avoidance,
+    gps_navigation
+  ];
+
+  mission WarehousePatrol {
+    requires capabilities [
+      obstacle_avoidance,
+      gps_navigation
+    ];
+    patrol;
+  }
+
+  safety {
+    max_speed = 0.6 m/s;
+    stop_if lidar.nearest_distance < 0.4 m;
+  }
+
+  behavior patrol() {
+    loop every 100ms {
+      wheels.drive(linear: 0.15 m/s, angular: 0.0 rad/s);
+    }
+  }
+}
+
+deploy Rover to RoverV1;

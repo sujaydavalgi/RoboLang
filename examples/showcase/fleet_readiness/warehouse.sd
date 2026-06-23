@@ -1,0 +1,31 @@
+// Fleet readiness showcase
+//
+//   spanda fleet readiness examples/showcase/fleet_readiness/warehouse.sd
+//   spanda verify-fleet examples/showcase/fleet_readiness/warehouse.sd
+
+fleet Warehouse {
+  PickerA;
+  PickerB;
+}
+
+health_check FleetHealth for fleet Warehouse {
+  require at_least 80% robots Healthy;
+}
+
+robot PickerA {
+  sensor lidar: Lidar;
+  actuator wheels: DifferentialDrive;
+  safety { max_speed = 0.8 m/s; stop_if lidar.nearest_distance < 0.5 m; }
+  behavior pick() {
+    loop every 200ms { wheels.drive(linear: 0.15 m/s, angular: 0.0 rad/s); }
+  }
+}
+
+robot PickerB {
+  sensor lidar: Lidar;
+  actuator wheels: DifferentialDrive;
+  safety { max_speed = 0.8 m/s; stop_if lidar.nearest_distance < 0.5 m; }
+  behavior pick() {
+    loop every 200ms { wheels.drive(linear: 0.15 m/s, angular: 0.0 rad/s); }
+  }
+}

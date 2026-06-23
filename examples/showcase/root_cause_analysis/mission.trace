@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "source": "mission.sd",
+  "deterministic": true,
+  "frames": [
+    {
+      "sim_time_ms": 0.0,
+      "event": "provider_call",
+      "payload": {
+        "category": "positioning",
+        "failed": false,
+        "function": "read",
+        "module": "positioning.gps",
+        "provider_key": "spanda-gps::project"
+      }
+    },
+    {
+      "sim_time_ms": 1500.0,
+      "event": "health_change",
+      "payload": {
+        "component": "gps",
+        "status": "Degraded",
+        "message": "GPS fix lost"
+      }
+    },
+    {
+      "sim_time_ms": 2000.0,
+      "event": "provider_call",
+      "payload": {
+        "category": "positioning",
+        "failed": true,
+        "function": "read",
+        "module": "positioning.gps",
+        "provider_key": "spanda-gps::project"
+      }
+    },
+    {
+      "sim_time_ms": 2100.0,
+      "event": "safety_stop",
+      "payload": {
+        "rule": "stop_if",
+        "reason": "navigation uncertainty"
+      }
+    }
+  ]
+}
