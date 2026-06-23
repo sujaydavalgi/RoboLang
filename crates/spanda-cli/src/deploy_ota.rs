@@ -4,15 +4,16 @@ use spanda_ast::nodes::Program;
 use spanda_deploy_http::{ensure_agent_auth, DeployAgentTls};
 use spanda_driver::{build_deploy_plan, compile};
 use spanda_fleet::{
-    agent_health as fleet_agent_health, default_fleet_agents_path, fleet_agent_state_path_for,
-    load_fleet_agent_registry, mesh_registry_path, orchestrate_fleets, orchestrate_fleets_mesh,
+    agent_health as fleet_agent_health, agent_readiness as fleet_agent_readiness,
+    default_fleet_agents_path, fleet_agent_state_path_for,
+    load_fleet_agent_registry, lookup_fleet_agent, mesh_registry_path, orchestrate_fleets, orchestrate_fleets_mesh,
     orchestrate_fleets_remote, register_fleet_agent, run_fleet_agent_server,
     run_fleet_mesh_coordinator, save_fleet_agent_registry,
 };
 use spanda_ota::{
-    agent_health, agent_state_path_for, apply_rollout, build_deploy_bundle, default_agents_path,
+    agent_health, agent_readiness, agent_state_path_for, apply_rollout, build_deploy_bundle, default_agents_path,
     default_state_path, execute_remote_rollback, execute_remote_rollout, load_agent_registry,
-    load_deploy_state, plan_rollout, register_agent, rollback_targets, run_deploy_agent_server,
+    load_deploy_state, lookup_agent, plan_rollout, register_agent, rollback_targets, run_deploy_agent_server,
     save_agent_registry, save_deploy_state, sign_deploy_bundle, validate_rollout_certification,
     DeployAgentServerOptions, DeployState, RolloutOptions, RolloutResult, RolloutStrategy,
 };
@@ -86,6 +87,7 @@ pub fn deploy_usage_lines() -> &'static str {
      spanda deploy agent start [--bind <addr>] [--target <Robot@Hardware>] [--token <t>] [--tls-cert <pem>] [--tls-key <pem>] [--require-hash] [--require-signature] [--require-certify] [--trust-key <material>]\n\
      spanda deploy agent register <Robot@Hardware> <http(s)://host:port> [--token <t>]\n\
      spanda deploy agent list [--json]\n\
+     spanda deploy agent readiness <Robot@Hardware> [--runtime] [--inject-health-faults] [--json]\n\
      spanda deploy --target wasm|native [--out <file>] [--target-triple <triple>] [--hal-profile <name>] <file.sd>"
 }
 
@@ -309,13 +311,14 @@ fn cmd_rollback(args: &[String]) {
 
 fn cmd_agent(args: &[String]) {
     if args.is_empty() {
-        eprintln!("Usage: spanda deploy agent start|register|list");
+        eprintln!("Usage: spanda deploy agent start|register|list|readiness");
         process::exit(1);
     }
     match args[0].as_str() {
         "start" => cmd_agent_start(&args[1..]),
         "register" => cmd_agent_register(&args[1..]),
         "list" => cmd_agent_list(&args[1..]),
+        "readiness" => cmd_agent_readiness(&args[1..]),
         other => {
             eprintln!("Unknown deploy agent subcommand '{other}'");
             process::exit(1);
@@ -467,6 +470,67 @@ fn cmd_agent_list(args: &[String]) {
     for entry in &registry.agents {
         let health = agent_health(entry).unwrap_or(false);
         println!("  {} -> {} (healthy={health})", entry.target, entry.url);
+    }
+}
+
+fn cmd_agent_readiness(args: &[String]) {
+    let mut runtime = false;
+    let mut inject_health_faults = false;
+    let mut json = false;
+    let mut target: Option<String> = None;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--runtime" => runtime = true,
+            "--inject-health-faults" => {
+                runtime = true;
+                inject_health_faults = true;
+            }
+            "--json" => json = true,
+            other if !other.starts_with('-') && target.is_none() => target = Some(other.to_string()),
+            other => {
+                eprintln!("Unknown argument: {other}");
+                process::exit(1);
+            }
+        }
+        i += 1;
+    }
+    let target = target.unwrap_or_else(|| {
+        eprintln!("Missing target Robot@Hardware");
+        process::exit(1);
+    });
+    let registry = load_agent_registry(&agents_path());
+    let entry = lookup_agent(&registry, &target).unwrap_or_else(|| {
+        eprintln!("No deploy agent registered for target {target}");
+        process::exit(1);
+    });
+    let body = agent_readiness(entry, runtime, inject_health_faults).unwrap_or_else(|err| {
+        eprintln!("Agent readiness failed: {err}");
+        process::exit(1);
+    });
+    if json {
+        println!("{}", serde_json::to_string_pretty(&body).unwrap());
+    } else {
+        let mission_ready = body
+            .get("mission_ready")
+            .and_then(|v| v.as_bool())
+            .unwrap_or(false);
+        let score = body
+            .get("readiness")
+            .and_then(|r| r.get("score"))
+            .and_then(|s| s.get("total"))
+            .and_then(|v| v.as_u64())
+            .unwrap_or(0);
+        println!("Agent readiness for {target}");
+        println!("Mission Ready: {}", if mission_ready { "YES" } else { "NO" });
+        println!("Score: {score}/100");
+    }
+    let mission_ready = body
+        .get("mission_ready")
+        .and_then(|v| v.as_bool())
+        .unwrap_or(false);
+    if !mission_ready {
+        process::exit(1);
     }
 }
 
@@ -656,13 +720,14 @@ pub fn fleet_mesh_dispatch(args: &[String]) {
 
 pub fn fleet_agent_dispatch(args: &[String]) {
     if args.is_empty() {
-        eprintln!("Usage: spanda fleet agent start|register|list");
+        eprintln!("Usage: spanda fleet agent start|register|list|readiness");
         process::exit(1);
     }
     match args[0].as_str() {
         "start" => cmd_fleet_agent_start(&args[1..]),
         "register" => cmd_fleet_agent_register(&args[1..]),
         "list" => cmd_fleet_agent_list(&args[1..]),
+        "readiness" => cmd_fleet_agent_readiness(&args[1..]),
         other => {
             eprintln!("Unknown fleet agent subcommand '{other}'");
             process::exit(1);
@@ -795,5 +860,66 @@ fn cmd_fleet_agent_list(args: &[String]) {
     for entry in &registry.agents {
         let health = fleet_agent_health(entry).unwrap_or(false);
         println!("  {} -> {} (healthy={health})", entry.robot_name, entry.url);
+    }
+}
+
+fn cmd_fleet_agent_readiness(args: &[String]) {
+    let mut runtime = false;
+    let mut inject_health_faults = false;
+    let mut json = false;
+    let mut robot: Option<String> = None;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--runtime" => runtime = true,
+            "--inject-health-faults" => {
+                runtime = true;
+                inject_health_faults = true;
+            }
+            "--json" => json = true,
+            other if !other.starts_with('-') && robot.is_none() => robot = Some(other.to_string()),
+            other => {
+                eprintln!("Unknown argument: {other}");
+                process::exit(1);
+            }
+        }
+        i += 1;
+    }
+    let robot = robot.unwrap_or_else(|| {
+        eprintln!("Missing robot name");
+        process::exit(1);
+    });
+    let registry = load_fleet_agent_registry(&fleet_agents_path());
+    let entry = lookup_fleet_agent(&registry, &robot).unwrap_or_else(|| {
+        eprintln!("No fleet agent registered for robot {robot}");
+        process::exit(1);
+    });
+    let body = fleet_agent_readiness(entry, runtime, inject_health_faults).unwrap_or_else(|err| {
+        eprintln!("Fleet agent readiness failed: {err}");
+        process::exit(1);
+    });
+    if json {
+        println!("{}", serde_json::to_string_pretty(&body).unwrap());
+    } else {
+        let mission_ready = body
+            .get("mission_ready")
+            .and_then(|v| v.as_bool())
+            .unwrap_or(false);
+        let score = body
+            .get("readiness")
+            .and_then(|r| r.get("score"))
+            .and_then(|s| s.get("total"))
+            .and_then(|v| v.as_u64())
+            .unwrap_or(0);
+        println!("Fleet agent readiness for {robot}");
+        println!("Mission Ready: {}", if mission_ready { "YES" } else { "NO" });
+        println!("Score: {score}/100");
+    }
+    let mission_ready = body
+        .get("mission_ready")
+        .and_then(|v| v.as_bool())
+        .unwrap_or(false);
+    if !mission_ready {
+        process::exit(1);
     }
 }

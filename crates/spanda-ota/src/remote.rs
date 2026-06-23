@@ -149,6 +149,22 @@ pub fn agent_readiness(
     decode_response(response)
 }
 
+pub fn agent_upload_program(entry: &DeployAgentEntry, program: &str) -> Result<(), String> {
+    let url = agent_endpoint(&entry.url, "/v1/program")?;
+    let payload = serde_json::json!({ "program": program }).to_string();
+    let response = http_request("POST", &url, Some(&payload), entry.token.as_deref())?;
+    let body: serde_json::Value = decode_response(response)?;
+    if body.get("ok").and_then(|v| v.as_bool()).unwrap_or(false) {
+        Ok(())
+    } else {
+        Err(body
+            .get("error")
+            .and_then(|v| v.as_str())
+            .unwrap_or("program upload failed")
+            .to_string())
+    }
+}
+
 pub fn agent_status(entry: &DeployAgentEntry) -> Result<AgentStatusResponse, String> {
     let url = agent_endpoint(&entry.url, "/v1/status")?;
     let response = http_request("GET", &url, None, entry.token.as_deref())?;

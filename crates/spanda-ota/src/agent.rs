@@ -165,6 +165,25 @@ pub fn handle_agent_request(state: &mut AgentState, request: HttpRequest) -> Htt
                 },
             }
         }
+        ("POST", "/v1/program") => {
+            let Ok(payload) = serde_json::from_str::<serde_json::Value>(&request.body) else {
+                return HttpResponse {
+                    status: 400,
+                    body: r#"{"ok":false,"error":"invalid program payload"}"#.into(),
+                };
+            };
+            let Some(program) = payload.get("program").and_then(|v| v.as_str()) else {
+                return HttpResponse {
+                    status: 400,
+                    body: r#"{"ok":false,"error":"program field required"}"#.into(),
+                };
+            };
+            state.program = Some(program.to_string());
+            HttpResponse {
+                status: 200,
+                body: r#"{"ok":true}"#.into(),
+            }
+        }
         ("GET", "/v1/status") => HttpResponse {
             status: 200,
             body: serde_json::to_string(&serde_json::json!({
