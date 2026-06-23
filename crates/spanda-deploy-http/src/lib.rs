@@ -263,7 +263,10 @@ pub fn write_plain_response(stream: &mut TcpStream, response: &HttpResponse) -> 
     let encoded = http_response(response.status, &response.body);
     stream
         .write_all(encoded.as_bytes())
-        .map_err(|e| format!("write response failed: {e}"))
+        .map_err(|e| format!("write response failed: {e}"))?;
+    stream
+        .shutdown(Shutdown::Write)
+        .map_err(|e| format!("shutdown response failed: {e}"))
 }
 
 pub fn serve_tls_connection(

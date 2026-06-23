@@ -34,8 +34,18 @@ cleanup() {
   [[ -n "${MESH_PID}" ]] && kill "${MESH_PID}" 2>/dev/null || true
   [[ -n "${FLEET_AGENT_PID_C}" ]] && kill "${FLEET_AGENT_PID_C}" 2>/dev/null || true
   [[ -n "${FLEET_AGENT_PID_B}" ]] && kill "${FLEET_AGENT_PID_B}" 2>/dev/null || true
+  for port in 18765 18766 18767 18768; do
+    lsof -ti ":${port}" 2>/dev/null | xargs kill -9 2>/dev/null || true
+  done
 }
 trap cleanup EXIT
+
+start_background() {
+  "$@" &
+  local pid=$!
+  disown "${pid}" 2>/dev/null || true
+  echo "${pid}"
+}
 
 for port in 18765 18766 18767 18768; do
   lsof -ti ":${port}" 2>/dev/null | xargs kill -9 2>/dev/null || true
@@ -79,15 +89,12 @@ echo "== verify Nav2 adapter package =="
 
 echo "== start fleet mesh services =="
 : > "${SPANDA_FLEET_AGENTS}"
-"${SPANDA}" fleet agent start --robot ScoutB --bind "${FLEET_AGENT_BIND_B}" &
-FLEET_AGENT_PID_B=$!
-"${SPANDA}" fleet agent start --robot ScoutC --bind "${FLEET_AGENT_BIND_C}" &
-FLEET_AGENT_PID_C=$!
+FLEET_AGENT_PID_B="$(start_background "${SPANDA}" fleet agent start --robot ScoutB --bind "${FLEET_AGENT_BIND_B}")"
+FLEET_AGENT_PID_C="$(start_background "${SPANDA}" fleet agent start --robot ScoutC --bind "${FLEET_AGENT_BIND_C}")"
 sleep 1
 "${SPANDA}" fleet agent register ScoutB "http://${FLEET_AGENT_BIND_B}"
 "${SPANDA}" fleet agent register ScoutC "http://${FLEET_AGENT_BIND_C}"
-"${SPANDA}" fleet mesh start --bind "${MESH_BIND}" &
-MESH_PID=$!
+MESH_PID="$(start_background "${SPANDA}" fleet mesh start --bind "${MESH_BIND}")"
 sleep 1
 
 echo "== fleet orchestration (local) =="
@@ -116,12 +123,13 @@ FLEET_TRIAL="${ROOT}/examples/robotics/fleet_field_trial.sd"
 
 echo "== start remote deploy agent =="
 : > "${SPANDA_DEPLOY_AGENTS}"
-"${SPANDA}" deploy agent start --target "${DEPLOY_TARGET}" --require-certify --bind "${DEPLOY_AGENT_BIND}" &
-DEPLOY_AGENT_PID=$!
+DEPLOY_AGENT_PID="$(start_background "${SPANDA}" deploy agent start --target "${DEPLOY_TARGET}" --require-certify --bind "${DEPLOY_AGENT_BIND}")"
 sleep 1
 "${SPANDA}" deploy agent register "${DEPLOY_TARGET}" "http://${DEPLOY_AGENT_BIND}"
 
 echo "== remote OTA live dry-run against agent registry =="
 "${SPANDA}" deploy rollout "${REMOTE}" --remote --require-certify --dry-run --version 1.3.0
+
+cleanup
 
 echo "Robotics golden path complete."
