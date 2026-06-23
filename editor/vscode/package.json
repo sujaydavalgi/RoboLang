@@ -13,6 +13,7 @@
     "dist/**",
     "server/**",
     "syntaxes/**",
+    "snippets/**",
     "language-configuration.json",
     "LICENSE",
     "README.md",
@@ -120,6 +121,12 @@
         "language": "spanda",
         "scopeName": "source.spanda",
         "path": "./syntaxes/spanda.tmLanguage.json"
+      }
+    ],
+    "snippets": [
+      {
+        "language": "spanda",
+        "path": "./snippets/spanda.json"
       }
     ]
   },

@@ -1,0 +1,64 @@
+{
+  "Robot block": {
+    "prefix": "robot",
+    "body": [
+      "robot ${1:Name} {",
+      "  sensor lidar: Lidar on \"/scan\";",
+      "  actuator wheels: DifferentialDrive;",
+      "",
+      "  safety {",
+      "    max_speed = ${2:1.0} m/s;",
+      "    stop_if lidar.nearest_distance < ${3:0.5} m;",
+      "  }",
+      "",
+      "  behavior ${4:patrol}() {",
+      "    loop every ${5:100}ms {",
+      "      wheels.drive(linear: ${6:0.3} m/s, angular: 0.0 rad/s);",
+      "    }",
+      "  }",
+      "}"
+    ],
+    "description": "Robot with safety and patrol behavior"
+  },
+  "Safe AI execute": {
+    "prefix": "safeaction",
+    "body": [
+      "let proposal = ${1:planner}.reason(prompt: \"${2:Plan motion}\", input: ${3:scan});",
+      "let action = safety.validate(proposal);",
+      "${4:wheels}.execute(action);"
+    ],
+    "description": "ActionProposal → safety.validate → SafeAction → execute"
+  },
+  "Deploy target": {
+    "prefix": "deploy",
+    "body": [
+      "hardware ${1:RoverV1} {",
+      "  memory: ${2:4} GB;",
+      "  sensors [ Camera, Lidar ];",
+      "  actuators [ DifferentialDrive ];",
+      "}",
+      "",
+      "deploy ${3:RoverProgram} to ${1:RoverV1};"
+    ],
+    "description": "Hardware profile and deploy statement"
+  },
+  "Task every": {
+    "prefix": "task",
+    "body": [
+      "task ${1:control_loop} every ${2:50}ms {",
+      "  budget { cpu <= ${3:25}%; memory <= ${4:256} MB; }",
+      "  $0",
+      "}"
+    ],
+    "description": "Periodic task with resource budget"
+  },
+  "Health check": {
+    "prefix": "healthcheck",
+    "body": [
+      "health_check ${1:RoverHealth} for robot ${2:Rover} {",
+      "  check ${3:gps.status} == Healthy;",
+      "}"
+    ],
+    "description": "Robot health check block"
+  }
+}
