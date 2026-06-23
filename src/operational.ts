@@ -586,7 +586,7 @@ export function runOperationalCommand(
       const report = generateSafetyReportTs(program, file);
       return {
         exitCode: report.deployable ? 0 : 1,
-        output: json ? JSON.stringify(report, null, 2) : JSON.stringify(report, null, 2),
+        output: JSON.stringify(report, null, 2),
       };
     }
     case "diagnose": {
