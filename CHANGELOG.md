@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Operational readiness engine:** new `spanda-readiness` crate composing hardware, capability, health, connectivity, safety, and mission gates into weighted `ReadinessReport` with `spanda readiness <file.sd>` (`--json`, `--markdown`, `--html`).
+- **Mission assurance CLI:** `spanda verify mission`, `spanda analyze-failure`, `spanda safety-report`, `spanda diagnose`, `spanda audit`, `spanda verify-fleet`, `spanda verify-approval`, `spanda fleet readiness`, `spanda twin readiness`.
+- **Mission approvals:** `requires approval <Actor> for: <action>` in mission blocks for human-in-the-loop verification.
+- **Showcase examples:** `examples/showcase/readiness/`, `mission_verification/`, `failure_analysis/`, `safety_report/`, `fleet_readiness/`, `root_cause_analysis/`.
+- **Docs:** [readiness.md](docs/readiness.md), [mission-verification.md](docs/mission-verification.md), [failure-analysis.md](docs/failure-analysis.md), [safety-reporting.md](docs/safety-reporting.md), [fleet-readiness.md](docs/fleet-readiness.md), [root-cause-analysis.md](docs/root-cause-analysis.md), [safety-auditor.md](docs/safety-auditor.md).
 - **Platform positioning:** README reframed as Autonomous Systems Platform; Spanda Platform component map; "Why Spanda?" and "What makes Spanda different?" sections; homepage messaging (Build · Verify · Simulate · Deploy · Operate).
 - **Docs:** [platform-overview.md](docs/platform-overview.md) (platform vs language); [platform-positioning-migration.md](docs/platform-positioning-migration.md) (messaging migration and GitHub metadata); roadmap reorganized by platform area; platform Mermaid diagram in [diagrams/README.md](docs/diagrams/README.md).
 - **Bundled rover demo:** `spanda demo rover` ships `examples/showcase/autonomous_rover/` source in the crate (install fetches registry deps).

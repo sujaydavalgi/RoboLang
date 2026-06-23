@@ -58,6 +58,13 @@
 | [live-ai-provider.md](./live-ai-provider.md) | **Live OpenAI, Anthropic, and ONNX paths via Python bridge** |
 | [debugging.md](./debugging.md) | **Debug `behavior`, `task every`, and `every` triggers in VS Code (DAP)** |
 | [health-checks.md](./health-checks.md) | **Health checks, fleet `require` clauses, and policies** |
+| [readiness.md](./readiness.md) | **Operational readiness engine and weighted go/no-go scoring** |
+| [mission-verification.md](./mission-verification.md) | **Mission achievability and approval verification** |
+| [failure-analysis.md](./failure-analysis.md) | **Component failure impact and mitigations** |
+| [safety-reporting.md](./safety-reporting.md) | **Deployable safety case reports (JSON/Markdown/HTML)** |
+| [fleet-readiness.md](./fleet-readiness.md) | **Fleet readiness and multi-robot verification** |
+| [root-cause-analysis.md](./root-cause-analysis.md) | **Replay-based failure diagnosis** |
+| [safety-auditor.md](./safety-auditor.md) | **Autonomous safety auditor** |
 | [kill-switch.md](./kill-switch.md) | **Kill switch syntax, `remote_signed`, and `on kill_switch` handlers** |
 | [iot.md](./iot.md) | **IoT provider contracts, package dispatch, live bridge env flags** |
 | [capability-traceability.md](./capability-traceability.md) | **Capability exposure and traceability matrices** |

@@ -118,6 +118,8 @@ Foundation: Phases 1–35 complete — [lean-core-roadmap.md](./lean-core-roadma
 | `health_check`, `health_policy` | **Stable** |
 | Fleet `require` clauses at runtime | **Stable** |
 | `spanda demo health` showcase | **Stable** |
+| Operational readiness engine (`spanda readiness`) | **Stable** — [readiness.md](./readiness.md) |
+| Mission verification, failure analysis, safety reports | **Stable** — see readiness docs |
 | Swarm quorum / mesh health | **Experimental** — [swarm-health.md](./swarm-health.md) |
 
 ---

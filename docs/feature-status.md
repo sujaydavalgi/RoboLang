@@ -54,7 +54,7 @@ Platform overview: [platform-overview.md](./platform-overview.md)
 | **Mission trace replay** | `spanda sim --record`, `spanda replay`, `--deterministic`, `--playback`, `--wall-clock` |
 | **First-class regex** | Literals, `Regex` type, string methods, trigger/subscribe filters, `validate` rules |
 | **Lean-core workspace** | 50+ focused Rust crates; `spanda-core` facade; CLI/bindings use workspace deps directly ([crates/README.md](../crates/README.md)) |
-| **Verification & DX** | `spanda-capability` — traceability, minimum-hardware, health analysis; `spanda check --verification-json`; LSP verification diagnostics and quick-fixes |
+| **Verification & DX** | `spanda-capability` — traceability, minimum-hardware, health analysis; `spanda-readiness` — operational readiness, mission verification, safety reports; `spanda check --verification-json`; LSP verification diagnostics and quick-fixes |
 | **Health & kill switch** | `health_check`, `health_policy`, fleet `require` runtime; `kill_switch`, `remote_signed`, `on kill_switch` handlers |
 | **Typed handler I/O** | Return types on behavior, task, trigger, event, and agent plan handlers (Rust + TS mirror) |
 
