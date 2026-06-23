@@ -47,8 +47,10 @@ deploy R to Tiny;
 `),
     );
     const firstHardwareProfile = program.hardwareProfiles[0];
-    expect(firstHardwareProfile).toBeDefined();
-    const profile = hardwareProfileFromDecl(firstHardwareProfile!);
+    if (!firstHardwareProfile) {
+      throw new Error("Expected program.hardwareProfiles[0] to be defined");
+    }
+    const profile = hardwareProfileFromDecl(firstHardwareProfile);
     const requiresConnectivity = program.requiresConnectivity;
     if (!requiresConnectivity) {
       throw new Error("Expected program.requiresConnectivity to be defined");
@@ -160,7 +162,13 @@ deploy R to Tiny;
     const program = parse(
       tokenize(`
 requires_connectivity { satellite: required; }
-hardware Remote { connectivity [ WiFi6, Satellite ]; sensors [ GPS ]; actuators [ DifferentialDrive ]; timing { min_period: 10 ms; } resource: 10 W; }
+hardware Remote {
+  connectivity [ WiFi6, Satellite ];
+  sensors [ GPS ];
+  actuators [ DifferentialDrive ];
+  timing { min_period: 10 ms; }
+  resource: 10 W;
+}
 robot R { actuator wheels: DifferentialDrive; }
 deploy R to Remote;
 simulate_compatibility { fault SatelliteOutage; }
