@@ -1,6 +1,12 @@
 # Spanda Documentation
 
-Spanda is an AI-native autonomous systems programming language. Source files use the `.sd` extension.
+<p align="center">
+  <img src="../assets/image/low_res_logo.png" alt="Spanda logo" width="240">
+</p>
+
+**Spanda is an Autonomous Systems Platform with a safety-first programming language at its core.** Source files use the `.sd` extension.
+
+**Start here:** [platform-overview.md](./platform-overview.md) — platform vs language, component map, and workflow.
 
 ## Tutorials
 
@@ -10,6 +16,8 @@ Spanda is an AI-native autonomous systems programming language. Source files use
 
 | Document | Description |
 |----------|-------------|
+| [platform-overview.md](./platform-overview.md) | **Spanda Platform — components, workflow, platform vs language** |
+| [platform-positioning-migration.md](./platform-positioning-migration.md) | **Messaging migration — taglines, GitHub metadata, branding** |
 | [tutorials/README.md](./tutorials/README.md) | **Master index — all tutorials, walkthroughs, and example paths** |
 | [../examples/README.md](../examples/README.md) | **Runnable examples library — ladder, topics, CI** |
 | [../README.md](../README.md) | Project overview, philosophy, quick start, and examples |

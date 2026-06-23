@@ -16,7 +16,7 @@ Building a robot today usually means:
 
 Nothing is *wrong* with that stack — it's just **a lot of duct tape**.
 
-Spanda is one language where sensors, AI, safety rules, and “will this fit on the Jetson?” live in the **same program**.
+Spanda is an **autonomous systems platform** — and at its center is one language (`.sd` files) where sensors, AI, safety rules, and “will this fit on the Jetson?” live in the **same program**. The same toolchain also verifies hardware, simulates missions, and monitors health.
 
 ---
 

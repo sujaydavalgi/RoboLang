@@ -8,9 +8,20 @@ Draft copy for a future Spanda project website. Use as-is or adapt for static si
 
 ### Hero
 
-**Spanda — The Autonomous Systems Language**
+**Spanda — The Autonomous Systems Platform**
 
-Write robots, agents, and digital twins with built-in safety validation and hardware verification.
+Safety-first platform with a dedicated `.sd` language at its core. Build, verify, simulate, deploy, and operate autonomous systems.
+
+**Brand assets** (repo `assets/image/`):
+
+| Asset | Use |
+|-------|-----|
+| `low_res_logo.png` | README, docs headers, nav |
+| `logo.png` | Website hero |
+| `banner.png` | Website banner strip |
+| `app_favicon.png` | Favicon, VS Code extension icon |
+| `high_res_logo.png` | Print, slides, high-DPI |
+| `simple.png`, `template.png`, `files.png` | Social, docs templates |
 
 ```bash
 git clone https://github.com/Davalgi/Spanda.git
@@ -22,7 +33,9 @@ spanda run examples/showcase/rover_navigation.sd
 
 ### Tagline
 
-The pulse of autonomous intelligence.
+Build. Verify. Simulate. Deploy. Operate. — for autonomous systems.
+
+*The pulse of autonomous intelligence.*
 
 ### Philosophy
 

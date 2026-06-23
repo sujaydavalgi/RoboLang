@@ -1,6 +1,10 @@
 # Spanda Vision
 
-**Spanda is the Autonomous Systems Language.** *The pulse of autonomous intelligence.*
+**Spanda is an Autonomous Systems Platform with a safety-first programming language at its core.** *The pulse of autonomous intelligence.*
+
+The **Spanda Language** (`.sd`) remains the expressive center — robot-native syntax, safety types, and physical units. The platform adds verification, simulation, replay, health, fleet, packages, and providers around that core.
+
+Platform guide: [platform-overview.md](./platform-overview.md)
 
 ---
 
@@ -31,7 +35,7 @@ No single language treats **perception, intelligence, safety, verification, and 
 
 ## The vision
 
-Spanda is the language layer where autonomous systems are **designed, validated, simulated, and deployed** — with AI treated as untrusted input and hardware fit checked before code ships.
+Spanda is the platform where autonomous systems are **designed, validated, simulated, deployed, and operated** — with the `.sd` language as the core and AI treated as untrusted input, hardware fit checked before code ships.
 
 ```
 Sensors → Perception → AI Planning → Safety Gate → Actuators
@@ -39,7 +43,7 @@ Sensors → Perception → AI Planning → Safety Gate → Actuators
            Digital Twin              Hardware Verify
 ```
 
-We believe the next generation of robotics and autonomous agents needs a language that speaks their domain natively — not a general-purpose language with libraries bolted on.
+We believe the next generation of robotics and autonomous agents needs a **platform** that speaks their domain natively — with a dedicated language at the center, not a general-purpose language with libraries bolted on.
 
 ---
 

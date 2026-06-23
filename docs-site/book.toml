@@ -1,7 +1,7 @@
 [book]
 title = "Spanda Documentation"
 authors = ["Sujay Davalgi"]
-description = "Spanda — safety-first language for robotics and autonomous systems"
+description = "Spanda — Autonomous Systems Platform with a safety-first language at its core"
 language = "en"
 multilingual = false
 src = "src"

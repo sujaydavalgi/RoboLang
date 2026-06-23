@@ -681,12 +681,12 @@ fn render_cli_reference(out: &mut String) {
 
     out.push_str("### spanda(1)\n\n");
     out.push_str("**NAME**\n\n");
-    out.push_str("`spanda` — Spanda autonomous systems programming language toolchain\n\n");
+    out.push_str("`spanda` — Spanda autonomous systems platform toolchain\n\n");
     out.push_str("**SYNOPSIS**\n\n");
     out.push_str("```\nspanda <command> [options] [arguments]\n```\n\n");
     out.push_str("**DESCRIPTION**\n\n");
     out.push_str(
-        "The Spanda CLI compiles, checks, verifies, runs, simulates, and documents `.sd` programs.\n\n",
+        "The Spanda CLI drives the autonomous systems platform: check, verify, simulate, replay, fleet, and document `.sd` programs.\n\n",
     );
     out.push_str("**COMMANDS**\n\n");
     for cmd in CLI_COMMANDS {
@@ -755,12 +755,12 @@ pub fn generate_cli_man_pages() -> Vec<(String, String)> {
     let mut overview = String::new();
     overview.push_str("# spanda(1)\n\n");
     overview.push_str("## NAME\n\n");
-    overview.push_str("spanda — Spanda autonomous systems programming language toolchain\n\n");
+    overview.push_str("spanda — Spanda autonomous systems platform toolchain\n\n");
     overview.push_str("## SYNOPSIS\n\n");
     overview.push_str("```\nspanda <command> [options] [arguments]\n```\n\n");
     overview.push_str("## DESCRIPTION\n\n");
     overview.push_str(
-        "The Spanda CLI compiles, checks, verifies, runs, simulates, and documents `.sd` programs.\n\n",
+        "The Spanda CLI drives the autonomous systems platform: check, verify, simulate, replay, fleet, and document `.sd` programs.\n\n",
     );
     overview.push_str("## COMMANDS\n\n");
     for cmd in CLI_COMMANDS {

@@ -1,8 +1,8 @@
 # Getting Started with Spanda
 
-Build and run your first autonomous robot program in under 10 minutes.
+**Spanda** is an autonomous systems platform with a safety-first **`.sd` language** at its core. This guide gets you from install to your first robot program in under 10 minutes.
 
-**All tutorials:** [Tutorials index](./tutorials/README.md)
+Platform map: [platform-overview.md](./platform-overview.md) · **All tutorials:** [Tutorials index](./tutorials/README.md)
 
 ---
 

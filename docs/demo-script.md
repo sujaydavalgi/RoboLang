@@ -6,7 +6,7 @@ Use the **autonomous rover** showcase as the visual backbone. Terminal font ≥ 
 
 ## 0:00 — Hook (15s)
 
-> "Spanda is a language where AI output is untrusted, hardware fit is checked before deploy, and safety is mandatory — not optional."
+> "Spanda is an autonomous systems platform where AI output is untrusted, hardware fit is checked before deploy, and safety is mandatory — not optional."
 
 Show: `examples/showcase/autonomous_rover/src/rover.sd` — `safety { }`, `ai_model`, `deploy … to RoverV1`.
 

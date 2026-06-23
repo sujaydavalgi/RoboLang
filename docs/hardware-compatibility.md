@@ -1,6 +1,6 @@
 # Hardware Compatibility Verification
 
-Spanda is the first autonomous systems language with **built-in hardware compatibility verification**. The compiler answers:
+Spanda Verify provides **built-in hardware compatibility verification** as part of the autonomous systems platform. The compiler answers:
 
 > Will this program safely and correctly execute on this hardware profile before deployment?
 

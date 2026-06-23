@@ -1,6 +1,8 @@
 # Feature Status
 
-Honest snapshot of Spanda capabilities as of **v0.4.0**. Use this document to understand what is production-ready, experimental, planned, or deprecated.
+Honest snapshot of **Spanda Platform** capabilities as of **v0.4.0**. The Spanda Language (`.sd`) is one component; this matrix covers verification, simulation, fleet, packages, and tooling as well. Use this document to understand what is production-ready, experimental, planned, or deprecated.
+
+Platform overview: [platform-overview.md](./platform-overview.md)
 
 **Stubbed** = syntax or API exists without full external integration.  
 **Broken** = known to fail or incomplete in current builds.

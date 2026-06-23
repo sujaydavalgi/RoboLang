@@ -1,6 +1,37 @@
 # Architecture diagrams
 
-Visual overview of the Spanda compile and runtime pipeline.
+Visual overview of the Spanda platform, compile pipeline, and runtime.
+
+## Spanda Platform
+
+```mermaid
+flowchart TB
+    subgraph platform ["Spanda Platform"]
+        LANG["Spanda Language (.sd)"]
+        RT["Spanda Runtime"]
+        VER["Spanda Verify"]
+        SAF["Spanda Safety"]
+        SIM["Spanda Sim"]
+        REP["Spanda Replay"]
+        HLTH["Spanda Health"]
+        FLT["Spanda Fleet"]
+        REG["Spanda Registry"]
+        PRV["Spanda Providers"]
+    end
+
+    LANG --> RT
+    LANG --> VER
+    LANG --> SAF
+    VER --> RT
+    SAF --> RT
+    SIM --> RT
+    REP --> RT
+    HLTH --> FLT
+    REG --> PRV
+    PRV --> RT
+```
+
+Component reference: [platform-overview.md](../platform-overview.md).
 
 ## Language pipeline
 

@@ -2,7 +2,7 @@
 
 ## NAME
 
-spanda — Spanda autonomous systems programming language toolchain
+spanda — Spanda autonomous systems platform toolchain
 
 ## SYNOPSIS
 
@@ -12,7 +12,7 @@ spanda <command> [options] [arguments]
 
 ## DESCRIPTION
 
-The Spanda CLI compiles, checks, verifies, runs, simulates, and documents `.sd` programs.
+The Spanda CLI drives the autonomous systems platform: check, verify, simulate, replay, fleet, and document `.sd` programs.
 
 ## COMMANDS
 

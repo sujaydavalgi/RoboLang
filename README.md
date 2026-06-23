@@ -1,10 +1,30 @@
+<p align="center">
+  <img src="assets/image/low_res_logo.png" alt="Spanda — The Autonomous Systems Platform" width="360">
+</p>
+
 # Spanda
 
-**The Autonomous Systems Language.** *The pulse of autonomous intelligence.*
+**The Autonomous Systems Platform** — *with a safety-first programming language at its core.*
 
-Spanda is an AI-native programming language for robotics, autonomous agents, digital twins, and edge systems. Source files use the **`.sd`** extension.
+*The pulse of autonomous intelligence.*
 
-Repository: [github.com/Davalgi/Spanda](https://github.com/Davalgi/Spanda)
+---
+
+## Build. Verify. Simulate. Deploy. Operate.
+
+**For Autonomous Systems.**
+
+Spanda is an autonomous systems platform centered on the **Spanda Language** (`.sd` files). One toolchain spans design through operations — from typed robot programs to safety gates, hardware checks, simulation, replay, fleet health, and package-backed integrations.
+
+**Spanda provides:**
+
+| | | |
+|---|---|---|
+| **Autonomous Systems Language** | **Safety Validation** | **Hardware Verification** |
+| **Capability Verification** | **Simulation** | **Replay** |
+| **Health Monitoring** | **Package Ecosystem** | **Provider System** |
+
+Repository: [github.com/Davalgi/Spanda](https://github.com/Davalgi/Spanda) · Platform guide: [docs/platform-overview.md](docs/platform-overview.md)
 
 ---
 
@@ -20,9 +40,45 @@ Spanda is the intelligent pulse that transforms perception into action.
 
 ---
 
+## Spanda Platform
+
+Spanda consists of several major components. The language is the expressive core; verification, safety, simulation, and operations wrap around it.
+
+```
+Spanda Platform
+│
+├── Spanda Language (.sd)
+├── Spanda Runtime
+├── Spanda Verify
+├── Spanda Safety
+├── Spanda Sim
+├── Spanda Replay
+├── Spanda Health
+├── Spanda Fleet
+├── Spanda Registry
+└── Spanda Providers
+```
+
+| Component | What it does |
+|-----------|--------------|
+| **Spanda Language (.sd)** | Safety-first language for robots, agents, and edge systems — sensors, actuators, AI, safety rules, and deployment targets are first-class syntax |
+| **Spanda Runtime** | Interpreter, scheduler, cooperative tasks, HAL bindings, and certified execution after compile-time gates |
+| **Spanda Verify** | Hardware compatibility (`spanda verify`), capability exposure, behavioral `verify { }` assertions, and traceability matrices |
+| **Spanda Safety** | `ActionProposal` → `SafeAction` gate, safety zones, `stop_if`, emergency stop, and kill-switch handlers |
+| **Spanda Sim** | Physics-lite simulation (`spanda run` / `spanda sim`) and digital twins — test without hardware |
+| **Spanda Replay** | Mission trace record, deterministic replay, and frame playback for regression and incident review |
+| **Spanda Health** | `health_check`, fleet `require` clauses, health policies, and operational readiness gates |
+| **Spanda Fleet** | Multi-robot simulation, orchestration, mesh coordination, and distributed agent relay |
+| **Spanda Registry** | Hosted package index, Ed25519-signed tarballs, and `spanda publish` / `spanda install` |
+| **Spanda Providers** | Official packages (ROS2, MQTT, GPS, vision, fleet, OTA, cloud) wired through the provider registry |
+
+Deep dive: [docs/platform-overview.md](docs/platform-overview.md) · Diagram: [docs/diagrams/README.md](docs/diagrams/README.md) · Crate map: [docs/architecture.md](docs/architecture.md)
+
+---
+
 ## What is Spanda?
 
-Spanda is a language and runtime for **autonomous systems** — programs where sensors, AI models, actuators, safety rules, and deployment targets are first-class concepts in the source code.
+Spanda is an **autonomous systems platform** built around the **Spanda Language** — a typed programming language where sensors, AI models, actuators, safety rules, and deployment targets are first-class concepts in source code.
 
 You write a `robot` block with sensors, actuators, safety zones, and agents. The compiler enforces physical units, validates AI proposals before they reach hardware, and checks that your program fits the deployment target before you ship.
 
@@ -51,15 +107,44 @@ robot SafePatrol {
 
 ---
 
-## Why Spanda exists
+## Why Spanda?
 
-Building autonomous systems today means stitching together Python scripts, C++ drivers, ROS2 nodes, safety monitors, and deployment checklists — with no single language that treats **AI output as untrusted**, **hardware fit as compile-time**, and **safety as mandatory**.
+Building autonomous systems today means stitching together Python scripts, C++ drivers, ROS2 nodes, safety monitors, and deployment checklists — with no single platform that treats **AI output as untrusted**, **hardware fit as compile-time**, and **safety as mandatory**.
 
-Spanda exists to be that coordination layer: one typed language where perception, planning, safety validation, simulation, and deployment verification live together.
+**Traditional languages focus on:**
+
+- Algorithms
+- Data structures
+- Applications
+
+**Spanda focuses on:**
+
+- Autonomous systems
+- Safety
+- Hardware awareness
+- Capability verification
+- Simulation
+- Operational health
+
+Spanda exists to be that coordination layer: one platform where perception, planning, safety validation, simulation, verification, and deployment live together — with the `.sd` language as the expressive core.
 
 ---
 
-## Key differentiators
+## What makes Spanda different?
+
+1. **Safety-Typed AI** — `ActionProposal` from LLMs and vision models cannot drive actuators; only `SafeAction` from `safety.validate()` can. Enforced at compile time and runtime.
+
+2. **Hardware Verification** — `deploy Robot to Profile` and `spanda verify` check sensors, memory, timing, power, and network before deployment.
+
+3. **Capability Verification** — Expose, grant, and trace robot capabilities; verify the system can actually perform the mission, not just compile.
+
+4. **Simulation + Replay** — `spanda sim` validates behavior before hardware exists; `spanda replay` records and replays mission traces for regression and incident review.
+
+5. **Health-Aware Runtime** — `health_check`, fleet `require` clauses, and policies monitor robots, fleets, and devices during operation.
+
+6. **Package-Based Extensibility** — Lean core architecture; official packages (ROS2, MQTT, GPS, vision, fleet) extend via the provider registry without bloating the language.
+
+### More differentiators
 
 | Differentiator | What it means |
 |----------------|---------------|
@@ -492,6 +577,7 @@ Rust and TypeScript sources use **inline API documentation** (inside function bo
 
 | Document | Description |
 |----------|-------------|
+| [docs/platform-overview.md](docs/platform-overview.md) | Spanda Platform — components and platform vs language |
 | [docs/getting-started.md](docs/getting-started.md) | First robot in 10 minutes |
 | [docs/health-checks.md](docs/health-checks.md) | Health checks, fleet `require` clauses, policies |
 | [docs/kill-switch.md](docs/kill-switch.md) | Kill switch syntax, `remote_signed`, handlers |

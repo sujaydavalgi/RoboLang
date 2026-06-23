@@ -1,8 +1,8 @@
 # Spanda Architecture
 
-Spanda is an **AI-native autonomous systems programming language**. The implementation uses a **lean-core, package-first** workspace: focused Rust crates own behavior; `spanda-core` is the stable public facade; a TypeScript mirror in `src/` supports tests and tooling.
+**Spanda** is an **autonomous systems platform** with a safety-first **`.sd` language** at its core. The implementation uses a **lean-core, package-first** workspace: focused Rust crates own behavior; `spanda-core` is the stable public facade; a TypeScript mirror in `src/` supports tests and tooling.
 
-For diagrams and crate detail, see [architecture.md](./architecture.md) and [lean-core.md](./lean-core.md).
+Platform components: [platform-overview.md](./platform-overview.md). For diagrams and crate detail, see [architecture.md](./architecture.md) and [lean-core.md](./lean-core.md).
 
 ## System diagram
 

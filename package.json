@@ -1,7 +1,7 @@
 {
   "name": "spanda",
   "version": "0.4.0",
-  "description": "Spanda — the pulse of autonomous intelligence",
+  "description": "Autonomous Systems Platform with a safety-first language at its core — the pulse of autonomous intelligence",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Davalgi/Spanda.git"

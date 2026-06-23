@@ -1,6 +1,6 @@
 # Contributing to Spanda
 
-Thank you for your interest in contributing to Spanda — the Autonomous Systems Language.
+Thank you for your interest in contributing to Spanda — an Autonomous Systems Platform with a safety-first programming language at its core.
 
 ---
 

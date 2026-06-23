@@ -1,9 +1,10 @@
 {
   "name": "spanda-vscode",
   "displayName": "Spanda",
-  "description": "VS Code support for Spanda (.sd) — syntax, LSP check/verify diagnostics, debug",
+  "description": "Spanda Autonomous Systems Platform — VS Code support for Spanda Language (.sd): syntax, LSP check/verify diagnostics, debug",
   "version": "0.4.0",
   "publisher": "spanda-lang",
+  "icon": "icons/spanda.png",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
@@ -14,6 +15,7 @@
     "server/**",
     "syntaxes/**",
     "snippets/**",
+    "icons/**",
     "language-configuration.json",
     "LICENSE",
     "README.md",

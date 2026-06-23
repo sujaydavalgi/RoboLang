@@ -3,9 +3,10 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Spanda — The Autonomous Systems Language</title>
-  <meta name="description" content="AI-native programming for robotics, autonomous agents, and digital twins with built-in safety validation and hardware verification.">
+  <title>Spanda — The Autonomous Systems Platform</title>
+  <meta name="description" content="Safety-first autonomous systems platform with a dedicated programming language, verification engine, simulation, replay, and hardware-aware deployment.">
   <link rel="canonical" href="https://davalgi.com/">
+  <link rel="icon" type="image/png" href="../assets/image/app_favicon.png">
   <style>
     :root {
       color-scheme: dark;
@@ -41,11 +42,14 @@
       padding-top: 1.5rem;
       padding-bottom: 1rem;
     }
-    .brand { font-weight: 700; letter-spacing: 0.02em; color: var(--text); }
+    .brand { font-weight: 700; letter-spacing: 0.02em; color: var(--text); display: flex; align-items: center; gap: 0.6rem; }
+    .brand img { height: 2rem; width: auto; display: block; }
     .brand span { color: var(--muted); font-weight: 500; }
     nav a { margin-left: 1rem; color: var(--muted); font-size: 0.95rem; }
     nav a:hover { color: var(--text); }
     .hero { padding: 3rem 0 2rem; }
+    .hero-logo { width: min(100%, 22rem); height: auto; margin-bottom: 1.25rem; display: block; }
+    .hero-banner { width: 100%; height: auto; border-radius: 0.75rem; border: 1px solid var(--border); margin: 2.5rem 0 0; display: block; }
     .eyebrow {
       display: inline-block;
       font-size: 0.8rem;
@@ -116,7 +120,10 @@
 </head>
 <body>
   <header>
-    <div class="brand">Davalgi <span>/ Spanda</span></div>
+    <div class="brand">
+      <img src="../assets/image/low_res_logo.png" alt="Spanda logo">
+      <span>Davalgi / Spanda</span>
+    </div>
     <nav>
       <a href="https://github.com/Davalgi/Spanda/tree/main/docs">Docs</a>
       <a href="https://github.com/Davalgi/Spanda/tree/main/docs/spanda-101">Spanda 101</a>
@@ -126,11 +133,12 @@
 
   <main>
     <section class="hero">
+      <img class="hero-logo" src="../assets/image/logo.png" alt="Spanda — The Autonomous Systems Platform">
       <div class="eyebrow">Open source</div>
-      <h1>The Autonomous Systems Language</h1>
+      <h1>The Autonomous Systems Platform</h1>
       <p class="lead">
-        Write robots, agents, and digital twins with built-in safety validation
-        and hardware verification.
+        Safety-first platform with a dedicated <code>.sd</code> language at its core.
+        Build, verify, simulate, deploy, and operate autonomous systems.
       </p>
       <div class="actions">
         <a class="btn btn-primary" href="https://github.com/Davalgi/Spanda/tree/main/docs/getting-started.md">Get started</a>
@@ -140,6 +148,8 @@
 npm run build:rust
 spanda run examples/showcase/rover_navigation.sd</code></pre>
     </section>
+
+    <img class="hero-banner" src="../assets/image/banner.png" alt="Spanda platform — build, verify, simulate, deploy, operate">
 
     <div class="philosophy">
       Hardware is the body. Sensors are the senses. AI models are the mind.

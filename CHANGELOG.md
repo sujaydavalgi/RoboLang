@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Platform positioning:** README reframed as Autonomous Systems Platform; Spanda Platform component map; "Why Spanda?" and "What makes Spanda different?" sections; homepage messaging (Build · Verify · Simulate · Deploy · Operate).
+- **Docs:** [platform-overview.md](docs/platform-overview.md) (platform vs language); [platform-positioning-migration.md](docs/platform-positioning-migration.md) (messaging migration and GitHub metadata); roadmap reorganized by platform area; platform Mermaid diagram in [diagrams/README.md](docs/diagrams/README.md).
 - **Bundled rover demo:** `spanda demo rover` ships `examples/showcase/autonomous_rover/` source in the crate (install fetches registry deps).
 - **Registry index:** all 29 `packages/registry/*` scaffolds indexed in `registry/index.json`.
 - **Phase 30 test crate:** `phase30_gaps.rs` for health polling during trigger loops.
@@ -16,6 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Docs:** Platform positioning follow-up — docs-site intro, getting-started, spanda-architecture, hardware-compatibility, demo-script, robotics-platform, For Dummies ch.1; CLI man blurb in `spanda-docs`; regenerated `spanda-reference.md` and `docs/man/`.
+- **Brand assets:** Logo in README, docs index, platform overview, mdBook intro; banner and favicon on `website/index.html`; VS Code extension icon from `assets/image/app_favicon.png`.
 - Golden-path live AI example reference: `examples/features/live_openai.sd`.
 
 ## [0.4.0] - 2026-06-22

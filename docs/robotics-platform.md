@@ -1,8 +1,8 @@
 # Spanda Robotics Platform
 
-Spanda is an **autonomous systems coordination and verification layer** — not a replacement for ROS 2, Nav2, Gazebo, or ML stacks. The robotics platform extends the language with first-class orchestration primitives while delegating algorithms to packages and external runtimes.
+Spanda is an **autonomous systems coordination and verification platform** — not a replacement for ROS 2, Nav2, Gazebo, or ML stacks. The robotics layer extends the `.sd` language with first-class orchestration primitives while delegating algorithms to packages and external runtimes.
 
-**Related docs:** [ROS 2 golden path](./ros2-golden-path.md) · [Standard library](./standard-library.md) · [Packages](./packages.md) · [Trust boundaries](./trust-boundaries.md) · [Triggers](./triggers.md)
+**Related docs:** [Platform overview](./platform-overview.md) · [ROS 2 golden path](./ros2-golden-path.md) · [Standard library](./standard-library.md) · [Packages](./packages.md) · [Trust boundaries](./trust-boundaries.md) · [Triggers](./triggers.md)
 
 ## Architecture
 

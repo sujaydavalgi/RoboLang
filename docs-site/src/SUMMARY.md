@@ -2,6 +2,7 @@
 
 [Introduction](./introduction.md)
 
+- [Platform Overview](../../docs/platform-overview.md)
 - [Getting Started](../../docs/getting-started.md)
 - [Language Guide](../../docs/spanda-language.md)
 - [Examples](../../examples/README.md)

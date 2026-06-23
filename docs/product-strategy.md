@@ -1,22 +1,25 @@
 # Spanda Product Strategy
 
-Strategic analysis for Spanda as an autonomous systems language. This document defines positioning, priorities, and release scope. It complements [vision.md](./vision.md) (aspiration) and [feature-status.md](./feature-status.md) (implementation truth).
+Strategic analysis for Spanda as an **autonomous systems platform** with a safety-first language at its core. This document defines positioning, priorities, and release scope. It complements [vision.md](./vision.md) (aspiration), [platform-overview.md](./platform-overview.md) (architecture), and [feature-status.md](./feature-status.md) (implementation truth).
 
-**Last updated:** 2026-06-22 (v0.4.0 deploy path; Phases 27–35 verification & DX complete)
+**Last updated:** 2026-06-22 (platform positioning; v0.4.0 deploy path; Phases 27–35 verification & DX complete)
 
 ---
 
 ## Executive summary
 
-Spanda should not compete as a general-purpose language, Python replacement, Rust replacement, or ROS replacement. It wins as **the coordination and verification layer** where:
+Spanda should not compete as a general-purpose language, Python replacement, Rust replacement, or ROS replacement. It wins as **the coordination and verification platform** where:
 
 1. AI output is **typed as untrusted** (`ActionProposal` → `SafeAction`)
 2. Hardware fit is **checked before deploy** (`spanda verify`)
 3. Safety is **mandatory in the language**, not bolted on
+4. Simulation, replay, and health are **first-class operational workflows**
 
-**Official positioning:** *Spanda is the Autonomous Systems Language.* *The pulse of autonomous intelligence.*
+**Official positioning:** *Spanda is an Autonomous Systems Platform with a safety-first programming language at its core.* *The pulse of autonomous intelligence.*
 
-**Sharpened tagline:** *Design autonomous systems. Verify they fit the hardware. Block unsafe AI before it reaches actuators.*
+**Short form:** *The Autonomous Systems Platform.*
+
+**Sharpened tagline:** *Build. Verify. Simulate. Deploy. Operate. — for autonomous systems.*
 
 ### Philosophy
 

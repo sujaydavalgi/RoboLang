@@ -42,7 +42,7 @@ def main() -> None:
             "cargo",
             "run",
             "-p",
-            "spanda-cli",
+            "spanda",
             "--release",
             "--",
             "reference",
