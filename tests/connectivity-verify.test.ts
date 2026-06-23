@@ -45,8 +45,12 @@ robot R { actuator wheels: DifferentialDrive; }
 deploy R to Tiny;
 `),
     );
-    const profile = hardwareProfileFromDecl(program.hardwareProfiles[0]!);
-    const items = verifyRequiresConnectivity(program.requiresConnectivity!, profile);
+    const firstHardwareProfile = program.hardwareProfiles[0];
+    expect(firstHardwareProfile).toBeDefined();
+    const profile = hardwareProfileFromDecl(firstHardwareProfile!);
+    expect(program.requiresConnectivity).toBeDefined();
+    const requiresConnectivity = program.requiresConnectivity!;
+    const items = verifyRequiresConnectivity(requiresConnectivity, profile);
     expect(items.some((i) => i.severity === "error")).toBe(true);
   });
 
