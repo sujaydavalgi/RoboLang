@@ -5,22 +5,14 @@
 
 export const REMOTE_HTTP_TIMEOUT_MS = 30_000;
 
+/**
+ * Produces a sanitized URL string for error messages by removing query strings
+ * and fragments. Returns a placeholder when parsing fails.
+ *
+ * @param url - Raw request URL.
+ * @returns Origin plus pathname, or `"[unparseable-url]"` if parsing fails.
+ */
 function safeUrlForError(url: string): string {
-  // Redact query strings and fragments from URLs embedded in fetch error messages.
-  //
-  // Parameters:
-  // - `url` — raw request URL
-  //
-  // Returns:
-  // Origin plus pathname, or a placeholder when parsing fails.
-  //
-  // Options:
-  // None.
-  //
-  // Example:
-  // safeUrlForError("https://api.example.com/deploy?token=secret")
-  // => "https://api.example.com/deploy"
-
   try {
     const parsed = new URL(url);
     return `${parsed.origin}${parsed.pathname}`;
