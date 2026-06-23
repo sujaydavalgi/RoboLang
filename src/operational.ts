@@ -310,9 +310,14 @@ export function auditProgramTs(program: Program, source: string): SafetyAuditRep
     });
   }
   const security = analyzeProgram(program);
+  const severityMap: Record<string, AuditFinding["severity"]> = {
+    error: "Critical",
+    warning: "High",
+    info: "Low",
+  };
   for (const issue of security.findings) {
     findings.push({
-      severity: issue.severity === "error" ? "Critical" : issue.severity === "warning" ? "High" : "Low",
+      severity: severityMap[issue.severity] ?? "Low",
       category: "security",
       message: issue.message,
       line: issue.line,
