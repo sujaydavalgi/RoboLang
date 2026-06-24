@@ -2,6 +2,7 @@
 //!
 use crate::recovery_mesh::handle_fleet_recovery_post;
 use crate::continuity_mesh::handle_fleet_continuity_post;
+use crate::telemetry_mesh::{handle_fleet_telemetry_get, handle_fleet_telemetry_ingest_post};
 use crate::remote::{
     default_fleet_agents_path, load_fleet_agent_registry, relay_peer_deliveries, FleetAgentRegistry,
 };
@@ -58,6 +59,9 @@ pub struct FleetMeshState {
     pub recovery_failed_total: u32,
     pub continuity_relayed_total: u32,
     pub continuity_failed_total: u32,
+    pub telemetry_ingest_total: u32,
+    #[serde(default)]
+    pub telemetry_shards: std::collections::BTreeMap<String, String>,
     #[serde(default)]
     pub token: Option<String>,
 }
@@ -244,6 +248,8 @@ pub fn handle_fleet_mesh_request(
                     "recovery_failed_total": state.recovery_failed_total,
                     "continuity_relayed_total": state.continuity_relayed_total,
                     "continuity_failed_total": state.continuity_failed_total,
+                    "telemetry_ingest_total": state.telemetry_ingest_total,
+                    "telemetry_robots": state.telemetry_shards.len(),
                     "healthy": true,
                 }))
                 .unwrap_or_else(|_| "{}".into()),
@@ -275,6 +281,10 @@ pub fn handle_fleet_mesh_request(
                 state.continuity_failed_total += payload.failed;
             }
             response
+        }
+        ("GET", "/v1/fleet/telemetry") => handle_fleet_telemetry_get(state),
+        ("POST", "/v1/fleet/telemetry/ingest") => {
+            handle_fleet_telemetry_ingest_post(&request.body, state)
         }
         _ => HttpResponse {
             status: 404,
@@ -382,6 +392,28 @@ fn dispatch_mesh_request(
             locked.continuity_failed_total += payload.failed;
         }
         return response;
+    }
+
+    if request.method == "GET" && request.path == "/v1/fleet/telemetry" {
+        let locked = state.lock().expect("fleet mesh state lock");
+        if unauthorized(&request, &locked) {
+            return HttpResponse {
+                status: 401,
+                body: r#"{"ok":false,"error":"unauthorized"}"#.into(),
+            };
+        }
+        return handle_fleet_telemetry_get(&locked);
+    }
+
+    if request.method == "POST" && request.path == "/v1/fleet/telemetry/ingest" {
+        let mut locked = state.lock().expect("fleet mesh state lock");
+        if unauthorized(&request, &locked) {
+            return HttpResponse {
+                status: 401,
+                body: r#"{"ok":false,"error":"unauthorized"}"#.into(),
+            };
+        }
+        return handle_fleet_telemetry_ingest_post(&request.body, &mut locked);
     }
 
     let mut locked = state.lock().expect("fleet mesh state lock");

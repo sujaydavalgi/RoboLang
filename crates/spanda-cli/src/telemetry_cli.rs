@@ -1,8 +1,9 @@
 //! CLI commands for querying the persistent telemetry store.
 
 use crate::replay_cli;
+use spanda_fleet::fetch_fleet_telemetry;
 use spanda_telemetry_store::{
-    global_store, render_otlp_json, render_prometheus, resolve_store_path,
+    global_store, push_otlp_json, render_otlp_json, render_prometheus, resolve_store_path,
     run_otlp_push_loop, run_telemetry_server, OtlpPushOptions, TelemetryEvent, TelemetryQuery,
     TelemetryServeOptions, TelemetrySessionSummary, TelemetryStats, TelemetryStoreInfo,
 };
@@ -21,6 +22,7 @@ pub fn cmd_telemetry(sub: &str, args: &[String]) {
         "prometheus" => cmd_prometheus(args),
         "otlp" => cmd_otlp(args),
         "push" => cmd_push(args),
+        "fleet-push" => cmd_fleet_push(args),
         "serve" => cmd_serve(args),
         "sessions" => cmd_sessions(args),
         "replay" => cmd_replay(args),
@@ -45,6 +47,7 @@ fn usage() {
          spanda telemetry prometheus [--out <file.prom>]\n\
          spanda telemetry otlp [--out <file.json>]\n\
          spanda telemetry push --endpoint <url> [--token <t>] [--watch] [--interval <ms>]\n\
+         spanda telemetry fleet-push --mesh <url> --endpoint <collector> [--token <t>]\n\
          spanda telemetry serve [--bind <addr>] [--once]\n\
          spanda telemetry sessions [--json]\n\
          spanda telemetry replay --session <id> [--from T+mm:ss] [--deterministic] [--playback] [--json]\n\
@@ -143,6 +146,57 @@ fn cmd_push(args: &[String]) {
         process::exit(1);
     }
     println!("Pushed OTLP metrics to {endpoint}");
+}
+
+fn cmd_fleet_push(args: &[String]) {
+    let mut mesh_url: Option<String> = None;
+    let mut endpoint: Option<String> = None;
+    let mut token: Option<String> = None;
+    let mut i = 0;
+    while i < args.len() {
+        match args[i].as_str() {
+            "--mesh" => {
+                i += 1;
+                mesh_url = args.get(i).cloned();
+            }
+            "--endpoint" => {
+                i += 1;
+                endpoint = args.get(i).cloned();
+            }
+            "--token" => {
+                i += 1;
+                token = args.get(i).cloned();
+            }
+            other => {
+                eprintln!("Unknown telemetry fleet-push flag: {other}");
+                process::exit(1);
+            }
+        }
+        i += 1;
+    }
+    let mesh_url = mesh_url
+        .or_else(|| std::env::var("SPANDA_FLEET_MESH_URL").ok())
+        .unwrap_or_else(|| {
+            eprintln!("telemetry fleet-push requires --mesh <url> or SPANDA_FLEET_MESH_URL");
+            process::exit(1);
+        });
+    let endpoint = endpoint
+        .or_else(|| std::env::var("SPANDA_OTLP_ENDPOINT").ok())
+        .unwrap_or_else(|| {
+            eprintln!("telemetry fleet-push requires --endpoint <url> or SPANDA_OTLP_ENDPOINT");
+            process::exit(1);
+        });
+    let token = token.or_else(|| std::env::var("SPANDA_OTLP_TOKEN").ok());
+    let mesh_token = std::env::var("SPANDA_FLEET_MESH_TOKEN").ok();
+    let body = fetch_fleet_telemetry(&mesh_url, mesh_token.as_deref()).unwrap_or_else(|error| {
+        eprintln!("telemetry fleet-push failed: {error}");
+        process::exit(1);
+    });
+    if let Err(error) = push_otlp_json(&endpoint, &body, token.as_deref()) {
+        eprintln!("telemetry fleet-push failed: {error}");
+        process::exit(1);
+    }
+    println!("Pushed fleet OTLP metrics from {mesh_url} to {endpoint}");
 }
 
 fn cmd_serve(args: &[String]) {

@@ -689,6 +689,10 @@ async function handleTelemetry(
     const { runTelemetryPush } = await import("../telemetry-cli.js");
     process.exit(await runTelemetryPush(args));
   }
+  if (sub === "fleet-push") {
+    const { runTelemetryFleetPush } = await import("../telemetry-cli.js");
+    process.exit(await runTelemetryFleetPush(args));
+  }
   process.exit(runTelemetryCli(sub, args));
 }
 

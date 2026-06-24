@@ -5,6 +5,7 @@
 //! heartbeat index sidecar or SQLite table. Enable with `--persist-telemetry` or
 //! `SPANDA_TELEMETRY_STORE=1`.
 
+pub mod fleet;
 pub mod error;
 pub mod memory;
 pub mod otlp;
@@ -17,6 +18,7 @@ pub mod serve;
 pub mod sqlite;
 pub mod store;
 
+pub use fleet::{merge_fleet_otlp_json, shards_from_map, FleetTelemetryShard};
 pub use error::{TelemetryStoreError, TelemetryStoreResult};
 pub use memory::{
     memory_append_json_line, memory_append_runtime_metrics, memory_clear, memory_render_otlp_json,

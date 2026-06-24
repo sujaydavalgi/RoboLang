@@ -372,6 +372,43 @@ function renderOtlp(): string {
   return renderOtlpJson();
 }
 
+export async function runTelemetryFleetPush(args: string[]): Promise<number> {
+  let meshUrl = process.env.SPANDA_FLEET_MESH_URL;
+  let endpoint = process.env.SPANDA_OTLP_ENDPOINT;
+  let token = process.env.SPANDA_OTLP_TOKEN;
+  for (let i = 0; i < args.length; i += 1) {
+    if (args[i] === "--mesh") {
+      meshUrl = args[++i];
+    } else if (args[i] === "--endpoint") {
+      endpoint = args[++i];
+    } else if (args[i] === "--token") {
+      token = args[++i];
+    } else {
+      throw new Error(`Unknown telemetry fleet-push flag: ${args[i]}`);
+    }
+  }
+  if (!meshUrl) {
+    console.error("telemetry fleet-push requires --mesh <url> or SPANDA_FLEET_MESH_URL");
+    return 1;
+  }
+  if (!endpoint) {
+    console.error("telemetry fleet-push requires --endpoint <url> or SPANDA_OTLP_ENDPOINT");
+    return 1;
+  }
+  const meshToken = process.env.SPANDA_FLEET_MESH_TOKEN;
+  const { fetchFleetTelemetry } = await import("./telemetry-fleet.js");
+  const { pushOtlpJson } = await import("./telemetry-push.js");
+  try {
+    const body = await fetchFleetTelemetry(meshUrl, meshToken);
+    await pushOtlpJson(endpoint, body, token);
+    console.log(`Pushed fleet OTLP metrics from ${meshUrl} to ${endpoint}`);
+    return 0;
+  } catch (error) {
+    console.error(`telemetry fleet-push failed: ${error instanceof Error ? error.message : error}`);
+    return 1;
+  }
+}
+
 export async function runTelemetryPush(args: string[]): Promise<number> {
   let endpoint = envOtlpEndpoint();
   let token = envOtlpToken();
