@@ -1,0 +1,37 @@
+// Delegation showcase — mission ownership transfer
+//
+//   spanda delegate examples/showcase/delegation/survey.sd \
+//     --failed SurveyBotA --to SurveyBotB --progress 60
+
+hardware SurveyRig {
+    sensors [GPS, Camera, Lidar];
+    actuators [DifferentialDrive];
+    connectivity [WiFi, LTE];
+}
+
+mission_plan SiteSurvey {
+    step map_perimeter;
+    step scan_structures;
+    step upload_data;
+}
+
+fleet SurveyFleet {
+    SurveyBotA;
+    SurveyBotB;
+}
+
+robot SurveyBotA {
+    sensor gps: GPS;
+    sensor camera: Camera;
+    actuator wheels: DifferentialDrive;
+    safety { max_speed = 0.8 m/s; }
+    behavior survey() { wheels.drive(0.2 m/s); }
+}
+
+robot SurveyBotB {
+    sensor gps: GPS;
+    sensor camera: Camera;
+    actuator wheels: DifferentialDrive;
+    safety { max_speed = 0.8 m/s; }
+    behavior survey() { wheels.drive(0.2 m/s); }
+}

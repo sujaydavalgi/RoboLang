@@ -1,0 +1,35 @@
+// Takeover showcase — hot takeover on battery critical
+//
+//   spanda takeover examples/showcase/takeover/patrol.sd \
+//     --failed RoverAlpha --successor RoverBeta --trigger battery_critical
+
+hardware PatrolBot {
+    sensors [GPS, Camera];
+    actuators [DifferentialDrive];
+    connectivity [WiFi];
+}
+
+fleet PatrolFleet {
+    RoverAlpha;
+    RoverBeta;
+}
+
+recovery_policy TakeoverPolicy {
+    on robot.failed {
+        reassign mission;
+    }
+}
+
+robot RoverAlpha {
+    sensor gps: GPS;
+    actuator wheels: DifferentialDrive;
+    safety { max_speed = 1.0 m/s; }
+    behavior patrol() { wheels.drive(0.5 m/s); }
+}
+
+robot RoverBeta {
+    sensor gps: GPS;
+    actuator wheels: DifferentialDrive;
+    safety { max_speed = 1.0 m/s; }
+    behavior patrol() { wheels.drive(0.5 m/s); }
+}

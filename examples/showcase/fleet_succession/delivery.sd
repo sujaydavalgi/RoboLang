@@ -1,0 +1,59 @@
+// Fleet succession — rank backup robots after fleet member offline
+//
+//   spanda succession examples/showcase/fleet_succession/delivery.sd \
+//     --failed CourierA --scope fleet --trigger fleet_offline
+
+hardware DeliveryBot {
+    sensors [GPS, Camera];
+    actuators [DifferentialDrive];
+    connectivity [WiFi, LTE];
+}
+
+mission_plan LastMileDelivery {
+    step pickup_package;
+    step navigate_route;
+    step deliver_package;
+    step return_to_depot;
+}
+
+fleet DeliveryFleet {
+    CourierA;
+    CourierB;
+    CourierC;
+    CourierD;
+}
+
+recovery_policy FleetSuccession {
+    on fleet.failed {
+        reassign mission;
+        redistribute tasks;
+    }
+}
+
+robot CourierA {
+    sensor gps: GPS;
+    actuator wheels: DifferentialDrive;
+    safety { max_speed = 1.2 m/s; }
+    behavior deliver() { wheels.drive(0.6 m/s); }
+}
+
+robot CourierB {
+    sensor gps: GPS;
+    actuator wheels: DifferentialDrive;
+    safety { max_speed = 1.2 m/s; }
+    behavior deliver() { wheels.drive(0.6 m/s); }
+}
+
+robot CourierC {
+    sensor gps: GPS;
+    actuator wheels: DifferentialDrive;
+    safety { max_speed = 1.2 m/s; }
+    behavior deliver() { wheels.drive(0.6 m/s); }
+}
+
+robot CourierD {
+    sensor gps: GPS;
+    actuator wheels: DifferentialDrive;
+    safety { max_speed = 1.2 m/s; }
+    behavior deliver() { wheels.drive(0.6 m/s); }
+}

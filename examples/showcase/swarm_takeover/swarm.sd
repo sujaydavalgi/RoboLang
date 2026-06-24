@@ -1,0 +1,44 @@
+// Swarm takeover — coordinator replacement when swarm member lost
+//
+//   spanda takeover examples/showcase/swarm_takeover/swarm.sd \
+//     --failed DroneTwo --trigger swarm_lost --scope swarm
+
+hardware MicroDrone {
+    sensors [GPS, Camera];
+    actuators [Rotor];
+    connectivity [WiFi];
+}
+
+fleet ReconSwarm {
+    DroneOne;
+    DroneTwo;
+    DroneThree;
+}
+
+recovery_policy SwarmRecovery {
+    on swarm.failed {
+        redistribute tasks;
+        promote backup coordinator;
+    }
+}
+
+robot DroneOne {
+    sensor gps: GPS;
+    actuator rotors: Rotor;
+    safety { max_speed = 5.0 m/s; }
+    behavior hover() { rotors.spin(1000 rpm); }
+}
+
+robot DroneTwo {
+    sensor gps: GPS;
+    actuator rotors: Rotor;
+    safety { max_speed = 5.0 m/s; }
+    behavior hover() { rotors.spin(1000 rpm); }
+}
+
+robot DroneThree {
+    sensor gps: GPS;
+    actuator rotors: Rotor;
+    safety { max_speed = 5.0 m/s; }
+    behavior hover() { rotors.spin(1000 rpm); }
+}
