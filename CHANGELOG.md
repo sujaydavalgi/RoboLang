@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Structured docstring standard:** [docs/coding-standards.md](docs/coding-standards.md) defines Description / Inputs / Outputs / Example for all Rust, TypeScript, Python, and Spanda APIs; [docs/documentation-coverage.md](docs/documentation-coverage.md) tracks coverage; `scripts/validate_documentation.py`, `add_structured_api_docs.py`, and `migrate_legacy_inline_docs.py` enforce and bulk-apply the format; CI emits warnings (non-blocking) on pull requests.
 - **Documentation tooling (follow-up):** getting-started and README links for `spanda doc`, `spanda man`, and `docs/language-reference/`; feature-status matrix updated for docgen and man pages.
 - **Documentation tooling:** `///` doc comments in `.sd` files (parsed into AST); `spanda doc --html`, `spanda doc examples/`, `spanda man`; expanded man pages with EXIT STATUS and FILES; `docs/language-reference/` topic index; mdBook site sections; CI gates for `cargo doc`, `spanda doc`, and mdBook build.
 - **Self-healing docs sync:** man page (`spanda-recovery`), CLI overview, fleet-distributed recovery HTTP APIs, verification/readiness diagnostic categories, feature-status matrix, and deploy-http `fleet_recovery` module docs. validated recovery actions execute at runtime (mode transitions, speed caps, connectivity restart, mission pause, fleet coordination) with assurance gating.

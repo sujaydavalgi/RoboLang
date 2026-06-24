@@ -36,6 +36,7 @@ jobs:
       - run: cargo run -q -p spanda-package --bin registry-index-maintain -- --verify
       - run: cargo test --workspace
       - run: cargo doc --workspace --no-deps
+      - run: python3 scripts/validate_documentation.py --warn --report
       - run: cargo build -p spanda --release
       - run: cargo run -q -p spanda --release -- doc examples/ --out /tmp/spanda-doc-test
       - run: python3 scripts/generate_spanda_reference.py

@@ -200,15 +200,21 @@ Contributors can build the native CLI with `npm run build:rust` (output: `target
 
 ## Developer documentation
 
-Rust (`crates/`) and TypeScript (`src/`, `packages/`) use inline API docs inside function bodies plus plain-English block comments before logic blocks. Tooling lives in `scripts/`:
+Rust (`crates/`), TypeScript (`src/`, `packages/`), and Python (`scripts/`) use structured inline API docs. See **[coding-standards.md](./coding-standards.md)** and **[documentation-coverage.md](./documentation-coverage.md)**.
 
-- `add_inline_docs.py` — generate API doc blocks
+Tooling lives in `scripts/`:
+
+- `validate_documentation.py` — audit coverage and regenerate the coverage report
+- `add_structured_api_docs.py` — generate structured API doc blocks
+- `fix_structured_doc_gaps.py` — fix empty Inputs and legacy single-line comments
+- `repair_doc_param_typos.py` — repair truncated parameter names in generated docs
+- `add_inline_docs.py` — legacy API doc generator
 - `add_logic_block_docs.py` — generate contextual block comments
 - `normalize_inline_docs.py` — fix spacing and indentation (run after bulk edits)
 - `generate_api_reference.py` — regenerate [api-reference.md](./api-reference.md) from source (see [api-documentation.md](./api-documentation.md))
 - `generate_spanda_reference.py` — regenerate [spanda-reference.md](./spanda-reference.md) and [man/](./man/)
 
-See [../CONTRIBUTING.md](../CONTRIBUTING.md#inline-documentation) for the full standard.
+See [../CONTRIBUTING.md](../CONTRIBUTING.md#inline-documentation) for contributor workflow.
 
 ## Links
 

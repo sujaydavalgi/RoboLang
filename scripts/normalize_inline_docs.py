@@ -17,6 +17,9 @@ def is_example_use_line(line: str) -> bool:
     return EXAMPLE_USE_LINE.match(line) is not None
 
 API_MARKERS = (
+    "Description:",
+    "Inputs:",
+    "Outputs:",
     "Parameters:",
     "Returns:",
     "Options:",
@@ -24,6 +27,17 @@ API_MARKERS = (
     "Logic:",
     "None.",
 )
+
+TOOLING_SCRIPTS = {
+    "doc_validation_lib.py",
+    "validate_documentation.py",
+    "migrate_legacy_inline_docs.py",
+    "add_structured_api_docs.py",
+    "add_inline_docs.py",
+    "add_logic_block_docs.py",
+    "normalize_inline_docs.py",
+    "repair_doc_corruption.py",
+}
 
 
 def is_api_marker_line(line: str) -> bool:
@@ -201,6 +215,8 @@ def main() -> int:
     total_blanks = 0
     for ext in ("*.rs", "*.ts"):
         for path in sorted(ROOT.rglob(ext)):
+            if path.name in TOOLING_SCRIPTS:
+                continue
             if any(p in path.parts for p in ("target", "node_modules", "dist")):
                 continue
             original = path.read_text(encoding="utf-8")

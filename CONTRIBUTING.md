@@ -64,7 +64,7 @@ python3 scripts/normalize_inline_docs.py
 
 ## Inline documentation
 
-Every module and function in Rust (`crates/`) and TypeScript (`src/`, `packages/`) must be documented.
+Every module and function in Rust (`crates/`), TypeScript (`src/`, `packages/`), Python (`scripts/`), and Spanda (`.sd`) must follow the structured docstring standard in **[docs/coding-standards.md](docs/coding-standards.md)**.
 
 ### Module headers
 
@@ -73,7 +73,7 @@ Every module and function in Rust (`crates/`) and TypeScript (`src/`, `packages/
 
 ### Function API docs
 
-Place API documentation **inside** the function body (not `///` or JSDoc above the signature). Required sections: purpose, **Parameters**, **Returns**, **Options**, **Example**.
+Place API documentation **inside** the function body (or `///` / JSDoc above the signature when required for rustdoc). Required sections: **Description**, **Inputs**, **Outputs**, **Example**.
 
 ### Block comments
 
@@ -83,9 +83,20 @@ Before each meaningful logic block (`if`, `match`, loops, error paths), add a pl
 
 | Script | Purpose |
 |--------|---------|
-| `scripts/add_inline_docs.py` | Generate API doc blocks |
+| `scripts/validate_documentation.py` | Audit coverage; CI warnings |
+| `scripts/add_structured_api_docs.py` | Generate structured API doc blocks |
+| `scripts/fix_structured_doc_gaps.py` | Fix empty Inputs and legacy single-line comments |
+| `scripts/repair_doc_param_typos.py` | Repair truncated parameter names in generated docs |
+| `scripts/add_inline_docs.py` | Legacy API doc generator |
 | `scripts/add_logic_block_docs.py` | Generate contextual block comments |
 | `scripts/normalize_inline_docs.py` | Fix spacing and indentation after bulk edits |
+
+After bulk documentation edits, run:
+
+```bash
+python3 scripts/normalize_inline_docs.py
+python3 scripts/validate_documentation.py --report
+```
 
 Always run `cargo fmt --all` before committing — inline doc insertion can affect brace indentation.
 
