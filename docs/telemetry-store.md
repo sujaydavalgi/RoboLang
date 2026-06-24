@@ -82,6 +82,7 @@ spanda telemetry export [--out <file.jsonl>]
 spanda telemetry prometheus [--out <file.prom>]
 spanda telemetry otlp [--out <file.json>]
 spanda telemetry push --endpoint <url> [--token <t>] [--watch] [--interval <ms>]
+spanda telemetry fleet-push --mesh <url> --endpoint <collector> [--token <t>]
 spanda telemetry serve [--bind <addr>] [--once]
 ```
 
@@ -152,6 +153,24 @@ spanda run examples/demo.sd
 ```
 
 `--watch` runs a blocking push loop (default interval from `SPANDA_OTLP_PUSH_INTERVAL_MS`, 30s). Auto-push fires once per session end on both Rust and TypeScript run paths.
+
+### Fleet mesh aggregation
+
+Robots POST OTLP snapshots to the fleet mesh; operators push merged metrics to a collector:
+
+```bash
+# Agent / runtime ingest (per robot)
+curl -X POST "$SPANDA_FLEET_MESH_URL/v1/fleet/telemetry/ingest" \
+  -H "Content-Type: application/json" \
+  -d '{"robot_id":"rover-a","otlp_json":"..."}'
+
+# Operator push merged fleet OTLP
+export SPANDA_FLEET_MESH_URL=http://mesh:8788
+export SPANDA_OTLP_ENDPOINT=http://collector:4318/v1/metrics
+spanda telemetry fleet-push
+```
+
+Mesh endpoints: `POST /v1/fleet/telemetry/ingest`, `GET /v1/fleet/telemetry` (merged OTLP/JSON with `spanda.robot.id` resource attributes).
 
 The payload matches `spanda telemetry otlp` (OTLP/JSON `resourceMetrics` shape). Use with `spanda telemetry serve` for local collector testing.
 

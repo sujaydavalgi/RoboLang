@@ -292,7 +292,7 @@ One-line pointers — details in [docs/platform-overview.md](docs/platform-overv
 | **Spanda Safety** | `SafeAction` type gate, safety zones, kill switch, emergency stop | [docs/agentic-programming.md](docs/agentic-programming.md) |
 | **Spanda Sim** | Simulation and digital twins without physical hardware | [docs/killer-demo.md](docs/killer-demo.md) |
 | **Spanda Replay** | Mission trace capture and deterministic playback | [docs/replay.md](docs/replay.md) |
-| **Persistent telemetry** | Device/sensor/heartbeat/health store (`--persist-telemetry`); JSONL or SQLite; sessions + replay | [docs/telemetry-store.md](docs/telemetry-store.md) |
+| **Persistent telemetry** | Device/sensor/heartbeat/health store (`--persist-telemetry`); JSONL or SQLite; OTLP export, `push --watch`, session auto-push (`SPANDA_OTLP_AUTO_PUSH`), fleet mesh aggregation (`telemetry fleet-push`); sessions + replay | [docs/telemetry-store.md](docs/telemetry-store.md) |
 | **Spanda Health** | Runtime health checks and fleet readiness requirements | [docs/health-checks.md](docs/health-checks.md) |
 | **Spanda Assurance** | Knowledge models, anomaly detection, prognostics, assurance cases | [docs/mission-assurance.md](docs/mission-assurance.md) |
 | **Mission continuity** | Takeover, delegation, succession, checkpoint resume | [docs/mission-continuity.md](docs/mission-continuity.md) |

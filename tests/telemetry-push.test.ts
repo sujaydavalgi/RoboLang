@@ -1,8 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import http from "node:http";
 import {
   envAutoPushEnabled,
   envPushIntervalMs,
+  pushOtlpJson,
 } from "../src/telemetry-push.js";
+import { renderOtlpJson } from "../src/telemetry-otlp.js";
 
 const ENV_KEYS = [
   "SPANDA_OTLP_AUTO_PUSH",
@@ -44,5 +47,32 @@ describe("telemetry push env", () => {
     expect(envPushIntervalMs()).toBe(30_000);
     process.env.SPANDA_OTLP_PUSH_INTERVAL_MS = "5000";
     expect(envPushIntervalMs()).toBe(5_000);
+  });
+
+  it("posts OTLP JSON to a mock collector", async () => {
+    let received = "";
+    const server = http.createServer((req, res) => {
+      const chunks: Buffer[] = [];
+      req.on("data", (chunk) => chunks.push(chunk));
+      req.on("end", () => {
+        received = Buffer.concat(chunks).toString("utf8");
+        res.writeHead(204);
+        res.end();
+      });
+    });
+    await new Promise<void>((resolve) => server.listen(0, resolve));
+    const address = server.address();
+    if (!address || typeof address === "string") {
+      throw new Error("expected bound TCP port");
+    }
+    try {
+      const body = renderOtlpJson();
+      await pushOtlpJson(`http://127.0.0.1:${address.port}/v1/metrics`, body);
+      expect(received).toContain("resourceMetrics");
+    } finally {
+      await new Promise<void>((resolve, reject) => {
+        server.close((error) => (error ? reject(error) : resolve()));
+      });
+    }
   });
 });
