@@ -22,6 +22,8 @@ import type {
   ResiliencePolicyDecl,
   RecoveryPolicyDecl,
   RecoveryPolicyBranch,
+  ContinuityPolicyDecl,
+  ContinuityPolicyBranch,
   StateEstimatorDecl,
 } from "../assurance_decl.js";
 import type { Span } from "../ast/nodes.js";
@@ -461,6 +463,31 @@ export function parseRecoveryPolicy(ctx: AssuranceParseCtx): RecoveryPolicyDecl 
   }
   const end = ctx.expect("RBRACE", "Expected '}' to close recovery_policy");
   return { kind: "RecoveryPolicyDecl", name, branches, span: ctx.spanFrom(start, end) };
+}
+
+export function parseContinuityPolicy(ctx: AssuranceParseCtx): ContinuityPolicyDecl {
+  const start = ctx.advance();
+  const name = ctx.parseLabel("Expected continuity_policy name");
+  ctx.expect("LBRACE", "Expected '{' after continuity_policy name");
+  const branches: ContinuityPolicyBranch[] = [];
+  while (!ctx.check("RBRACE") && !ctx.check("EOF")) {
+    if (ctx.check("ON")) {
+      ctx.advance();
+      const condition = ctx.parseDottedName("Expected continuity policy condition");
+      ctx.expect("LBRACE", "Expected '{' after on condition");
+      const actions: string[] = [];
+      while (!ctx.check("RBRACE") && !ctx.check("EOF")) {
+        actions.push(parseActionStatement(ctx));
+      }
+      ctx.expect("RBRACE", "Expected '}' to close on branch");
+      branches.push({ condition, actions, span: ctx.spanFrom(start, ctx.previous()) });
+    } else {
+      const t = ctx.peek();
+      throw new ParseError("Expected 'on' branch in continuity_policy", t.line, t.column);
+    }
+  }
+  const end = ctx.expect("RBRACE", "Expected '}' to close continuity_policy");
+  return { kind: "ContinuityPolicyDecl", name, branches, span: ctx.spanFrom(start, end) };
 }
 
 export function parseAssuranceCase(ctx: AssuranceParseCtx): AssuranceCaseDecl {

@@ -17,6 +17,7 @@ import {
   parsePrognostics,
   parseResiliencePolicy,
   parseRecoveryPolicy,
+  parseContinuityPolicy,
   parseStateEstimator,
   type AssuranceParseCtx,
 } from "./assurance.js";
@@ -635,6 +636,7 @@ class Parser {
     const missionPlans: import("../assurance_decl.js").MissionPlanDecl[] = [];
     const resiliencePolicies: import("../assurance_decl.js").ResiliencePolicyDecl[] = [];
     const recoveryPolicies: import("../assurance_decl.js").RecoveryPolicyDecl[] = [];
+    const continuityPolicies: import("../assurance_decl.js").ContinuityPolicyDecl[] = [];
     const assuranceCases: import("../assurance_decl.js").AssuranceCaseDecl[] = [];
     const robots: RobotDecl[] = [];
     const hardwareProfiles: HardwareDecl[] = [];
@@ -724,6 +726,8 @@ class Parser {
         resiliencePolicies.push(parseResiliencePolicy(this as unknown as AssuranceParseCtx));
       } else if (this.check("IDENT") && this.peek().lexeme === "recovery_policy") {
         recoveryPolicies.push(parseRecoveryPolicy(this as unknown as AssuranceParseCtx));
+      } else if (this.check("IDENT") && this.peek().lexeme === "continuity_policy") {
+        continuityPolicies.push(parseContinuityPolicy(this as unknown as AssuranceParseCtx));
       } else if (this.check("IDENT") && this.peek().lexeme === "mission_plan") {
         missionPlans.push(parseMissionPlan(this as unknown as AssuranceParseCtx));
       } else if (this.check("IDENT") && this.peek().lexeme === "operating_mode") {
@@ -780,6 +784,7 @@ class Parser {
       missionPlans,
       resiliencePolicies,
       recoveryPolicies,
+      continuityPolicies,
       assuranceCases,
       robots,
       span: this.spanFrom(start, end),

@@ -92,6 +92,19 @@ export type RecoveryPolicyDecl = {
   span: Span;
 };
 
+export type ContinuityPolicyBranch = {
+  condition: string;
+  actions: string[];
+  span: Span;
+};
+
+export type ContinuityPolicyDecl = {
+  kind: "ContinuityPolicyDecl";
+  name: string;
+  branches: ContinuityPolicyBranch[];
+  span: Span;
+};
+
 export type OperatingModeDecl = {
   kind: "OperatingModeDecl";
   name: string;
