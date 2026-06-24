@@ -1,0 +1,5 @@
+import assurance.continuity;
+
+test smoke {
+    assert true;
+}

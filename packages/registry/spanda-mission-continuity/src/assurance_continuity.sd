@@ -1,0 +1,5 @@
+module assurance.continuity;
+
+export fn verify() -> Int {
+  return 1;
+}

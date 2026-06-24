@@ -60,6 +60,7 @@ All **37** curated packages under `packages/registry/` are published in the host
 | `spanda-diagnosis` | robotics | `assurance.diagnosis` |
 | `spanda-prognostics` | robotics | `assurance.prognostics` |
 | `spanda-mission-planning` | robotics | `assurance.mission` |
+| `spanda-mission-continuity` | robotics | `assurance.continuity` |
 | `spanda-resilience` | robotics | `assurance.resilience` |
 
 Examples: [`examples/showcase/assurance/`](../examples/showcase/assurance/README.md) · Guide: [mission-assurance.md](./mission-assurance.md)

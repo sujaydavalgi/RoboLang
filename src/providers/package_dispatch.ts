@@ -71,6 +71,8 @@ export function officialPackageForModule(modulePath: string): string | null {
       return "spanda-prognostics";
     case "assurance.mission":
       return "spanda-mission-planning";
+    case "assurance.continuity":
+      return "spanda-mission-continuity";
     case "assurance.resilience":
       return "spanda-resilience";
     default:

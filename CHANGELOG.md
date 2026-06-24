@@ -14,6 +14,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **`continuity_policy` syntax:** parser, AST, and takeover mode inference from declared actions; TypeScript parser parity.
 - **`spanda demo continuity`:** showcase demo and `scripts/continuity_smoke.sh` (wired into `showcase_smoke.sh`).
 - **Fleet runtime takeover dispatch:** interpreter `execute_continuity_on_program`, fleet agent `/v1/continuity/execute`, mesh `POST /v1/fleet/continuity`, `fleet_takeover` peer topic.
+- **Continuity diagnostics:** `collect_continuity_diagnostics` in `spanda-assurance` and `src/continuity-diagnostics.ts`; merged into `spanda check --readiness-json` and LSP readiness diagnostics.
+- **Official package:** `spanda-mission-continuity` (`assurance.continuity`).
+- **Recovery handoff bridge:** fleet recovery `reassign mission` actions also relay continuity takeover when `SPANDA_FLEET_MESH_URL` is set.
 - **Continuity examples:** `examples/showcase/continuity/`, `takeover/`, `delegation/`, `swarm_takeover/`, `fleet_succession/`.
 - **Docs:** [mission-continuity.md](docs/mission-continuity.md).
 - **Platform maturity roadmap:** [docs/platform-maturity-roadmap.md](docs/platform-maturity-roadmap.md) — classification, architecture impact, dependency mapping, priorities, documentation plan, risk analysis, and phased implementation for 16 adoption/trust/operations areas; tamper detection deep dive (architecture, trust model, detection strategies, response policies, demos, gaps).
@@ -35,7 +38,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Mission assurance platform:** new `spanda-assurance` crate with core interfaces (knowledge model, state estimation, anomaly detection, diagnosis, prognostics, mitigation, mode management, mission planning, resilience, assurance evidence) and static analysis integrated with readiness, health, traceability, and hardware verification.
 - **Mission assurance language:** `knowledge_model`, `state_estimator`, `anomaly_detector`, `on anomaly`, `prognostics`, `mitigation`, `operating_mode`, `mission_plan`, `resilience_policy`, and `assurance_case` declarations.
 - **Mission assurance CLI:** `spanda assure`, `spanda anomaly scan`, `spanda prognostics`, `spanda mission verify`, and `spanda resilience check`; enhanced `spanda diagnose` for traces and programs.
-- **Official packages:** `spanda-assurance`, `spanda-knowledge-model`, `spanda-anomaly`, `spanda-diagnosis`, `spanda-prognostics`, `spanda-mission-planning`, `spanda-resilience`, `spanda-fusion`.
+- **Official packages:** `spanda-assurance`, `spanda-knowledge-model`, `spanda-anomaly`, `spanda-diagnosis`, `spanda-prognostics`, `spanda-mission-planning`, `spanda-mission-continuity`, `spanda-resilience`, `spanda-fusion`.
 - **Examples:** `examples/assurance/`, `examples/anomaly/`, `examples/diagnostics/`, `examples/prognostics/`, `examples/resilience/`, `examples/mission/`.
 - **Docs:** [mission-assurance.md](docs/mission-assurance.md), [knowledge-models.md](docs/knowledge-models.md), [anomaly-detection.md](docs/anomaly-detection.md), [diagnostics.md](docs/diagnostics.md), [prognostics.md](docs/prognostics.md), [resilience.md](docs/resilience.md), [assurance-cases.md](docs/assurance-cases.md).
 - **Learned anomaly detectors:** `learned backend <module>;` on `anomaly_detector`; anomaly scan reports include learned model metadata.

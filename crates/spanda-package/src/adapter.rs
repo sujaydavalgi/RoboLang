@@ -310,6 +310,12 @@ pub fn framework_packages() -> &'static [FrameworkPackage] {
             import_paths: &["assurance.mission"],
         },
         FrameworkPackage {
+            name: "spanda-mission-continuity",
+            description: "Mission continuity, takeover, and succession assurance",
+            category: super::category::PackageCategory::Robotics,
+            import_paths: &["assurance.continuity"],
+        },
+        FrameworkPackage {
             name: "spanda-resilience",
             description: "Resilience and recovery policies",
             category: super::category::PackageCategory::Robotics,

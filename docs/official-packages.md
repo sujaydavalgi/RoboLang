@@ -70,6 +70,7 @@ Aliases: `spanda-sim-gazebo`, `spanda-sim-webots` (registry metadata).
 | `spanda-diagnosis` | `assurance.diagnosis` | Fault diagnosis and root cause |
 | `spanda-prognostics` | `assurance.prognostics` | Prognostics and RUL |
 | `spanda-mission-planning` | `assurance.mission` | Mission planning assurance |
+| `spanda-mission-continuity` | `assurance.continuity` | Mission continuity and takeover assurance |
 | `spanda-resilience` | `assurance.resilience` | Resilience and recovery policies |
 | `spanda-fusion` | `assurance.fusion` | Weighted sensor fusion backends |
 

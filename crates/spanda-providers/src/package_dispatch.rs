@@ -72,6 +72,7 @@ pub fn official_package_for_module(module_path: &str) -> Option<&'static str> {
         "assurance.diagnosis" => Some("spanda-diagnosis"),
         "assurance.prognostics" => Some("spanda-prognostics"),
         "assurance.mission" => Some("spanda-mission-planning"),
+        "assurance.continuity" => Some("spanda-mission-continuity"),
         "assurance.resilience" => Some("spanda-resilience"),
         "assurance.fusion" => Some("spanda-fusion"),
         _ => None,
