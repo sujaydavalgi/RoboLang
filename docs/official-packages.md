@@ -60,6 +60,20 @@ Aliases: `spanda-sim-gazebo`, `spanda-sim-webots` (registry metadata).
 | `spanda-ledger` | `provenance.ledger` | Audit ledger anchoring |
 | `spanda-cloud` | `cloud.remote` | Cloud telemetry and remote commands |
 
+## Mission assurance
+
+| Package | Import path | Description |
+|---------|-------------|-------------|
+| `spanda-assurance` | `assurance.evidence` | Assurance case and evidence scaffolds |
+| `spanda-knowledge-model` | `assurance.knowledge` | System knowledge models |
+| `spanda-anomaly` | `assurance.anomaly` | Anomaly detection backends |
+| `spanda-diagnosis` | `assurance.diagnosis` | Fault diagnosis and root cause |
+| `spanda-prognostics` | `assurance.prognostics` | Prognostics and RUL |
+| `spanda-mission-planning` | `assurance.mission` | Mission planning assurance |
+| `spanda-resilience` | `assurance.resilience` | Resilience and recovery policies |
+
+See [mission-assurance.md](mission-assurance.md) for language constructs and CLI commands.
+
 ## Package layout
 
 ```

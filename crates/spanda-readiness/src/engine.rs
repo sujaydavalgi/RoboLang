@@ -252,6 +252,85 @@ pub fn evaluate_readiness_with_runtime(
         policy.weights.mission,
     ));
 
+    let Program::Program {
+        assurance_cases,
+        knowledge_models,
+        anomaly_detectors,
+        anomaly_handlers,
+        mitigations,
+        ..
+    } = program;
+    let mut assurance_score = 100u32;
+    if !assurance_cases.is_empty() {
+        if assurance_cases.iter().all(|c| {
+            let spanda_ast::assurance_decl::AssuranceCaseDecl::AssuranceCaseDecl {
+                evidence, ..
+            } = c;
+            !evidence.is_empty()
+        }) {
+            assurance_score = assurance_score.saturating_sub(0);
+        } else {
+            assurance_score = assurance_score.saturating_sub(40);
+            issues.push(ReadinessIssue {
+                factor: "Assurance".into(),
+                severity: ReadinessSeverity::High,
+                message: "Assurance case missing evidence links".into(),
+                suggested_action: Some("Add evidence to assurance_case declarations".into()),
+            });
+        }
+    }
+    if !knowledge_models.is_empty()
+        && knowledge_models.iter().any(|m| {
+            let spanda_ast::assurance_decl::KnowledgeModelDecl::KnowledgeModelDecl {
+                components,
+                ..
+            } = m;
+            components.is_empty()
+        })
+    {
+        assurance_score = assurance_score.saturating_sub(20);
+        issues.push(ReadinessIssue {
+            factor: "Assurance".into(),
+            severity: ReadinessSeverity::Medium,
+            message: "Knowledge model has empty components".into(),
+            suggested_action: None,
+        });
+    }
+    if !anomaly_detectors.is_empty() {
+        let handler_names: std::collections::HashSet<_> = anomaly_handlers
+            .iter()
+            .map(|h| {
+                let spanda_ast::assurance_decl::AnomalyHandlerDecl::AnomalyHandlerDecl {
+                    detector,
+                    ..
+                } = h;
+                detector.clone()
+            })
+            .collect();
+        for det in anomaly_detectors {
+            let spanda_ast::assurance_decl::AnomalyDetectorDecl::AnomalyDetectorDecl {
+                name, ..
+            } = det;
+            if !handler_names.contains(name) {
+                assurance_score = assurance_score.saturating_sub(10);
+                issues.push(ReadinessIssue {
+                    factor: "Assurance".into(),
+                    severity: ReadinessSeverity::Low,
+                    message: format!("Anomaly detector '{name}' has no on anomaly handler"),
+                    suggested_action: Some("Add on anomaly handler".into()),
+                });
+            }
+        }
+    }
+    if mitigations.is_empty() && !anomaly_detectors.is_empty() {
+        assurance_score = assurance_score.saturating_sub(10);
+    }
+    factor_scores.push(factor_row(
+        "Assurance",
+        assurance_score,
+        policy.weights.assurance,
+    ));
+
     let total = compute_weighted_total(&factor_scores);
     let has_critical = issues.iter().any(|i| {
         matches!(

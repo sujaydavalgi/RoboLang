@@ -53,6 +53,7 @@ pub struct ReadinessWeights {
     pub packages: u32,
     pub providers: u32,
     pub mission: u32,
+    pub assurance: u32,
 }
 
 impl Default for ReadinessWeights {
@@ -68,7 +69,8 @@ impl Default for ReadinessWeights {
             compute: 6,
             packages: 8,
             providers: 8,
-            mission: 10,
+            mission: 2,
+            assurance: 8,
         }
     }
 }

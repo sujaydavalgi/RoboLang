@@ -1,10 +1,9 @@
 //! CLI commands for mission assurance and autonomous operations.
 
 use spanda_assurance::{
-    assure_program, check_resilience, diagnose_from_trace, diagnose_program,
-    evaluate_prognostics, format_anomaly, format_assurance, format_diagnosis,
-    format_mission_assurance, format_prognostics, format_resilience, scan_anomalies,
-    verify_mission_assurance,
+    assure_program, check_resilience, diagnose_from_trace, diagnose_program, evaluate_prognostics,
+    format_anomaly, format_assurance, format_diagnosis, format_mission_assurance,
+    format_prognostics, format_resilience, scan_anomalies, verify_mission_assurance,
 };
 use spanda_lexer::tokenize;
 use spanda_parser::parse;
@@ -173,6 +172,28 @@ pub fn resilience_dispatch(args: &[String]) {
         "check" => cmd_resilience_check(&args[1..]),
         _ => {
             eprintln!("Usage: spanda resilience check <file.sd>");
+            process::exit(1);
+        }
+    }
+}
+
+/// `spanda mitigation plan <file.sd> [--json|--markdown|--html]`
+pub fn cmd_mitigation_plan(args: &[String]) {
+    let format = parse_format(args);
+    let file = file_arg(args);
+    let source = read_file(&file);
+    let program = parse_program(&source);
+    let report = spanda_assurance::mitigation_report(&program);
+    println!("{}", spanda_assurance::format_mitigation(&report, format));
+}
+
+/// Dispatch `spanda mitigation` subcommands.
+pub fn mitigation_dispatch(args: &[String]) {
+    let sub = args.first().map(String::as_str).unwrap_or("");
+    match sub {
+        "plan" => cmd_mitigation_plan(&args[1..]),
+        _ => {
+            eprintln!("Usage: spanda mitigation plan <file.sd>");
             process::exit(1);
         }
     }

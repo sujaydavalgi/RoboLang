@@ -1453,6 +1453,12 @@ fn main() {
         return;
     }
 
+    if command == "mitigation" {
+        assurance_cli::mitigation_dispatch(&args[2..]);
+        let _ = io::stdout().flush();
+        return;
+    }
+
     if command == "readiness" {
         readiness_cli::readiness_dispatch(&args[2..]);
         let _ = io::stdout().flush();
