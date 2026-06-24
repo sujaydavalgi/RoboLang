@@ -2,8 +2,8 @@
 
 use spanda_assurance::{
     analyze_failure_with_recovery, diagnose_from_trace, evaluate_recovery, format_recovery,
-    recovery_from_diagnosis, simulate_failure_recovery, RecoveryContext, RecoveryLevel,
-    RecoveryReport,
+    load_merged_recovery_knowledge, recovery_from_diagnosis, simulate_failure_recovery,
+    RecoveryContext, RecoveryLevel, RecoveryReport,
 };
 use spanda_lexer::tokenize;
 use spanda_parser::parse;
@@ -131,12 +131,37 @@ pub fn cmd_recovery_report(args: &[String]) {
     }
 }
 
+/// `spanda recovery knowledge <file.sd> [--json]`
+pub fn cmd_recovery_knowledge(args: &[String]) {
+    let file = file_arg(args);
+    let source = read_file(&file);
+    let program = parse_program(&source);
+    let kb = load_merged_recovery_knowledge(&program);
+    if args.iter().any(|a| a == "--json") {
+        println!("{}", serde_json::to_string_pretty(&kb).unwrap_or_default());
+    } else {
+        for entry in &kb.entries {
+            println!(
+                "{} -> {} ({:.0}% success)\n  {}",
+                entry.failure_pattern,
+                entry.recovery_pattern,
+                entry.success_rate * 100.0,
+                entry.recommendation
+            );
+        }
+        if kb.entries.is_empty() {
+            println!("No recovery knowledge entries.");
+        }
+    }
+}
+
 /// Dispatch `spanda recovery` subcommands.
 pub fn recovery_dispatch(args: &[String]) {
     match args.first().map(String::as_str).unwrap_or("") {
         "plan" | "report" => cmd_recovery_report(&args[1..]),
+        "knowledge" => cmd_recovery_knowledge(&args[1..]),
         _ => {
-            eprintln!("Usage: spanda recovery plan|report <file.sd>");
+            eprintln!("Usage: spanda recovery plan|report|knowledge <file.sd>");
             process::exit(1);
         }
     }

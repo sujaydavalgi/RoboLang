@@ -9,9 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Recovery runtime dispatch:** validated recovery actions execute at runtime (mode transitions, speed caps, connectivity restart, mission pause, fleet coordination) with assurance gating.
+- **Recovery knowledge store:** persistent `.spanda/recovery_knowledge.json` records outcomes; planner and `evaluate_recovery` use merged knowledge when policies are absent; `spanda recovery knowledge` inspects the store.
+- **Operator approval hooks:** `SPANDA_OPERATOR_APPROVAL`, `SPANDA_GRANT_RECOVERY_APPROVAL`, and `Approval` comm-topic polling for high-risk recovery actions.
+
 - **Self-healing and recovery framework:** `spanda-assurance` recovery module with `RecoveryPlan`, `RecoveryPlanner`, failure classification, recovery levels (0–4), safe mode transitions, self-correction actions, validation gates (safety, hardware, capability, readiness), human approval integration, recovery audit/traceability, fleet recovery, recovery knowledge base, and assurance metrics.
 - **Recovery policy syntax:** `recovery_policy Name { on condition { actions; } }` declarations.
-- **Recovery CLI:** `spanda heal`, `spanda recover`, `spanda recovery-report`, `spanda recovery plan`; `spanda sim --inject-failure <kind>`; `spanda analyze-failure --with-recovery`.
+- **Recovery CLI:** `spanda heal`, `spanda recover`, `spanda recovery-report`, `spanda recovery plan|knowledge`; `spanda sim --inject-failure <kind>`; `spanda analyze-failure --with-recovery`.
 - **Examples:** `examples/showcase/self_healing/`, `self_correction/`, `fleet_recovery/`, `recovery_assurance/`.
 - **Docs:** [self-healing.md](docs/self-healing.md), [self-correction.md](docs/self-correction.md), [recovery-planning.md](docs/recovery-planning.md), [recovery-assurance.md](docs/recovery-assurance.md), [recovery-policies.md](docs/recovery-policies.md).
 - **Mission assurance platform:** new `spanda-assurance` crate with core interfaces (knowledge model, state estimation, anomaly detection, diagnosis, prognostics, mitigation, mode management, mission planning, resilience, assurance evidence) and static analysis integrated with readiness, health, traceability, and hardware verification.

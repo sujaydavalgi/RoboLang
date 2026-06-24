@@ -31,6 +31,7 @@ spanda heal rover.sd
 spanda heal mission.trace
 spanda recover rover.sd --failure gps
 spanda recovery-report rover.sd
+spanda recovery knowledge rover.sd
 spanda sim rover.sd --inject-failure gps
 spanda analyze-failure rover.sd --with-recovery
 ```
@@ -56,6 +57,24 @@ PASS
 Outcome:
 Success
 ```
+
+## Runtime execution
+
+Validated recovery actions dispatch at runtime:
+
+- `enter degraded_mode` / `safe_mode` / `recovery_mode` — mode transitions
+- `reduce_speed` — lowers safety monitor speed cap
+- `restart connectivity` — reconnects active link
+- `pause mission` — pauses mission controller
+- Fleet actions — `reassign mission`, `redistribute tasks`, `promote backup coordinator`
+
+High-risk actions require operator approval via:
+
+- `SPANDA_OPERATOR_APPROVAL=1` (simulation/testing)
+- `SPANDA_GRANT_RECOVERY_APPROVAL=<action substring>`
+- `Approval` topic messages received on subscribed comm topics
+
+Recovery outcomes are recorded to `.spanda/recovery_knowledge.json` for future recommendations (no automatic code or safety rule changes).
 
 ## Example
 
