@@ -2,9 +2,13 @@
 
 use crate::error::{TelemetryStoreError, TelemetryStoreResult};
 use crate::record::{HeartbeatIndex, TelemetryEvent};
-use crate::store::{matches_query, session_time_window, TelemetryQuery, TelemetryStats};
+use crate::store::{
+    default_heartbeat_index_path, default_store_path, matches_query, session_time_window,
+    TelemetryQuery, TelemetryStats,
+};
 use rusqlite::{params, Connection};
-use std::fs;
+use std::fs::{self, File};
+use std::io::{BufRead, BufReader};
 use std::path::{Path, PathBuf};
 
 /// Default SQLite database path under `.spanda/`.
@@ -31,9 +35,98 @@ pub fn open_connection(path: &Path) -> TelemetryStoreResult<Connection> {
     if let Some(parent) = path.parent() {
         fs::create_dir_all(parent)?;
     }
-    let conn = Connection::open(path).map_err(|error| TelemetryStoreError::Database(error.to_string()))?;
+    let mut conn = Connection::open(path).map_err(|error| TelemetryStoreError::Database(error.to_string()))?;
     init_schema(&conn)?;
+    migrate_jsonl_if_needed(&mut conn, path)?;
     Ok(conn)
+}
+
+/// Resolve the JSONL source file to import when opening a SQLite database.
+pub fn resolve_jsonl_migration_source(sqlite_path: &Path) -> PathBuf {
+    match sqlite_path.extension().and_then(|ext| ext.to_str()) {
+        Some("db") => sqlite_path.with_extension("jsonl"),
+        _ => default_store_path(),
+    }
+}
+
+/// Resolve the heartbeat sidecar beside a JSONL event log.
+fn resolve_jsonl_heartbeat_source(jsonl_path: &Path) -> PathBuf {
+    jsonl_path
+        .parent()
+        .map(|dir| dir.join("telemetry-heartbeats.json"))
+        .unwrap_or_else(default_heartbeat_index_path)
+}
+
+/// Import events and heartbeat index from JSONL when the database is empty.
+pub fn migrate_jsonl_if_needed(conn: &mut Connection, sqlite_path: &Path) -> TelemetryStoreResult<bool> {
+    let count: i64 = conn
+        .query_row("SELECT COUNT(*) FROM telemetry_events", [], |row| row.get(0))
+        .map_err(|error| TelemetryStoreError::Database(error.to_string()))?;
+    if count > 0 {
+        return Ok(false);
+    }
+
+    let jsonl_path = resolve_jsonl_migration_source(sqlite_path);
+    if !jsonl_path.is_file() {
+        return Ok(false);
+    }
+
+    let events = read_jsonl_file(&jsonl_path)?;
+    if events.is_empty() {
+        return Ok(false);
+    }
+
+    let tx = conn
+        .transaction()
+        .map_err(|error| TelemetryStoreError::Database(error.to_string()))?;
+    for event in &events {
+        append_event(&tx, event)?;
+    }
+
+    let heartbeat_path = resolve_jsonl_heartbeat_source(&jsonl_path);
+    if heartbeat_path.is_file() {
+        let text = fs::read_to_string(&heartbeat_path)?;
+        let index: HeartbeatIndex = serde_json::from_str(&text)
+            .map_err(|error| TelemetryStoreError::Serialization(error.to_string()))?;
+        for (task, timestamp_ms) in &index.tasks {
+            upsert_heartbeat(&tx, "task", task, *timestamp_ms)?;
+        }
+        for (device, timestamp_ms) in &index.devices {
+            upsert_heartbeat(&tx, "device", device, *timestamp_ms)?;
+        }
+    }
+
+    tx.commit()
+        .map_err(|error| TelemetryStoreError::Database(error.to_string()))?;
+
+    let backup_name = format!(
+        "{}.bak",
+        jsonl_path
+            .file_name()
+            .and_then(|name| name.to_str())
+            .unwrap_or("telemetry-store.jsonl")
+    );
+    let backup_path = jsonl_path.with_file_name(backup_name);
+    fs::rename(&jsonl_path, &backup_path)?;
+
+    Ok(true)
+}
+
+fn read_jsonl_file(path: &Path) -> TelemetryStoreResult<Vec<TelemetryEvent>> {
+    let file = File::open(path)?;
+    let reader = BufReader::new(file);
+    let mut events = Vec::new();
+    for line in reader.lines() {
+        let line = line?;
+        let trimmed = line.trim();
+        if trimmed.is_empty() {
+            continue;
+        }
+        let event: TelemetryEvent = serde_json::from_str(trimmed)
+            .map_err(|error| TelemetryStoreError::Serialization(error.to_string()))?;
+        events.push(event);
+    }
+    Ok(events)
 }
 
 fn init_schema(conn: &Connection) -> TelemetryStoreResult<()> {
@@ -383,6 +476,47 @@ mod tests {
         )
         .unwrap();
         assert_eq!(events.len(), 1);
+    }
+
+    #[test]
+    fn sqlite_migrates_jsonl_on_first_open() {
+        let dir = tempdir().unwrap();
+        let jsonl_path = dir.path().join("telemetry-store.jsonl");
+        let db_path = dir.path().join("telemetry-store.db");
+        let heartbeat_path = dir.path().join("telemetry-heartbeats.json");
+        fs::write(
+            &jsonl_path,
+            format!(
+                "{}\n",
+                serde_json::to_string(&TelemetryEvent::Sensor {
+                    sensor_id: "cam".into(),
+                    sensor_type: "Camera".into(),
+                    value: serde_json::json!({}),
+                    timestamp_ms: 5.0,
+                    robot_id: None,
+                    session_id: None,
+                })
+                .unwrap()
+            ),
+        )
+        .unwrap();
+        fs::write(
+            &heartbeat_path,
+            r#"{"tasks":{"nav":9.0},"devices":{"agent":8.0}}"#,
+        )
+        .unwrap();
+
+        let conn = open_connection(&db_path).unwrap();
+        let events = read_all(&conn).unwrap();
+        assert_eq!(events.len(), 1);
+        let index = read_heartbeat_index(&conn).unwrap();
+        assert_eq!(index.tasks.get("nav"), Some(&9.0));
+        assert_eq!(index.devices.get("agent"), Some(&8.0));
+        assert!(!jsonl_path.exists());
+        assert!(dir.path().join("telemetry-store.jsonl.bak").exists());
+
+        let conn_again = open_connection(&db_path).unwrap();
+        assert_eq!(read_all(&conn_again).unwrap().len(), 1);
     }
 
     #[test]

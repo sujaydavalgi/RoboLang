@@ -53,4 +53,23 @@ LATEST="$("${SPANDA[@]}" telemetry latest --device TelemetryRover --metric /tele
 echo "${LATEST}"
 echo "${LATEST}" | grep -q 'TelemetryRover'
 
+echo "== sqlite backend migrates JSONL history =="
+SQLITE_DIR="$(mktemp -d)"
+JSONL_PATH="${SQLITE_DIR}/telemetry-store.jsonl"
+DB_PATH="${SQLITE_DIR}/telemetry-store.db"
+cp "${SPANDA_TELEMETRY_STORE_PATH}" "${JSONL_PATH}"
+if [[ -f "${SPANDA_TELEMETRY_HEARTBEAT_PATH}" ]]; then
+  cp "${SPANDA_TELEMETRY_HEARTBEAT_PATH}" "${SQLITE_DIR}/telemetry-heartbeats.json"
+fi
+unset SPANDA_TELEMETRY_HEARTBEAT_PATH
+export SPANDA_TELEMETRY_BACKEND=sqlite
+export SPANDA_TELEMETRY_STORE_PATH="${DB_PATH}"
+SQLITE_STATS="$("${SPANDA[@]}" telemetry stats)"
+echo "${SQLITE_STATS}"
+echo "${SQLITE_STATS}" | grep -q "Sensor events:"
+echo "${SQLITE_STATS}" | grep -q "Device events:"
+test ! -f "${JSONL_PATH}"
+test -f "${SQLITE_DIR}/telemetry-store.jsonl.bak"
+unset SPANDA_TELEMETRY_BACKEND
+
 echo "Telemetry store golden path complete."
