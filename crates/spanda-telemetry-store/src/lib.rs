@@ -5,6 +5,8 @@
 //! heartbeat index sidecar or SQLite table. Enable with `--persist-telemetry` or
 //! `SPANDA_TELEMETRY_STORE=1`.
 
+#[cfg(feature = "push")]
+pub mod fleet_ingest;
 pub mod fleet;
 pub mod error;
 pub mod memory;
@@ -18,6 +20,11 @@ pub mod serve;
 pub mod sqlite;
 pub mod store;
 
+#[cfg(feature = "push")]
+pub use fleet_ingest::{
+    env_fleet_auto_ingest_enabled, env_fleet_mesh_token, env_fleet_mesh_url, env_robot_id,
+    ingest_global_store_to_fleet_mesh, maybe_auto_ingest_fleet_after_session,
+};
 pub use fleet::{merge_fleet_otlp_json, shards_from_map, FleetTelemetryShard};
 pub use error::{TelemetryStoreError, TelemetryStoreResult};
 pub use memory::{

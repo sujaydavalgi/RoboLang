@@ -4,7 +4,6 @@ use crate::mesh::FleetMeshState;
 use serde::{Deserialize, Serialize};
 use spanda_deploy_http::{http_request, HttpResponse};
 use spanda_telemetry_store::fleet::{merge_fleet_otlp_json, shards_from_map, FleetTelemetryShard};
-use std::collections::BTreeMap;
 
 /// OTLP ingest payload from a fleet agent or robot runtime.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

@@ -154,6 +154,19 @@ spanda run examples/demo.sd
 
 `--watch` runs a blocking push loop (default interval from `SPANDA_OTLP_PUSH_INTERVAL_MS`, 30s). Auto-push fires once per session end on both Rust and TypeScript run paths.
 
+### Auto-ingest to fleet mesh after each run
+
+When a run ends with persistent telemetry enabled, push the local OTLP snapshot to the fleet mesh:
+
+```bash
+export SPANDA_TELEMETRY_STORE=1
+export SPANDA_FLEET_TELEMETRY_AUTO_INGEST=1
+export SPANDA_FLEET_MESH_URL=http://mesh:8788
+export SPANDA_ROBOT_ID=rover-a
+# optional: SPANDA_FLEET_MESH_TOKEN
+spanda run examples/demo.sd
+```
+
 ### Fleet mesh aggregation
 
 Robots POST OTLP snapshots to the fleet mesh; operators push merged metrics to a collector:

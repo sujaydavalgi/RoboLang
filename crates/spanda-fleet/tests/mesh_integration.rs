@@ -3,12 +3,13 @@
 use spanda_deploy_http::http_request;
 use spanda_driver::compile;
 use spanda_fleet::{
-    default_fleet_agents_path, fleet_entry_for_port, orchestrate_fleets_mesh, register_fleet_agent,
-    relay_deliveries_via_mesh, relay_peer_delivery, relay_recovery_via_mesh,
+    default_fleet_agents_path, fleet_entry_for_port, ingest_fleet_telemetry, orchestrate_fleets_mesh,
+    register_fleet_agent, relay_deliveries_via_mesh, relay_peer_delivery, relay_recovery_via_mesh,
     relay_continuity_via_mesh, save_fleet_agent_registry, spawn_test_fleet_agent,
     spawn_test_fleet_mesh, FleetAgentRegistry, FleetContinuityRequest, FleetRecoveryRequest,
     PeerDelivery,
 };
+use spanda_telemetry_store::FleetTelemetryShard;
 use std::thread;
 use std::time::Duration;
 
@@ -318,4 +319,44 @@ fn fleet_agent_forwards_to_downstream_peer() {
     let resp = relay_peer_delivery(&entry, &delivery).expect("forward via ScoutA agent");
     assert!(resp.ok);
     let _ = std::fs::remove_file(path);
+}
+
+#[test]
+fn mesh_coordinator_ingests_and_merges_fleet_telemetry() {
+    let registry = FleetAgentRegistry::default();
+    let (mesh_port, _mesh) = spawn_test_fleet_mesh(&registry).expect("spawn mesh");
+    thread::sleep(Duration::from_millis(30));
+    let otlp = r#"{"resourceMetrics":[{"resource":{"attributes":[]},"scopeMetrics":[]}]}"#;
+    let ingest_a = ingest_fleet_telemetry(
+        &format!("http://127.0.0.1:{mesh_port}"),
+        &FleetTelemetryShard {
+            robot_id: "rover-a".into(),
+            otlp_json: otlp.into(),
+        },
+        None,
+    )
+    .expect("ingest rover-a");
+    assert!(ingest_a.ok);
+    assert_eq!(ingest_a.robots, 1);
+    let ingest_b = ingest_fleet_telemetry(
+        &format!("http://127.0.0.1:{mesh_port}"),
+        &FleetTelemetryShard {
+            robot_id: "rover-b".into(),
+            otlp_json: otlp.into(),
+        },
+        None,
+    )
+    .expect("ingest rover-b");
+    assert_eq!(ingest_b.robots, 2);
+    let merged = http_request(
+        "GET",
+        &format!("http://127.0.0.1:{mesh_port}/v1/fleet/telemetry"),
+        None,
+        None,
+    )
+    .expect("fetch merged fleet telemetry");
+    assert_eq!(merged.status, 200);
+    assert!(merged.body.contains("rover-a"));
+    assert!(merged.body.contains("rover-b"));
+    assert!(merged.body.contains("spanda.robot.id"));
 }

@@ -118,7 +118,10 @@ pub fn end_run_session(
         })?;
     }
     #[cfg(feature = "push")]
-    crate::push::maybe_auto_push_after_session();
+    {
+        crate::push::maybe_auto_push_after_session();
+        crate::fleet_ingest::maybe_auto_ingest_fleet_after_session();
+    }
     Ok(())
 }
 

@@ -179,7 +179,11 @@ export function endRunSession(
     });
   }
   activeSessionId = undefined;
-  void import("./telemetry-push.js").then(({ maybeAutoPushAfterSession }) => maybeAutoPushAfterSession());
+  void import("./telemetry-push.js").then(async ({ maybeAutoPushAfterSession }) => {
+    await maybeAutoPushAfterSession();
+    const { maybeAutoIngestFleetAfterSession } = await import("./telemetry-fleet.js");
+    await maybeAutoIngestFleetAfterSession();
+  });
 }
 
 export function persistEnabled(): boolean {
