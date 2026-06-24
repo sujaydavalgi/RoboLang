@@ -10,8 +10,8 @@ hardware RoverV1 {
 }
 
 fleet PatrolFleet {
-    robot RoverAlpha;
-    robot RoverBeta;
+    RoverAlpha;
+    RoverBeta;
 }
 
 recovery_policy FleetRecovery {
@@ -24,6 +24,7 @@ recovery_policy FleetRecovery {
 
 operating_mode NormalMode { normal; }
 operating_mode DegradedMode { degraded; }
+operating_mode SafeMode { safe; }
 operating_mode RecoveryMode { recovery; }
 
 robot RoverAlpha {

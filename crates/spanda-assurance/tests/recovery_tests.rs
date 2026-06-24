@@ -2,8 +2,8 @@
 
 use spanda_assurance::{
     evaluate_recovery, extract_recovery_policies, format_recovery, load_merged_recovery_knowledge,
-    save_recovery_knowledge_store, simulate_failure_recovery, RecoveryContext, RecoveryKnowledgeBase,
-    RecoveryKnowledgeEntry, RecoveryLevel, RecoveryPlanner, RecoveryStatus,
+    save_recovery_knowledge_store, simulate_failure_recovery, RecoveryContext,
+    RecoveryKnowledgeBase, RecoveryKnowledgeEntry, RecoveryLevel, RecoveryPlanner, RecoveryStatus,
 };
 use spanda_lexer::tokenize;
 use spanda_parser::parse;
@@ -79,7 +79,10 @@ fn merged_knowledge_informs_recovery_plan() {
     )
     .unwrap();
     let kb = load_merged_recovery_knowledge(&program);
-    assert!(kb.entries.iter().any(|e| e.recovery_pattern.contains("visual")));
+    assert!(kb
+        .entries
+        .iter()
+        .any(|e| e.recovery_pattern.contains("visual")));
     let plan = RecoveryPlanner::plan(
         &program,
         &RecoveryContext {
@@ -94,4 +97,37 @@ fn merged_knowledge_informs_recovery_plan() {
         .iter()
         .any(|a| a.description.contains("visual_odometry")));
     let _ = std::fs::remove_file(&store);
+}
+
+#[test]
+fn recovery_diagnostics_flag_high_risk_without_approval() {
+    let program = parse_source(
+        r#"
+recovery_policy Risky {
+    on gps.failed { resume mission; }
+}
+robot R {
+    sensor gps: GPS;
+    actuator w: DifferentialDrive;
+    safety { max_speed = 1 m/s; }
+    behavior b() {}
+}
+"#,
+    );
+    let diags = spanda_assurance::collect_recovery_diagnostics(&program);
+    assert!(diags.iter().any(|d| d.category == "recovery:approval"));
+}
+
+#[test]
+fn fleet_showcase_recovery_report_passes() {
+    let program = parse_source(include_str!(
+        "../../../examples/showcase/fleet_recovery/fleet.sd"
+    ));
+    let report = evaluate_recovery(&program, None);
+    assert!(
+        report.passed,
+        "expected fleet showcase heal to pass, plans={} results={:?}",
+        report.plans.len(),
+        report.results.iter().map(|r| &r.status).collect::<Vec<_>>()
+    );
 }
