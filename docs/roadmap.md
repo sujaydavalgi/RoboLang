@@ -113,7 +113,7 @@ See [self-healing.md](./self-healing.md), [recovery-policies.md](./recovery-poli
 | Takeover modes (resume, restart, partial, shadow, hot, cold, human) | **Stable** |
 | State transfer (`MissionStateSnapshot`, `MissionContextTransfer`) | **Stable** |
 | CLI (`continuity`, `takeover`, `delegate`, `succession`) | **Stable** |
-| Runtime takeover dispatch on fleet agents | **Future** |
+| Runtime takeover dispatch on fleet agents | **Experimental** |
 | Language `continuity_policy` declarations | **Experimental** |
 
 See [mission-continuity.md](./mission-continuity.md).

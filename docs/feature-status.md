@@ -155,7 +155,7 @@ See [tier-3-experimental.md](./tier-3-experimental.md) and [tier-3-golden-paths.
 | observe / fusion | **Stable** | Weighted fusion by sensor type; `state_estimator` runtime bindings |
 | mission assurance (static + CLI) | **Stable** | `spanda-assurance` crate; 8 official packages |
 | self-healing & recovery (static + CLI) | **Stable** | Recovery planner, validation gates, audit, knowledge store |
-| mission continuity (static + CLI) | **Stable** | Continuity manager, takeover/delegation/succession, state transfer, checkpoint resume |
+| mission continuity runtime dispatch | **Experimental** | Fleet agent interpreter + assurance takeover on `/v1/continuity/execute` and `fleet_takeover` peer topic; mesh `POST /v1/fleet/continuity` |
 | self-healing runtime dispatch | **Experimental** | Assurance-gated actions, Approval polling, fleet mesh relay (`SPANDA_FLEET_MESH_URL`), mission approval gating, fleet agent interpreter + assurance recovery on deployed programs (`recovery_engine` on `/v1/status`) |
 | recovery diagnostics (CLI + LSP) | **Stable** | `spanda check --readiness-json` merges `recovery:*` categories; TS mirror in `scripts/lsp-readiness.mts` |
 | learned anomaly backends | **Experimental** | Runtime `scan_learned`; ONNX optional |

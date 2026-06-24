@@ -159,6 +159,25 @@ Declared actions influence takeover mode inference (`resume`, `hot takeover`, `r
 
 ---
 
+## Fleet runtime dispatch
+
+When `SPANDA_FLEET_MESH_URL` is set, the interpreter relays takeover commands through the mesh coordinator:
+
+```bash
+# Mesh coordinator
+POST /v1/fleet/continuity
+
+# Fleet agent (deployed program required)
+POST /v1/continuity/execute
+POST /v1/continuity/ack
+```
+
+Peer topic: `fleet_takeover` (JSON `FleetContinuityRequest` payload).
+
+Agent status reports `continuity_engine`, `continuity_successor`, `mission_progress_percent`, and `continuity_validation`.
+
+---
+
 ## Integrations
 
 | System | Integration |
