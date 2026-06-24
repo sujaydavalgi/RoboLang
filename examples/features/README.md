@@ -31,7 +31,10 @@ spanda run examples/features/enum_payload.sd
 | `async` / `await` | `basics/08_async_await.sd` |
 | Behavior `requires` / `ensures` | `basics/09_behavior_contracts.sd` |
 | State machines + `enter` | `basics/10_state_machine.sd` |
-| `observe` / fusion | `basics/11_observe_and_fusion.sd`, `types/fusion.sd` |
+| `observe` / fusion | `basics/11_observe_and_fusion.sd`, `types/fusion.sd`, `robotics/sensor_fusion.sd` |
+| `state_estimator` / weighted fusion | `showcase/assurance/rover.sd`, `assurance/rover_assurance.sd` — [state-estimation.md](../../docs/state-estimation.md) |
+| `anomaly_detector` / learned backend | `anomaly/learned_navigation.sd`, `anomaly/navigation_anomaly.sd` — [anomaly-detection.md](../../docs/anomaly-detection.md) |
+| Mission assurance (full suite) | `showcase/assurance/rover.sd` — `spanda demo assurance` — [mission-assurance.md](../../docs/mission-assurance.md) |
 | `world_model` + fusion hook | [`world_model_observe.sd`](./world_model_observe.sd), [`world_model_belief.sd`](./world_model_belief.sd) |
 | `expect_compile_error` tests | `basics/12_compile_fail_tests.sd` |
 

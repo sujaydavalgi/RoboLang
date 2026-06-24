@@ -16,7 +16,7 @@ Start here when evaluating Spanda as a **professional autonomous-systems platfor
 | `spanda demo fleet` | Multi-robot fleet simulation |
 | `spanda demo health` | Health checks + fault injection |
 | `spanda demo readiness` | Operational go/no-go scoring |
-| `spanda demo assurance` | Mission assurance CLI suite |
+| `spanda demo assurance` | Mission assurance CLI suite (`assure`, `anomaly scan`, `state estimate`, …) |
 
 Set `SPANDA_ROOT` to the repository root if examples are not found.
 
@@ -32,7 +32,8 @@ Set `SPANDA_ROOT` to the repository root if examples are not found.
 | [`capability_verification/`](./capability_verification/) | Capability exposure, traceability, minimum hardware |
 | [`health_monitoring/`](./health_monitoring/) | Robot/sensor health, policies, fault injection |
 | [`readiness/`](./readiness/) | Operational readiness scoring |
-| [`assurance/`](./assurance/) | Mission assurance declarations and CLI |
+| [`assurance/`](./assurance/) | Mission assurance declarations and CLI (`spanda demo assurance`) |
+| [`assurance/rover.sd`](./assurance/rover.sd) | Flagship assurance program — learned anomaly, state estimation, resilience |
 | [`fleet_management/`](./fleet_management/) | Fleet, health requirements, coordination |
 | [`replay/`](./replay/) | Record, replay, fault injection |
 

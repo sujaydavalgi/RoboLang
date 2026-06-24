@@ -57,6 +57,8 @@ Work through tiers in order, or jump via [features/README.md](features/README.md
 | Testing & compile-fail | [`basics/12_compile_fail_tests.sd`](basics/12_compile_fail_tests.sd) | [testing.md](../docs/testing.md) |
 | Verification diagnostics | [`hardware/capability_verification.sd`](hardware/capability_verification.sd) | [verification-diagnostics.md](../docs/verification-diagnostics.md) |
 | Robotics platform | [`robotics/`](robotics/) | [robotics-platform.md](../docs/robotics-platform.md) |
+| **Mission assurance** | [`assurance/`](assurance/), [`anomaly/`](anomaly/), [`diagnostics/`](diagnostics/), [`prognostics/`](prognostics/), [`resilience/`](resilience/), [`mission/`](mission/), [`showcase/assurance/`](showcase/assurance/) | [mission-assurance.md](../docs/mission-assurance.md) |
+| Readiness & go/no-go | [`showcase/readiness/`](showcase/readiness/) | [readiness.md](../docs/readiness.md) |
 | Regex | [`regex/`](regex/) | [regex.md](../docs/regex.md) |
 | Security | [`security/`](security/) | [secure-communication.md](../docs/secure-communication.md) |
 | FFI & ROS2 | [`ffi_*.sd`](ffi_python_extern.sd), [`ros2_bridge.sd`](ros2_bridge.sd) | [ffi-and-ecosystem.md](../docs/ffi-and-ecosystem.md) |
@@ -78,7 +80,7 @@ spanda check examples/packages/ros2_adapter_package/src/main.sd
 spanda verify-adapter examples/packages/nav2_adapter_package
 ```
 
-Registry catalog: [docs/official-packages.md](../docs/official-packages.md) · Architecture: [docs/lean-core.md](../docs/lean-core.md)
+Registry catalog: [docs/official-packages.md](../docs/official-packages.md) (**37** hosted packages, including 8 mission assurance packages) · Architecture: [docs/lean-core.md](../docs/lean-core.md)
 
 ---
 
