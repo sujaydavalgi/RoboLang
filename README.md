@@ -82,6 +82,10 @@ spanda demo self-healing   # recovery policies, heal/recover/sim
 spanda check examples/showcase/killer_demo.sd      # type-check
 spanda verify examples/showcase/hardware_compatibility.sd  # hardware fit
 spanda sim examples/showcase/killer_demo.sd        # simulate
+
+# Documentation
+spanda doc examples/showcase/killer_demo.sd        # API docs from .sd source
+spanda man verify                                  # CLI man page
 ```
 
 Install options: [docs/installation.md](docs/installation.md) · First project: [docs/getting-started.md](docs/getting-started.md)
@@ -104,6 +108,29 @@ More samples: [docs/overview/code-samples.md](docs/overview/code-samples.md) · 
 
 ## Documentation
 
+### Reference
+
+| Resource | Link |
+|----------|------|
+| **Language reference (topics)** | [docs/language-reference/](docs/language-reference/README.md) — syntax, types, agents, safety, packages, recovery |
+| **Generated language API** | [docs/spanda-reference.md](docs/spanda-reference.md) — keywords, `std.*`, builtins, CLI |
+| **CLI man pages** | [docs/man/](docs/man/README.md) — `spanda man <command>` or browse markdown |
+| **Rust & TypeScript API** | [docs/api-reference.md](docs/api-reference.md) — crates, modules, types (`cargo doc --workspace --no-deps`) |
+| **Documentation site (mdBook)** | [docs-site/](docs-site/) — build with `mdbook build docs-site` |
+
+### Doc commands
+
+```bash
+spanda doc src/main.sd                    # JavaDoc-style API docs (markdown)
+spanda doc --html src/main.sd --out api.html
+spanda doc examples/ --out target/api-docs
+spanda man                                # list CLI man pages
+spanda man run                            # show spanda-run(1)
+spanda reference --out docs/spanda-reference.md --man-dir docs/man
+```
+
+### Start here
+
 | Start here | Description |
 |------------|-------------|
 | **[docs/overview/](docs/overview/README.md)** | Expanded project home — platform, architecture, CLI, library |
@@ -118,8 +145,7 @@ More samples: [docs/overview/code-samples.md](docs/overview/code-samples.md) · 
 | Feature status | [docs/feature-status.md](docs/feature-status.md) |
 | Mission assurance | [docs/mission-assurance.md](docs/mission-assurance.md) |
 | Architecture | [docs/overview/architecture.md](docs/overview/architecture.md) (pipeline) · [docs/architecture.md](docs/architecture.md) (full) |
-| CLI reference | [docs/overview/cli.md](docs/overview/cli.md) · [docs/spanda-reference.md](docs/spanda-reference.md) · [docs/man/](docs/man/README.md) |
-| Language reference | [docs/language-reference/](docs/language-reference/README.md) · [docs/spanda-reference.md](docs/spanda-reference.md) |
+| CLI overview | [docs/overview/cli.md](docs/overview/cli.md) |
 | Packages & registry | [docs/overview/packages.md](docs/overview/packages.md) · [docs/packages.md](docs/packages.md) |
 | Roadmap | [docs/roadmap.md](docs/roadmap.md) |
 
