@@ -72,9 +72,12 @@ Runtime recovery actions publish fleet coordination commands on `/fleet/recovery
 (Command) for in-process comm buses. When `SPANDA_FLEET_MESH_URL` is set, the runtime
 also posts the same action to the fleet mesh coordinator (`POST /v1/fleet/recovery`),
 which relays `fleet_recovery` peer messages to registered fleet agents. Deployed
-agents run assurance-backed recovery (plan → validate → apply) when a program is
-loaded via `POST /v1/program`; use `POST /v1/recovery/execute` for direct
-recovery triggers. Agent `/v1/status` exposes `recovery_validation` and applied actions.
+agents prefer **live interpreter recovery** (`execute_recovery_on_program`) when a
+program is loaded via `POST /v1/program`, running mode transitions, speed caps, mission
+pause, and connectivity restart through the same dispatcher as `spanda run`. Assurance-only
+fallback applies when interpreter setup fails. Use `POST /v1/recovery/execute` for direct
+recovery triggers. Agent `/v1/status` exposes `recovery_engine`, `recovery_validation`,
+runtime logs, and applied actions.
 
 High-risk actions require operator approval via:
 

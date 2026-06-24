@@ -32,6 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Self-healing demo:** `spanda demo self-healing` runs heal, recover, recovery knowledge, sim inject-failure, and fleet recovery showcase paths.
 - **Self-healing CI smoke:** `scripts/self_healing_smoke.sh` exercises recovery CLI, runtime tests, diagnostics, and demo.
 - **Fleet agent assurance recovery:** deployed fleet agents run assurance plan/validate/apply on `fleet_recovery` peer commands and `POST /v1/recovery/execute`; status reports `recovery_validation`.
+- **Fleet agent interpreter recovery:** deployed agents run live interpreter recovery dispatch (`execute_recovery_on_program`) for mode transitions, speed caps, and mission pause; `recovery_engine` on `/v1/status` reports `interpreter` vs `assurance` fallback.
 - **TypeScript recovery diagnostics:** `src/recovery-diagnostics.ts` mirrors Rust `collect_recovery_diagnostics` for LSP/readiness JSON fallbacks.
 - **Learned anomaly runtime:** health polling invokes `assurance.anomaly::scan_learned` for detectors with `learned backend`; package stub scores observations below 0.85 as anomalies.
 - **Weighted sensor fusion:** runtime and `spanda state estimate` use type-weighted confidence; `fusion.read()` exposes `sources` and `state_estimate`.
