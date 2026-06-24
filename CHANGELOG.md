@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Mission assurance platform:** new `spanda-assurance` crate with core interfaces (knowledge model, state estimation, anomaly detection, diagnosis, prognostics, mitigation, mode management, mission planning, resilience, assurance evidence) and static analysis integrated with readiness, health, traceability, and hardware verification.
 - **Mission assurance language:** `knowledge_model`, `state_estimator`, `anomaly_detector`, `on anomaly`, `prognostics`, `mitigation`, `operating_mode`, `mission_plan`, `resilience_policy`, and `assurance_case` declarations.
 - **Mission assurance CLI:** `spanda assure`, `spanda anomaly scan`, `spanda prognostics`, `spanda mission verify`, and `spanda resilience check`; enhanced `spanda diagnose` for traces and programs.
-- **Official packages:** `spanda-assurance`, `spanda-knowledge-model`, `spanda-anomaly`, `spanda-diagnosis`, `spanda-prognostics`, `spanda-mission-planning`, `spanda-resilience`.
+- **Official packages:** `spanda-assurance`, `spanda-knowledge-model`, `spanda-anomaly`, `spanda-diagnosis`, `spanda-prognostics`, `spanda-mission-planning`, `spanda-resilience`, `spanda-fusion`.
 - **Examples:** `examples/assurance/`, `examples/anomaly/`, `examples/diagnostics/`, `examples/prognostics/`, `examples/resilience/`, `examples/mission/`.
 - **Docs:** [mission-assurance.md](docs/mission-assurance.md), [knowledge-models.md](docs/knowledge-models.md), [anomaly-detection.md](docs/anomaly-detection.md), [diagnostics.md](docs/diagnostics.md), [prognostics.md](docs/prognostics.md), [resilience.md](docs/resilience.md), [assurance-cases.md](docs/assurance-cases.md).
 - **Learned anomaly detectors:** `learned backend <module>;` on `anomaly_detector`; anomaly scan reports include learned model metadata.
@@ -22,6 +22,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Learned anomaly runtime:** health polling invokes `assurance.anomaly::scan_learned` for detectors with `learned backend`; package stub scores observations below 0.85 as anomalies.
 - **Weighted sensor fusion:** runtime and `spanda state estimate` use type-weighted confidence; `fusion.read()` exposes `sources` and `state_estimate`.
 - **Learned anomaly EMA:** runtime tracks per-detector EMA volatility and passes it to `scan_learned` for drift detection.
+- **`spanda-fusion` package:** `assurance.fusion` import path with `weight_for_sensor` and `confidence_for_types` provider dispatch (extends lean-core weighted fusion).
+- **ONNX anomaly inference:** `SPANDA_ANOMALY_ONNX_MODEL_PATH` (or `SPANDA_ONNX_MODEL_PATH`) enables ONNX-backed `scan_learned` via Python bridge; showcase rover links learned anomaly + fusion packages.
 
 ### Fixed
 

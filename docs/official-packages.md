@@ -71,6 +71,7 @@ Aliases: `spanda-sim-gazebo`, `spanda-sim-webots` (registry metadata).
 | `spanda-prognostics` | `assurance.prognostics` | Prognostics and RUL |
 | `spanda-mission-planning` | `assurance.mission` | Mission planning assurance |
 | `spanda-resilience` | `assurance.resilience` | Resilience and recovery policies |
+| `spanda-fusion` | `assurance.fusion` | Weighted sensor fusion backends |
 
 See [mission-assurance.md](mission-assurance.md) for language constructs and CLI commands.
 

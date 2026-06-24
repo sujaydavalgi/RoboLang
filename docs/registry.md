@@ -15,7 +15,7 @@ spanda registry search openai
 
 ## Curated packages (hosted)
 
-All **29** curated packages under `packages/registry/` are published in the hosted index. Tarballs live at `registry/packages/<name>/<version>` with SHA-256 digests and Ed25519 signatures in `registry/index.json` (`version_checksums`, `version_signatures`). Rebuild with `./scripts/build-registry.sh` (runs `scripts/update_registry_checksums.py`, which delegates to `registry-index-maintain`). CI verifies signatures against the trust key in `registry/TRUST_KEY` (hosted signing material: `spanda-hosted-registry-v1` unless `SPANDA_REGISTRY_SIGN_KEY` is set).
+All **37** curated packages under `packages/registry/` are published in the hosted index. Tarballs live at `registry/packages/<name>/<version>` with SHA-256 digests and Ed25519 signatures in `registry/index.json` (`version_checksums`, `version_signatures`). Rebuild with `./scripts/build-registry.sh` (runs `scripts/update_registry_checksums.py`, which delegates to `registry-index-maintain`). CI verifies signatures against the trust key in `registry/TRUST_KEY` (hosted signing material: `spanda-hosted-registry-v1` unless `SPANDA_REGISTRY_SIGN_KEY` is set).
 
 | Package | Category | Import paths |
 |---------|----------|--------------|

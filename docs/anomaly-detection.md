@@ -46,6 +46,8 @@ Integrates with existing **health checks** — failed health checks surface as a
 
 During health polling, detectors with `learned backend` invoke the package provider (`assurance.anomaly::scan_learned`) with observed confidence and EMA volatility. Scores above zero add the detector to the anomaly trigger set and fire matching `on anomaly` handlers.
 
+**ONNX inference:** set `SPANDA_ANOMALY_ONNX_MODEL_PATH` (or reuse `SPANDA_ONNX_MODEL_PATH`) to run a 2-feature ONNX model `[observed, volatility]` via the Python bridge (`onnxruntime` optional). Without a model path, lean thresholds apply (`observed < 0.85` or `volatility > 0.25`).
+
 Program-level `state_estimator` declarations register fusion bindings at robot setup. A single estimator aliases `fusion` (same as `observe { }`); named estimators are available as `{Name}.read()`.
 
 ## Package

@@ -33,6 +33,8 @@ Results are also included in `spanda assure` JSON under `state`.
 
 At robot setup, each `state_estimator` registers a `SensorFusion` binding. A single estimator aliases `fusion` (same as `observe { }`). `fusion.read()` / `{Name}.read()` perform **weighted fusion** by sensor type (GPS, Lidar, IMU, …), include `sources` and `estimator` fields, and populate `state_estimate.confidence`.
 
+Optional **`spanda-fusion`** package (`import assurance.fusion;`) exposes the same weight table via `weight_for_sensor` and `confidence_for_types` for custom tooling.
+
 ## Example
 
 See `examples/assurance/rover_assurance.sd`.

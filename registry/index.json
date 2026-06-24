@@ -11,12 +11,12 @@
       "ai.anthropic"
     ],
     "version_checksums": {
-      "0.1.0": "6e093813c626162901dbaef808b3c01772ffe5c69b09271109350f88d228dfce"
+      "0.1.0": "0ab70eb26d1d769fb779125972659d7176aa6fc5a960afad0a501207ca2773c5"
     },
     "version_signatures": {
       "0.1.0": {
         "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
-        "signature": "194d748b17ebe08f78f9909b79e3c522d47f13d07ecde3e6a64ee40c11ef8c6cb21bcb2b331f57f03246b26f71c0428588188a98ce43c12c4234c32a40fc4800"
+        "signature": "13577afc511bd1ee932080bb6fb67f0d16336447c794cb435610724cddcab2e5a3c3e1955d2637ea2c1c2d6c4b5a216f2dc40ea2882783b70248f74557e29c0c"
       }
     }
   },
@@ -32,12 +32,12 @@
       "assurance.anomaly"
     ],
     "version_checksums": {
-      "0.1.0": "2170b964835d805f4c1906d9d63d393d122e2c257af0ee83852f88174afa2f09"
+      "0.1.0": "4af533634892b22ef22decce644ef17d66ab34fb1af7ec37299b3b15a6952d4b"
     },
     "version_signatures": {
       "0.1.0": {
         "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
-        "signature": "2119081bc9c0ff49111c5f3c4fa4efb14f458e3319d3f6b255f9587cd1bf66a2e47c63edc27dcf01c2663d9c423103f6783eb27bfd0e5c03142337848dcc3603"
+        "signature": "c95c840666d72b2b41c53a00d7a4c341d467b7fd59c1a2aac0acb6185856f97624174ac14f4227c4691806a619942a3a9a777d5da738558ec95137376347f103"
       }
     }
   },
@@ -53,12 +53,12 @@
       "assurance.evidence"
     ],
     "version_checksums": {
-      "0.1.0": "878a8a1b6d44f63edaacc44761adf85b6d78acb71cc847cc0b2f1854fb9bdab8"
+      "0.1.0": "7d4f2c474a6c8fcea3a72830f3208b87b495f96fe2b451bbfa3ef6578f16b8c1"
     },
     "version_signatures": {
       "0.1.0": {
         "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
-        "signature": "bb7ce8e477e92c51d548d9bbeea4d1d34775a607fc0fe0a7ae756de3cd3ff09db9fdbc0a50c78a1af431c252fd823f2f497adabdfdd593e064f7d6c28aa4e30d"
+        "signature": "26a52434f57255bf4ae98e757d03601b8e77b049d6c5099c173ca152b7f3e2955aa00f711c5b492213cf89e9c11c7bc511eb395d31ae80203e94b59a3342930e"
       }
     }
   },
@@ -74,12 +74,12 @@
       "connectivity.ble"
     ],
     "version_checksums": {
-      "0.1.0": "1cd0b9befc304a64dc565bee0c9290f4060b3768b64e4d1ff22ffcfebb37a991"
+      "0.1.0": "71286f353d110b5bda387009f07d67a49806808d43e37c9a4e85dd677495da62"
     },
     "version_signatures": {
       "0.1.0": {
         "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
-        "signature": "f0145ca4485e45f648fee121cc7eedf889868eb1caac99b5be34fb151d0026c2e1076ec22ce8c9f381f0feba725bf2d413894491da13ff3949f2914fc3385006"
+        "signature": "bdc14d20c85126aeaa31b7d6a539bfd7d6dcf0474879801794335bab403ccac141536492fe023ba5d41be9bc6a69f48036737a0a101156196f1864601bee1f08"
       }
     }
   },
@@ -95,12 +95,12 @@
       "iot.canbus"
     ],
     "version_checksums": {
-      "0.1.0": "5e6921b708e15cf9840cf14a3d27d31a0b479ae4597522570f456886723592d2"
+      "0.1.0": "078080baccb9e3ff053ca73c1d1d0e3d2d56b37b915ce703e25f224ff413dc26"
     },
     "version_signatures": {
       "0.1.0": {
         "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
-        "signature": "6c89fa385bdf9ca902db9fb6a1486e7aea019749681f185458ec68aa344e8d307b900919191e779d39806e4042b3ff51942674414067b052fc640524ee6b7c05"
+        "signature": "c487f0ff80214272cb6bb63e78bbf15f3ca24f0ec25afd4dc4eff44ae76e43487bdc985b01277deab1ef9127ccead42fe2f4404ca318ff47151077a6397f0b0a"
       }
     }
   },
@@ -116,12 +116,12 @@
       "connectivity.cellular"
     ],
     "version_checksums": {
-      "0.1.0": "b2046bd51fca9624e6992601477c3599cccb13cfbd9c919eee4c7a207154749c"
+      "0.1.0": "ab364c75600251a8557378b3ccdcb8596580800b8e47ba42614c66a377640978"
     },
     "version_signatures": {
       "0.1.0": {
         "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
-        "signature": "b23f8ec3d5fad3d6417a87cf4ec862ef6536e1ef1c753e7e0970ba45bb06e682478f64aab867f7daabff313c8ac2f60ce9a72d298e726e2741710591d2e7f501"
+        "signature": "89e79d31b5a21890630bbb208cf44d39506e26cb26ff9de21bf9580ee5d8e0bfcc602ab1cdfbecf4c1bf557ce756362c0d96f9ac1a71fe61a97d2e666fb60806"
       }
     }
   },
@@ -137,12 +137,12 @@
       "cloud.remote"
     ],
     "version_checksums": {
-      "0.1.0": "bceec2d4760b5898bbf9f81b7bacbec11d3098073b2867dcc3527a929e6f787a"
+      "0.1.0": "e2bba169fd129eadccb2fdf25b52e196af7ce00d9b0d422f1d8420c8820e4cf9"
     },
     "version_signatures": {
       "0.1.0": {
         "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
-        "signature": "395578bdfe5c6c7b731787fbb488b8affba1a3ce94b185d8da5433856cea4e99985eaa98c696811ae464a78acdbc084bb43558e434f2882e74d2e61d4193f607"
+        "signature": "a7c493638d2ca1334cdf0ae124d701a0f29461a35ca5997418cf89bd7f4ed16bf35ccda31d3b508baa3e9f5eda7dd30cf41f61f3728b25b30d42da8f8385670f"
       }
     }
   },
@@ -158,12 +158,12 @@
       "communication.dds"
     ],
     "version_checksums": {
-      "0.1.0": "cfcd9745cf389d6e79c2f19e5c26543bb70f464f58abb31fd842205d1ec2f985"
+      "0.1.0": "8c2b24266f1782375fc1f7ca83594c7b088a312eea38022e2531ba1e02ec1b3d"
     },
     "version_signatures": {
       "0.1.0": {
         "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
-        "signature": "b04969d5526b0feec3c0db8f081f72604115f5669a2318b7e8d6f287515021d49a17c580ca55a2caea44ecdc851a79c4d51564a6cfa02231ee84f999660a0b06"
+        "signature": "8c3c12c5bb5c86a38eb401c91e6195f08ccd431747b91470e40d86c5b7177744265420e69746fec8205060250d8dea4e185be6b284f4f69d5e6d2773b4c32903"
       }
     }
   },
@@ -179,12 +179,12 @@
       "assurance.diagnosis"
     ],
     "version_checksums": {
-      "0.1.0": "f80e94abfb5ee83e991619754149ddb4294be9ec47be3f9dd1164de3907aed77"
+      "0.1.0": "983639eb216d74deff1703ebf3f50a2621654cb03095d7d8aef704558fcaf300"
     },
     "version_signatures": {
       "0.1.0": {
         "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
-        "signature": "0c095c007b452e37565f9011b20d34e4415c1a2b244b7660f7681d0c0d704efe04538624d2c990e1cae0f3466f12d0913b05f4a9f6ae4a0fe795ab1170f74404"
+        "signature": "e902b14f8590a238dccf1c610b4c5b63c5f4608c74ee4b729f42e641166d21b2aaf8cd97b608afd4974c2590c5e82bb0b821e9c68156ca2fa781fe0bc3c15f0a"
       }
     }
   },
@@ -200,12 +200,33 @@
       "robotics.fleet"
     ],
     "version_checksums": {
-      "0.1.0": "2fb41b11a618e4ac0c484bac32e91a7733bf126fe29f655d228dcfa042de2eca"
+      "0.1.0": "732495266b25396540ca6b8889c53e61043fc52cbe8276fb9cbc3441fd78bcad"
     },
     "version_signatures": {
       "0.1.0": {
         "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
-        "signature": "da229a78b4d2a44ca4fa74bbcbb042e15023303f5f149c1131a4644d92157ff05d2fb06ad0b553aec855db2ee13b6920f4e4323744af88fbfd732cb52d77c601"
+        "signature": "2244545f4b980078c123381d3c3ee51981290e7b166e0833525eda19c5fee93c0f1064485d36c5db3138329d6a61c3ef7aeb0d641cd7af5aa84bcb6049702b0d"
+      }
+    }
+  },
+  {
+    "name": "spanda-fusion",
+    "description": "Weighted sensor fusion backends",
+    "versions": [
+      "0.1.0"
+    ],
+    "category": "robotics",
+    "license": "Apache-2.0",
+    "import_paths": [
+      "assurance.fusion"
+    ],
+    "version_checksums": {
+      "0.1.0": "b5fc1d3291502f82b5293021ffe5f075b8c62fa5554e86b94a3f0cc5a392ea44"
+    },
+    "version_signatures": {
+      "0.1.0": {
+        "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
+        "signature": "b514ac0a584aaf0e832c641aaddfa5d9704a13331f2d9c951ab145de33514a5cb5260f1de2e5a9c81ea77f7a324d822d766728abc8e903b08f6b31060abddb00"
       }
     }
   },
@@ -221,12 +242,12 @@
       "sim.gazebo"
     ],
     "version_checksums": {
-      "0.1.0": "4d013697651ff8304ce5befd29a251a912c8e12f7e5b31b06210e2f8ea94595e"
+      "0.1.0": "f30ae76f6a6f0c203ea34ba3349d6716c4792e3fdc41f6e068489a499b8b3ade"
     },
     "version_signatures": {
       "0.1.0": {
         "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
-        "signature": "32e5f314ccefd48d2fbfcf1d60a5d61bad4065bd2242eda75aeb0562afbebda1ac6bff4532d4153e3adc149df63668cca0374755e42c687a8de69096619eb007"
+        "signature": "517a33663743f1738135d185ae0acdd6adc2fc0d5629b072b8cf40ee8211409a5b05fe0b414bacad0d145ecca1e178046676e7ee890f9d88be4dee72f6d20600"
       }
     }
   },
@@ -242,12 +263,12 @@
       "positioning.gps"
     ],
     "version_checksums": {
-      "0.1.0": "b08833220e8279fc4152661c495088e8f9c09cc2802fb882482150837411aee0"
+      "0.1.0": "865f166505cce8a7eff4807f73b32b37e18498b3f4097fd818f75215632a617e"
     },
     "version_signatures": {
       "0.1.0": {
         "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
-        "signature": "da6b3e0279207596c17a7e9c68543df5595403b2fb5905b8db63062d06c17b322cfb617de4692a5cbd1556b0dfa126d10ba159ca37952303cc4dd4ff74eab006"
+        "signature": "eedb2989091ccf80ff398f9d919c548b6018970b942c6a41823343448cb2f1903b2a59e977d84c493cb4dfe594aae09c1abbc8b38d6f6bcec684c50c39351009"
       }
     }
   },
@@ -266,12 +287,12 @@
       "iot.shadow"
     ],
     "version_checksums": {
-      "0.1.0": "2c3350c4c39f25607e0f7b549f1dd097d709eb2b76347cdc89d085176a5c39e0"
+      "0.1.0": "55455a543fb958ff42a71ff8510cbe1962c7d5d3eb428107b144fbed7be6501c"
     },
     "version_signatures": {
       "0.1.0": {
         "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
-        "signature": "15498b0e3ad65b9e987912e7af90a0f577b40b8483cafe76c6b145f1457bdcc6c537ec24ba7cd202b5e7cd248f5496b82a78a1280fe8b4968c4c60faeb496307"
+        "signature": "952c0740c0a83b3f23ae3ed57594671b9ae9e4c49c6fefa6a3bdfb619727967bd8778760ee85e737b22434265b80b806df52b27848f800512a26ca27d53e8502"
       }
     }
   },
@@ -287,12 +308,12 @@
       "assurance.knowledge"
     ],
     "version_checksums": {
-      "0.1.0": "03a0028c9cd244ebca2e4b787b9654b5472c8d2963f7e098e7174087ec34af9f"
+      "0.1.0": "bda5d4b6d4efc25f08d714d342f6afbf51af6d2aab246ba604cf0686e56b6344"
     },
     "version_signatures": {
       "0.1.0": {
         "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
-        "signature": "18d7c7abd851d9c9af81db2789f822fd96e438a4fcd7acc785a38e1fbd6564b1bcf17b7cab9e03e5b3341581d25f95d34f95726839f8e48e9cb7ca4a4074520b"
+        "signature": "28f73a9e9ee3a284e6fb084fc24e7d009bf3dd147254a16684ebd62a05443296ed7f7a3b463a0b53ffca1aaef48ac8c90d1135844aa1ab5cb8cc2501475a570c"
       }
     }
   },
@@ -308,12 +329,12 @@
       "provenance.ledger"
     ],
     "version_checksums": {
-      "0.1.0": "ba780b47a9cf68cdab7379b0341d6ed20b5f6cb33d5ec6899c6020005e78a3da"
+      "0.1.0": "5cade05668cd84155e39ea39f320072ed06de2edde95cbe6aec746a6cf63e488"
     },
     "version_signatures": {
       "0.1.0": {
         "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
-        "signature": "98922ca593d55c4b81358dd920cd3f2a67138181c3ffe9d911bfccf7e5caeb467ba341acc9cfadb7a2e0b94ff005b04a90f58bf2998778e2b52df60992254f02"
+        "signature": "f9025389cde0d5dd7493adbc9d23f6557a1bc30491aeaf7c337619c63c4287a798fc91eec2a3dc6a4d3f0bf95037ad74c4f7cfdbd7a8c54c5895560ddbe26309"
       }
     }
   },
@@ -329,12 +350,12 @@
       "iot.lora"
     ],
     "version_checksums": {
-      "0.1.0": "79425f266ba83fa4727640c0c73e0ebf54316cc4106e1129695b6319ef510161"
+      "0.1.0": "8ebcc1d438b134b81165ef04be17b2c6b48ab77895cafe5dd1d119006c7dabed"
     },
     "version_signatures": {
       "0.1.0": {
         "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
-        "signature": "04bca472333183bfadf20f6884e4c6b8afa60a22b2d6cc205f41cdd5ddaa8d3e3026454b399bd3a76a0367c464eb5f24e418bc7f8bac5c9665367d787b11c608"
+        "signature": "ade98807918d7c8e2418af97e77775e902edacf8d9a14164e2ed365be676b7da88cdcfead88a4ec60ba87517c4a54213ad7360ce18a952c64eb6e064fd0dfe08"
       }
     }
   },
@@ -350,12 +371,12 @@
       "maintenance.health"
     ],
     "version_checksums": {
-      "0.1.0": "a2929f7c1607f2cba468ed3139d9fda58f5e189e88d6039771b372be971944ce"
+      "0.1.0": "8c146621c5c389be839e1eae4a635cb03a3afad3c60e2dbc218b80f17e23a041"
     },
     "version_signatures": {
       "0.1.0": {
         "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
-        "signature": "637ee2cb01c733c65db4bb6ff7036e43e1b9e262c92549ac89ff82acac3bdde45724c2a6207ad0a8280186560b4bdd3b624961b083dea274120b103c1970b40d"
+        "signature": "c084fee37a0f972863b42e5c6cf5c82d97d97f8d299d42625a31117f079eddabdfa910a7178ca9c06049e52fbf1594bbc2a446d6c6e4e35172c96c485182d40f"
       }
     }
   },
@@ -371,12 +392,12 @@
       "iot.matter"
     ],
     "version_checksums": {
-      "0.1.0": "3c811ab576e6c475a86b15156f9ce0c120efba8afb0137d44fbb78b15acaad10"
+      "0.1.0": "5c6dc3ca300df6611f388f79273851a0c664cfae7062bec1fa68eb95f1bd2c30"
     },
     "version_signatures": {
       "0.1.0": {
         "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
-        "signature": "949851479e6afadfa69452e0d9c779034841e912db64fadb83976ec6949e862c97c64a7997c126e63f8fa51c157a1642b6febc90a15c96f9e90f3ba5b859470c"
+        "signature": "6133b82d22a2b78a7d972da9cefa766a9b141265b72505a6c6dbea1264adc85ac4a4b4711ea4bae183d6ed91410cf7e733083e4c62fae0eb47cf255a6bb61c01"
       }
     }
   },
@@ -392,12 +413,12 @@
       "assurance.mission"
     ],
     "version_checksums": {
-      "0.1.0": "23bae93ba251870174d149131c183eccdb24a37cbab3856945b4dff4678c953b"
+      "0.1.0": "20ec7b07760172cb571fbdc9c7ba3eb2be26feee045b548224e8ad74b65da737"
     },
     "version_signatures": {
       "0.1.0": {
         "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
-        "signature": "4af1324e20b661a2160acd0d1474ec7a788bd83225f4ac4d0f1424503433de9c18a381faa808ae82fa584a88918130f97a76d3e18ae8c3873e2433c539022705"
+        "signature": "68f0961abdcb110f62041f341665e2f8138b7f0c980e210d12e83a64b931452efd070f44fc2da2a1524b0ae9076d23f498bf280cd2f4844bb7a5e505323fdd0f"
       }
     }
   },
@@ -413,12 +434,12 @@
       "iot.modbus"
     ],
     "version_checksums": {
-      "0.1.0": "55a4d154694eaefe908de19cacbe0db8892334f91d671583fc65ad8c446fb72b"
+      "0.1.0": "94eadd756e15abb29d1e1b5b363d81148e05ac8c97293f6df40e6d1809d383ba"
     },
     "version_signatures": {
       "0.1.0": {
         "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
-        "signature": "82dfe94f014470a40115115f527ad4c181f41cd653a4cb788fa1c440e767b5dcb92ea79f59659ec52f3fd6b7e4a35e88c0bd331393580f403100385653910604"
+        "signature": "3e3aaa2029434b2f45bd840fd9c8e34eeedfcc5357fa64245ca84e196515b4c1fb365057037ed4bee91118d60613cc894db340153a26c7088132114301bcc00e"
       }
     }
   },
@@ -434,12 +455,12 @@
       "manipulation.moveit"
     ],
     "version_checksums": {
-      "0.1.0": "e4d9b025f27f7920e5aaa92d0e7879f182b6708fb483957c1fecacbf7475ce5d"
+      "0.1.0": "98b52625169a5b66663e4c902bb7ca9ad029a57464ff60cb427459e2f5687c77"
     },
     "version_signatures": {
       "0.1.0": {
         "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
-        "signature": "7911b03cd3debf76d858bd258bf054ae53581fe6ed4469926376c267b58ac0d9c071e38546a972f60fa99aebe782dee5da285dc8eaf240107697e934430f4604"
+        "signature": "e113714990e87718ab129ffb117299fd2d5547344e252cf8fe7adc051473166c209d8213062c426a36b6460a0beddcb39759b382017cceb4b9bc46ae773aa105"
       }
     }
   },
@@ -455,12 +476,12 @@
       "communication.mqtt"
     ],
     "version_checksums": {
-      "0.1.0": "06180805372711d0560d720b8e72534590854c2e95bbc2bae362af6c97958f5b"
+      "0.1.0": "20d30ed5eafddcf69896e42044b16b0743bd702a3a25398afec036b79ec355da"
     },
     "version_signatures": {
       "0.1.0": {
         "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
-        "signature": "ef9c5538c593e4010d0403a8ea14d6e67ef6d1c7a0883a00773dca576b885a7abb346c7d77be222cc51de5de1d2d06c3e3410f8699a180b045cb2aecc210e40f"
+        "signature": "fffc75aa17f0c449848d3d6e3bd92193a87649322b3d74124b27ba936a6494439831d38dfe26aed32163fd1588c0943d81a5108019de5ae8b3d3ff9fe35e9c01"
       }
     }
   },
@@ -476,12 +497,12 @@
       "navigation.path_planning"
     ],
     "version_checksums": {
-      "0.1.0": "859715a466b79c8687295935ef3c3d4c3d8aeb0b99a39b2c6604e8e0ef687cd0"
+      "0.1.0": "af48df22a6bb0b5af53ad469442f98475372bc5c574c6a8b103a64384ae0ba6a"
     },
     "version_signatures": {
       "0.1.0": {
         "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
-        "signature": "0a252f272f401d75d1c9ddff5c10d15d84e7742c96d8cdfa7eba83f3f9eb608398f6be63d156047b387b3a9479313244f9899194c87d07b3fb8caaa99efa9005"
+        "signature": "e65b55630fa3bcdd8e6c0003308a217094f9e33b10f7146ef031d312da5ef9934b31d4ba005bcde05825b7afb5de0e5eba1d05900f68434aa0d1e3abf005400e"
       }
     }
   },
@@ -497,12 +518,12 @@
       "ai.onnx"
     ],
     "version_checksums": {
-      "0.1.0": "0275208be7d39ff4c3670d8ec865c3122b7ecac2be006a559705e1d2efc2a9ed"
+      "0.1.0": "a8b4efc0d2b83f4144b952fe8ce290559117ecfee75be0f1ba33188f9ea7403c"
     },
     "version_signatures": {
       "0.1.0": {
         "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
-        "signature": "717c127ff17429681dbb62aaf97851d0f3c56590450b6ece46ada4a95a09aa2259fb6072ba75d912b4b8a406aca5f77e67add8b6e9cfdf2bbd8bb9856c436a0c"
+        "signature": "57ed8883d7317227988fd27df9d37c3d616dfeb1be243efa6c3b7aae530e5fff949cf81752540b6b736cfe6ac2df15939e70f7b1c26ea2c2bd6c87abb9b28b08"
       }
     }
   },
@@ -518,12 +539,12 @@
       "iot.opcua"
     ],
     "version_checksums": {
-      "0.1.0": "ebcb97bc3d04dafef91d22b0b6031c08c43443e2bf8608d87111e62ec27a8dc9"
+      "0.1.0": "aaebdb5588087fedaf0cebe15da1b34d4375ffeb75a758217f33bf528c0ba9ff"
     },
     "version_signatures": {
       "0.1.0": {
         "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
-        "signature": "643a410ba4aea8e5ae68954ddda7d1712d60db92e445ea498b413426aa5ebbb6bd0e9ffd1f4c6dd80ca248d4326e5ab49d62e5ac52322e755fecace97069fe04"
+        "signature": "439aaf49fc5771c7d72e1acfcad23384b7329b109276a3c2739c42db33da95330d70fe8f35fe87bac70514b762c7b75ad375882676615886ebcff9314699a504"
       }
     }
   },
@@ -539,12 +560,12 @@
       "ai.openai"
     ],
     "version_checksums": {
-      "0.1.0": "4d56772a3f4b616fca2c0e9aef1a254f4f4b0c2437c9b61b24b05cf65eb77ee2"
+      "0.1.0": "c3e4ef0da9b9739e834fdbc30918bffc9c607b87c17bc89ddad92cf1c38888ba"
     },
     "version_signatures": {
       "0.1.0": {
         "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
-        "signature": "220ccc91445340e5a7c196991f3274d6191ddca3567805a915b462cdefeaa3bc01ecec7ed01bc20d6d47df2e824e33a2ac112a922cebd28418ae7831fdec6e0e"
+        "signature": "d8c47b0a8d1168183c8d766c280e0a2a552425fdb0b381d5df72007d0ec81430be3b2fd45f1f1084b525a848333b9f605fb9ac383ddb9d25d81bd66daabf8d0c"
       }
     }
   },
@@ -560,12 +581,12 @@
       "vision.opencv"
     ],
     "version_checksums": {
-      "0.1.0": "00ce7c9b33be855d289e4b7145d0d3c07d91f4c5b31a9c2a46cfe9ecf03fde85"
+      "0.1.0": "0e200f2d9684bb25219c640db33e5044186edbaa59798872ac305b36e8c97e51"
     },
     "version_signatures": {
       "0.1.0": {
         "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
-        "signature": "b4757752d102aa80e6fece1cb344a68dc04dfbb5172ad87cdfac8b5aee40aa9b6d01ce00471eaff2f01f586f9eda87484d81837f9b071a1428e6ddbd3cc11b07"
+        "signature": "77cb465a62c0e4a60048aca300ee68509d5ba70c2cbb3661d598ca825f6a2d5da28f06ff6318b338b6b1b632f539a37359f6092942970ec35c352f3f8d769c00"
       }
     }
   },
@@ -581,12 +602,12 @@
       "deploy.ota"
     ],
     "version_checksums": {
-      "0.1.0": "721b3251f870c3e251a6bd5c6753371b7c3a086d2c572e60e7f6e0933610169a"
+      "0.1.0": "4d6c539d701dc828185d3c890cca86d9a75e2b7fc422a1a719ff97b321411141"
     },
     "version_signatures": {
       "0.1.0": {
         "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
-        "signature": "b1f174118d56dd58acc185b52b59edb270531651ba8e07472f97dc3c85924cf865d3a8415835faba4264c25e4e3ccedb1baac1b392ec6d88b0cc0b8cf7026108"
+        "signature": "6c57a4117cda15739c830153d9dcf7e135db5ebf5d9e5e2d3959abd2763aaa2b4b56f73604b57b5f5dded5169525a96e57305de3747b7c5b0e79c592e958e600"
       }
     }
   },
@@ -602,12 +623,12 @@
       "assurance.prognostics"
     ],
     "version_checksums": {
-      "0.1.0": "ba11590caf8edde89c09d29d3bff78280bc0639a40c8d20a8445972b0f5afcdf"
+      "0.1.0": "b8848c4691ea791336263518468328b70e211b8d0a6217b0d94e9e783d5f5e5a"
     },
     "version_signatures": {
       "0.1.0": {
         "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
-        "signature": "1d572e8f1c6fb7be68eeab061ad853fe18ef5cd700c3211014c1979d894d27536309082eb019e6b0606becd811f133c42d2854053746e6b1a609a04e66e4df0a"
+        "signature": "14a4a4b4f3e14492c941569cce50d08686552b8ed136c95bae08ecc20e8046fbd45e6e927f0c1ff41be9e0c5c49b2815b63e2a4f58af970f062296c5d248d20c"
       }
     }
   },
@@ -623,12 +644,12 @@
       "assurance.resilience"
     ],
     "version_checksums": {
-      "0.1.0": "3bacdef7e881dbcba3a3679e43475b593e91839c7aa2cfc1e94c51fac89c88cc"
+      "0.1.0": "4567210c31386bc86601eb954c42d69716ab0e5c35340614d01ee8facd3e2c44"
     },
     "version_signatures": {
       "0.1.0": {
         "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
-        "signature": "ad2171e04f6ee0784b01a716579969d22d952d406def380d016e5115ad5e8595433d38325a096aae1b5316d94d68917c27255e920b61f7b878ebe6a6fafd9009"
+        "signature": "95400a7a228de8e9037ba9d04cae9fee4f07267e7c3affbee08cacb1b6f9514844eda74614bc0f70c863efa4e0b4432c0547b03f31a65b335f05cde4eec19d06"
       }
     }
   },
@@ -644,12 +665,12 @@
       "robotics.ros2"
     ],
     "version_checksums": {
-      "0.1.0": "a32af74012b1e51607d56e22806c309a356cb782f0d076ecb8d6efc245b16b12"
+      "0.1.0": "2200f6ada356deee83077cc47e4349369aae71e8de94c73b5d67346f0481beee"
     },
     "version_signatures": {
       "0.1.0": {
         "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
-        "signature": "00167ec0132f7a74d667b029f8a6f1f44e5ccc81bbc80790dde2dbf6d9d4cb2a524484d625172f5ce731d6445d145d081c5cf2b7378aa70a4e19afc0b6456306"
+        "signature": "0393408954d7096c28dd5b3f144dfac4eadf9bd04f1083d804fe1347b4f0cc8a4d55fb4c33898f91ad4ac14a8ef95a929502a88e9644ad31c385a8e37578ac0b"
       }
     }
   },
@@ -665,12 +686,12 @@
       "navigation.slam"
     ],
     "version_checksums": {
-      "0.1.0": "69f5f3cee29acf20f4e744e079708fe8361c11c52416db264b1e34af839393e5"
+      "0.1.0": "92244b7619f574d359a280afb6d333e0ced7c1acaa7d775e013447b7beb28762"
     },
     "version_signatures": {
       "0.1.0": {
         "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
-        "signature": "aab86edbd8024f89ee7796a9910f34c2ff09ecb2731da51badb38afb05a6a7724ce3db489fb01d58c7c8479d0c8ee9f2ba24b2399090f4cfb5016b098b4e7a05"
+        "signature": "c4afb107f578ec9a69190ebfb17d00c88945aa97bafa4ea35d62903408708190e9ca997733903d045483216ba21172dea0076081b2cd5b636b90e7dbe61c8900"
       }
     }
   },
@@ -686,12 +707,12 @@
       "sim.webots"
     ],
     "version_checksums": {
-      "0.1.0": "9de96e928240c2968930a9030fd6a15ceb4c3263b70b5fb61feeecaf3844b323"
+      "0.1.0": "d47825c2e30e36bea6f7b71335a88ba7c1736e589b039e9693e3ea04f57badda"
     },
     "version_signatures": {
       "0.1.0": {
         "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
-        "signature": "08478d22251b5ba910323ad075753bc3d3a9ba6e875053bee66d5b87dd1130b027535711e687b63e1c02945098bfb341abd7d91619222703280ba0e22f232004"
+        "signature": "bcadac3e49c6db292218bf1db1600b3f838c32307f3d782b802b01a59be34c051d3b83862d234952170ccb7b2c08fd9096af02eb0a40ec8ccc8172075a7bf50c"
       }
     }
   },
@@ -707,12 +728,12 @@
       "connectivity.wifi"
     ],
     "version_checksums": {
-      "0.1.0": "24232dc75cc85d9bee49b8a97044c0afaec0dd8b9aab808f59aafe6083b8da34"
+      "0.1.0": "8bc2a394b5eb8296389a7eceba9a404b00be6b49c5026112acb15f92bb696e54"
     },
     "version_signatures": {
       "0.1.0": {
         "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
-        "signature": "f2c832442512c4bae5ec2c59ce00f27119946d449998c75e03f3f0b2e4217fb6a554a58f02fc9e4118f0290d5de3ad761d5feaa02af2d058e94e8c71a2e3930d"
+        "signature": "2245407a3a2bce5c5b744a1e57b1d12dbd872db6c20e93b179d8173701dc697346a18045769744beaab40ef9c034e9c13001f0984a3c2b31427e65e36a359409"
       }
     }
   },
@@ -728,12 +749,12 @@
       "vision.yolo"
     ],
     "version_checksums": {
-      "0.1.0": "56775f80b10e52858d16a4a43c545a55c5232b75fafced4be6531bfa39329da7"
+      "0.1.0": "0085d689b8b82d6aa7729952f762ef78066e1126a9ba982329bc78293b03b3d5"
     },
     "version_signatures": {
       "0.1.0": {
         "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
-        "signature": "8aa528eb0529124408c397c50c4e5124133b1e190cb5326d28a804fbfd47983278301692bec23b0853062ad1bf8682c97b031b93c483a5663079c1e64c773c0e"
+        "signature": "63d85e58aabfe2d3287aa1261e0da34dfcb28771b507646f3d035c8731afeedd71351444e8120f6d42d95866339edbe354269377bee6b3dad64f927af2b42e02"
       }
     }
   },
@@ -749,12 +770,12 @@
       "iot.zigbee"
     ],
     "version_checksums": {
-      "0.1.0": "9da4e2723dcd5b68c34318bb1f2c1ef5109604299861e53c46b3cbc1fa85277d"
+      "0.1.0": "a4965287e465a9b24efd5784aba0edb31212070e367c2da3bf58e43840f8ff0c"
     },
     "version_signatures": {
       "0.1.0": {
         "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
-        "signature": "96e039ae0d9f8c5fd74147dcec8264b73eb0d801ed8aeafb013f4baabb8dffb21982e9fa7bca5e780f579442ab4c4bada6659a67e27ab1ec472d94030ac4410b"
+        "signature": "ade046f809aba1671ec5160e4c7202d7ca83fb106e6eb5fa7eae44b23a9a47f640c8aca5767958ea6ee7337d1b3203b3dd4965ee76f95a5236d6b11f517e3009"
       }
     }
   }

@@ -133,7 +133,7 @@ packages/
   native/                   @spanda/native — Node wrapper for N-API
   web/                      @spanda/web — React playground
   lsp/                      @spanda/lsp — Language Server
-  registry/                 29 official .sd packages (spanda-gps, spanda-ros2, spanda-onnx, …)
+  registry/                 37 official .sd packages (spanda-gps, spanda-ros2, spanda-onnx, spanda-fusion, …)
 
 src/                        TypeScript mirror (tests, CLI wrapper, providers)
 editor/vscode/              VS Code extension scaffold

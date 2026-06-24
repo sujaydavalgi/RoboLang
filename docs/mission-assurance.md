@@ -69,7 +69,8 @@ Mission assurance **composes** with:
 
 ## Examples
 
-- `examples/showcase/assurance/rover.sd` — one-command demo via `spanda demo assurance`
+- `examples/showcase/assurance/rover.sd` — one-command demo via `spanda demo assurance` (learned anomaly + fusion packages)
+- `examples/anomaly/learned_navigation.sd` — minimal learned-detector program (linked from showcase rover)
 - `examples/assurance/rover_assurance.sd`
 - `examples/anomaly/navigation_anomaly.sd`
 - `examples/diagnostics/gps_failure.sd`

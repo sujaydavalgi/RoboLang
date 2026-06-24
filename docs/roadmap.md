@@ -35,8 +35,9 @@ Platform overview: [platform-overview.md](./platform-overview.md) · Feature tru
 | Language declarations (`knowledge_model`, `state_estimator`, `anomaly_detector`, …) | **Stable** |
 | CLI (`assure`, `anomaly scan`, `state estimate`, `prognostics`, `mission verify`, `resilience check`, `mitigation plan`) | **Stable** |
 | Runtime `state_estimator` → weighted fusion bindings | **Experimental** |
-| Learned anomaly backends (`learned backend`, `spanda-anomaly`) | **Experimental** — runtime `scan_learned` + EMA volatility |
-| Full ML inference (ONNX / external models) | **Future** — package backends |
+| Learned anomaly backends (`learned backend`, `spanda-anomaly`) | **Experimental** — runtime `scan_learned` + EMA volatility + optional ONNX (`SPANDA_ANOMALY_ONNX_MODEL_PATH`) |
+| Weighted fusion package (`spanda-fusion`, `assurance.fusion`) | **Experimental** — provider dispatch for fusion weights |
+| Full ML inference (custom ONNX architectures) | **Future** — beyond 2-feature anomaly scaffold |
 
 See [mission-assurance.md](./mission-assurance.md), [state-estimation.md](./state-estimation.md).
 
