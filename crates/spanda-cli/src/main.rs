@@ -2,6 +2,7 @@
 //!
 mod assurance_cli;
 mod certify_cli;
+mod continuity_cli;
 mod demo_cli;
 mod deploy_ota;
 mod package;
@@ -1635,6 +1636,30 @@ fn main() {
 
     if command == "heal" {
         recovery_cli::cmd_heal(&args[2..]);
+        let _ = io::stdout().flush();
+        return;
+    }
+
+    if command == "continuity" {
+        continuity_cli::cmd_continuity(&args[2..]);
+        let _ = io::stdout().flush();
+        return;
+    }
+
+    if command == "takeover" {
+        continuity_cli::cmd_takeover(&args[2..]);
+        let _ = io::stdout().flush();
+        return;
+    }
+
+    if command == "delegate" {
+        continuity_cli::cmd_delegate(&args[2..]);
+        let _ = io::stdout().flush();
+        return;
+    }
+
+    if command == "succession" {
+        continuity_cli::cmd_succession(&args[2..]);
         let _ = io::stdout().flush();
         return;
     }
