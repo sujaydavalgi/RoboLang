@@ -74,6 +74,39 @@ fn mesh_coordinator_relays_fleet_recovery_to_agents() {
     .expect("mesh recovery");
     assert!(resp.ok);
     assert_eq!(resp.relayed, 2);
+    let fleet_program = r#"
+recovery_policy FleetRecovery {
+    on fleet.failed { pause mission; }
+}
+hardware RoverV1 { sensors [GPS]; actuators [DifferentialDrive]; connectivity [WiFi]; }
+robot RoverBeta {
+    sensor gps: GPS;
+    actuator wheels: DifferentialDrive;
+    safety { max_speed = 1.0 m/s; }
+    behavior patrol() {}
+}
+"#;
+    let program_payload = serde_json::json!({ "program": fleet_program }).to_string();
+    let deploy = http_request(
+        "POST",
+        &format!("http://127.0.0.1:{port_b}/v1/program"),
+        Some(&program_payload),
+        None,
+    )
+    .expect("deploy program");
+    assert_eq!(deploy.status, 200);
+    let resp2 = relay_recovery_via_mesh(
+        &format!("http://127.0.0.1:{mesh_port}"),
+        &FleetRecoveryRequest {
+            action: "pause mission".into(),
+            fleet_name: Some("PatrolFleet".into()),
+            from_robot: Some("RoverAlpha".into()),
+            members: vec!["RoverBeta".into()],
+        },
+        None,
+    )
+    .expect("mesh recovery after deploy");
+    assert!(resp2.ok);
     let status = http_request(
         "GET",
         &format!("http://127.0.0.1:{port_b}/v1/status"),
@@ -85,6 +118,8 @@ fn mesh_coordinator_relays_fleet_recovery_to_agents() {
     assert!(status.body.contains("last_recovery_commands"));
     assert!(status.body.contains("recovery_active"));
     assert!(status.body.contains("\"mission_paused\":true"));
+    assert!(status.body.contains("recovery_validation"));
+    assert!(status.body.contains("\"PASS\""));
 }
 
 #[test]

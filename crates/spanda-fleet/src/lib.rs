@@ -3,6 +3,7 @@
 pub mod agent;
 pub mod mesh;
 pub mod orchestrator;
+pub mod recovery_agent;
 pub mod recovery_mesh;
 pub mod remote;
 pub mod swarm_coordinator;

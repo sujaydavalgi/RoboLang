@@ -1592,9 +1592,12 @@ dependencies = [
  "rustls",
  "serde",
  "serde_json",
+ "spanda-assurance",
  "spanda-ast",
  "spanda-deploy-http",
  "spanda-driver",
+ "spanda-lexer",
+ "spanda-parser",
  "spanda-readiness",
  "spanda-runtime",
 ]

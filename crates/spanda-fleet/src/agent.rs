@@ -36,6 +36,10 @@ pub struct FleetAgentState {
     pub mission_paused: bool,
     #[serde(default)]
     pub recovery_mode: Option<String>,
+    #[serde(default)]
+    pub recovery_validation: Option<String>,
+    #[serde(default)]
+    pub last_recovery_evidence: Option<serde_json::Value>,
 }
 
 pub fn default_fleet_agent_state_path() -> PathBuf {
@@ -84,10 +88,12 @@ fn clear_fleet_agent_on_identity_change(state: &mut FleetAgentState, new_robot_n
         state.recovery_actions_applied.clear();
         state.mission_paused = false;
         state.recovery_mode = None;
+        state.recovery_validation = None;
+        state.last_recovery_evidence = None;
     }
 }
 
-fn apply_recovery_action(state: &mut FleetAgentState, action: &str) {
+pub(crate) fn apply_recovery_action(state: &mut FleetAgentState, action: &str) {
     state.recovery_active = Some(action.to_string());
     state.recovery_actions_applied.push(action.to_string());
     let lower = action.to_ascii_lowercase();
@@ -159,9 +165,44 @@ pub fn handle_fleet_agent_request(
             state.recovery_active = None;
             state.mission_paused = false;
             state.recovery_mode = None;
+            state.recovery_validation = None;
+            state.last_recovery_evidence = None;
             HttpResponse {
                 status: 200,
                 body: r#"{"ok":true}"#.into(),
+            }
+        }
+        ("POST", "/v1/recovery/execute") => {
+            let Ok(payload) = serde_json::from_str::<serde_json::Value>(&request.body) else {
+                return HttpResponse {
+                    status: 400,
+                    body: r#"{"ok":false,"error":"invalid recovery payload"}"#.into(),
+                };
+            };
+            let Some(action) = payload.get("action").and_then(|v| v.as_str()) else {
+                return HttpResponse {
+                    status: 400,
+                    body: r#"{"ok":false,"error":"action field required"}"#.into(),
+                };
+            };
+            if action.trim().is_empty() {
+                return HttpResponse {
+                    status: 400,
+                    body: r#"{"ok":false,"error":"action must not be empty"}"#.into(),
+                };
+            };
+            crate::recovery_agent::handle_fleet_recovery_command(state, action);
+            HttpResponse {
+                status: 200,
+                body: serde_json::to_string(&serde_json::json!({
+                    "ok": true,
+                    "recovery_active": state.recovery_active,
+                    "recovery_validation": state.recovery_validation,
+                    "recovery_actions_applied": state.recovery_actions_applied,
+                    "mission_paused": state.mission_paused,
+                    "recovery_mode": state.recovery_mode,
+                }))
+                .unwrap_or_else(|_| r#"{"ok":true}"#.into()),
             }
         }
         ("POST", "/v1/program") => {
@@ -194,6 +235,8 @@ pub fn handle_fleet_agent_request(
                 "recovery_actions_applied": state.recovery_actions_applied,
                 "mission_paused": state.mission_paused,
                 "recovery_mode": state.recovery_mode,
+                "recovery_validation": state.recovery_validation,
+                "last_recovery_evidence": state.last_recovery_evidence,
                 "has_program": state.program.is_some(),
                 "healthy": true,
             }))
@@ -259,8 +302,7 @@ pub fn handle_fleet_agent_request(
             );
             state.last_peer_messages.push(message);
             if payload.topic == "fleet_recovery" {
-                state.last_recovery_commands.push(payload.step.clone());
-                apply_recovery_action(state, &payload.step);
+                crate::recovery_agent::handle_fleet_recovery_command(state, &payload.step);
             }
             HttpResponse {
                 status: 200,
