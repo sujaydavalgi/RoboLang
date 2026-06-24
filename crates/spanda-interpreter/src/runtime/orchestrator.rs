@@ -390,6 +390,10 @@ pub struct Interpreter<B: RobotBackend> {
     learned_anomaly_ema: std::collections::HashMap<String, f64>,
     kill_switch_defs: HashMap<String, spanda_ast::foundations::KillSwitchDecl>,
     program_swarms: Vec<spanda_ast::robotics_decl::SwarmDecl>,
+    pending_recovery_approvals: std::collections::HashSet<String>,
+    granted_recovery_approvals: std::collections::HashSet<String>,
+    recovery_knowledge_path: std::path::PathBuf,
+    recovery_speed_cap: Option<f64>,
 }
 
 impl<B: RobotBackend> Interpreter<B> {
@@ -503,6 +507,10 @@ impl<B: RobotBackend> Interpreter<B> {
             learned_anomaly_ema: std::collections::HashMap::new(),
             kill_switch_defs: HashMap::new(),
             program_swarms: Vec::new(),
+            pending_recovery_approvals: std::collections::HashSet::new(),
+            granted_recovery_approvals: std::collections::HashSet::new(),
+            recovery_knowledge_path: spanda_assurance::default_knowledge_store_path(),
+            recovery_speed_cap: None,
         }
     }
 
@@ -1535,6 +1543,8 @@ mod runtime_kill_switch;
 mod runtime_navigation;
 #[path = "runtime_program.rs"]
 mod runtime_program;
+#[path = "runtime_recovery.rs"]
+mod runtime_recovery;
 #[path = "runtime_reliability.rs"]
 mod runtime_reliability;
 #[path = "runtime_robot.rs"]

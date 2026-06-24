@@ -295,6 +295,26 @@ impl SafetyMonitor {
         self.emergency_stop = active;
     }
 
+    pub fn apply_speed_cap(&mut self, cap_mps: f64) {
+        // Lower the configured max speed cap for degraded recovery.
+        //
+        // Parameters:
+        // - `self` — method receiver
+        // - `cap_mps` — maximum linear speed in m/s
+        //
+        // Returns:
+        // Nothing.
+        //
+        // Options:
+        // None.
+        //
+        // Example:
+        // monitor.apply_speed_cap(0.5);
+
+        // Keep the lower of the current cap and the recovery limit.
+        self.config.max_speed = self.config.max_speed.min(cap_mps);
+    }
+
     pub fn reset(&mut self) {
         // Reset the value.
         //

@@ -274,6 +274,9 @@ impl<B: RobotBackend> Interpreter<B> {
             ));
             for action in actions {
                 self.log(format!("anomaly: action {action}"));
+                if let Err(err) = self.dispatch_recovery_action(&action) {
+                    self.log(format!("anomaly: recovery action failed: {err}"));
+                }
                 if action.contains("audit.record") {
                     self.record_debug_event(1, "audit_record", &[("event", action.clone())]);
                 }

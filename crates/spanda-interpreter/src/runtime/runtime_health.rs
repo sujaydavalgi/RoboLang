@@ -78,6 +78,7 @@ impl<B: RobotBackend> Interpreter<B> {
             return;
         }
         self.last_health_overall = Some(label.clone());
+        self.poll_recovery_approvals();
         self.log(format!(
             "health: overall {label} (monitor={})",
             self.hardware_monitor.overall_health_label()

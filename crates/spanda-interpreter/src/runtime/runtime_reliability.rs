@@ -5,6 +5,9 @@ use super::{
     runtime_velocity, Environment, Interpreter, IntoSpandaError, RobotBackend, RuntimeError,
     RuntimeValue, RUNTIME_TASK_COST_MS,
 };
+use spanda_assurance::{
+    classify_failure, execute_recovery_plan, RecoveryContext, RecoveryLevel, RecoveryPlanner,
+};
 use spanda_ast::nodes::{Expr, RobotDecl};
 use spanda_error::SpandaError;
 use spanda_runtime::reliability_runtime::{
@@ -12,9 +15,6 @@ use spanda_runtime::reliability_runtime::{
 };
 use spanda_runtime::replay::MissionTrace;
 use spanda_runtime::scheduler::SchedulerClock;
-use spanda_assurance::{
-    classify_failure, execute_recovery_plan, RecoveryContext, RecoveryLevel, RecoveryPlanner,
-};
 
 impl<B: RobotBackend> Interpreter<B> {
     /// Validate recovery through the assurance framework before executing handlers.
@@ -60,6 +60,7 @@ impl<B: RobotBackend> Interpreter<B> {
         self.modes.clear();
         self.task_heartbeats.clear();
         self.active_mode = "normal".into();
+        self.init_recovery_runtime();
 
         // Start mission trace recording when enabled in interpreter options.
         if self.options.record_trace {
@@ -537,6 +538,7 @@ impl<B: RobotBackend> Interpreter<B> {
                     );
                     return Ok(false);
                 }
+                let _ = self.execute_recovery_runtime(&error_name);
                 self.log(format!("recover: invoking handler for '{error_name}'"));
                 self.record_mission_event(
                     "recover",
@@ -584,6 +586,7 @@ impl<B: RobotBackend> Interpreter<B> {
                 );
                 return Ok(());
             }
+            let _ = self.execute_recovery_runtime(event);
             if let Some(body) = self.recovers.get(&key).cloned() {
                 self.log(format!("recover: hardware event '{event}' -> '{key}'"));
                 self.record_mission_event(
