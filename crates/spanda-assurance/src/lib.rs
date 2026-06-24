@@ -5,6 +5,7 @@
 
 pub mod analyze;
 pub mod anomaly;
+pub mod continuity;
 pub mod diagnosis;
 pub mod evidence;
 pub mod knowledge;
@@ -20,6 +21,16 @@ pub mod state;
 pub mod types;
 
 pub use analyze::{assure_program, diagnosis_report, mitigation_report, MissionAssuranceSummary};
+pub use continuity::{
+    evaluate_continuity, plan_delegation, plan_succession, plan_takeover, parse_scope,
+    parse_trigger, ContinuationDecision, ContinuationDecisionEngine, ContinuityContext,
+    ContinuityEvidence, ContinuityTrigger, ContinuityTrustLevel, DelegationReport,
+    MissionCheckpoint, MissionCheckpointManager, MissionContinuityManager, MissionContinuityReport,
+    MissionContextTransfer, MissionDelegationManager, MissionRecoveryPlanner,
+    MissionStateSnapshot, MissionStateTransfer, MissionStateTransferManager, SuccessionPlanner,
+    SuccessionReport, SuccessionScope, SuccessorCandidate, SuccessorRanking,
+    SuccessorSelectionPolicy, TakeoverCoordinator, TakeoverMode, TakeoverReport,
+};
 pub use anomaly::{learned_models, scan_anomalies, AnomalyReport};
 pub use diagnosis::{diagnose_from_trace, diagnose_program, DiagnosisReport};
 pub use evidence::{build_assurance_report, AssuranceReport};
@@ -44,8 +55,9 @@ pub use recovery::{
 };
 pub use recovery_diagnostics::collect_recovery_diagnostics;
 pub use report::{
-    format_anomaly, format_assurance, format_diagnosis, format_mission_assurance,
-    format_mitigation, format_prognostics, format_recovery, format_resilience, format_state,
+    format_anomaly, format_assurance, format_continuity, format_delegation, format_diagnosis,
+    format_mission_assurance, format_mitigation, format_prognostics, format_recovery,
+    format_resilience, format_state, format_succession, format_takeover,
 };
 pub use resilience::{check_resilience, ResilienceReport};
 pub use state::{

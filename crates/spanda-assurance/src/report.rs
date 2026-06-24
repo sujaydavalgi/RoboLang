@@ -442,3 +442,154 @@ pub fn format_recovery(report: &RecoveryReport, format: ReportFormat) -> String 
         }
     }
 }
+
+use crate::continuity::{
+    DelegationReport, MissionContinuityReport, SuccessionReport, TakeoverReport,
+};
+
+/// Format mission continuity report.
+pub fn format_continuity(report: &MissionContinuityReport, format: ReportFormat) -> String {
+    match format {
+        ReportFormat::Json => serde_json::to_string_pretty(report).unwrap_or_default(),
+        ReportFormat::Markdown => {
+            let mut out = format!(
+                "# Mission Continuity Report\n\n**Mission:** {}\n**Failed:** {}\n**Trigger:** {:?}\n\n**Can Continue:** {}\n**Decision:** {:?}\n**Takeover Mode:** {:?}\n\n",
+                report.mission,
+                report.failed_entity,
+                report.trigger,
+                report.can_continue,
+                report.decision,
+                report.takeover_mode,
+            );
+            if let Some(s) = &report.selected_successor {
+                out.push_str(&format!("**Successor:** {s}\n\n"));
+            }
+            if let Some(cp) = &report.checkpoint {
+                out.push_str(&format!(
+                    "## Checkpoint\n\n**{}** at {:.0}%\n\n",
+                    cp.name, cp.progress_percent
+                ));
+            }
+            out
+        }
+        ReportFormat::Html => format!(
+            "<!DOCTYPE html><html><body><h1>Mission Continuity Report</h1><p>Mission: {}</p><p>Can Continue: {}</p></body></html>",
+            html_escape(&report.mission),
+            report.can_continue
+        ),
+        ReportFormat::Text => {
+            let mut out = format!(
+                "Mission Continuity Report\nMission: {}\nFailed: {:?}\nCan Continue: {}\nDecision: {:?}\nMode: {:?}\n",
+                report.mission, report.trigger, report.can_continue, report.decision, report.takeover_mode
+            );
+            if let Some(s) = &report.selected_successor {
+                out.push_str(&format!("Successor: {s}\n"));
+            }
+            if let Some(cp) = &report.checkpoint {
+                out.push_str(&format!("Checkpoint: {} ({:.0}%)\n", cp.name, cp.progress_percent));
+            }
+            out
+        }
+    }
+}
+
+/// Format takeover report.
+pub fn format_takeover(report: &TakeoverReport, format: ReportFormat) -> String {
+    match format {
+        ReportFormat::Json => serde_json::to_string_pretty(report).unwrap_or_default(),
+        ReportFormat::Markdown => format!(
+            "# Takeover Report\n\n**Mission:** {}\n**Failed:** {}\n**Successor:** {}\n**Mode:** {:?}\n**Decision:** {:?}\n**Succeeded:** {}\n\n## Diagnosis\n\n{}\n",
+            report.mission,
+            report.failed_entity,
+            report.successor,
+            report.mode,
+            report.decision,
+            report.succeeded,
+            report.diagnosis
+        ),
+        ReportFormat::Html => format!(
+            "<!DOCTYPE html><html><body><h1>Takeover Report</h1><p>Succeeded: {}</p></body></html>",
+            report.succeeded
+        ),
+        ReportFormat::Text => format!(
+            "Takeover Report\nMission: {}\nFailed: {}\nSuccessor: {}\nMode: {:?}\nDecision: {:?}\nSucceeded: {}\n\nDiagnosis:\n{}\n",
+            report.mission,
+            report.failed_entity,
+            report.successor,
+            report.mode,
+            report.decision,
+            report.succeeded,
+            report.diagnosis
+        ),
+    }
+}
+
+/// Format delegation report.
+pub fn format_delegation(report: &DelegationReport, format: ReportFormat) -> String {
+    match format {
+        ReportFormat::Json => serde_json::to_string_pretty(report).unwrap_or_default(),
+        ReportFormat::Markdown => {
+            let mut out = format!(
+                "# Delegation Report\n\n**Mission:** {}\n**From:** {}\n**To:** {}\n**Passed:** {}\n\n",
+                report.mission, report.from_entity, report.to_entity, report.passed
+            );
+            for task in &report.task_redistribution {
+                out.push_str(&format!("- {task}\n"));
+            }
+            out
+        }
+        ReportFormat::Html => format!(
+            "<!DOCTYPE html><html><body><h1>Delegation Report</h1><p>Passed: {}</p></body></html>",
+            report.passed
+        ),
+        ReportFormat::Text => format!(
+            "Delegation Report\nMission: {}\nFrom: {}\nTo: {}\nPassed: {}\n",
+            report.mission, report.from_entity, report.to_entity, report.passed
+        ),
+    }
+}
+
+/// Format succession report.
+pub fn format_succession(report: &SuccessionReport, format: ReportFormat) -> String {
+    match format {
+        ReportFormat::Json => serde_json::to_string_pretty(report).unwrap_or_default(),
+        ReportFormat::Markdown => {
+            let mut out = format!(
+                "# Succession Report\n\n**Mission:** {}\n**Failed:** {}\n**Selected:** {}\n\n## Rankings\n\n",
+                report.mission,
+                report.failed_entity,
+                report.selected.as_deref().unwrap_or("none")
+            );
+            for r in &report.rankings {
+                out.push_str(&format!(
+                    "{}. {} — score {:.1} (capability {:.0}%, readiness {:.0})\n",
+                    r.rank,
+                    r.candidate.entity,
+                    r.composite_score,
+                    r.candidate.capability_match_percent,
+                    r.candidate.readiness_score
+                ));
+            }
+            out
+        }
+        ReportFormat::Html => format!(
+            "<!DOCTYPE html><html><body><h1>Succession Report</h1><p>Selected: {}</p></body></html>",
+            report.selected.as_deref().unwrap_or("none")
+        ),
+        ReportFormat::Text => {
+            let mut out = format!(
+                "Succession Report\nMission: {}\nFailed: {}\nSelected: {}\n\nRankings:\n",
+                report.mission,
+                report.failed_entity,
+                report.selected.as_deref().unwrap_or("none")
+            );
+            for r in &report.rankings {
+                out.push_str(&format!(
+                    "  {}. {} (score {:.1})\n",
+                    r.rank, r.candidate.entity, r.composite_score
+                ));
+            }
+            out
+        }
+    }
+}
