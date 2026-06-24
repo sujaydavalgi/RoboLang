@@ -625,59 +625,6 @@ export async function verifyHardware(
 
   //     const result = verifyHardware(source, options);
 
-  // Description:
-  //     VerifyHardware.
-  //
-  // Inputs:
-  //     source: string
-  //         Caller-supplied source.
-
-  //     options: VerifyHardwareOptions = {
-  }
-  //         Caller-supplied options.
-  //
-  // Outputs:
-  //     result: Promise<import("./rust-bridge.js").VerifyResult>
-  //         Return value from `verifyHardware`.
-  //
-  // Example:
-  //     const result = verifyHardware(source, options);
-  // Description:
-  //     VerifyHardware.
-  //
-  // Inputs:
-  //     source: string
-  //         Caller-supplied source.
-
-  //     options: VerifyHardwareOptions = {
-  }
-  //         Caller-supplied options.
-  //
-  // Outputs:
-  //     result: Promise<import("./rust-bridge.js").VerifyResult>
-  //         Return value from `verifyHardware`.
-  //
-  // Example:
-  //     const result = verifyHardware(source, options);
-  // Description:
-  //     VerifyHardware.
-  //
-  // Inputs:
-  //     source: string
-  //         Caller-supplied source.
-
-  //     options: VerifyHardwareOptions = {
-  }
-  //         Caller-supplied options.
-  //
-  // Outputs:
-  //     result: Promise<import("./rust-bridge.js").VerifyResult>
-  //         Return value from `verifyHardware`.
-  //
-  // Example:
-  //     const result = verifyHardware(source, options);
-
-  // const result = verifyHardware(source, options);
   const { verifyViaCli, isCliAvailable } = await import("./rust-bridge.js");
 
   // continue when isCliAvailable is falsy.

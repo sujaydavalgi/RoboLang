@@ -281,32 +281,12 @@ export class SafetyMonitor {
       const dy = y - zone.y;
       return Math.sqrt(dx * dx + dy * dy) <= zone.radius;
     }
-    // continue when shape equals height !== unde
-  // Description:
-  //     CreateSafetyConfigFromRobot.
-  //
-  // Inputs:
-  //     maxSpeed: number
-  //         Caller-supplied maxSpeed.
-
-  //     stopIfRules: Array<(env: Environment) => boolean>,
-  zones: SafetyZoneRuntime[] = [],
-  zoneSpeedCaps: Map<string
-  //         Caller-supplied stopIfRules.
-  //
-  // Outputs:
-  //     result: SafetyConfig
-  //         Return value from `createSafetyConfigFromRobot`.
-  //
-  // Example:
-
-// const result = createSafetyConfigFromRobot(maxSpeed, stopIfRules);
-fined.
+    // continue when shape equals height !== undefined.
     if (zone.shape === "rect" && zone.width !== undefined && zone.height !== undefined) {
       return x >= zone.x && x <= zone.x + zone.width && y >= zone.y && y <= zone.y + zone.height;
     }
     return false;
-}
+  }
 }
 
 export function createSafetyConfigFromRobot(
@@ -315,128 +295,10 @@ export function createSafetyConfigFromRobot(
   zones: SafetyZoneRuntime[] = [],
   zoneSpeedCaps: Map<string, number> = new Map(),
 ): SafetyConfig {
-
-  // Description:
-
-  //     CreateSafetyConfigFromRobot.
-
-  //
-
-  // Inputs:
-
-  //     maxSpeed: number
-
-  //         Caller-supplied maxSpeed.
-
-  //     stopIfRules: Array<(env: Environment) => boolean>, zones: SafetyZoneRuntime[] = [], zoneSpeedCaps: Map<string
-
-  //         Caller-supplied stopIfRules.
-
-  //
-
-  // Outputs:
-
-  //     result: SafetyConfig
-
-  //         Return value from `createSafetyConfigFromRobot`.
-
-  //
-
-  // Example:
-
-  //     const result = createSafetyConfigFromRobot(maxSpeed, stopIfRules);
-
-  // Description:
-  //     CreateSafetyConfigFromRobot.
-  //
-  // Inputs:
-  //     maxSpeed: number
-  //         Caller-supplied maxSpeed.
-
-  //     stopIfRules: Array<(env: Environment) => boolean>,
-  zones: SafetyZoneRuntime[] = [],
-  zoneSpeedCaps: Map<string
-  //         Caller-supplied stopIfRules.
-  //
-  // Outputs:
-  //     result: SafetyConfig
-  //         Return value from `createSafetyConfigFromRobot`.
-  //
-  // Example:
-  //     const result = createSafetyConfigFromRobot(maxSpeed, stopIfRules);
-  // Description:
-  //     CreateSafetyConfigFromRobot.
-  //
-  // Inputs:
-  //     maxSpeed: number
-  //         Caller-supplied maxSpeed.
-
-  //     stopIfRules: Array<(env: Environment) => boolean>,
-  zo
-  // Description:
-  //     ApplyEmergencyStop.
-  //
-  // Inputs:
-  //     state: RobotState
-  //         Caller-supplied state.
-  //
-  // Outputs:
-  //     result: RobotState
-  //         Return value from `applyEmergencyStop`.
-  //
-  // Example:
-
-// const result = applyEmergencyStop(state);
-nes: SafetyZoneRuntime[] = [],
-  zoneSpeedCaps: Map<string
-  //         Caller-supplied stopIfRules.
-  //
-  // Outputs:
-  //     result: SafetyConfig
-  //         Return value from `createSafetyConfigFromRobot`.
-  //
-  // Example:
-
-  //     const result = createSafetyConfigFromRobot(maxSpeed, stopIfRules);
-
   return { maxSpeed, stopIfRules, zones, zoneSpeedCaps };
 }
 
 export function applyEmergencyStop(state: RobotState): RobotState {
-  // Description:
-  //     ApplyEmergencyStop.
-  //
-  // Inputs:
-  //     state: RobotState
-  //         Caller-supplied state.
-  //
-  // Outputs:
-  //     result: RobotState
-  //      
-  // Description:
-  //     InterpolatePoses.
-  //
-  // Inputs:
-  //     from: { x: number; y: number; theta: number; z?: number }
-  //         Caller-supplied from.
-  //     to: { x: number; y: number; theta: number; z?: number }
-  //         Caller-supplied to.
-  //     steps: number
-  //         Caller-supplied steps.
-  //
-  // Outputs:
-  //     result: Array<
-  //         Return value from `interpolatePoses`.
-  //
-  // Example:
-
-   // const result = interpolatePoses(from, to, steps);
-   Return value from `applyEmergencyStop`.
-  //
-  // Example:
-  //     const result = applyEmergencyStop(state);
-
-  // const result = applyEmergencyStop(state);
   return {
     ...state,
     emergencyStop: true,
@@ -448,27 +310,7 @@ export function interpolatePoses(
   from: { x: number; y: number; theta: number; z?: number },
   to: { x: number; y: number; theta: number; z?: number },
   steps: number,
-): Array<{
-  // Description:
-  //     InterpolatePoses.
-  //
-  // Inputs:
-  //     from: { x: number; y: number; theta: number; z?: number }
-  //         Caller-supplied from.
-  //     to: { x: number; y: number; theta: number; z?: number }
-  //         Caller-supplied to.
-  //     steps: number
-  //         Caller-supplied steps.
-  //
-  // Outputs:
-  //     result: Array<
-  //         Return value from `interpolatePoses`.
-  //
-  // Example:
-  //     const result = interpolatePoses(from, to, steps);
-
- // const result = interpolatePoses(from, to, steps);
- x: number; y: number; theta: number; z: number }> {
+): Array<{ x: number; y: number; theta: number; z: number }> {
   const count = Math.max(2, Math.floor(steps));
   const waypoints: Array<{ x: number; y: number; theta: number; z: number }> = [];
   for (let i = 0; i < count; i++) {
