@@ -63,6 +63,8 @@ Spanda is the intelligent pulse that transforms perception into action.
 
 **Spanda** is a Sanskrit term meaning *the divine pulse* — the creative vibration of consciousness and energy that manifests as expansion and contraction, the first stir of awareness that creates and sustains the universe.
 
+*Pronounced **SPUN-duh** (/ˈspʌndə/).*
+
 ---
 
 ## What is Spanda?
