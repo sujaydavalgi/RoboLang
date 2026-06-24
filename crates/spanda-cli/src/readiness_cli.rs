@@ -3,10 +3,10 @@
 use spanda_lexer::tokenize;
 use spanda_parser::parse;
 use spanda_readiness::{
-    analyze_failure, audit_program, build_runtime_context, diagnose_trace,
+    analyze_failure, audit_program, build_runtime_context,
     evaluate_fleet_readiness, evaluate_readiness_with_runtime, evaluate_twin_readiness,
     format_audit, format_failure_analysis, format_fleet_readiness, format_mission_verification,
-    format_readiness, format_root_cause, format_safety_report, generate_safety_report,
+    format_readiness, format_safety_report, generate_safety_report,
     readiness_options_from_flags, verify_approvals, verify_fleet, verify_mission, ReadinessOptions,
     ReportFormat,
 };
@@ -243,28 +243,6 @@ pub fn cmd_fleet_readiness(args: &[String]) {
         println!("{}", serde_json::to_string_pretty(&report).unwrap());
     } else {
         print!("{}", format_fleet_readiness(&report));
-    }
-}
-
-/// `spanda diagnose <trace>`
-pub fn cmd_diagnose(args: &[String]) {
-    let json = args.iter().any(|a| a == "--json");
-    let file = args
-        .iter()
-        .find(|a| !a.starts_with('-'))
-        .cloned()
-        .unwrap_or_else(|| {
-            eprintln!("Missing trace path");
-            process::exit(1);
-        });
-    let report = diagnose_trace(Path::new(&file)).unwrap_or_else(|e| {
-        eprintln!("{e}");
-        process::exit(1);
-    });
-    if json {
-        println!("{}", serde_json::to_string_pretty(&report).unwrap());
-    } else {
-        print!("{}", format_root_cause(&report));
     }
 }
 

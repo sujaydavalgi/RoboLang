@@ -1,5 +1,6 @@
 //! main support for Spanda.
 //!
+mod assurance_cli;
 mod certify_cli;
 mod demo_cli;
 mod deploy_ota;
@@ -1422,6 +1423,36 @@ fn main() {
         return;
     }
 
+    if command == "assure" {
+        assurance_cli::cmd_assure(&args[2..]);
+        let _ = io::stdout().flush();
+        return;
+    }
+
+    if command == "anomaly" {
+        assurance_cli::anomaly_dispatch(&args[2..]);
+        let _ = io::stdout().flush();
+        return;
+    }
+
+    if command == "prognostics" {
+        assurance_cli::cmd_prognostics(&args[2..]);
+        let _ = io::stdout().flush();
+        return;
+    }
+
+    if command == "mission" {
+        assurance_cli::mission_dispatch(&args[2..]);
+        let _ = io::stdout().flush();
+        return;
+    }
+
+    if command == "resilience" {
+        assurance_cli::resilience_dispatch(&args[2..]);
+        let _ = io::stdout().flush();
+        return;
+    }
+
     if command == "readiness" {
         readiness_cli::readiness_dispatch(&args[2..]);
         let _ = io::stdout().flush();
@@ -1441,7 +1472,7 @@ fn main() {
     }
 
     if command == "diagnose" {
-        readiness_cli::cmd_diagnose(&args[2..]);
+        assurance_cli::cmd_diagnose_assurance(&args[2..]);
         let _ = io::stdout().flush();
         return;
     }
