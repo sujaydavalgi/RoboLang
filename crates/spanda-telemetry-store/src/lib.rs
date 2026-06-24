@@ -17,8 +17,8 @@ pub mod store;
 
 pub use error::{TelemetryStoreError, TelemetryStoreResult};
 pub use memory::{
-    memory_append_json_line, memory_clear, memory_render_otlp_json, memory_render_prometheus,
-    memory_stats, MemoryTelemetryStore,
+    memory_append_json_line, memory_append_runtime_metrics, memory_clear, memory_render_otlp_json,
+    memory_render_prometheus, memory_stats, MemoryTelemetryStore,
 };
 pub use record::{HeartbeatIndex, TelemetryEvent};
 pub use otlp::{render_otlp_from_events, render_otlp_json};

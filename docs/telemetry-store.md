@@ -170,6 +170,6 @@ TypeScript mirror: `src/telemetry-store.ts` records sensor reads, topic publishe
 
 ### WASM (browser)
 
-`spanda-wasm` exposes an in-memory telemetry buffer (no filesystem) via `wasm_telemetry_clear`, `wasm_telemetry_append` (JSONL line), `wasm_telemetry_stats`, `wasm_telemetry_prometheus`, and `wasm_telemetry_otlp`. TypeScript wrappers live in `packages/web/src/spanda-wasm.ts` (`telemetryClear`, `telemetryAppend`, `telemetryStats`, `telemetryPrometheus`, `telemetryOtlp`). The WASM crate depends on `spanda-telemetry-store` with `default-features = false` (no SQLite/rusqlite).
+`wasm_telemetry_clear`, `wasm_telemetry_append` (JSONL line), `wasm_telemetry_stats`, `wasm_telemetry_prometheus`, and `wasm_telemetry_otlp`. Successful `wasm_run` calls also append a `runtime_metrics` snapshot to the in-memory buffer. TypeScript wrappers live in `packages/web/src/spanda-wasm.ts` (`telemetryClear`, `telemetryAppend`, `telemetryStats`, `telemetryPrometheus`, `telemetryOtlp`). The WASM crate depends on `spanda-telemetry-store` with `default-features = false` (no SQLite/rusqlite).
 
 See also [iot.md](./iot.md), [watchdogs.md](./watchdogs.md), [replay.md](./replay.md).

@@ -4,7 +4,7 @@ use crate::error::{TelemetryStoreError, TelemetryStoreResult};
 use crate::otlp::render_otlp_from_events;
 use crate::prometheus::render_prometheus_from_events;
 use crate::record::{HeartbeatIndex, TelemetryEvent};
-use crate::store::{stats_from_events, TelemetryStats};
+use crate::store::{stats_from_events, wall_timestamp_ms, TelemetryStats};
 use std::sync::{Mutex, OnceLock};
 
 static MEMORY_STORE: OnceLock<Mutex<MemoryTelemetryStore>> = OnceLock::new();
@@ -90,6 +90,22 @@ pub fn memory_append_json_line(line: &str) -> TelemetryStoreResult<()> {
         .lock()
         .map_err(|_| TelemetryStoreError::LockPoisoned)?
         .append_json_line(line)
+}
+
+/// Append an end-of-run runtime metrics snapshot to the global in-memory buffer.
+pub fn memory_append_runtime_metrics(
+    session_id: impl Into<String>,
+    metrics: serde_json::Value,
+    timestamp_ms: Option<f64>,
+) -> TelemetryStoreResult<()> {
+    MemoryTelemetryStore::global()
+        .lock()
+        .map_err(|_| TelemetryStoreError::LockPoisoned)?
+        .append(TelemetryEvent::RuntimeMetrics {
+            session_id: session_id.into(),
+            metrics,
+            timestamp_ms: timestamp_ms.unwrap_or_else(wall_timestamp_ms),
+        })
 }
 
 /// Return aggregate stats for the global in-memory buffer.

@@ -6,8 +6,8 @@ use spanda_error::Diagnostic;
 use spanda_format::format_source;
 use spanda_hardware::{CompatItem, CompatSeverity, VerifyOptions};
 use spanda_telemetry_store::{
-    memory_append_json_line, memory_clear, memory_render_otlp_json, memory_render_prometheus,
-    memory_stats,
+    memory_append_json_line, memory_append_runtime_metrics, memory_clear, memory_render_otlp_json,
+    memory_render_prometheus, memory_stats, wall_timestamp_ms,
 };
 use wasm_bindgen::prelude::*;
 
@@ -101,10 +101,19 @@ pub fn wasm_run(source: &str, max_loop_iterations: u32) -> JsValue {
             ..Default::default()
         },
     ) {
-        Ok(result) => RunResponse {
-            ok: true,
-            result: Some(result),
-            diagnostics: None,
+        Ok(result) => {
+            if let Ok(metrics) = serde_json::to_value(&result.metrics) {
+                let _ = memory_append_runtime_metrics(
+                    format!("wasm-{}", wall_timestamp_ms()),
+                    metrics,
+                    None,
+                );
+            }
+            RunResponse {
+                ok: true,
+                result: Some(result),
+                diagnostics: None,
+            }
         },
         Err(e) => RunResponse {
             ok: false,
