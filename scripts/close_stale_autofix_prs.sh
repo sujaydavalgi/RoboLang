@@ -60,7 +60,7 @@ if ! gh auth status >/dev/null 2>&1; then
   exit 2
 fi
 
-pr_data="$(mktemp "${TMPDIR:-/tmp}/spanda-autofix-prs.XXXXXX")"
+pr_data="$(mktemp "${TMPDIR:-/tmp}/close-stale-autofix-prs.XXXXXX")"
 trap 'rm -f "$pr_data"' EXIT
 
 gh pr list \
@@ -92,9 +92,11 @@ if [[ "$APPLY" -eq 0 ]]; then
   exit 0
 fi
 
+closed_count=0
 while IFS=$'\t' read -r number branch title; do
   [[ -z "$number" ]] && continue
   gh pr close "$number" --comment "$COMMENT"
+  closed_count=$((closed_count + 1))
 done <"$pr_data"
 
 for branch in "${branches[@]}"; do
@@ -102,5 +104,4 @@ for branch in "${branches[@]}"; do
 done
 
 git fetch --prune origin
-pr_count="$(wc -l <"$pr_data" | tr -d ' ')"
-echo "Done. Closed ${pr_count} PR(s) and deleted ${#branches[@]} remote branch(es)."
+echo "Done. Closed ${closed_count} PR(s) and deleted ${#branches[@]} remote branch(es)."
