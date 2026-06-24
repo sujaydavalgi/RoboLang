@@ -35,6 +35,8 @@ pub struct SwarmCoordinationReport {
     pub remote_relayed: u32,
     #[serde(default)]
     pub remote_failed: u32,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub continuity_handoff: Option<crate::swarm_continuity::SwarmContinuityHandoff>,
 }
 
 /// Full swarm coordination result for a program.
@@ -410,6 +412,7 @@ fn coordinate_swarm_group(
             round_robin_cursor: next_cursor,
             remote_relayed: 0,
             remote_failed: 0,
+            continuity_handoff: None,
         },
         next_cursor,
     )
@@ -526,6 +529,7 @@ pub fn coordinate_swarms(
                 round_robin_cursor: 0,
                 remote_relayed: 0,
                 remote_failed: 0,
+                continuity_handoff: None,
             });
             continue;
         }

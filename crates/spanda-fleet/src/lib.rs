@@ -10,6 +10,7 @@ pub mod recovery_mesh;
 pub mod telemetry_mesh;
 pub mod remote;
 pub mod swarm_coordinator;
+pub mod swarm_continuity;
 mod types;
 
 pub use agent::*;
@@ -20,4 +21,5 @@ pub use recovery_mesh::*;
 pub use telemetry_mesh::*;
 pub use remote::*;
 pub use swarm_coordinator::*;
+pub use swarm_continuity::*;
 pub use types::PeerDelivery;

@@ -3,9 +3,10 @@
 use spanda_ast::nodes::Program;
 use spanda_driver::compile;
 use spanda_fleet::{
-    coordinate_swarms, coordinate_swarms_mesh, default_swarm_state_path, load_swarm_state,
-    save_swarm_state,
+    attach_swarm_continuity_handoff, continuity_request_from_handoff, coordinate_swarms,
+    coordinate_swarms_mesh, default_swarm_state_path, load_swarm_state, save_swarm_state,
 };
+use spanda_deploy_http::relay_continuity_via_mesh;
 use std::env;
 use std::fs;
 use std::io::{self, Write};
@@ -127,7 +128,7 @@ pub fn swarm_usage_lines() -> &'static str {
 
     //     let result = spanda_cli::swarm_cli::swarm_usage_lines();
 
-    "           spanda swarm coordinate [--json] [--mesh-url <http(s)://host:port>] [--mesh-token <t>] <file.sd>"
+    "           spanda swarm coordinate [--json] [--mesh-url <http(s)://host:port>] [--mesh-token <t>] [--failed <robot>] [--progress <pct>] <file.sd>"
 }
 
 fn usage() {
@@ -165,6 +166,8 @@ fn cmd_coordinate(args: &[String]) {
     let mut json = false;
     let mut mesh_url: Option<String> = None;
     let mut mesh_token: Option<String> = None;
+    let mut failed_member: Option<String> = None;
+    let mut progress_percent = 0.0f64;
     let mut file: Option<String> = None;
     let mut i = 0;
     while i < args.len() {
@@ -176,6 +179,14 @@ fn cmd_coordinate(args: &[String]) {
             }
             "--mesh-token" if i + 1 < args.len() => {
                 mesh_token = Some(args[i + 1].clone());
+                i += 1;
+            }
+            "--failed" if i + 1 < args.len() => {
+                failed_member = Some(args[i + 1].clone());
+                i += 1;
+            }
+            "--progress" if i + 1 < args.len() => {
+                progress_percent = args[i + 1].parse().unwrap_or(0.0);
                 i += 1;
             }
             other if !other.starts_with('-') && file.is_none() => file = Some(other.to_string()),
@@ -194,11 +205,40 @@ fn cmd_coordinate(args: &[String]) {
     let program = parse_program(&source, &file);
     let path = swarm_state_path();
     let mut state = load_swarm_state(&path);
-    let result = if let Some(ref url) = mesh_url {
+    let mut result = if let Some(ref url) = mesh_url {
         coordinate_swarms_mesh(&program, &file, &mut state, url, mesh_token.as_deref())
     } else {
         coordinate_swarms(&program, &file, &mut state)
     };
+    if let Some(ref failed) = failed_member {
+        attach_swarm_continuity_handoff(
+            &program,
+            &mut result,
+            failed,
+            progress_percent,
+            None,
+        );
+        if let Some(ref url) = mesh_url {
+            for swarm in &mut result.swarms {
+                if let Some(ref mut handoff) = swarm.continuity_handoff {
+                    let members: Vec<String> = swarm
+                        .members
+                        .iter()
+                        .map(|m| m.robot_name.clone())
+                        .filter(|name| !name.is_empty())
+                        .collect();
+                    let request =
+                        continuity_request_from_handoff(handoff, &swarm.fleet_name, &members);
+                    if let Ok(resp) =
+                        relay_continuity_via_mesh(url, &request, mesh_token.as_deref())
+                    {
+                        handoff.relayed = resp.relayed;
+                        handoff.failed = resp.failed;
+                    }
+                }
+            }
+        }
+    }
     if let Err(err) = save_swarm_state(&path, &state) {
         eprintln!("Warning: could not save swarm state: {err}");
     }
@@ -233,6 +273,17 @@ fn cmd_coordinate(args: &[String]) {
                 println!(
                     "    mesh: relayed={} failed={}",
                     swarm.remote_relayed, swarm.remote_failed
+                );
+            }
+            if let Some(handoff) = &swarm.continuity_handoff {
+                println!(
+                    "    continuity: {} -> {} ({}, {:.0}%) relayed={} failed={}",
+                    handoff.failed_member,
+                    handoff.successor,
+                    handoff.mode,
+                    handoff.progress_percent,
+                    handoff.relayed,
+                    handoff.failed
                 );
             }
         }
