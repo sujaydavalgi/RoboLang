@@ -91,6 +91,8 @@ Platform overview: [platform-overview.md](./platform-overview.md)
 
 | Area | Description |
 |------|-------------|
+| **Platform maturity (Phase A)** | `spanda graph`, `explain`, `package trust`, deployment gates — see [platform-maturity-roadmap.md](./platform-maturity-roadmap.md) |
+| **Platform maturity (Phase B–D)** | Drift, threat model, policy engine, chaos, tamper detection, scorecard, compliance profiles |
 | **LLVM backend (production primary)** | Optimized native binaries replacing interpreter as default deploy path |
 | **Self-hosting compiler (full)** | Complete Spanda-authored compiler pipeline |
 | **ROS2 production adapter** | First-class, zero-config ROS2 deployment |

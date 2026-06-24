@@ -2,7 +2,7 @@
 
 Strategic analysis for Spanda as an **autonomous systems platform** with a safety-first language at its core. This document defines positioning, priorities, and release scope. It complements [vision.md](./vision.md) (aspiration), [platform-overview.md](./platform-overview.md) (architecture), and [feature-status.md](./feature-status.md) (implementation truth).
 
-**Last updated:** 2026-06-22 (platform positioning; v0.4.0 deploy path; Phases 27–35 verification & DX complete)
+**Last updated:** 2026-06-24 (platform maturity roadmap; v0.4.0 deploy path; Phases 27–35 verification & DX complete)
 
 ---
 
@@ -20,6 +20,10 @@ Spanda should not compete as a general-purpose language, Python replacement, Rus
 **Short form:** *The Autonomous Systems Platform.*
 
 **Sharpened tagline:** *Build. Verify. Simulate. Deploy. Operate. — for autonomous systems.*
+
+### Platform maturity focus (2026–2027)
+
+Beyond core language features, Spanda prioritizes **adoption, trust, and operations** — see [platform-maturity-roadmap.md](./platform-maturity-roadmap.md). Sixteen planned areas (dependency graphs, deployment gates, explainability, drift, tamper detection, scorecards, …) compose existing engines (`spanda-readiness`, `spanda-assurance`, `spanda-security`) rather than replacing them. Phase A (v0.5+): graph, explain, package trust, deployment gates.
 
 ### Philosophy
 
@@ -339,6 +343,7 @@ Not a general-purpose language. Not a ROS fork. The deploy-verified, safety-gate
 - [vision.md](./vision.md) — aspirational positioning
 - [feature-status.md](./feature-status.md) — honest implementation snapshot
 - [roadmap.md](./roadmap.md) — engineering milestones
+- [platform-maturity-roadmap.md](./platform-maturity-roadmap.md) — adoption, trust, operations expansion
 - [hardware-compatibility.md](./hardware-compatibility.md) — verify feature deep dive
 - [ffi-and-ecosystem.md](./ffi-and-ecosystem.md) — Python/C++/ROS2 interop
 - [future-blockchain-support.md](./future-blockchain-support.md) — optional, deferred

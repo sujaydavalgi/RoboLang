@@ -22,6 +22,45 @@ Platform overview: [platform-overview.md](./platform-overview.md) · Feature tru
 | [Packages](#packages) | 37 official registry packages, publish mirror | Curated remote registry growth |
 | [Tooling](#tooling) | CLI, demos, CI golden paths | VS Code Marketplace, LSP polish |
 | [Mission assurance](#mission-assurance) | Lean-core analysis + CLI | Package-backed ML anomaly backends |
+| [Platform maturity](#platform-maturity) | Design specs + phased plan | P0: graph, explain, gates, package trust |
+
+---
+
+## Platform maturity
+
+**Adoption, trust, and operations** — not new unrelated features. Every item strengthens **Build · Verify · Simulate · Deploy · Operate · Recover**.
+
+Full analysis: [platform-maturity-roadmap.md](./platform-maturity-roadmap.md)
+
+| # | Area | Phase | Priority | Status |
+|---|------|-------|----------|--------|
+| 1 | AI-assisted development (`generate`, `explain`, `suggest`) | Build, Operate | P0.3 / P3.3 | **Future** |
+| 2 | Dependency graph visualization | Build, Operate | P0.1 | **Planned** |
+| 3 | Threat modeling | Verify, Deploy | P1.2 | **Planned** |
+| 4 | Configuration drift detection | Deploy, Operate | P1.1 | **Planned** |
+| 5 | Policy engine | Verify, Operate | P1.5 | **Planned** |
+| 6 | Compliance profiles | Verify, Deploy | P2.4 | **Future** |
+| 7 | Explainability reports | Operate, Recover | P0.3 / P3.2 | **Planned** |
+| 8 | Chaos engineering | Simulate, Recover | P2.1 | **Planned** |
+| 9 | Mission resource estimation | Simulate, Deploy | P2.3 | **Planned** |
+| 10 | Readiness trend analysis | Operate | P2.2 | **Planned** |
+| 11 | Package trust framework | Verify, Build | P0.4 | **Planned** |
+| 12 | Architecture decision records | Build | P2.5 | **Planned** |
+| 13 | Mission differencing | Build, Verify | P1.3 | **Planned** |
+| 14 | Deployment gates | Deploy | P0.2 | **Planned** |
+| 15 | Autonomous systems scorecard | Operate | P1.4 | **Planned** |
+| 16 | Hack / tamper detection | Verify, Operate, Recover | P3.1 | **Future** |
+
+### Phased delivery
+
+| Phase | Release | Theme | Key deliverables |
+|-------|---------|-------|------------------|
+| A | v0.5+ (Q3–Q4 2026) | Understand & trust | `spanda graph`, `explain`, `package trust`, deployment gates |
+| B | v0.6 (Q1 2027) | Operate & compare | drift, threat model, mission diff, scorecard, policy (verify) |
+| C | v0.7 (Q2 2027) | Resilience & planning | chaos, readiness trends, estimate, compliance profiles, ADR |
+| D | v1.0 (2027) | Full trust platform | tamper/integrity, explainability traces, AI generate (guardrailed) |
+
+Topic guides: [dependency-graphs.md](./dependency-graphs.md) · [deployment-gates.md](./deployment-gates.md) · [tamper-detection.md](./tamper-detection.md) · [security-assurance.md](./security-assurance.md)
 
 ---
 
@@ -264,6 +303,7 @@ CLI, LSP, debugger, docs site, and contributor ergonomics.
 
 ## Related
 
+- [platform-maturity-roadmap.md](./platform-maturity-roadmap.md) — adoption, trust, operations expansion (16 areas)
 - [platform-overview.md](./platform-overview.md)
 - [feature-status.md](./feature-status.md)
 - [product-strategy.md](./product-strategy.md)

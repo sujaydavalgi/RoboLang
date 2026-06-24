@@ -116,6 +116,24 @@
 | [spanda-type-system.md](./spanda-type-system.md) | Type system: units, generics, AI/safety types |
 | [man/](./man/) | Man-page style CLI reference |
 | [roadmap.md](./roadmap.md) | Roadmap and self-hosting plan |
+| [platform-maturity-roadmap.md](./platform-maturity-roadmap.md) | **Platform maturity expansion — adoption, trust, operations (16 areas)** |
+| [dependency-graphs.md](./dependency-graphs.md) | **Dependency graph visualization (`spanda graph`)** |
+| [deployment-gates.md](./deployment-gates.md) | **Deployment gates — block unsafe rollout** |
+| [explainability.md](./explainability.md) | **`spanda explain` — code, missions, failures, decisions** |
+| [drift-detection.md](./drift-detection.md) | **Configuration drift — expected vs actual** |
+| [threat-modeling.md](./threat-modeling.md) | **Pre-deploy threat modeling** |
+| [policy-engine.md](./policy-engine.md) | **Declarative operational policies** |
+| [compliance-profiles.md](./compliance-profiles.md) | **Industry verification profile templates** |
+| [chaos-engineering.md](./chaos-engineering.md) | **Chaos injection and resilience validation** |
+| [resource-estimation.md](./resource-estimation.md) | **Mission resource estimation** |
+| [readiness-trends.md](./readiness-trends.md) | **Readiness trend analysis and forecasting** |
+| [package-trust.md](./package-trust.md) | **Package trust scoring** |
+| [scorecards.md](./scorecards.md) | **Autonomous systems scorecard** |
+| [tamper-detection.md](./tamper-detection.md) | **Hack / tamper detection framework** |
+| [integrity-verification.md](./integrity-verification.md) | **Configuration and artifact integrity** |
+| [trust-framework.md](./trust-framework.md) | **Composite trust scoring** |
+| [spoofing-detection.md](./spoofing-detection.md) | **GPS and sensor spoofing detection** |
+| [security-assurance.md](./security-assurance.md) | **Security assurance rollup reports** |
 | [compiler-backend-roadmap.md](./compiler-backend-roadmap.md) | **LLVM / native codegen evolution** |
 | [ffi-and-ecosystem.md](./ffi-and-ecosystem.md) | **Python/C++/ROS2 interoperability strategy** |
 | [migration.md](./migration.md) | Migration from legacy syntax and dual-backend notes |
