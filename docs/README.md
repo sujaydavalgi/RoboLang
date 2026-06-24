@@ -119,7 +119,18 @@
 | [spanda-type-system.md](./spanda-type-system.md) | Type system: units, generics, AI/safety types |
 | [man/](./man/) | Man-page style CLI reference |
 | [roadmap.md](./roadmap.md) | Roadmap and self-hosting plan |
+| [differentiation-roadmap.md](./differentiation-roadmap.md) | **Signature capabilities — mission contracts, explainability, coverage, risk (15 areas)** |
 | [platform-maturity-roadmap.md](./platform-maturity-roadmap.md) | **Platform maturity expansion — adoption, trust, operations (16 areas)** |
+| [mission-contracts.md](./mission-contracts.md) | **Mission Contracts — guarantees, constraints, assumptions** |
+| [decision-audit-trail.md](./decision-audit-trail.md) | **Decision audit trail — mission → decision → evidence → action** |
+| [safety-coverage.md](./safety-coverage.md) | **Safety scenario coverage reporting** |
+| [recovery-coverage.md](./recovery-coverage.md) | **Recovery path coverage reporting** |
+| [what-if-analysis.md](./what-if-analysis.md) | **What-if failure scenario analysis** |
+| [mission-risk-analysis.md](./mission-risk-analysis.md) | **Mission deployment risk scoring** |
+| [digital-mission-twin.md](./digital-mission-twin.md) | **Digital mission twin — progress, health, risks** |
+| [certification-packs.md](./certification-packs.md) | **Deployment evidence bundles** |
+| [mission-time-travel.md](./mission-time-travel.md) | **Replay mission state at any timestamp** |
+| [human-robot-teaming.md](./human-robot-teaming.md) | **Human approval, escalation, override paths** |
 | [dependency-graphs.md](./dependency-graphs.md) | **Dependency graph visualization (`spanda graph`)** |
 | [deployment-gates.md](./deployment-gates.md) | **Deployment gates — block unsafe rollout** |
 | [explainability.md](./explainability.md) | **`spanda explain` — code, missions, failures, decisions** |

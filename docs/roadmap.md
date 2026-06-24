@@ -23,6 +23,7 @@ Platform overview: [platform-overview.md](./platform-overview.md) · Feature tru
 | [Tooling](#tooling) | CLI, demos, CI golden paths | VS Code Marketplace, LSP polish |
 | [Mission assurance](#mission-assurance) | Lean-core analysis + CLI | Package-backed ML anomaly backends |
 | [Platform maturity](#platform-maturity) | Design specs + phased plan | P0: graph, explain, gates, package trust |
+| [Differentiation](#differentiation--signature-capabilities) | Mission contracts, explainability, coverage | NOW: contracts, explain, audit trail, coverage |
 
 ---
 
@@ -61,6 +62,47 @@ Full analysis: [platform-maturity-roadmap.md](./platform-maturity-roadmap.md)
 | D | v1.0 (2027) | Full trust platform | tamper/integrity, explainability traces, AI generate (guardrailed) |
 
 Topic guides: [dependency-graphs.md](./dependency-graphs.md) · [deployment-gates.md](./deployment-gates.md) · [tamper-detection.md](./tamper-detection.md) · [security-assurance.md](./security-assurance.md)
+
+---
+
+## Differentiation & signature capabilities
+
+**Verifiable missions, explainable operations, predictive trust** — composes Readiness, Assurance, Diagnosis, Recovery, Trust, Health, Continuity, Simulation, Replay, and Traceability without duplicating them.
+
+Full analysis: [differentiation-roadmap.md](./differentiation-roadmap.md)
+
+### Signature capabilities
+
+| Capability | Status |
+|------------|--------|
+| Safety-Typed AI | **Stable** |
+| Readiness Engine | **Stable** |
+| Continuity & Takeover | **Stable** |
+| Mission Contracts | **Planned** (NOW) |
+| Trust Framework | **Planned** (NEXT) |
+| Explainability & Audit Trail | **Planned** (NOW) |
+
+### Priority horizons
+
+| Horizon | Timeline | Areas |
+|---------|----------|-------|
+| **NOW** | 0–3 months | Mission Contracts, Explainability, Decision Audit Trail, Safety Coverage, Recovery Coverage |
+| **NEXT** | 3–6 months | What-If Analysis, Mission Risk Analysis, Readiness Forecasting, Trust Graph, Scorecards |
+| **LATER** | 6–12 months | Digital Mission Twin, Certification Packs, Mission Time Travel, Human/Robot Teaming, Autonomous Governance |
+
+### NOW deliverables (v0.5+)
+
+| Item | CLI | Crate |
+|------|-----|-------|
+| Mission Contracts | `spanda contract verify` | `spanda-contract` |
+| Explainability | `spanda explain` | `spanda-explain` |
+| Decision Audit Trail | trace emission + `spanda audit decisions` | `spanda-decision` |
+| Safety Coverage | `spanda safety-coverage` | extends `spanda-readiness` |
+| Recovery Coverage | `spanda recovery-coverage` | extends `spanda-assurance` |
+
+**Exit criteria:** `spanda demo differentiation` + `scripts/differentiation_smoke.sh`.
+
+Topic guides: [mission-contracts.md](./mission-contracts.md) · [explainability.md](./explainability.md) · [decision-audit-trail.md](./decision-audit-trail.md) · [safety-coverage.md](./safety-coverage.md) · [recovery-coverage.md](./recovery-coverage.md)
 
 ---
 
@@ -330,6 +372,7 @@ CLI, LSP, debugger, docs site, and contributor ergonomics.
 
 ## Related
 
+- [differentiation-roadmap.md](./differentiation-roadmap.md) — signature capabilities, mission contracts, explainability, coverage (15 areas)
 - [platform-maturity-roadmap.md](./platform-maturity-roadmap.md) — adoption, trust, operations expansion (16 areas)
 - [platform-overview.md](./platform-overview.md)
 - [feature-status.md](./feature-status.md)

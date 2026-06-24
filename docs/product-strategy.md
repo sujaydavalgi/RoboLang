@@ -2,7 +2,7 @@
 
 Strategic analysis for Spanda as an **autonomous systems platform** with a safety-first language at its core. This document defines positioning, priorities, and release scope. It complements [vision.md](./vision.md) (aspiration), [platform-overview.md](./platform-overview.md) (architecture), and [feature-status.md](./feature-status.md) (implementation truth).
 
-**Last updated:** 2026-06-24 (platform maturity roadmap; v0.4.0 deploy path; Phases 27–35 verification & DX complete)
+**Last updated:** 2026-06-24 (differentiation roadmap; signature capabilities; platform maturity; v0.4.0 deploy path)
 
 ---
 
@@ -23,7 +23,7 @@ Spanda should not compete as a general-purpose language, Python replacement, Rus
 
 ### Platform maturity focus (2026–2027)
 
-Beyond core language features, Spanda prioritizes **adoption, trust, and operations** — see [platform-maturity-roadmap.md](./platform-maturity-roadmap.md). Sixteen planned areas (dependency graphs, deployment gates, explainability, drift, tamper detection, scorecards, …) compose existing engines (`spanda-readiness`, `spanda-assurance`, `spanda-security`) rather than replacing them. Phase A (v0.5+): graph, explain, package trust, deployment gates.
+Beyond core language features, Spanda prioritizes **adoption, trust, and operations** — see [platform-maturity-roadmap.md](./platform-maturity-roadmap.md) and [differentiation-roadmap.md](./differentiation-roadmap.md). Planned areas compose existing engines (`spanda-readiness`, `spanda-assurance`, `spanda-security`) rather than replacing them. **NOW (v0.5+):** mission contracts, explainability, decision audit trail, safety/recovery coverage. **NEXT:** what-if, risk, trust graph, scorecards.
 
 ### Philosophy
 
@@ -35,9 +35,44 @@ Spanda is the intelligent pulse that transforms perception into action.
 
 ---
 
+## Signature capabilities
+
+Six capabilities define Spanda's market identity. Protect them in every release decision.
+
+| # | Capability | What it means | Status |
+|---|------------|---------------|--------|
+| 1 | **Safety-Typed AI** | `ActionProposal` cannot reach actuators; only `SafeAction` from `safety.validate()` can. | **Stable** |
+| 2 | **Mission Contracts** | Missions as verifiable entities with guarantees, constraints, assumptions, invariants, objectives. | **Planned** (NOW) |
+| 3 | **Readiness Engine** | Weighted go/no-go across health, verify, safety, trust, mission achievability. | **Stable** |
+| 4 | **Continuity & Takeover** | Checkpoint resume, delegation, succession, safety-gated fleet handoff. | **Stable** |
+| 5 | **Trust Framework** | Composite trust across packages, hardware, config, identity, safety integrity. | **Planned** (NEXT) |
+| 6 | **Explainability & Audit Trail** | Decision → evidence → safety check → action; trace replay. | **Planned** (NOW) |
+
+### Questions Spanda uniquely answers
+
+| Question | Answered by |
+|----------|-------------|
+| Can this mission run? | Mission Contracts + Readiness + `spanda verify` |
+| Can this robot safely perform this mission? | Safety-Typed AI + Safety Coverage + `safety { }` |
+| Does the hardware satisfy the required capabilities? | `spanda verify` + capability traceability |
+| Is the system healthy enough to deploy? | Readiness Engine + Health Framework |
+| Can it run safely? | Safety-Typed AI + Safety Coverage |
+| Can it recover? | Recovery Coverage + Recovery Framework |
+| Can it continue? | Continuity & Takeover |
+| Who can take over when a robot or fleet member fails mid-mission? | Continuity & Takeover + Succession Planning |
+| Can it be trusted? | Trust Framework + Certification Packs |
+| Why should this deployment be trusted? | Trust Framework + Readiness + Assurance evidence |
+| Why did it behave this way? | Explainability + Decision Audit Trail |
+| What happened when something failed? | Diagnosis Engine + Replay + Decision Audit Trail |
+| What evidence supports deployment? | Certification Packs + Assurance Cases |
+
+Full roadmap: [differentiation-roadmap.md](./differentiation-roadmap.md).
+
+---
+
 ## Five pillars (core identity)
 
-These are non-negotiable differentiators. Protect them in every release decision.
+Foundational pillars that support the signature capabilities above.
 
 | # | Pillar | What it means |
 |---|--------|---------------|
@@ -343,6 +378,7 @@ Not a general-purpose language. Not a ROS fork. The deploy-verified, safety-gate
 - [vision.md](./vision.md) — aspirational positioning
 - [feature-status.md](./feature-status.md) — honest implementation snapshot
 - [roadmap.md](./roadmap.md) — engineering milestones
+- [differentiation-roadmap.md](./differentiation-roadmap.md) — signature capabilities, mission contracts, explainability, coverage
 - [platform-maturity-roadmap.md](./platform-maturity-roadmap.md) — adoption, trust, operations expansion
 - [hardware-compatibility.md](./hardware-compatibility.md) — verify feature deep dive
 - [ffi-and-ecosystem.md](./ffi-and-ecosystem.md) — Python/C++/ROS2 interop

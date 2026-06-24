@@ -14,12 +14,21 @@ Spanda is an autonomous systems platform centered on the **Spanda Language** (`.
 
 Spanda helps answer:
 
+- Can this mission run?
 - Can this robot safely perform this mission?
 - Does the hardware satisfy the required capabilities?
 - Is the system healthy enough to deploy?
-- Why should this deployment be trusted?
-- What happened when something failed?
+- Can it run safely?
+- Can it recover?
+- Can it continue?
 - **Who can take over when a robot or fleet member fails mid-mission?**
+- Can it be trusted?
+- Why should this deployment be trusted?
+- Why did it behave this way?
+- What happened when something failed?
+- What evidence supports deployment?
+
+**Signature capabilities:** Safety-Typed AI · Mission Contracts · Readiness Engine · Continuity & Takeover · Trust Framework · Explainability & Audit Trail — see [docs/differentiation-roadmap.md](docs/differentiation-roadmap.md).
 
 Repository: [github.com/Davalgi/Spanda](https://github.com/Davalgi/Spanda)
 
@@ -280,6 +289,21 @@ Compact snapshot — full matrix: [docs/feature-status.md](docs/feature-status.m
 
 ---
 
+## Signature capabilities
+
+| Capability | Status | Doc |
+|------------|--------|-----|
+| **Safety-Typed AI** | Stable | [agentic-programming.md](docs/agentic-programming.md) |
+| **Readiness Engine** | Stable | [readiness.md](docs/readiness.md) |
+| **Continuity & Takeover** | Stable | [mission-continuity.md](docs/mission-continuity.md) |
+| **Mission Contracts** | Planned (NOW) | [mission-contracts.md](docs/mission-contracts.md) |
+| **Trust Framework** | Planned (NEXT) | [trust-framework.md](docs/trust-framework.md) |
+| **Explainability & Audit Trail** | Planned (NOW) | [explainability.md](docs/explainability.md) |
+
+Roadmap: [docs/differentiation-roadmap.md](docs/differentiation-roadmap.md)
+
+---
+
 ## Spanda Platform Map
 
 One-line pointers — details in [docs/platform-overview.md](docs/platform-overview.md).
@@ -326,6 +350,7 @@ More samples: [docs/overview/code-samples.md](docs/overview/code-samples.md) · 
 | **Safety** | [docs/agentic-programming.md](docs/agentic-programming.md) · [docs/kill-switch.md](docs/kill-switch.md) |
 | **Verification** | [docs/hardware-compatibility.md](docs/hardware-compatibility.md) · [docs/ci-verify.md](docs/ci-verify.md) |
 | **Readiness** | [docs/readiness.md](docs/readiness.md) |
+| **Differentiation** | [docs/differentiation-roadmap.md](docs/differentiation-roadmap.md) · [mission-contracts.md](docs/mission-contracts.md) |
 | **Assurance** | [docs/mission-assurance.md](docs/mission-assurance.md) |
 | **Mission continuity** | [docs/mission-continuity.md](docs/mission-continuity.md) |
 | **Self-healing** | [docs/self-healing.md](docs/self-healing.md) |

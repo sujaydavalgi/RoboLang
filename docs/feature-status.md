@@ -93,6 +93,9 @@ Platform overview: [platform-overview.md](./platform-overview.md)
 
 | Area | Description |
 |------|-------------|
+| **Differentiation (NOW)** | Mission Contracts, Explainability, Decision Audit Trail, Safety Coverage, Recovery Coverage — see [differentiation-roadmap.md](./differentiation-roadmap.md) |
+| **Differentiation (NEXT)** | What-If Analysis, Mission Risk Analysis, Readiness Forecasting, Trust Graph, Scorecards |
+| **Differentiation (LATER)** | Digital Mission Twin, Certification Packs, Mission Time Travel, Human/Robot Teaming, Autonomous Governance |
 | **Platform maturity (Phase A)** | `spanda graph`, `explain`, `package trust`, deployment gates — see [platform-maturity-roadmap.md](./platform-maturity-roadmap.md) |
 | **Platform maturity (Phase B–D)** | Drift, threat model, policy engine, chaos, tamper detection, scorecard, compliance profiles |
 | **LLVM backend (production primary)** | Optimized native binaries replacing interpreter as default deploy path |

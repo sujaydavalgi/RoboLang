@@ -4,7 +4,7 @@ Strategic expansion plan for Spanda as a **Safety, Verification, Readiness, Assu
 
 **Principle:** Every item must strengthen at least one lifecycle phase: **Build · Verify · Simulate · Deploy · Operate · Recover**.
 
-**Related:** [roadmap.md](./roadmap.md) · [product-strategy.md](./product-strategy.md) · [feature-status.md](./feature-status.md) · [platform-overview.md](./platform-overview.md)
+**Related:** [roadmap.md](./roadmap.md) · [differentiation-roadmap.md](./differentiation-roadmap.md) · [product-strategy.md](./product-strategy.md) · [feature-status.md](./feature-status.md) · [platform-overview.md](./platform-overview.md)
 
 **Last updated:** 2026-06-24
 
