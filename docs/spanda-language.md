@@ -550,6 +550,11 @@ anomaly_detector NavigationAnomaly {
     expected gps.accuracy <= 3 m;
 }
 
+anomaly_detector NavigationML {
+    learned backend assurance.anomaly;
+    expected localization.confidence >= 0.85;
+}
+
 on anomaly NavigationAnomaly severity High {
     diagnose root_cause;
     enter degraded_mode;

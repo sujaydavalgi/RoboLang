@@ -10,6 +10,11 @@ anomaly_detector NavigationAnomaly {
     expected localization.confidence >= 0.85;
 }
 
+anomaly_detector NavigationML {
+    learned backend assurance.anomaly;
+    expected localization.confidence >= 0.80;
+}
+
 on anomaly NavigationAnomaly severity High {
     diagnose root_cause;
     enter degraded_mode;
@@ -35,7 +40,7 @@ spanda anomaly scan rover.sd [--json]
 
 Integrates with existing **health checks** — failed health checks surface as anomalies without duplicating health evaluation.
 
-**Learned backends:** import `assurance.anomaly` (or another anomaly package) to mark detectors as ML-backed via `learned_models()` static analysis.
+**Learned backends:** declare `learned backend <module>;` on a detector, or import `assurance.anomaly` to apply the package backend to all detectors. Reports include a `learned` section from `learned_models()` / `spanda anomaly scan`.
 
 ## Runtime
 

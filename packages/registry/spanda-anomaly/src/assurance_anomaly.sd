@@ -1,5 +1,10 @@
 module assurance.anomaly;
 
-export fn scan() -> Int {
-  return 1;
+/** Package-backed learned anomaly scan scaffold (lean core delegates analysis). */
+export fn scan_learned() -> Int {
+    return 1;
+}
+
+export fn backend_name() -> String {
+    return "assurance.anomaly";
 }

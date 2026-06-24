@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Official packages:** `spanda-assurance`, `spanda-knowledge-model`, `spanda-anomaly`, `spanda-diagnosis`, `spanda-prognostics`, `spanda-mission-planning`, `spanda-resilience`.
 - **Examples:** `examples/assurance/`, `examples/anomaly/`, `examples/diagnostics/`, `examples/prognostics/`, `examples/resilience/`, `examples/mission/`.
 - **Docs:** [mission-assurance.md](docs/mission-assurance.md), [knowledge-models.md](docs/knowledge-models.md), [anomaly-detection.md](docs/anomaly-detection.md), [diagnostics.md](docs/diagnostics.md), [prognostics.md](docs/prognostics.md), [resilience.md](docs/resilience.md), [assurance-cases.md](docs/assurance-cases.md).
+- **Learned anomaly detectors:** `learned backend <module>;` on `anomaly_detector`; anomaly scan reports include learned model metadata.
 
 - **Readiness polish:** CI smoke (`scripts/readiness_smoke.sh`), agent `/v1/readiness` integration tests, `spanda deploy|fleet agent readiness` CLI, TypeScript fallbacks for all operational commands (`src/operational.ts`), span-aware LSP readiness diagnostics, `POST /v1/program` on deploy agents, bundled `root_cause_analysis` example, and fleet dashboard aggregates in the web Operations panel.
 
@@ -46,7 +47,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Formatter spans:** parser `span_from` now uses an exclusive end offset so `spanda fmt` preserves closing braces on span-backed declarations (hardware, assurance, health, kill switch).
 - **Robot safety formatting:** `max_speed` rules no longer duplicate velocity units when the value is already a unit literal.
 - **State estimation runtime:** `state_estimator` declarations register `SensorFusion` bindings at robot setup; a single estimator aliases `fusion`.
-- **Learned anomaly backends:** `learned_models()` detects `assurance.anomaly` imports for package-backed detectors. per-robot/per-target state files in Rust and TypeScript so concurrent agents on one host do not inherit the wrong identity; fleet mesh relay no longer holds the coordinator mutex during outbound HTTP; fleet agents reject peer relays when startup identity is missing.
+- **Learned anomaly backends:** `learned_models()` detects `assurance.anomaly` imports for package-backed detectors.
+- **Fleet and deploy agents:** per-robot/per-target state files in Rust and TypeScript so concurrent agents on one host do not inherit the wrong identity; fleet mesh relay no longer holds the coordinator mutex during outbound HTTP; fleet agents reject peer relays when startup identity is missing.
 - **Agent hardening:** TypeScript per-identity state paths ignore `SPANDA_*_STATE` env overrides; stale deployment fields reset when loaded identity mismatches startup; HTTPS agents use read timeouts and connection shutdown; HTTP 400 responses shut down cleanly; TypeScript agent servers serialize concurrent requests; remote/mesh clients use 30s fetch timeouts; `spanda fleet mesh start` routes through the native CLI; integration test spawns use per-identity state files.
 
 ## [0.4.0] - 2026-06-22
