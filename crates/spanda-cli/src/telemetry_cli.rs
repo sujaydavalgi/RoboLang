@@ -1,7 +1,8 @@
 //! CLI commands for querying the persistent telemetry store.
 
 use spanda_telemetry_store::{
-    global_store, resolve_store_path, TelemetryEvent, TelemetryQuery, TelemetryStats,
+    global_store, render_prometheus, resolve_store_path, TelemetryEvent, TelemetryQuery,
+    TelemetryStats,
 };
 use std::fs;
 use std::path::PathBuf;
@@ -15,6 +16,7 @@ pub fn cmd_telemetry(sub: &str, args: &[String]) {
         "stats" => cmd_stats(args),
         "heartbeats" => cmd_heartbeats(args),
         "devices" => cmd_devices(args),
+        "prometheus" => cmd_prometheus(args),
         other => {
             eprintln!("Unknown telemetry subcommand: {other}");
             usage();
@@ -31,8 +33,35 @@ fn usage() {
          spanda telemetry export [--out <file.jsonl>]\n\
          spanda telemetry stats [--json]\n\
          spanda telemetry heartbeats [--json]\n\
-         spanda telemetry devices [--json]"
+         spanda telemetry devices [--json]\n\
+         spanda telemetry prometheus [--out <file.prom>]"
     );
+}
+
+fn cmd_prometheus(args: &[String]) {
+    let mut out: Option<PathBuf> = None;
+    for (index, arg) in args.iter().enumerate() {
+        if arg == "--out" {
+            out = args.get(index + 1).map(PathBuf::from);
+        }
+    }
+    let store = global_store().lock().unwrap();
+    let body = render_prometheus(&store).unwrap_or_else(|error| {
+        eprintln!("telemetry prometheus failed: {error}");
+        process::exit(1);
+    });
+    if let Some(path) = out {
+        if let Some(parent) = path.parent() {
+            let _ = fs::create_dir_all(parent);
+        }
+        fs::write(&path, &body).unwrap_or_else(|error| {
+            eprintln!("telemetry prometheus failed: {error}");
+            process::exit(1);
+        });
+        println!("Exported Prometheus metrics to {}", path.display());
+        return;
+    }
+    print!("{body}");
 }
 
 fn cmd_list(args: &[String]) {

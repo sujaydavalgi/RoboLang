@@ -304,10 +304,19 @@ pub struct PersistentTelemetryStore {
     heartbeat_index: HeartbeatIndex,
     last_heartbeat_history: HashMap<String, f64>,
     last_device_heartbeat_history: HashMap<String, f64>,
+    max_events: Option<usize>,
 }
 
 impl PersistentTelemetryStore {
     pub fn open(store_path: PathBuf, heartbeat_path: PathBuf) -> Self {
+        Self::open_with_max_events(store_path, heartbeat_path, resolve_max_events())
+    }
+
+    pub fn open_with_max_events(
+        store_path: PathBuf,
+        heartbeat_path: PathBuf,
+        max_events: Option<usize>,
+    ) -> Self {
         let heartbeat_index = read_heartbeat_index(&heartbeat_path).unwrap_or_default();
         Self {
             store_path,
@@ -315,6 +324,7 @@ impl PersistentTelemetryStore {
             heartbeat_index,
             last_heartbeat_history: HashMap::new(),
             last_device_heartbeat_history: HashMap::new(),
+            max_events,
         }
     }
 
@@ -342,8 +352,7 @@ impl PersistentTelemetryStore {
     }
 
     fn maybe_compact(&mut self) -> TelemetryStoreResult<()> {
-        let max_events = resolve_max_events();
-        let Some(max_events) = max_events else {
+        let Some(max_events) = self.max_events else {
             return Ok(());
         };
         let events = self.read_all()?;

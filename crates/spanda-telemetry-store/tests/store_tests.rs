@@ -242,8 +242,11 @@ fn max_events_env_trims_oldest_entries() {
     let dir = tempdir().unwrap();
     let store_path = dir.path().join("telemetry.jsonl");
     let heartbeat_path = dir.path().join("heartbeats.json");
-    std::env::set_var("SPANDA_TELEMETRY_MAX_EVENTS", "2");
-    let mut store = PersistentTelemetryStore::open(store_path.clone(), heartbeat_path);
+    let mut store = PersistentTelemetryStore::open_with_max_events(
+        store_path.clone(),
+        heartbeat_path,
+        Some(2),
+    );
     for index in 0..3 {
         store
             .append(TelemetryEvent::Health {
@@ -259,5 +262,4 @@ fn max_events_env_trims_oldest_entries() {
         &events[0],
         TelemetryEvent::Health { target, .. } if target == "check-1"
     ));
-    std::env::remove_var("SPANDA_TELEMETRY_MAX_EVENTS");
 }
