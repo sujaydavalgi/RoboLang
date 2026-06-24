@@ -370,7 +370,19 @@ pub fn register_device(device: IoTDevice) -> Result<(), String> {
 
     //     let result = spanda_providers::iot_hub::register_device(device);
 
-    hub().lock().unwrap().register_device(device)
+    let device_id = device.id.clone();
+    let protocol = device.protocol.clone();
+    hub().lock().unwrap().register_device(device)?;
+    if spanda_telemetry_store::persist_enabled() {
+        let _ = spanda_telemetry_store::record_device_heartbeat(
+            device_id,
+            spanda_telemetry_store::wall_timestamp_ms(),
+            None,
+            Some(protocol.as_str()),
+            5000.0,
+        );
+    }
+    Ok(())
 }
 
 /// Publish telemetry to the in-memory IoT hub.
@@ -403,6 +415,15 @@ pub fn publish_telemetry(telemetry: Telemetry) {
             *timestamp_ms,
             None,
         );
+        if spanda_telemetry_store::is_heartbeat_metric(metric) {
+            let _ = spanda_telemetry_store::record_device_heartbeat(
+                device_id,
+                *timestamp_ms,
+                None,
+                None,
+                5000.0,
+            );
+        }
     }
     hub().lock().unwrap().publish_telemetry(telemetry);
 }

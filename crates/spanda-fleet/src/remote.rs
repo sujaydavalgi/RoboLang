@@ -227,7 +227,17 @@ pub fn agent_health(entry: &FleetAgentEntry) -> Result<bool, String> {
     let url = agent_endpoint(&entry.url, "/v1/health")?;
     let response = http_request("GET", &url, None, entry.token.as_deref())?;
     let body: serde_json::Value = decode_response(response)?;
-    Ok(body.get("ok").and_then(|v| v.as_bool()).unwrap_or(false))
+    let ok = body.get("ok").and_then(|v| v.as_bool()).unwrap_or(false);
+    if ok && spanda_telemetry_store::persist_enabled() {
+        let _ = spanda_telemetry_store::record_device_heartbeat(
+            &entry.robot_name,
+            spanda_telemetry_store::wall_timestamp_ms(),
+            Some(entry.robot_name.as_str()),
+            Some("fleet-agent"),
+            5000.0,
+        );
+    }
+    Ok(ok)
 }
 
 /// Fetch live readiness report from a fleet agent (`GET /v1/readiness`).

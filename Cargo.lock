@@ -1605,6 +1605,7 @@ dependencies = [
  "spanda-parser",
  "spanda-readiness",
  "spanda-runtime",
+ "spanda-telemetry-store",
 ]
 
 [[package]]
