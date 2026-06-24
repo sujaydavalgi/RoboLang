@@ -2070,6 +2070,7 @@ fn main() {
                         let mut diags =
                             spanda_readiness::collect_readiness_diagnostics(&program, &options);
                         diags.extend(spanda_assurance::collect_recovery_diagnostics(&program));
+                        diags.extend(spanda_assurance::collect_continuity_diagnostics(&program));
                         Some(diags)
                     } else {
                         None

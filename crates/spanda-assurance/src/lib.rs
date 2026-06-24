@@ -6,6 +6,7 @@
 pub mod analyze;
 pub mod anomaly;
 pub mod continuity;
+pub mod continuity_diagnostics;
 pub mod diagnosis;
 pub mod evidence;
 pub mod knowledge;
@@ -54,6 +55,7 @@ pub use recovery::{
     RecoveryPlanner, RecoveryPolicySpec, RecoveryReadiness, RecoveryReport, RecoveryResult,
     RecoveryStatus, RecoveryStrategy, RecoveryTraceChain, SafeRecoveryAction,
 };
+pub use continuity_diagnostics::collect_continuity_diagnostics;
 pub use recovery_diagnostics::collect_recovery_diagnostics;
 pub use report::{
     format_anomaly, format_assurance, format_continuity, format_delegation, format_diagnosis,

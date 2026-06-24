@@ -12,6 +12,7 @@ import {
   type VerifyHardwareTsOptions,
 } from "./hardware-verify.js";
 import { lineColumnForIssue } from "./readiness-spans.js";
+import { collectContinuityDiagnostics } from "./continuity-diagnostics.js";
 import { collectRecoveryDiagnostics } from "./recovery-diagnostics.js";
 
 export type ReadinessSeverity = "Critical" | "High" | "Medium" | "Low" | "Info";
@@ -505,7 +506,11 @@ export function readinessDiagnostics(
       suggested_fix: issue.suggested_action,
     };
   });
-  return [...readinessItems, ...collectRecoveryDiagnostics(program)];
+  return [
+    ...readinessItems,
+    ...collectRecoveryDiagnostics(program),
+    ...collectContinuityDiagnostics(program),
+  ];
 }
 
 export function readinessDashboardFromReports(reports: ReadinessReport[]): ReadinessDashboard {

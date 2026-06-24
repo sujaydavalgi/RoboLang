@@ -178,6 +178,21 @@ Agent status reports `continuity_engine`, `continuity_successor`, `mission_progr
 
 ---
 
+## Static diagnostics
+
+`spanda check --readiness-json` and the LSP readiness path emit continuity diagnostics alongside recovery hints:
+
+| Category | Severity | Meaning |
+|----------|----------|---------|
+| `continuity:policy` | warning | Fleet without `continuity_policy`, or empty policy branches |
+| `continuity:fleet` | error | Fleet/swarm trigger without a `fleet` declaration |
+| `continuity:approval` | warning | Hot/cold/human takeover without an Approval topic |
+| `continuity:handoff` | info | Recovery reassigns mission but no `continuity_policy` defines takeover mode |
+
+Rust: `spanda_assurance::collect_continuity_diagnostics`. TypeScript: `collectContinuityDiagnostics` in `src/continuity-diagnostics.ts`.
+
+---
+
 ## Integrations
 
 | System | Integration |
