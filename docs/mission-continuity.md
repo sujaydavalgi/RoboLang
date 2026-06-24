@@ -211,6 +211,16 @@ Rust: `spanda_assurance::collect_continuity_diagnostics`. TypeScript: `collectCo
 
 Policy syntax guide: [continuity-policies.md](./continuity-policies.md).
 
+### Auto-trigger during run/sim
+
+When a program declares `continuity_policy`, the interpreter automatically evaluates takeover during:
+
+- Hardware fault events (`run_hardware_triggers`)
+- Critical/degraded health transitions (`poll_runtime_health_changes`)
+- Recovery execution (`execute_recovery_runtime`)
+
+Look for log lines `continuity: auto-triggered for '…'` during `spanda run` / `spanda sim --inject-health-faults`.
+
 ---
 
 ## Integrations

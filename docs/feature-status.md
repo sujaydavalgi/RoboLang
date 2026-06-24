@@ -158,7 +158,7 @@ See [tier-3-experimental.md](./tier-3-experimental.md) and [tier-3-golden-paths.
 | mission assurance (static + CLI) | **Stable** | `spanda-assurance` crate; 9 official packages (includes `spanda-mission-continuity`) |
 | self-healing & recovery (static + CLI) | **Stable** | Recovery planner, validation gates, audit, knowledge store |
 | mission continuity (static + CLI + diagnostics) | **Stable** | `spanda-assurance` continuity module; CLI `continuity`, `takeover`, `delegate`, `succession`; `continuity:*` diagnostics in check JSON and LSP |
-| mission continuity runtime dispatch | **Stable** | Interpreter mode-specific takeover, durable checkpoints, fleet agent `/v1/continuity/execute`, mesh relay, swarm `--failed` handoff |
+| mission continuity runtime dispatch | **Stable** | Interpreter mode-specific takeover, durable checkpoints, auto-trigger on health faults, fleet agent `/v1/continuity/execute`, mesh relay, swarm `--failed` handoff |
 | self-healing runtime dispatch | **Experimental** | Assurance-gated actions, Approval polling, fleet mesh relay (`SPANDA_FLEET_MESH_URL`), mission approval gating, fleet agent interpreter + assurance recovery on deployed programs (`recovery_engine` on `/v1/status`) |
 | recovery diagnostics (CLI + LSP) | **Stable** | `spanda check --readiness-json` merges `recovery:*` categories; TS mirror in `scripts/lsp-readiness.mts` |
 | continuity diagnostics (CLI + LSP) | **Stable** | `spanda check --readiness-json` merges `continuity:*` categories including `continuity:mission`; TS mirror in `src/continuity-diagnostics.ts` |

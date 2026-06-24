@@ -34,4 +34,7 @@ run_spanda demo continuity
 echo "== TypeScript continuity mirror =="
 npm test -- tests/mission-continuity.test.ts tests/continuity-diagnostics.test.ts --silent
 
+echo "== swarm continuity mesh =="
+cargo test -p spanda-fleet swarm_continuity --quiet
+
 echo "Mission continuity smoke OK"

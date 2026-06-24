@@ -13,8 +13,8 @@
 | Fusion | observe + fusion | `tests/fusion.rs` |
 | Twin replay | mirror, replay frames | `tests/twin_replay.rs` |
 | Integration | all `examples/*.sd` compile + run | `tests/integration.rs` |
-| Continuity | runtime takeover, checkpoints, CLI JSON | `crates/spanda-interpreter/tests/continuity_runtime.rs`, `crates/spanda-cli/tests/continuity_cli.rs`, `crates/spanda-assurance/src/continuity_checkpoint.rs` |
-| Swarm continuity | member-lost handoff planning | `crates/spanda-fleet/src/swarm_continuity.rs` |
+| Continuity | runtime takeover, checkpoints, CLI JSON, auto-trigger | `crates/spanda-interpreter/tests/continuity_runtime.rs`, `crates/spanda-cli/tests/continuity_cli.rs`, `crates/spanda-assurance/src/continuity_checkpoint.rs` |
+| Swarm continuity | member-lost handoff + mesh relay | `crates/spanda-fleet/src/swarm_continuity.rs`, `crates/spanda-fleet/tests/mesh_integration.rs` |
 | Negative | `ai_safety_violation.sd` fails | `tests/integration.rs` |
 
 **Current count:** ~115 Rust tests (52 unit + 63 integration).

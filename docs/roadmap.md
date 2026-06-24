@@ -121,6 +121,7 @@ See [self-healing.md](./self-healing.md), [recovery-policies.md](./recovery-poli
 | Language `continuity_policy` declarations | **Stable** |
 | Durable checkpoint store (`.spanda/mission-checkpoints.json`) | **Stable** |
 | Runtime takeover dispatch (interpreter + fleet agents) | **Stable** |
+| Auto-trigger continuity during `run` / `sim` on health faults | **Stable** |
 | Swarm member continuity (`spanda swarm coordinate --failed`) | **Stable** |
 | TypeScript mission continuity mirror + checkpoint store | **Stable** |
 
