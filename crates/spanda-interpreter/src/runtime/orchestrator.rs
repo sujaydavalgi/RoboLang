@@ -255,6 +255,9 @@ pub struct InterpreterOptions {
     /// Inject health fault scenarios during simulation.
     pub inject_health_faults: bool,
 
+    /// Inbound comm payloads queued before each recovery approval poll (test/sim hook).
+    pub inbound_comm_messages: Vec<(String, String)>,
+
     /// Optional domain provider registry; defaults to bootstrap shims when unset.
     pub provider_registry: Option<spanda_runtime::providers::ProviderRegistry>,
 
@@ -304,6 +307,7 @@ impl Default for InterpreterOptions {
             trigger_kill_switch: None,
             kill_switch_signature: None,
             inject_health_faults: false,
+            inbound_comm_messages: Vec::new(),
             provider_registry: None,
             official_packages: Vec::new(),
             runtime_host: None,

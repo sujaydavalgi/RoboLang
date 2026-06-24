@@ -69,6 +69,9 @@ pub struct RunOptions {
     #[serde(default)]
     pub kill_switch_signature: Option<String>,
     pub inject_health_faults: bool,
+    /// Inbound comm payloads queued before each recovery approval poll (test/sim hook).
+    #[serde(default)]
+    pub inbound_comm_messages: Vec<(String, String)>,
     #[serde(skip)]
     pub ffi_registry: Option<FfiRegistry>,
 }

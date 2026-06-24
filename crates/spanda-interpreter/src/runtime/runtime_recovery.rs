@@ -136,6 +136,16 @@ impl<B: RobotBackend> Interpreter<B> {
 
     /// Poll Approval topics and environment for operator grants.
     pub(super) fn poll_recovery_approvals(&mut self) {
+        for (path, text) in &self.options.inbound_comm_messages {
+            self.comm_bus.push_inbound(
+                path,
+                RuntimeValue::String {
+                    value: text.clone(),
+                },
+                None,
+            );
+        }
+
         let approval_topics: Vec<String> = self
             .topic_path_to_message_type
             .iter()
@@ -302,6 +312,16 @@ impl<B: RobotBackend> Interpreter<B> {
 
     fn coordinate_fleet_recovery(&mut self, action: &str) -> Result<(), SpandaError> {
         let fleet_names: Vec<String> = self.fleets.names().cloned().collect();
+        let source = self.publish_source_id();
+        self.comm_bus.publish(
+            "/fleet/recovery",
+            "Command",
+            RuntimeValue::String {
+                value: action.to_string(),
+            },
+            self.default_transport,
+            Some(&source),
+        );
         for fleet_name in fleet_names {
             if let Some(members) = self.fleets.members(&fleet_name) {
                 self.log(format!(
