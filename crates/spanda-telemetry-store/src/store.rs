@@ -181,6 +181,22 @@ pub fn record_health_event(
     })
 }
 
+/// Record a topic publish as device telemetry keyed by robot and topic path.
+pub fn record_topic_publish(
+    robot_id: Option<&str>,
+    topic_path: &str,
+    value: &RuntimeValue,
+    timestamp_ms: f64,
+) -> TelemetryStoreResult<()> {
+    record_device_telemetry(
+        robot_id.unwrap_or("robot"),
+        topic_path,
+        value,
+        timestamp_ms,
+        robot_id,
+    )
+}
+
 /// Query filters for listing stored events.
 #[derive(Debug, Clone, Default)]
 pub struct TelemetryQuery {

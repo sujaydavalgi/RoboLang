@@ -154,6 +154,7 @@ impl<B: RobotBackend> Interpreter<B> {
             mission,
             ..
         } = robot;
+        self.active_robot_name = Some(robot_name.clone());
         self.env = Environment::new();
         if self.fleets.names().next().is_some() {
             self.env.define(
@@ -818,5 +819,9 @@ impl<B: RobotBackend> Interpreter<B> {
         self.load_reliability_config(robot)?;
         self.setup_state_estimators();
         Ok(())
+    }
+
+    pub(super) fn telemetry_robot_id(&self) -> Option<&str> {
+        self.active_robot_name.as_deref()
     }
 }

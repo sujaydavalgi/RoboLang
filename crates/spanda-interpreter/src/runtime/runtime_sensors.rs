@@ -82,7 +82,7 @@ impl<B: RobotBackend> Interpreter<B> {
             sensor_type,
             &reading,
             self.sim_time_ms,
-            None,
+            self.telemetry_robot_id(),
         );
         Ok(reading)
     }

@@ -190,6 +190,12 @@ impl<B: RobotBackend> Interpreter<B> {
                         self.default_transport,
                         Some(&source_id),
                     );
+                    let _ = spanda_telemetry_store::record_topic_publish(
+                        self.telemetry_robot_id(),
+                        &topic_path,
+                        &val,
+                        self.sim_time_ms,
+                    );
                     self.backend.publish_topic(&topic_path, &message_type, val);
                     self.topic_last_publish_ms
                         .insert(topic_path.clone(), self.sim_time_ms);

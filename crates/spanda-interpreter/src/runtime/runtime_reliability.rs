@@ -314,7 +314,7 @@ impl<B: RobotBackend> Interpreter<B> {
         let _ = spanda_telemetry_store::record_task_heartbeat(
             task_name,
             self.sim_time_ms,
-            None,
+            self.telemetry_robot_id(),
             5000.0,
         );
     }

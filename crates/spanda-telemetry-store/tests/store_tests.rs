@@ -152,6 +152,42 @@ fn is_heartbeat_metric_detects_liveness_names() {
 }
 
 #[test]
+fn record_topic_publish_stores_device_event() {
+    use spanda_runtime::value::RuntimeValue;
+    let dir = tempdir().unwrap();
+    std::env::set_var(
+        "SPANDA_TELEMETRY_STORE_PATH",
+        dir.path().join("telemetry.jsonl").to_string_lossy().to_string(),
+    );
+    configure_session_persist(true);
+    spanda_telemetry_store::record_topic_publish(
+        Some("Rover"),
+        "/telemetry",
+        &RuntimeValue::String {
+            value: "ok".into(),
+        },
+        1200.0,
+    )
+    .unwrap();
+    let store = PersistentTelemetryStore::open(
+        resolve_store_path(),
+        dir.path().join("heartbeats.json"),
+    );
+    let latest = store.latest_device("Rover", "/telemetry").unwrap().unwrap();
+    assert!(matches!(
+        latest,
+        TelemetryEvent::Device {
+            device_id,
+            metric,
+            robot_id: Some(rid),
+            ..
+        } if device_id == "Rover" && metric == "/telemetry" && rid == "Rover"
+    ));
+    configure_session_persist(false);
+    std::env::remove_var("SPANDA_TELEMETRY_STORE_PATH");
+}
+
+#[test]
 fn env_persist_enabled_accepts_true_literal() {
     std::env::set_var("SPANDA_TELEMETRY_STORE", "true");
     assert!(env_persist_enabled());
