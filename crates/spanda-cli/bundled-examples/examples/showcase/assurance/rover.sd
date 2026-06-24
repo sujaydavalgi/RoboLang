@@ -1,0 +1,106 @@
+// Mission assurance showcase
+//
+//   spanda demo assurance
+//   spanda assure examples/showcase/assurance/rover.sd
+//   spanda state estimate examples/showcase/assurance/rover.sd
+
+hardware RoverV1 {
+    sensors [GPS, Camera, Lidar];
+    actuators [DifferentialDrive];
+    connectivity [WiFi, LTE];
+}
+
+knowledge_model RoverModel {
+    component gps;
+    component camera;
+    component wheels;
+    dependency navigation requires [gps, wheels];
+    dependency obstacle_avoidance requires [camera, lidar];
+}
+
+state_estimator RoverState {
+    inputs [gps.fix, imu.data, wheel_odometry];
+    output StateEstimate;
+}
+
+anomaly_detector NavigationAnomaly {
+    expected gps.accuracy <= 3 m;
+    expected localization.confidence >= 0.85;
+}
+
+on anomaly NavigationAnomaly severity High {
+    diagnose root_cause;
+    enter degraded_mode;
+    audit.record("navigation_anomaly");
+}
+
+prognostics BatteryPrognostics {
+    predict battery.remaining_useful_life;
+    warn_if remaining_useful_life < 30 min;
+}
+
+mitigation GPSLostMitigation {
+    if gps.failed {
+        switch_to visual_odometry;
+        reduce_speed 0.5 m/s;
+        enter degraded_mode;
+    }
+}
+
+operating_mode NormalMode {
+    normal;
+}
+
+operating_mode DegradedMode {
+    degraded;
+}
+
+operating_mode SafeMode {
+    safe;
+}
+
+resilience_policy RoverResilience {
+    strategy dual_navigation;
+    strategy graceful_degradation;
+}
+
+assurance_case RoverSafetyCase {
+    evidence hardware_verification;
+    evidence capability_traceability;
+    evidence health_checks;
+    evidence simulation_replay;
+    evidence safety_tests;
+}
+
+health_check RoverHealth for robot Rover {
+    check battery.level >= 20%;
+}
+
+kill_switch EmergencyStop {
+    priority: critical;
+    action { emergency_stop; }
+}
+
+robot Rover {
+    uses hardware RoverV1;
+    sensor gps: GPS;
+    sensor camera: Camera;
+    sensor lidar: Lidar;
+    actuator wheels: DifferentialDrive;
+
+    exposes capabilities [
+        gps_navigation,
+        obstacle_avoidance,
+        telemetry_streaming
+    ];
+
+    safety {
+        max_speed = 1.5 m/s;
+    }
+
+    behavior patrol() {
+        wheels.drive(0.5 m/s);
+    }
+}
+
+deploy Rover to RoverV1;

@@ -299,6 +299,25 @@ fn demo_readiness(root: &Path) {
     println!("\nDemo complete. See examples/showcase/readiness/rover.sd and docs/readiness.md");
 }
 
+fn demo_assurance(root: &Path) {
+    let assurance_path = showcase(root, &["assurance", "rover.sd"]);
+    let assurance_sd = require_file(&assurance_path);
+    let file = assurance_sd.to_str().unwrap();
+
+    println!("== Mission assurance — knowledge, state, anomaly, resilience ==\n");
+    run_spanda("check", assurance_sd, &[]);
+    run_spanda_args(&["assure", file, "--json"]);
+    run_spanda_args(&["anomaly", "scan", file]);
+    run_spanda_args(&["state", "estimate", file]);
+    run_spanda_args(&["prognostics", file]);
+    run_spanda_args(&["mission", "verify", file]);
+    run_spanda_args(&["resilience", "check", file]);
+    run_spanda_args(&["mitigation", "plan", file]);
+    run_spanda_args(&["readiness", file, "--target", "RoverV1", "--json"]);
+
+    println!("\nDemo complete. See examples/showcase/assurance/README.md");
+}
+
 pub fn demo_dispatch(args: &[String]) {
     // Run a bundled showcase demo by name.
     //
@@ -324,6 +343,7 @@ pub fn demo_dispatch(args: &[String]) {
         "fleet" => demo_fleet(&root),
         "health" => demo_health(&root),
         "readiness" => demo_readiness(&root),
+        "assurance" => demo_assurance(&root),
         "" | "list" | "--help" | "-h" => {
             eprintln!(
                 "Spanda showcase demos\n\n\
@@ -334,8 +354,9 @@ pub fn demo_dispatch(args: &[String]) {
                    safety  — ActionProposal blocked; SafeAction passes\n\
                    verify  — hardware fit: missing Lidar fails, added Lidar passes\n\
                    fleet   — multi-robot fleet simulation\n\
-                   health  — health checks with fault injection\n\
-                   readiness — operational go/no-go with runtime health\n\n\
+                   health    — health checks with fault injection\n\
+                   readiness — operational go/no-go with runtime health\n\
+                   assurance — mission assurance CLI suite (assure, anomaly, state)\n\n\
                  Set SPANDA_ROOT to the repository root if examples are not found.\n\
                  See examples/showcase/README.md"
             );

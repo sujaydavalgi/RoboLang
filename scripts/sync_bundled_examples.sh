@@ -6,7 +6,7 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 DEST="${ROOT}/crates/spanda-cli/bundled-examples/examples/showcase"
 mkdir -p "${DEST}"
 
-for d in unsafe_ai hardware_verification capability_verification health_monitoring fleet_management replay; do
+for d in unsafe_ai hardware_verification capability_verification health_monitoring fleet_management replay readiness assurance; do
   rm -rf "${DEST}/${d}"
   cp -R "${ROOT}/examples/showcase/${d}" "${DEST}/"
 done

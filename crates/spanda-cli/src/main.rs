@@ -161,7 +161,7 @@ fn usage() {
            spanda llvm-ir [--out <file.ll>] [--target-triple <triple>] [--hal-profile <name>] <file.sd>\n\
            spanda compile-native [--out <binary>] [--target-triple <triple>] [--hal-profile <name>] <file.sd>\n\n\
          Demo commands:\n\
-           spanda demo <rover|safety|verify|fleet|health>\n\n\
+           spanda demo <rover|safety|verify|fleet|health|readiness|assurance>\n\n\
          ROS 2 commands:\n\
            spanda ros2 check [--json]\n\n\
          Package commands:\n\
