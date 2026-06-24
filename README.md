@@ -22,7 +22,8 @@ Spanda is an autonomous systems platform centered on the **Spanda Language** (`.
 |---|---|---|
 | **Autonomous Systems Language** | **Safety Validation** | **Hardware Verification** |
 | **Capability Verification** | **Simulation** | **Replay** |
-| **Health Monitoring** | **Package Ecosystem** | **Provider System** |
+| **Health Monitoring** | **Mission Assurance** | **Package Ecosystem** |
+| **Provider System** | **Operational Readiness** | |
 
 Repository: [github.com/Davalgi/Spanda](https://github.com/Davalgi/Spanda) · Platform guide: [docs/platform-overview.md](docs/platform-overview.md)
 
@@ -54,6 +55,8 @@ Spanda Platform
 ├── Spanda Sim
 ├── Spanda Replay
 ├── Spanda Health
+├── Spanda Readiness
+├── Spanda Mission Assurance
 ├── Spanda Fleet
 ├── Spanda Registry
 └── Spanda Providers
@@ -68,6 +71,8 @@ Spanda Platform
 | **Spanda Sim** | Physics-lite simulation (`spanda run` / `spanda sim`) and digital twins — test without hardware |
 | **Spanda Replay** | Mission trace record, deterministic replay, and frame playback for regression and incident review |
 | **Spanda Health** | `health_check`, fleet `require` clauses, health policies, and operational readiness gates |
+| **Spanda Readiness** | Weighted go/no-go scoring (`spanda readiness`), fleet readiness, agent APIs |
+| **Spanda Mission Assurance** | NASA-style knowledge models, state estimation, anomaly detection, prognostics, mitigation, resilience, assurance cases — `spanda assure`, `anomaly scan`, `state estimate`, … |
 | **Spanda Fleet** | Multi-robot simulation, orchestration, mesh coordination, and distributed agent relay |
 | **Spanda Registry** | Hosted package index, Ed25519-signed tarballs, and `spanda publish` / `spanda install` |
 | **Spanda Providers** | Official packages (ROS2, MQTT, GPS, vision, fleet, OTA, cloud) wired through the provider registry |
@@ -161,7 +166,10 @@ Spanda exists to be that coordination layer: one platform where perception, plan
 | **Cooperative concurrency** | `spawn`, `join`, `parallel`, channels, and `select` with scheduler telemetry |
 | **Simulation built in** | `spanda run` / `spanda sim` — test without hardware |
 | **Digital twins** | `twin { mirror pose; replay true; }` for shadow state and replay |
-| **Platform packages** | `spanda install` / `update`, provider dispatch, `--trace-providers` | Official registry packages wire to runtime providers |
+| **Platform packages** | `spanda install` / `update`, provider dispatch, `--trace-providers` | **37** hosted packages (ROS2, MQTT, GPS, vision, fleet, OTA, mission assurance, …) |
+| **Mission assurance** | `knowledge_model`, `state_estimator`, `anomaly_detector`, `on anomaly`, `prognostics`, `mitigation`, `resilience_policy`, `assurance_case` | CLI: `assure`, `anomaly scan`, `state estimate`, `diagnose`, `prognostics`, `mission verify`, `resilience check`, `mitigation plan`; `spanda demo assurance` |
+| **Weighted sensor fusion** | `observe { }`, `state_estimator`, `fusion.read()` | Type-weighted confidence; optional `spanda-fusion` (`assurance.fusion`) |
+| **Learned anomaly detection** | `learned backend assurance.anomaly` | Runtime `scan_learned` + EMA volatility; optional ONNX (`SPANDA_ANOMALY_ONNX_MODEL_PATH`) |
 | **World models** | `world_model { enabled; }` + `fusion.read()` belief hook | Observe → fused observation → belief-gated decisions |
 | **Verification & DX** | `spanda verify --health`, traceability matrices, kill switch, health policies | Capability exposure, fleet `require` clauses, typed handler I/O |
 | **Live providers (optional)** | OpenAI, Anthropic, ONNX via Python bridge; IoT live bridges | Mock fallback when keys or env flags are unset |
@@ -187,6 +195,8 @@ Honest snapshot for evaluators ([full matrix](docs/feature-status.md)):
 | Connectivity (in-memory + optional live bridges) | **Stable** / live **Experimental** |
 | Encryption & secure comm | **Stable** (wire frames); live TLS **Experimental** |
 | Health framework | **Stable** |
+| Mission assurance (static analysis + CLI) | **Stable** |
+| Learned anomaly runtime + ONNX backends | **Experimental** |
 | Fleet runtime (in-process + HTTP agents) | **Stable** / distributed **Experimental** |
 | Debugger (DAP) | **Experimental** |
 | LLVM backend | **Experimental** |
@@ -207,6 +217,9 @@ Limitations: [docs/known-limitations.md](docs/known-limitations.md)
 
 # Run flagship demo
 spanda demo rover
+
+# Mission assurance suite (knowledge, state, anomaly, resilience)
+spanda demo assurance
 
 # Or step by step:
 spanda check examples/showcase/killer_demo.sd      # type-check
@@ -249,7 +262,7 @@ Spanda uses a **lean-core, package-first** workspace (Phases 1–35 complete). `
 | **FFI & bridge** | `spanda-bridge`, `spanda-ffi` | Python/C++ subprocess bridges, live AI/IoT paths |
 | **Tooling** | `spanda-format`, `spanda-lint`, `spanda-codegen`, `spanda-docs` | fmt, lint, codegen, docgen |
 | **Packages** | `spanda-package`, `spanda-providers` | `spanda.toml`, registry, provider bootstrap |
-| **Official packages** | `packages/registry/*` | ROS2, MQTT, GPS, SLAM, vision, fleet, OTA, cloud (29 scaffolds) |
+| **Official packages** | `packages/registry/*` | ROS2, MQTT, GPS, SLAM, vision, fleet, OTA, cloud, **8 mission assurance packages** (37 scaffolds) |
 | **Mirror & UX** | `src/`, `packages/lsp`, `packages/web`, `editor/vscode` | TypeScript tests, LSP, web playground, extension |
 
 Crate index: [crates/README.md](crates/README.md) · Diagrams: [docs/diagrams/](docs/diagrams/) · Deep dive: [docs/lean-core.md](docs/lean-core.md) · [docs/architecture.md](docs/architecture.md)
@@ -384,8 +397,9 @@ Three pillars for evaluators — full library has 70+ files; start with these:
 | **Verify** | Hardware fit before deploy | `spanda verify examples/showcase/hardware_compatibility.sd --json` |
 | **Sim** | Patrol without hardware | `spanda sim examples/showcase/killer_demo.sd` |
 | **Platform** | Packages → providers → replay | `cd examples/showcase/autonomous_rover && spanda install && spanda run src/rover.sd --trace-providers` |
+| **Assurance** | Mission assurance CLI suite | `spanda demo assurance` |
 
-5-minute walkthrough: [`docs/killer-demo.md`](docs/killer-demo.md) · Platform demo: [`examples/showcase/autonomous_rover/README.md`](examples/showcase/autonomous_rover/README.md) · Tier 3 CI golden paths: [`docs/tier-3-golden-paths.md`](docs/tier-3-golden-paths.md)
+5-minute walkthrough: [`docs/killer-demo.md`](docs/killer-demo.md) · Platform demo: [`examples/showcase/autonomous_rover/README.md`](examples/showcase/autonomous_rover/README.md) · Mission assurance: [`examples/showcase/assurance/README.md`](examples/showcase/assurance/README.md) · Tier 3 CI golden paths: [`docs/tier-3-golden-paths.md`](docs/tier-3-golden-paths.md)
 
 More showcase demos: [`examples/showcase/README.md`](examples/showcase/README.md). Real-time: [`examples/realtime/`](examples/realtime/); regex: [`examples/regex/`](examples/regex/).
 
@@ -459,7 +473,16 @@ npm run web:dev       # http://localhost:5173
 | `spanda sim <file.sd>` | Run simulation with detailed output |
 | `spanda fleet run <file.sd>` | Run multi-robot fleet simulation (in-process) |
 | `spanda replay <mission.trace>` | Inspect, verify, or play back a recorded mission trace |
-| `spanda demo <rover\|safety\|verify\|fleet\|health>` | One-command showcase demos |
+| `spanda demo <rover\|safety\|verify\|fleet\|health\|readiness\|assurance>` | One-command showcase demos |
+| `spanda assure <file.sd>` | Mission assurance report (evidence, verification, traceability) |
+| `spanda anomaly scan <file.sd>` | Anomaly detector analysis (+ learned backends) |
+| `spanda state estimate <file.sd>` | State estimators and weighted fusion previews |
+| `spanda diagnose <file.sd\|trace>` | Fault diagnosis and root-cause timeline |
+| `spanda prognostics <file.sd>` | RUL and degradation warnings |
+| `spanda mission verify <file.sd>` | Mission plan achievability |
+| `spanda resilience check <file.sd>` | Resilience policies and readiness score |
+| `spanda mitigation plan <file.sd>` | Recovery actions and mode transitions |
+| `spanda readiness <file.sd>` | Operational go/no-go scoring |
 | `spanda test` | Run project tests |
 | `spanda fmt <file.sd>` | Format source |
 | `spanda lint <file.sd>` | Lint source |
@@ -541,7 +564,7 @@ Package guide: [docs/packages.md](docs/packages.md)
 
 ## Roadmap
 
-**v0.4.0 (current):** Native deploy (`spanda deploy --target native`, experimental), `spanda ros2 check`, distributed fleet docs, bundled demos (`spanda demo`), `cargo install spanda`, LSP hover/quick-fixes, live IoT CI, hosted registry index (29 scaffolds).
+**v0.4.0 (current):** Native deploy (`spanda deploy --target native`, experimental), `spanda ros2 check`, distributed fleet docs, bundled demos (`spanda demo`), `cargo install spanda`, LSP hover/quick-fixes, live IoT CI, hosted registry index (**37** packages), **mission assurance** CLI suite and showcase.
 
 **v0.3.0 (shipped):** Tooling polish — crate rename to `spanda`, showcase demos without clone, fleet multi-robot fix, verification & DX (Phases 27–35), docs site on GitHub Pages.
 
@@ -580,6 +603,16 @@ Rust and TypeScript sources use **inline API documentation** (inside function bo
 | [docs/platform-overview.md](docs/platform-overview.md) | Spanda Platform — components and platform vs language |
 | [docs/getting-started.md](docs/getting-started.md) | First robot in 10 minutes |
 | [docs/health-checks.md](docs/health-checks.md) | Health checks, fleet `require` clauses, policies |
+| [docs/readiness.md](docs/readiness.md) | Operational readiness engine and weighted go/no-go scoring |
+| [docs/mission-assurance.md](docs/mission-assurance.md) | Mission assurance domains, CLI, packages, and examples |
+| [docs/state-estimation.md](docs/state-estimation.md) | State estimators, weighted fusion, `spanda state estimate` |
+| [docs/anomaly-detection.md](docs/anomaly-detection.md) | Anomaly detectors, learned backends, ONNX inference |
+| [docs/knowledge-models.md](docs/knowledge-models.md) | System knowledge models and dependencies |
+| [docs/diagnostics.md](docs/diagnostics.md) | Fault diagnosis and `spanda diagnose` |
+| [docs/prognostics.md](docs/prognostics.md) | Prognostics and remaining useful life |
+| [docs/resilience.md](docs/resilience.md) | Resilience policies and degraded-mode recovery |
+| [docs/assurance-cases.md](docs/assurance-cases.md) | Assurance cases and evidence linking |
+| [docs/official-packages.md](docs/official-packages.md) | Official package catalog (37 hosted packages) |
 | [docs/kill-switch.md](docs/kill-switch.md) | Kill switch syntax, `remote_signed`, handlers |
 | [docs/iot.md](docs/iot.md) | IoT packages, dispatch, live bridge env flags |
 | [docs/live-ai-provider.md](docs/live-ai-provider.md) | OpenAI, Anthropic, ONNX live paths |

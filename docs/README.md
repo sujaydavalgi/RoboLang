@@ -59,8 +59,15 @@
 | [debugging.md](./debugging.md) | **Debug `behavior`, `task every`, and `every` triggers in VS Code (DAP)** |
 | [health-checks.md](./health-checks.md) | **Health checks, fleet `require` clauses, and policies** |
 | [readiness.md](./readiness.md) | **Operational readiness engine and weighted go/no-go scoring** |
-| [mission-assurance.md](./mission-assurance.md) | **Mission assurance domains, CLI, and integration with readiness** |
-| [state-estimation.md](./state-estimation.md) | **State estimators, belief state, and `spanda state estimate`** |
+| [mission-assurance.md](./mission-assurance.md) | **Mission assurance domains, CLI, packages, and examples** |
+| [state-estimation.md](./state-estimation.md) | **State estimators, weighted fusion, and `spanda state estimate`** |
+| [anomaly-detection.md](./anomaly-detection.md) | **Anomaly detectors, learned backends, ONNX inference** |
+| [knowledge-models.md](./knowledge-models.md) | **System knowledge models and dependency graphs** |
+| [diagnostics.md](./diagnostics.md) | **Fault diagnosis and `spanda diagnose`** |
+| [prognostics.md](./prognostics.md) | **Prognostics, RUL, and degradation warnings** |
+| [resilience.md](./resilience.md) | **Resilience policies and recovery** |
+| [assurance-cases.md](./assurance-cases.md) | **Assurance cases and evidence linking** |
+| [mission-verification.md](./mission-verification.md) | **Mission achievability and approval verification** |
 | [mission-verification.md](./mission-verification.md) | **Mission achievability and approval verification** |
 | [failure-analysis.md](./failure-analysis.md) | **Component failure impact and mitigations** |
 | [safety-reporting.md](./safety-reporting.md) | **Deployable safety case reports (JSON/Markdown/HTML)** |

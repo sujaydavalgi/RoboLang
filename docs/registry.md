@@ -49,6 +49,21 @@ All **37** curated packages under `packages/registry/` are published in the host
 | `spanda-matter` | iot | `iot.matter` |
 | `spanda-canbus` | iot | `iot.canbus` |
 
+## Mission assurance packages (hosted)
+
+| Package | Category | Import paths |
+|---------|----------|--------------|
+| `spanda-assurance` | robotics | `assurance.evidence` |
+| `spanda-knowledge-model` | robotics | `assurance.knowledge` |
+| `spanda-anomaly` | robotics | `assurance.anomaly` |
+| `spanda-fusion` | robotics | `assurance.fusion` |
+| `spanda-diagnosis` | robotics | `assurance.diagnosis` |
+| `spanda-prognostics` | robotics | `assurance.prognostics` |
+| `spanda-mission-planning` | robotics | `assurance.mission` |
+| `spanda-resilience` | robotics | `assurance.resilience` |
+
+Examples: [`examples/showcase/assurance/`](../examples/showcase/assurance/README.md) · Guide: [mission-assurance.md](./mission-assurance.md)
+
 ## Local stub packages
 
 | Package | Category | Import paths |

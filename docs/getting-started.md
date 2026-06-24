@@ -252,6 +252,8 @@ spanda check examples/showcase/ai_safety_violation.sd   # expect compile error
 | `hardware_compatibility.sd` | `spanda verify examples/showcase/hardware_compatibility.sd` |
 | `communication_demo.sd` | `spanda run examples/showcase/communication_demo.sd` |
 | `digital_twin_demo.sd` | `spanda run examples/showcase/digital_twin_demo.sd` |
+| `assurance/rover.sd` | `spanda demo assurance` |
+| `readiness/rover.sd` | `spanda readiness examples/showcase/readiness/rover.sd --json` |
 | `triggers_demo.sd` | `spanda run examples/triggers_demo.sd --trace-triggers` |
 
 ### Triggers and concurrency
@@ -483,9 +485,50 @@ Guides: [health-checks.md](./health-checks.md) · [kill-switch.md](./kill-switch
 
 ---
 
+## Mission assurance (optional)
+
+NASA-style mission assurance: knowledge models, state estimation, anomaly detection, prognostics, mitigation, resilience, and assurance evidence.
+
+```bash
+spanda demo assurance
+```
+
+Or step through the showcase rover:
+
+```bash
+spanda check examples/showcase/assurance/rover.sd
+spanda assure examples/showcase/assurance/rover.sd --json
+spanda anomaly scan examples/showcase/assurance/rover.sd
+spanda state estimate examples/showcase/assurance/rover.sd
+spanda prognostics examples/showcase/assurance/rover.sd
+spanda mission verify examples/mission/mission_assurance.sd
+spanda resilience check examples/showcase/assurance/rover.sd
+spanda mitigation plan examples/showcase/assurance/rover.sd
+spanda readiness examples/showcase/assurance/rover.sd --target RoverV1 --json
+```
+
+Topic examples:
+
+| Directory | Guide |
+|-----------|--------|
+| [`examples/assurance/`](../examples/assurance/README.md) | [mission-assurance.md](./mission-assurance.md) |
+| [`examples/anomaly/`](../examples/anomaly/README.md) | [anomaly-detection.md](./anomaly-detection.md) |
+| [`examples/diagnostics/`](../examples/diagnostics/README.md) | [diagnostics.md](./diagnostics.md) |
+| [`examples/prognostics/`](../examples/prognostics/README.md) | [prognostics.md](./prognostics.md) |
+| [`examples/resilience/`](../examples/resilience/README.md) | [resilience.md](./resilience.md) |
+| [`examples/mission/`](../examples/mission/README.md) | [mission-verification.md](./mission-verification.md) |
+
+Learned anomaly with optional ONNX: `SPANDA_ANOMALY_ONNX_MODEL_PATH=/path/to/model.onnx` — see [anomaly-detection.md](./anomaly-detection.md).
+
+Operational readiness (composes with assurance): [readiness.md](./readiness.md)
+
+---
+
 ## Next steps
 
 - [spanda-language.md](./spanda-language.md) — full language reference
+- [mission-assurance.md](./mission-assurance.md) — knowledge, state, anomaly, resilience CLI
+- [readiness.md](./readiness.md) — operational go/no-go scoring
 - [killer-demo.md](./killer-demo.md) — 5-minute safety + verify walkthrough
 - [realtime.md](./realtime.md) — deadline-aware tasks and wall-clock mode
 - [replay.md](./replay.md) — mission trace record and playback

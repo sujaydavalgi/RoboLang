@@ -296,6 +296,20 @@ behavior run() {
 }
 ```
 
+`state_estimator` declarations register weighted fusion bindings at runtime (same `fusion.read()` API). Static previews: `spanda state estimate`. Optional package: `spanda-fusion` (`assurance.fusion`). See [state-estimation.md](./state-estimation.md).
+
+### Mission assurance
+
+Knowledge models, anomaly detectors, prognostics, mitigation, resilience policies, and assurance cases integrate with readiness and verification — not duplicated health checks.
+
+```bash
+spanda demo assurance
+spanda assure examples/showcase/assurance/rover.sd --json
+spanda anomaly scan examples/anomaly/learned_navigation.sd
+```
+
+Full guide: [mission-assurance.md](./mission-assurance.md) · Examples: [`examples/showcase/assurance/`](../examples/showcase/assurance/README.md)
+
 ---
 
 ## Standard library namespaces
@@ -378,6 +392,8 @@ Runnable programs under `examples/robotics/`:
 | `nav2_bridge.sd` | Nav2 golden path — `navigation.navigate()` publishes `/cmd_vel` when declared |
 | `fleet_field_trial.sd` | Three-agent fleet field-trial layout (`spanda fleet orchestrate`) |
 | `sensor_fusion.sd` | `observe` + extended fusion fields |
+| `showcase/assurance/rover.sd` | Mission assurance CLI suite (`spanda demo assurance`) |
+| `anomaly/learned_navigation.sd` | Learned anomaly backend |
 | `slam_integration.sd` | Package + `extern` SLAM bridge |
 | `predictive_maintenance.sd` | `std.maintenance` health signals |
 | `ota_deployment.sd` | Deploy + verify workflow |

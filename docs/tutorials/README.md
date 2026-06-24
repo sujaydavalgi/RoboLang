@@ -11,6 +11,7 @@ One place to find every learning path: quick starts, structured courses, topic g
 | First robot in 10 minutes | [Getting started](../getting-started.md) | ~10 min |
 | Browse runnable code | [Examples library](../../examples/README.md) | self-paced |
 | Impress someone in a meeting | [Killer demo](../killer-demo.md) | ~5 min |
+| Mission assurance suite | [Mission assurance](../mission-assurance.md) + `spanda demo assurance` | ~5 min |
 
 ---
 
@@ -87,6 +88,13 @@ Deep dives on one capability. Read after a beginner track.
 | Health & kill switch | [health-checks.md](../health-checks.md), [kill-switch.md](../kill-switch.md) | `examples/hardware/capability_verification.sd` |
 | Capability traceability | [capability-traceability.md](../capability-traceability.md) | `spanda trace capabilities …` |
 | Fleet / swarm health | [fleet-health.md](../fleet-health.md), [swarm-health.md](../swarm-health.md) | `examples/features/fleet_health_require.sd` |
+| Mission assurance | [mission-assurance.md](../mission-assurance.md) | `examples/showcase/assurance/`, `examples/anomaly/`, … |
+| State estimation | [state-estimation.md](../state-estimation.md) | `examples/basics/11_observe_and_fusion.sd`, `examples/robotics/sensor_fusion.sd` |
+| Anomaly detection | [anomaly-detection.md](../anomaly-detection.md) | `examples/anomaly/learned_navigation.sd` |
+| Diagnostics | [diagnostics.md](../diagnostics.md) | `examples/diagnostics/gps_failure.sd` |
+| Prognostics | [prognostics.md](../prognostics.md) | `examples/prognostics/battery_degradation.sd` |
+| Resilience | [resilience.md](../resilience.md) | `examples/resilience/degraded_mode_recovery.sd` |
+| Readiness | [readiness.md](../readiness.md) | `examples/showcase/readiness/`, `spanda demo readiness` |
 | Verification diagnostics | [verification-diagnostics.md](../verification-diagnostics.md) | `--verification-json` |
 | Testing | [testing.md](../testing.md) | `examples/basics/12_compile_fail_tests.sd` |
 | Typed handler I/O | [typed-handler-io.md](../typed-handler-io.md) | `examples/features/typed_handler_returns.sd` |
@@ -129,7 +137,13 @@ Runnable `.sd` programs grouped by skill level. All paths relative to [`examples
 
 | Directory | Focus |
 |-----------|--------|
-| [`showcase/`](../../examples/showcase/) | v0.1.0-alpha flagship demos |
+| [`showcase/`](../../examples/showcase/) | v0.4 flagship demos (`spanda demo`, assurance, readiness) |
+| [`assurance/`](../../examples/assurance/) | Mission assurance declarations |
+| [`anomaly/`](../../examples/anomaly/) | Anomaly detectors and learned backends |
+| [`diagnostics/`](../../examples/diagnostics/) | Fault diagnosis |
+| [`prognostics/`](../../examples/prognostics/) | RUL and degradation |
+| [`resilience/`](../../examples/resilience/) | Resilience and recovery |
+| [`mission/`](../../examples/mission/) | Mission plan verification |
 | [`features/`](../../examples/features/) | One file per capability (dyn trait, join, zones, QoS, …) |
 | [`realtime/`](../../examples/realtime/) | Deadlines, pipelines, watchdogs, replay |
 | [`regex/`](../../examples/regex/) | Pattern triggers and validation |
