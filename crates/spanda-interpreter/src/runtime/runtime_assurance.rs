@@ -41,13 +41,12 @@ fn collect_learned_detectors(program: &Program) -> Vec<(String, String)> {
 
 fn observed_confidence(report: &HealthReport, detector: &str) -> f64 {
     for check in &report.checks {
-        if check.name == detector
+        if (check.name == detector
             || check.metric.contains("confidence")
-            || check.metric.contains("localization")
+            || check.metric.contains("localization"))
+            && !matches!(check.status, HealthStatus::Healthy | HealthStatus::Unknown)
         {
-            if !matches!(check.status, HealthStatus::Healthy | HealthStatus::Unknown) {
-                return 0.5;
-            }
+            return 0.5;
         }
     }
     if !matches!(

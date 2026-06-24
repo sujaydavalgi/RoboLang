@@ -12,8 +12,30 @@ use spanda_runtime::reliability_runtime::{
 };
 use spanda_runtime::replay::MissionTrace;
 use spanda_runtime::scheduler::SchedulerClock;
+use spanda_assurance::{
+    classify_failure, execute_recovery_plan, RecoveryContext, RecoveryLevel, RecoveryPlanner,
+};
 
 impl<B: RobotBackend> Interpreter<B> {
+    /// Validate recovery through the assurance framework before executing handlers.
+    fn recovery_allowed_for_issue(&self, issue: &str) -> bool {
+        let Some(program) = self.health_program.as_ref() else {
+            return true;
+        };
+        let context = RecoveryContext {
+            issue: issue.into(),
+            diagnosis: None,
+            classification: Some(classify_failure(issue)),
+            level: RecoveryLevel::Level3AutomaticWithValidation,
+        };
+        let plan = RecoveryPlanner::plan(program, &context);
+        let result = execute_recovery_plan(program, &plan);
+        !matches!(
+            result.status,
+            spanda_assurance::RecoveryStatus::Unsafe | spanda_assurance::RecoveryStatus::Failed
+        )
+    }
+
     pub(super) fn load_reliability_config(&mut self, robot: &RobotDecl) -> Result<(), SpandaError> {
         // Load watchdog, pipeline, retry, and recovery runtime state from a robot block.
         //
@@ -505,6 +527,16 @@ impl<B: RobotBackend> Interpreter<B> {
             if message.contains(&error_name)
                 || (error_name == "RuntimeError" && matches!(err, SpandaError::Runtime { .. }))
             {
+                if !self.recovery_allowed_for_issue(&error_name) {
+                    self.log(format!(
+                        "recover: blocked handler for '{error_name}' — recovery validation failed"
+                    ));
+                    self.record_mission_event(
+                        "recover_blocked",
+                        serde_json::json!({ "error": error_name, "message": message }),
+                    );
+                    return Ok(false);
+                }
                 self.log(format!("recover: invoking handler for '{error_name}'"));
                 self.record_mission_event(
                     "recover",
@@ -542,6 +574,16 @@ impl<B: RobotBackend> Interpreter<B> {
             None
         };
         if let Some(key) = handler_key {
+            if !self.recovery_allowed_for_issue(event) {
+                self.log(format!(
+                    "recover: blocked hardware event '{event}' — recovery validation failed"
+                ));
+                self.record_mission_event(
+                    "recover_blocked",
+                    serde_json::json!({ "event": event, "handler": key }),
+                );
+                return Ok(());
+            }
             if let Some(body) = self.recovers.get(&key).cloned() {
                 self.log(format!("recover: hardware event '{event}' -> '{key}'"));
                 self.record_mission_event(
