@@ -28,6 +28,7 @@ pub fn parse(tokens: Vec<Token>) -> Result<Program, SpandaError> {
 struct Parser {
     tokens: Vec<Token>,
     pos: usize,
+    pending_doc: Option<String>,
 }
 
 type ContractClauses = (Option<Expr>, Option<Expr>, Option<Expr>);
@@ -49,7 +50,32 @@ impl Parser {
         // let value = spanda_core::parser::new(tokens);
 
         // Assemble the struct fields and return it.
-        Self { tokens, pos: 0 }
+        Self {
+            tokens,
+            pos: 0,
+            pending_doc: None,
+        }
+    }
+
+    fn take_doc(&mut self) -> Option<String> {
+        // Take accumulated doc comments for the next declaration.
+        self.pending_doc.take()
+    }
+
+    fn accumulate_doc_comments(&mut self) {
+        // Merge consecutive `///` tokens into pending declaration docs.
+        let mut lines = Vec::new();
+        while self.check(TokenType::DocComment) {
+            lines.push(self.advance().lexeme);
+        }
+        if lines.is_empty() {
+            return;
+        }
+        let block = lines.join("\n");
+        self.pending_doc = Some(match self.pending_doc.take() {
+            Some(existing) => format!("{existing}\n{block}"),
+            None => block,
+        });
     }
 
     fn peek(&self) -> &Token {
@@ -633,6 +659,10 @@ impl Parser {
 
         // Repeat while !self.check(TokenType::Eof).
         while !self.check(TokenType::Eof) {
+            if self.check(TokenType::DocComment) {
+                self.accumulate_doc_comments();
+                continue;
+            }
             // Take this path when self.is module fn start().
             if self.is_module_fn_start() {
                 functions.push(self.parse_module_fn()?);
@@ -2792,6 +2822,7 @@ impl Parser {
         let body = self.parse_block()?;
         let end = self.expect(TokenType::Rbrace, "Expected '}' to close function")?;
         Ok(ModuleFnDecl {
+            doc: self.take_doc(),
             name,
             visibility,
             type_params,
@@ -2965,6 +2996,7 @@ impl Parser {
         }
         let end = self.expect(TokenType::Rbrace, "Expected '}' to close struct")?;
         Ok(StructDecl::StructDecl {
+            doc: self.take_doc(),
             name: name.lexeme,
             type_params,
             fields,
@@ -3025,6 +3057,7 @@ impl Parser {
         }
         let end = self.expect(TokenType::Rbrace, "Expected '}' to close enum")?;
         Ok(EnumDecl::EnumDecl {
+            doc: self.take_doc(),
             name: name.lexeme,
             variants,
             span: self.span_from(&start, &end),
@@ -3058,6 +3091,7 @@ impl Parser {
         }
         let end = self.expect(TokenType::Rbrace, "Expected '}' to close trait")?;
         Ok(TraitDecl::TraitDecl {
+            doc: self.take_doc(),
             name: name.lexeme,
             methods,
             span: self.span_from(&start, &end),
@@ -3366,6 +3400,7 @@ impl Parser {
         }
         let end = self.expect(TokenType::Rbrace, "Expected '}' to close robot block")?;
         Ok(RobotDecl::RobotDecl {
+            doc: self.take_doc(),
             name: name_tok.lexeme,
             soc,
             hal,

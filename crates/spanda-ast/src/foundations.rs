@@ -16,6 +16,9 @@ pub enum Visibility {
 /// Module-level function declaration (`export fn plan_path() { ... }`).
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct ModuleFnDecl {
+    /// JavaDoc-style doc comment attached to this declaration.
+    #[serde(default)]
+    pub doc: Option<String>,
     pub name: String,
     pub visibility: Visibility,
     pub type_params: Vec<String>,
@@ -101,6 +104,8 @@ pub struct SelectArm {
 #[serde(tag = "kind")]
 pub enum StructDecl {
     StructDecl {
+        #[serde(default)]
+        doc: Option<String>,
         name: String,
         #[serde(default)]
         type_params: Vec<String>,
@@ -130,6 +135,8 @@ pub struct EnumVariantDecl {
 #[serde(tag = "kind")]
 pub enum EnumDecl {
     EnumDecl {
+        #[serde(default)]
+        doc: Option<String>,
         name: String,
         variants: Vec<EnumVariantDecl>,
         span: Span,
@@ -141,6 +148,8 @@ pub enum EnumDecl {
 #[serde(tag = "kind")]
 pub enum TraitDecl {
     TraitDecl {
+        #[serde(default)]
+        doc: Option<String>,
         name: String,
         methods: Vec<TraitMethodDecl>,
         span: Span,

@@ -568,6 +568,8 @@ pub enum ImportDecl {
 #[serde(tag = "kind")]
 pub enum RobotDecl {
     RobotDecl {
+        #[serde(default)]
+        doc: Option<String>,
         name: String,
         soc: Option<SocDecl>,
         hal: Option<HalBlock>,

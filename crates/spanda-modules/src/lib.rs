@@ -266,6 +266,7 @@ mod tests {
 
         let funcs = vec![
             ModuleFnDecl {
+                doc: None,
                 name: "plan_path".into(),
                 visibility: Visibility::Export,
                 type_params: vec![],
@@ -281,6 +282,7 @@ mod tests {
                 span: empty_span(),
             },
             ModuleFnDecl {
+                doc: None,
                 name: "helper".into(),
                 visibility: Visibility::Private,
                 type_params: vec![],

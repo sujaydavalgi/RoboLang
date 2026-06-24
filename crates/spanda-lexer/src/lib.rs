@@ -208,6 +208,8 @@ pub enum TokenType {
     Matches,
     Use,
     RegexLiteral,
+    /// Documentation comment (`///` line); lexeme is text after the slashes.
+    DocComment,
     Ident,
     Number,
     String,
@@ -883,11 +885,35 @@ pub fn tokenize(source: &str) -> Result<Vec<Token>, LexerError> {
             continue;
         }
 
-        // Take the branch when ch equals len.
+        // Take the branch when ch equals '/' and the next character is also '/'.
         if ch == '/' && i + 1 < chars.len() && chars[i + 1] == '/' {
-            // Repeat while i < chars.len() && chars[i] != '\n'.
-            while i < chars.len() && chars[i] != '\n' {
+            let is_doc = i + 2 < chars.len() && chars[i + 2] == '/';
+            let (start_line, start_column, start_offset) = loc(line, column, i);
+            i += 2;
+            column += 2;
+            if is_doc {
                 i += 1;
+                column += 1;
+            }
+            if is_doc && i < chars.len() && chars[i] == ' ' {
+                i += 1;
+                column += 1;
+            }
+            let mut text = String::new();
+            while i < chars.len() && chars[i] != '\n' {
+                text.push(chars[i]);
+                i += 1;
+                column += 1;
+            }
+            if is_doc {
+                push_single(
+                    &mut tokens,
+                    TokenType::DocComment,
+                    &text,
+                    start_line,
+                    start_column,
+                    start_offset,
+                );
             }
             continue;
         }
@@ -1730,6 +1756,14 @@ mod tests {
 
         let tokens = tokenize("// comment\nrobot R {}").unwrap();
         assert_eq!(tokens[0].token_type, TokenType::Robot);
+    }
+
+    #[test]
+    fn tokenizes_doc_comments() {
+        let tokens = tokenize("/// Plans a path.\nexport fn plan() -> Path {}").unwrap();
+        assert_eq!(tokens[0].token_type, TokenType::DocComment);
+        assert_eq!(tokens[0].lexeme, "Plans a path.");
+        assert_eq!(tokens[1].token_type, TokenType::Export);
     }
 
     #[test]

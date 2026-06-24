@@ -960,6 +960,7 @@ impl<'h> TypeChecker<'h> {
             type_params,
             fields,
             span,
+            ..
         } = decl;
 
         // Skip further work when !type params is empty.
@@ -1028,6 +1029,7 @@ impl<'h> TypeChecker<'h> {
             name,
             variants,
             span,
+            ..
         } = decl;
 
         // Skip further work when variants is empty.
@@ -1099,6 +1101,7 @@ impl<'h> TypeChecker<'h> {
             name,
             methods,
             span,
+            ..
         } = decl;
 
         // Skip further work when methods is empty.

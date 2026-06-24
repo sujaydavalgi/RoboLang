@@ -1230,6 +1230,7 @@ impl<B: RobotBackend> Interpreter<B> {
             module_name: None,
             imports: vec![],
             functions: vec![ModuleFnDecl {
+                doc: None,
                 name: "__compile_fail_probe".into(),
                 visibility: Visibility::Private,
                 type_params: vec![],
