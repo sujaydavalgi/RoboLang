@@ -75,7 +75,7 @@ const RUNTIME_FAULTS = ["GPSDegraded", "CameraOffline", "RobotHealthCritical"];
 const weightFor = (key: keyof typeof DEFAULT_WEIGHTS): number => DEFAULT_WEIGHTS[key];
 
 function isValidDeployDecl(candidate: DeployDecl | undefined): candidate is DeployDecl {
-  return !!candidate && typeof candidate === "object" && "kind" in candidate && candidate.kind === "DeployDecl";
+  return !!candidate && "kind" in candidate && candidate.kind === "DeployDecl";
 }
 
 function defaultDeployTarget(program: Program): string | undefined {
