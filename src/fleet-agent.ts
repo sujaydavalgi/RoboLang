@@ -17,60 +17,15 @@ export type FleetAgentState = {
 };
 
 export function defaultFleetAgentStatePath(): string {
-  // Description:
-  //     DefaultFleetAgentStatePath.
-  //
-  // Inputs:
-  //     None.
-  //
-  // Outputs:
-  //     result: string
-  //         Return value from `defaultFleetAgentStatePath`.
-  //
-  // Example:
-
-  //     const result = defaultFleetAgentStatePath();
-
   return process.env.SPANDA_FLEET_AGENT_STATE ?? ".spanda/fleet-agent-state.json";
 }
 
 export function fleetAgentStatePathFor(robotName: string): string {
-  // Description:
-  //     FleetAgentStatePathFor.
-  //
-  // Inputs:
-  //     robotName: string
-  //         Caller-supplied robotName.
-  //
-  // Outputs:
-  //     result: string
-  //         Return value from `fleetAgentStatePathFor`.
-  //
-  // Example:
-
-  //     const result = fleetAgentStatePathFor(robotName);
-
   const safeName = robotName.replace(/[/\\]/g, "_");
   return `.spanda/fleet-agent-state/${safeName}.json`;
 }
 
 function clearFleetAgentOnIdentityChange(state: FleetAgentState, newRobotName: string): void {
-  // Description:
-  //     ClearFleetAgentOnIdentityChange.
-  //
-  // Inputs:
-  //     state: FleetAgentState
-  //         Caller-supplied state.
-  //     newRobotName: string
-  //         Caller-supplied newRobotName.
-  //
-  // Outputs:
-  //     None.
-  //
-  // Example:
-
-  //     const result = clearFleetAgentOnIdentityChange(state, newRobotName);
-
   if (state.robotName && state.robotName !== newRobotName) {
     state.lastPeerMessages = [];
     delete state.token;
@@ -90,39 +45,10 @@ function createRequestLock(): <T>(fn: () => Promise<T>) => Promise<T> {
 }
 
 export function emptyFleetAgentState(): FleetAgentState {
-  // Description:
-  //     EmptyFleetAgentState.
-  //
-  // Inputs:
-  //     None.
-  //
-  // Outputs:
-  //     result: FleetAgentState
-  //         Return value from `emptyFleetAgentState`.
-  //
-  // Example:
-
-  //     const result = emptyFleetAgentState();
-
   return { robotName: "", lastPeerMessages: [] };
 }
 
 export function loadFleetAgentState(text: string | null): FleetAgentState {
-  // Description:
-  //     LoadFleetAgentState.
-  //
-  // Inputs:
-  //     text: string | null
-  //         Caller-supplied text.
-  //
-  // Outputs:
-  //     result: FleetAgentState
-  //         Return value from `loadFleetAgentState`.
-  //
-  // Example:
-
-  //     const result = loadFleetAgentState(text);
-
   if (!text) return emptyFleetAgentState();
   try {
     const parsed = JSON.parse(text) as FleetAgentState & {
@@ -141,86 +67,23 @@ export function loadFleetAgentState(text: string | null): FleetAgentState {
 }
 
 export function readFleetAgentStateFromDisk(path = defaultFleetAgentStatePath()): FleetAgentState {
-  // Description:
-  //     ReadFleetAgentStateFromDisk.
-  //
-  // Inputs:
-  //     path = defaultFleetAgentStatePath(): input value
-  //         Caller-supplied path = defaultFleetAgentStatePath().
-  //
-  // Outputs:
-  //     result: FleetAgentState
-  //         Return value from `readFleetAgentStateFromDisk`.
-  //
-  // Example:
-
-  //     const result = readFleetAgentStateFromDisk(path = defaultFleetAgentStatePath());
-
   if (!existsSync(path)) return emptyFleetAgentState();
   return loadFleetAgentState(readFileSync(path, "utf-8"));
 }
 
 export function writeFleetAgentStateToDisk(state: FleetAgentState, path = defaultFleetAgentStatePath()): void {
-  // Description:
-  //     WriteFleetAgentStateToDisk.
-  //
-  // Inputs:
-  //     state: FleetAgentState
-  //         Caller-supplied state.
-  //     path = defaultFleetAgentStatePath(): input value
-  //         Caller-supplied path = defaultFleetAgentStatePath().
-  //
-  // Outputs:
-  //     None.
-  //
-  // Example:
-
-  //     const result = writeFleetAgentStateToDisk(state, path = defaultFleetAgentStatePath());
-
   const abs = resolve(path);
   mkdirSync(dirname(abs), { recursive: true });
   writeFileSync(abs, JSON.stringify(state, null, 2));
 }
 
 function unauthorized(req: IncomingMessage, state: FleetAgentState): boolean {
-  // Description:
-  //     Unauthorized.
-  //
-  // Inputs:
-  //     req: IncomingMessage
-  //         Caller-supplied req.
-  //     state: FleetAgentState
-  //         Caller-supplied state.
-  //
-  // Outputs:
-  //     result: boolean
-  //         Return value from `unauthorized`.
-  //
-  // Example:
-
-  //     const result = unauthorized(req, state);
-
   const header = req.headers.authorization;
   if (!state.token) return false;
   return header !== `Bearer ${state.token}`;
 }
 
 function readBody(req: IncomingMessage): Promise<string> {
-  // Description:
-  //     ReadBody.
-  //
-  // Inputs:
-  //     req: IncomingMessage
-  //         Caller-supplied req.
-  //
-  // Outputs:
-  //     result: Promise<string>
-  //         Return value from `readBody`.
-  //
-  // Example:
-
-  //     const result = readBody(req);
-
   return new Promise((resolveBody, reject) => {
     const chunks: Buffer[] = [];
     req.on("data", (chunk) => chunks.push(Buffer.from(chunk)));
@@ -235,27 +98,6 @@ async function handleRequest(
   state: FleetAgentState,
   statePath: string,
 ): Promise<void> {
-  // Description:
-  //     HandleRequest.
-  //
-  // Inputs:
-  //     req: IncomingMessage
-  //         Caller-supplied req.
-  //     res: ServerResponse
-  //         Caller-supplied res.
-  //     state: FleetAgentState
-  //         Caller-supplied state.
-  //     statePath: string
-  //         Caller-supplied statePath.
-  //
-  // Outputs:
-  //     result: Promise<void>
-  //         Return value from `handleRequest`.
-  //
-  // Example:
-
-  //     const result = handleRequest(req, res, state, statePath);
-
   if (unauthorized(req, state)) {
     res.writeHead(401, { "Content-Type": "application/json" });
     res.end(JSON.stringify({ ok: false, error: "unauthorized" }));
@@ -364,77 +206,6 @@ export function startFleetAgentServer(options: {
   tlsCert?: string;
   tlsKey?: string;
 }): ReturnType<typeof createServer> {
-
-  // Description:
-
-  //     StartFleetAgentServer.
-
-  //
-
-  // Inputs:
-
-  //     options: { bind: string; robotName: string; token?: string; statePath?: string; tlsCert?: string; tlsKey?: string; }
-
-  //         Caller-supplied options.
-
-  //
-
-  // Outputs:
-
-  //     result: ReturnType<typeof createServer>
-
-  //         Return value from `startFleetAgentServer`.
-
-  //
-
-  // Example:
-
-  //     const result = startFleetAgentServer(options);
-
-  // Description:
-  //     StartFleetAgentServer.
-  //
-  // Inputs:
-
-  //     options: {
-  bind: string;
-  robotName: string;
-  token?: string;
-  statePath?: string;
-  tlsCert?: string;
-  tlsKey?: string;
-}
-  //         Caller-supplied options.
-  //
-  // Outputs:
-  //     result: ReturnType<typeof createServer>
-  //         Return value from `startFleetAgentServer`.
-  //
-  // Example:
-  //     const result = startFleetAgentServer(options);
-  // Description:
-  //     StartFleetAgentServer.
-  //
-  // Inputs:
-
-  //     options: {
-  bind: string;
-  robotName: string;
-  token?: string;
-  statePath?: string;
-  tlsCert?: string;
-  tlsKey?: string;
-}
-  //         Caller-supplied options.
-  //
-  // Outputs:
-  //     result: ReturnType<typeof createServer>
-  //         Return value from `startFleetAgentServer`.
-  //
-  // Example:
-
-  //     const result = startFleetAgentServer(options);
-
   const statePath = options.statePath ?? fleetAgentStatePathFor(options.robotName);
   const state = readFleetAgentStateFromDisk(statePath);
   clearFleetAgentOnIdentityChange(state, options.robotName);
@@ -443,22 +214,6 @@ export function startFleetAgentServer(options: {
   writeFleetAgentStateToDisk(state, statePath);
   const withRequestLock = createRequestLock();
   const requestHandler = (req: IncomingMessage, res: ServerResponse) => {
-    // Description:
-    //     RequestHandler.
-    //
-    // Inputs:
-    //     req: IncomingMessage
-    //         Caller-supplied req.
-    //     res: ServerResponse
-    //         Caller-supplied res.
-    //
-    // Outputs:
-    //     None.
-    //
-    // Example:
-
-    //     const result = requestHandler(req, res);
-
     void withRequestLock(() => handleRequest(req, res, state, statePath));
   };
   const scheme = options.tlsCert && options.tlsKey ? "https" : "http";

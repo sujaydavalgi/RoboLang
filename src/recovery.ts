@@ -84,39 +84,10 @@ export type RecoveryKnowledgeBase = {
 };
 
 function defaultKnowledgeStorePath(): string {
-  // Description:
-  //     DefaultKnowledgeStorePath.
-  //
-  // Inputs:
-  //     None.
-  //
-  // Outputs:
-  //     result: string
-  //         Return value from `defaultKnowledgeStorePath`.
-  //
-  // Example:
-
-  //     const result = defaultKnowledgeStorePath();
-
   return join(process.cwd(), ".spanda", "recovery_knowledge.json");
 }
 
 export function loadRecoveryKnowledgeStore(path = defaultKnowledgeStorePath()): RecoveryKnowledgeBase {
-  // Description:
-  //     LoadRecoveryKnowledgeStore.
-  //
-  // Inputs:
-  //     path = defaultKnowledgeStorePath(): input value
-  //         Caller-supplied path = defaultKnowledgeStorePath().
-  //
-  // Outputs:
-  //     result: RecoveryKnowledgeBase
-  //         Return value from `loadRecoveryKnowledgeStore`.
-  //
-  // Example:
-
-  //     const result = loadRecoveryKnowledgeStore(path = defaultKnowledgeStorePath());
-
   if (!existsSync(path)) return { entries: [] };
   try {
     return JSON.parse(readFileSync(path, "utf-8")) as RecoveryKnowledgeBase;
@@ -129,23 +100,6 @@ export function bestKnowledgeEntry(
   kb: RecoveryKnowledgeBase,
   issue: string,
 ): RecoveryKnowledgeEntry | undefined {
-  // Description:
-  //     BestKnowledgeEntry.
-  //
-  // Inputs:
-  //     kb: RecoveryKnowledgeBase
-  //         Caller-supplied kb.
-  //     issue: string
-  //         Caller-supplied issue.
-  //
-  // Outputs:
-  //     result: RecoveryKnowledgeEntry | undefined
-  //         Return value from `bestKnowledgeEntry`.
-  //
-  // Example:
-
-  //     const result = bestKnowledgeEntry(kb, issue);
-
   const lower = issue.toLowerCase();
   return kb.entries
     .filter(
@@ -157,21 +111,6 @@ export function bestKnowledgeEntry(
 }
 
 export function loadMergedRecoveryKnowledge(program: Program): RecoveryKnowledgeBase {
-  // Description:
-  //     LoadMergedRecoveryKnowledge.
-  //
-  // Inputs:
-  //     program: Program
-  //         Caller-supplied program.
-  //
-  // Outputs:
-  //     result: RecoveryKnowledgeBase
-  //         Return value from `loadMergedRecoveryKnowledge`.
-  //
-  // Example:
-
-  //     const result = loadMergedRecoveryKnowledge(program);
-
   const persisted = loadRecoveryKnowledgeStore();
   const staticEntries: RecoveryKnowledgeEntry[] = [];
   for (const policy of extractPolicies(program)) {
@@ -203,21 +142,6 @@ export function loadMergedRecoveryKnowledge(program: Program): RecoveryKnowledge
 }
 
 export function formatRecoveryKnowledge(kb: RecoveryKnowledgeBase): string {
-  // Description:
-  //     FormatRecoveryKnowledge.
-  //
-  // Inputs:
-  //     kb: RecoveryKnowledgeBase
-  //         Caller-supplied kb.
-  //
-  // Outputs:
-  //     result: string
-  //         Return value from `formatRecoveryKnowledge`.
-  //
-  // Example:
-
-  //     const result = formatRecoveryKnowledge(kb);
-
   if (kb.entries.length === 0) return "No recovery knowledge entries.\n";
   return kb.entries
     .map(
@@ -228,21 +152,6 @@ export function formatRecoveryKnowledge(kb: RecoveryKnowledgeBase): string {
 }
 
 function classifyFailure(issue: string): string {
-  // Description:
-  //     ClassifyFailure.
-  //
-  // Inputs:
-  //     issue: string
-  //         Caller-supplied issue.
-  //
-  // Outputs:
-  //     result: string
-  //         Return value from `classifyFailure`.
-  //
-  // Example:
-
-  //     const result = classifyFailure(issue);
-
   const lower = issue.toLowerCase();
   if (lower.includes("gps") || lower.includes("sensor")) return "SensorFailure";
   if (lower.includes("actuator") || lower.includes("motor")) return "ActuatorFailure";
@@ -256,21 +165,6 @@ function classifyFailure(issue: string): string {
 }
 
 function inferDiagnosis(issue: string): string {
-  // Description:
-  //     InferDiagnosis.
-  //
-  // Inputs:
-  //     issue: string
-  //         Caller-supplied issue.
-  //
-  // Outputs:
-  //     result: string
-  //         Return value from `inferDiagnosis`.
-  //
-  // Example:
-
-  //     const result = inferDiagnosis(issue);
-
   const lower = issue.toLowerCase();
   if (lower.includes("gps")) return "Satellite lock lost";
   if (lower.includes("lidar")) return "Lidar point cloud unavailable";
@@ -279,21 +173,6 @@ function inferDiagnosis(issue: string): string {
 }
 
 function extractPolicies(program: Program): RecoveryReport["policies"] {
-  // Description:
-  //     ExtractPolicies.
-  //
-  // Inputs:
-  //     program: Program
-  //         Caller-supplied program.
-  //
-  // Outputs:
-  //     result: RecoveryReport["policies"]
-  //         Return value from `extractPolicies`.
-  //
-  // Example:
-
-  //     const result = extractPolicies(program);
-
   const specs: RecoveryReport["policies"] = [];
   for (const decl of program.recoveryPolicies ?? []) {
     specs.push({
@@ -311,23 +190,6 @@ function extractPolicies(program: Program): RecoveryReport["policies"] {
 }
 
 function parseAction(text: string, order: number): PlannedRecoveryAction {
-  // Description:
-  //     ParseAction.
-  //
-  // Inputs:
-  //     text: string
-  //         Caller-supplied text.
-  //     order: number
-  //         Caller-supplied order.
-  //
-  // Outputs:
-  //     result: PlannedRecoveryAction
-  //         Return value from `parseAction`.
-  //
-  // Example:
-
-  //     const result = parseAction(text, order);
-
   const lower = text.toLowerCase();
   const risk =
     lower.includes("unsafe") || lower.includes("restart fleet") || lower.includes("open gate")
@@ -344,23 +206,6 @@ function parseAction(text: string, order: number): PlannedRecoveryAction {
 }
 
 function actionsForIssue(program: Program, issue: string): PlannedRecoveryAction[] {
-  // Description:
-  //     ActionsForIssue.
-  //
-  // Inputs:
-  //     program: Program
-  //         Caller-supplied program.
-  //     issue: string
-  //         Caller-supplied issue.
-  //
-  // Outputs:
-  //     result: PlannedRecoveryAction[]
-  //         Return value from `actionsForIssue`.
-  //
-  // Example:
-
-  //     const result = actionsForIssue(program, issue);
-
   const lower = issue.toLowerCase();
   const actions: PlannedRecoveryAction[] = [];
   let order = 0;
@@ -391,23 +236,6 @@ function actionsForIssue(program: Program, issue: string): PlannedRecoveryAction
 }
 
 function planRecovery(program: Program, context: RecoveryContext): RecoveryPlan {
-  // Description:
-  //     PlanRecovery.
-  //
-  // Inputs:
-  //     program: Program
-  //         Caller-supplied program.
-  //     context: RecoveryContext
-  //         Caller-supplied context.
-  //
-  // Outputs:
-  //     result: RecoveryPlan
-  //         Return value from `planRecovery`.
-  //
-  // Example:
-
-  //     const result = planRecovery(program, context);
-
   const diagnosis = context.diagnosis ?? inferDiagnosis(context.issue);
   const actions = actionsForIssue(program, context.issue);
   const risk = actions.some((a) => a.risk === "Critical")
@@ -429,25 +257,6 @@ function executePlan(
   plan: RecoveryPlan,
   options: ReadinessOptions,
 ): RecoveryResult {
-  // Description:
-  //     ExecutePlan.
-  //
-  // Inputs:
-  //     program: Program
-  //         Caller-supplied program.
-  //     plan: RecoveryPlan
-  //         Caller-supplied plan.
-  //     options: ReadinessOptions
-  //         Caller-supplied options.
-  //
-  // Outputs:
-  //     result: RecoveryResult
-  //         Return value from `executePlan`.
-  //
-  // Example:
-
-  //     const result = executePlan(program, plan, options);
-
   const readiness = evaluateReadinessTs(program, options);
   const executed: string[] = [];
   const failed: string[] = [];
@@ -490,21 +299,6 @@ function executePlan(
 }
 
 function validateOperatingModes(program: Program): boolean {
-  // Description:
-  //     ValidateOperatingModes.
-  //
-  // Inputs:
-  //     program: Program
-  //         Caller-supplied program.
-  //
-  // Outputs:
-  //     result: boolean
-  //         Return value from `validateOperatingModes`.
-  //
-  // Example:
-
-  //     const result = validateOperatingModes(program);
-
   const modes = program.operatingModes ?? [];
   if (modes.length === 0) return true;
   const hasSafe = modes.some((m) => /safe/i.test(m.modeKind));
@@ -517,25 +311,6 @@ export function evaluateRecoveryTs(
   context?: RecoveryContext,
   options: ReadinessOptions = {},
 ): RecoveryReport {
-  // Description:
-  //     EvaluateRecoveryTs.
-  //
-  // Inputs:
-  //     program: Program
-  //         Caller-supplied program.
-  //     context?: RecoveryContext
-  //         Caller-supplied context?.
-  //     options: ReadinessOptions = {}
-  //         Caller-supplied options.
-  //
-  // Outputs:
-  //     result: RecoveryReport
-  //         Return value from `evaluateRecoveryTs`.
-  //
-  // Example:
-
-  //     const result = evaluateRecoveryTs(program, context?, options);
-
   const policies = extractPolicies(program);
   const contexts: RecoveryContext[] = context
     ? [context]
@@ -573,25 +348,6 @@ export function simulateFailureRecoveryTs(
   failureKind: string,
   options: ReadinessOptions = {},
 ): RecoveryReport {
-  // Description:
-  //     SimulateFailureRecoveryTs.
-  //
-  // Inputs:
-  //     program: Program
-  //         Caller-supplied program.
-  //     failureKind: string
-  //         Caller-supplied failureKind.
-  //     options: ReadinessOptions = {}
-  //         Caller-supplied options.
-  //
-  // Outputs:
-  //     result: RecoveryReport
-  //         Return value from `simulateFailureRecoveryTs`.
-  //
-  // Example:
-
-  //     const result = simulateFailureRecoveryTs(program, failureKind, options);
-
   return evaluateRecoveryTs(
     program,
     {
@@ -605,21 +361,6 @@ export function simulateFailureRecoveryTs(
 }
 
 export function formatRecoveryReport(report: RecoveryReport): string {
-  // Description:
-  //     FormatRecoveryReport.
-  //
-  // Inputs:
-  //     report: RecoveryReport
-  //         Caller-supplied report.
-  //
-  // Outputs:
-  //     result: string
-  //         Return value from `formatRecoveryReport`.
-  //
-  // Example:
-
-  //     const result = formatRecoveryReport(report);
-
   const plan = report.plans[0];
   const result = report.results[0];
   if (!plan || !result) {
@@ -644,44 +385,7 @@ export async function coordinateFleetRecoveryViaMesh(
     fromRobot?: string;
     members?: string[];
   } = {},
-): Promise<{
-  // Description:
-  //     CoordinateFleetRecoveryViaMesh.
-  //
-  // Inputs:
-  //     action: string
-  //         Caller-supplied action.
-  //     options: { fleetName?: string; fromRobot?: string; members?: string[]; } = {}
-  //         Caller-supplied options.
-  //
-  // Outputs:
-  //     result: Promise<
-  //         Return value from `coordinateFleetRecoveryViaMesh`.
-  //
-  // Example:
-  //     const result = coordinateFleetRecoveryViaMesh(action, options);
-
-  // Description:
-  //     CoordinateFleetRecoveryViaMesh.
-  //
-  // Inputs:
-  //     action: string
-  //         Caller-supplied action.
-    // options: {
-    fleetName?: string;
-    fromRobot?: string;
-    members?: string[];
-  } = {}
-  //         Caller-supplied options.
-  //
-  // Outputs:
-  //     result: Promise<
-  //         Return value from `coordinateFleetRecoveryViaMesh`.
-  //
-  // Example:
-
- // const result = coordinateFleetRecoveryViaMesh(action, options);
- relayed: number; failed: number } | null> {
+): Promise<{ relayed: number; failed: number } | null> {
   const meshUrl = process.env.SPANDA_FLEET_MESH_URL;
   if (!meshUrl) return null;
   const { relayRecoveryViaMesh } = await import("./fleet-mesh.js");

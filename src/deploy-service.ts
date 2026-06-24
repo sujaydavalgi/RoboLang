@@ -70,62 +70,14 @@ export const defaultRolloutOptions = (): RolloutOptions => ({
 });
 
 function assignmentKey(robot: string, hardware: string): string {
-  // Description:
-  //     AssignmentKey.
-  //
-  // Inputs:
-  //     robot: string
-  //         Caller-supplied robot.
-  //     hardware: string
-  //         Caller-supplied hardware.
-  //
-  // Outputs:
-  //     result: string
-  //         Return value from `assignmentKey`.
-  //
-  // Example:
-
-  //     const result = assignmentKey(robot, hardware);
-
   return `${robot}@${hardware}`;
 }
 
 export function deployTargetKey(robot: string, hardware: string): string {
-  // Description:
-  //     DeployTargetKey.
-  //
-  // Inputs:
-  //     robot: string
-  //         Caller-supplied robot.
-  //     hardware: string
-  //         Caller-supplied hardware.
-  //
-  // Outputs:
-  //     result: string
-  //         Return value from `deployTargetKey`.
-  //
-  // Example:
-
-  //     const result = deployTargetKey(robot, hardware);
-
   return assignmentKey(robot, hardware);
 }
 
 export function hashProgramArtifact(programPath: string): string | undefined {
-  // Description:
-  //     HashProgramArtifact.
-  //
-  // Inputs:
-  //     programPath: string
-  //         Caller-supplied programPath.
-  //
-  // Outputs:
-  //     result: string | undefined
-  //         Return value from `hashProgramArtifact`.
-  //
-  // Example:
-  //     const result = hashProgramArtifact(programPath);
-
   // Hash the deployment source file when it exists locally.
   if (!existsSync(programPath)) return undefined;
   const bytes = readFileSync(programPath);
@@ -133,24 +85,6 @@ export function hashProgramArtifact(programPath: string): string | undefined {
 }
 
 export function buildDeployPlan(program: Program, programPath: string, version: string): DeployPlan {
-  // Description:
-  //     BuildDeployPlan.
-  //
-  // Inputs:
-  //     program: Program
-  //         Caller-supplied program.
-  //     programPath: string
-  //         Caller-supplied programPath.
-  //     version: string
-  //         Caller-supplied version.
-  //
-  // Outputs:
-  //     result: DeployPlan
-  //         Return value from `buildDeployPlan`.
-  //
-  // Example:
-  //     const result = buildDeployPlan(program, programPath, version);
-
   // Extract deploy targets and certification metadata from the program AST.
   const assignments: DeployAssignment[] = [];
   for (const deploy of program.deployments) {
@@ -178,22 +112,6 @@ export function validateRolloutCertification(
   plan: DeployPlan,
   options: RolloutOptions,
 ): string | undefined {
-  // Description:
-  //     ValidateRolloutCertification.
-  //
-  // Inputs:
-  //     plan: DeployPlan
-  //         Caller-supplied plan.
-  //     options: RolloutOptions
-  //         Caller-supplied options.
-  //
-  // Outputs:
-  //     result: string | undefined
-  //         Return value from `validateRolloutCertification`.
-  //
-  // Example:
-  //     const result = validateRolloutCertification(plan, options);
-
   // Enforce strict certification proof before OTA rollout proceeds.
   if (!options.requireCertify) return undefined;
   const proof = plan.certificationProof;
@@ -205,23 +123,6 @@ export function validateRolloutCertification(
 }
 
 export function planRollout(plan: DeployPlan, options: RolloutOptions): RolloutResult {
-  // Description:
-  //     PlanRollout.
-  //
-  // Inputs:
-  //     plan: DeployPlan
-  //         Caller-supplied plan.
-  //     options: RolloutOptions
-  //         Caller-supplied options.
-  //
-  // Outputs:
-  //     result: RolloutResult
-  //         Return value from `planRollout`.
-  //
-  // Example:
-
-  //     const result = planRollout(plan, options);
-
   const certifyError = validateRolloutCertification(plan, options);
   if (certifyError) {
     return {
@@ -245,21 +146,6 @@ export function planRollout(plan: DeployPlan, options: RolloutOptions): RolloutR
   }
 
   const statusFor = (deploy: boolean): RolloutStepStatus => {
-    // Description:
-    //     StatusFor.
-    //
-    // Inputs:
-    //     deploy: boolean
-    //         Caller-supplied deploy.
-    //
-    // Outputs:
-    //     result: RolloutStepStatus
-    //         Return value from `statusFor`.
-    //
-    // Example:
-
-    //     const result = statusFor(deploy);
-
     if (!deploy) return "skipped";
     return options.dryRun ? "pending" : "deployed";
   };
@@ -296,23 +182,7 @@ export function planRollout(plan: DeployPlan, options: RolloutOptions): RolloutR
         hardware: a.hardware,
         status: statusFor(idx < deployCount),
         version: options.version,
-        phasePerce
-  // Description:
-  //     ApplyRollout.
-  //
-  // Inputs:
-  //     state: DeployState
-  //         Caller-supplied state.
-  //     result: RolloutResult
-  //         Caller-supplied result.
-  //
-  // Outputs:
-  //     None.
-  //
-  // Example:
-
-// const result = applyRollout(state, result);
-nt: idx < deployCount ? finalPhase : 0,
+        phasePercent: idx < deployCount ? finalPhase : 0,
       });
     });
   }
@@ -327,43 +197,10 @@ nt: idx < deployCount ? finalPhase : 0,
 }
 
 export function applyRollout(state: DeployState, result: RolloutResult): void {
-  // Description:
-  //     ApplyRollout.
-  //
-  // Inputs:
-  //     state: DeployState
-  //         Caller-supplied state.
-  //     result: RolloutResult
-  //         Caller-supplied result.
-  //
-  // Outputs:
-  //     None.
-  //
-  // Example:
-
-  //     const result = applyRollout(state, result);
-
   if (result.dryRun) return;
   for (const step of result.steps) {
     if (step.status !== "deployed") continue;
-    co
-  // Description:
-  //     RollbackTargets.
-  //
-  // Inputs:
-  //     state: DeployState
-  //         Caller-supplied state.
-  //     plan: DeployPlan
-  //         Caller-supplied plan.
-  //
-  // Outputs:
-  //     result: RolloutResult
-  //         Return value from `rollbackTargets`.
-  //
-  // Example:
-
-// const result = rollbackTargets(state, plan);
-nst key = assignmentKey(step.robotName, step.hardware);
+    const key = assignmentKey(step.robotName, step.hardware);
     const prev = state.currentVersion[key];
     if (prev) state.previousVersion[key] = prev;
     state.currentVersion[key] = step.version;
@@ -372,23 +209,6 @@ nst key = assignmentKey(step.robotName, step.hardware);
 }
 
 export function rollbackTargets(state: DeployState, plan: DeployPlan): RolloutResult {
-  // Description:
-  //     RollbackTargets.
-  //
-  // Inputs:
-  //     state: DeployState
-  //         Caller-supplied state.
-  //     plan: DeployPlan
-  //         Caller-supplied plan.
-  //
-  // Outputs:
-  //     result: RolloutResult
-  //         Return value from `rollbackTargets`.
-  //
-  // Example:
-
-  //     const result = rollbackTargets(state, plan);
-
   const steps: RolloutStep[] = [];
   for (const a of plan.assignments) {
     const key = assignmentKey(a.robotName, a.hardware);
@@ -410,134 +230,33 @@ export function rollbackTargets(state: DeployState, plan: DeployPlan): RolloutRe
         hardware: a.hardware,
         status: "skipped",
         version: "unknown",
-  // Description:
-  //     DefaultStatePath.
-  //
-  // Inputs:
-  //     None.
-  //
-  // Outputs:
-  //     result: string
-  //         Return value from `defaultStatePath`.
-  //
-  // Example:
-
-        // const result = defaultStatePath();
-
         phasePercent: null,
       });
     }
   }
   const result: RolloutResult = {
-    stra
-  // Description:
-  //     EmptyDeployState.
-  //
-  // Inputs:
-  //     None.
-  //
-  // Outputs:
-  //     result: DeployState
-  //         Return value from `emptyDeployState`.
-  //
-  // Example:
-
-// const result = emptyDeployState();
-tegy: "all",
+    strategy: "all",
     version: "rollback",
     dryRun: false,
     steps,
     success: steps.some((s) => s.status === "rolled_back"),
   };
-  sta
-  // Description:
-  //     LoadDeployState.
-  //
-  // Inputs:
-  //     text: string | null
-  //         Caller-supplied text.
-  //
-  // Outputs:
-  //     result: DeployState
-  //         Return value from `loadDeployState`.
-  //
-  // Example:
-
-// const result = loadDeployState(text);
-te.history.push(result);
+  state.history.push(result);
   return result;
 }
 
 export function defaultStatePath(): string {
-  // Description:
-  //     DefaultStatePath.
-  //
-  // Inputs:
-  //     None.
-  //
-  // Outputs:
-  //     result: string
-  //         Return value from `defaultStatePath`.
-  //
-  // Example:
-
-  //     const result = defaultStatePath();
-
   return ".spanda/deploy-state.json";
 }
 
 export function emptyDeployState(): DeployState {
-  // Description:
-  //     EmptyDeployState.
-  //
-  // Inputs:
-  //     None.
-  //
-  // Outputs:
-  //     result: DeployState
-  //         Return value from `emptyDeployState`.
-  //
-  // Example:
-
-  //     const result = emptyDeployState();
-
   return { currentVersion: {}, previousVersion: {}, history: [] };
 }
 
 export function loadDeployState(text: string | null): DeployState {
-  // Description:
-  //     LoadDeployState.
-  //
-  // Inputs:
-  //     text: string | null
-  //         Caller-supplied text.
-  //
-  // Outputs:
-  //     result: DeployState
-  //         Return value from `loadDeployState`.
-  //
-  // Example:
-
-  //     const result = loadDeployState(text);
-
   if (!text) return emptyDeployState();
   try {
-    const p
-  // Description:
-  //     SerializeDeployState.
-  //
-  // Inputs:
-  //     state: DeployState
-  //         Caller-supplied state.
-  //
-  // Outputs:
-  //     result: string
-  //         Return value from `serializeDeployState`.
-  //
-  // Example:
-
-// const result = serializeDeployState(state);
-arsed = JSON.parse(text) as DeployState;
+    const parsed = JSON.parse(text) as DeployState;
     return {
       currentVersion: parsed.currentVersion ?? {},
       previousVersion: parsed.previousVersion ?? {},
@@ -549,20 +268,5 @@ arsed = JSON.parse(text) as DeployState;
 }
 
 export function serializeDeployState(state: DeployState): string {
-  // Description:
-  //     SerializeDeployState.
-  //
-  // Inputs:
-  //     state: DeployState
-  //         Caller-supplied state.
-  //
-  // Outputs:
-  //     result: string
-  //         Return value from `serializeDeployState`.
-  //
-  // Example:
-
-  //     const result = serializeDeployState(state);
-
   return JSON.stringify(state, null, 2);
 }

@@ -23,60 +23,15 @@ export type AgentState = {
 };
 
 export function defaultAgentStatePath(): string {
-  // Description:
-  //     DefaultAgentStatePath.
-  //
-  // Inputs:
-  //     None.
-  //
-  // Outputs:
-  //     result: string
-  //         Return value from `defaultAgentStatePath`.
-  //
-  // Example:
-
-  //     const result = defaultAgentStatePath();
-
   return process.env.SPANDA_AGENT_STATE ?? ".spanda/agent-state.json";
 }
 
 export function agentStatePathFor(target: string): string {
-  // Description:
-  //     AgentStatePathFor.
-  //
-  // Inputs:
-  //     target: string
-  //         Caller-supplied target.
-  //
-  // Outputs:
-  //     result: string
-  //         Return value from `agentStatePathFor`.
-  //
-  // Example:
-
-  //     const result = agentStatePathFor(target);
-
   const safeTarget = target.replace(/[/\\@:]/g, "_");
   return `.spanda/agent-state/${safeTarget}.json`;
 }
 
 function clearAgentDeploymentOnIdentityChange(state: AgentState, newTarget: string): void {
-  // Description:
-  //     ClearAgentDeploymentOnIdentityChange.
-  //
-  // Inputs:
-  //     state: AgentState
-  //         Caller-supplied state.
-  //     newTarget: string
-  //         Caller-supplied newTarget.
-  //
-  // Outputs:
-  //     None.
-  //
-  // Example:
-
-  //     const result = clearAgentDeploymentOnIdentityChange(state, newTarget);
-
   if (state.target && state.target !== newTarget) {
     state.currentVersion = "0.0.0";
     delete state.previousVersion;
@@ -103,39 +58,10 @@ function createRequestLock(): <T>(fn: () => Promise<T>) => Promise<T> {
 }
 
 export function emptyAgentState(): AgentState {
-  // Description:
-  //     EmptyAgentState.
-  //
-  // Inputs:
-  //     None.
-  //
-  // Outputs:
-  //     result: AgentState
-  //         Return value from `emptyAgentState`.
-  //
-  // Example:
-
-  //     const result = emptyAgentState();
-
   return { target: "", currentVersion: "0.0.0" };
 }
 
 export function loadAgentState(text: string | null): AgentState {
-  // Description:
-  //     LoadAgentState.
-  //
-  // Inputs:
-  //     text: string | null
-  //         Caller-supplied text.
-  //
-  // Outputs:
-  //     result: AgentState
-  //         Return value from `loadAgentState`.
-  //
-  // Example:
-
-  //     const result = loadAgentState(text);
-
   if (!text) return emptyAgentState();
   try {
     return JSON.parse(text) as AgentState;
@@ -145,86 +71,23 @@ export function loadAgentState(text: string | null): AgentState {
 }
 
 export function readAgentStateFromDisk(path = defaultAgentStatePath()): AgentState {
-  // Description:
-  //     ReadAgentStateFromDisk.
-  //
-  // Inputs:
-  //     path = defaultAgentStatePath(): input value
-  //         Caller-supplied path = defaultAgentStatePath().
-  //
-  // Outputs:
-  //     result: AgentState
-  //         Return value from `readAgentStateFromDisk`.
-  //
-  // Example:
-
-  //     const result = readAgentStateFromDisk(path = defaultAgentStatePath());
-
   if (!existsSync(path)) return emptyAgentState();
   return loadAgentState(readFileSync(path, "utf-8"));
 }
 
 export function writeAgentStateToDisk(state: AgentState, path = defaultAgentStatePath()): void {
-  // Description:
-  //     WriteAgentStateToDisk.
-  //
-  // Inputs:
-  //     state: AgentState
-  //         Caller-supplied state.
-  //     path = defaultAgentStatePath(): input value
-  //         Caller-supplied path = defaultAgentStatePath().
-  //
-  // Outputs:
-  //     None.
-  //
-  // Example:
-
-  //     const result = writeAgentStateToDisk(state, path = defaultAgentStatePath());
-
   const abs = resolve(path);
   mkdirSync(dirname(abs), { recursive: true });
   writeFileSync(abs, JSON.stringify(state, null, 2));
 }
 
 function unauthorized(req: IncomingMessage, state: AgentState): boolean {
-  // Description:
-  //     Unauthorized.
-  //
-  // Inputs:
-  //     req: IncomingMessage
-  //         Caller-supplied req.
-  //     state: AgentState
-  //         Caller-supplied state.
-  //
-  // Outputs:
-  //     result: boolean
-  //         Return value from `unauthorized`.
-  //
-  // Example:
-
-  //     const result = unauthorized(req, state);
-
   const header = req.headers.authorization;
   if (!state.token) return false;
   return header !== `Bearer ${state.token}`;
 }
 
 function readBody(req: IncomingMessage): Promise<string> {
-  // Description:
-  //     ReadBody.
-  //
-  // Inputs:
-  //     req: IncomingMessage
-  //         Caller-supplied req.
-  //
-  // Outputs:
-  //     result: Promise<string>
-  //         Return value from `readBody`.
-  //
-  // Example:
-
-  //     const result = readBody(req);
-
   return new Promise((resolveBody, reject) => {
     const chunks: Buffer[] = [];
     req.on("data", (chunk) => chunks.push(Buffer.from(chunk)));
@@ -239,27 +102,6 @@ async function handleRequest(
   state: AgentState,
   statePath: string,
 ): Promise<void> {
-  // Description:
-  //     HandleRequest.
-  //
-  // Inputs:
-  //     req: IncomingMessage
-  //         Caller-supplied req.
-  //     res: ServerResponse
-  //         Caller-supplied res.
-  //     state: AgentState
-  //         Caller-supplied state.
-  //     statePath: string
-  //         Caller-supplied statePath.
-  //
-  // Outputs:
-  //     result: Promise<void>
-  //         Return value from `handleRequest`.
-  //
-  // Example:
-
-  //     const result = handleRequest(req, res, state, statePath);
-
   if (unauthorized(req, state)) {
     res.writeHead(401, { "Content-Type": "application/json" });
     res.end(JSON.stringify({ ok: false, error: "unauthorized" }));
@@ -436,22 +278,6 @@ export function createDeployAgentServer(
   state: AgentState,
   statePath = state.target ? agentStatePathFor(state.target) : defaultAgentStatePath(),
 ): ReturnType<typeof createServer> {
-  // Description:
-  //     CreateDeployAgentServer.
-  //
-  // Inputs:
-  //     state: AgentState
-  //         Caller-supplied state.
-  //     statePath = state.target ? agentStatePathFor(state.target): defaultAgentStatePath()
-  //         Caller-supplied statePath = state.target ? agentStatePathFor(state.target).
-  //
-  // Outputs:
-  //     result: ReturnType<typeof createServer>
-  //         Return value from `createDeployAgentServer`.
-  //
-  // Example:
-  //     const result = createDeployAgentServer(state, statePath = state.target ? agentStatePathFor(state.target));
-
   // Serve the deploy agent protocol over HTTP/1.1.
   const withRequestLock = createRequestLock();
   return createServer((req, res) => {
@@ -471,85 +297,6 @@ export function startDeployAgentServer(options: {
   requireCertify?: boolean;
   trustedPublicKey?: string;
 }): ReturnType<typeof createServer> {
-
-  // Description:
-
-  //     StartDeployAgentServer.
-
-  //
-
-  // Inputs:
-
-  //     options: { bind: string; target: string; token?: string; statePath?: string; tlsCert?: string; tlsKey?: string; requireHash?: boolean; requireSignature?: boolean; requireCertify?: boolean; trustedPublicKey?: string; }
-
-  //         Caller-supplied options.
-
-  //
-
-  // Outputs:
-
-  //     result: ReturnType<typeof createServer>
-
-  //         Return value from `startDeployAgentServer`.
-
-  //
-
-  // Example:
-
-  //     const result = startDeployAgentServer(options);
-
-  // Description:
-  //     StartDeployAgentServer.
-  //
-  // Inputs:
-
-  //     options: {
-  bind: string;
-  target: string;
-  token?: string;
-  statePath?: string;
-  tlsCert?: string;
-  tlsKey?: string;
-  requireHash?: boolean;
-  requireSignature?: boolean;
-  requireCertify?: boolean;
-  trustedPublicKey?: string;
-}
-  //         Caller-supplied options.
-  //
-  // Outputs:
-  //     result: ReturnType<typeof createServer>
-  //         Return value from `startDeployAgentServer`.
-  //
-  // Example:
-  //     const result = startDeployAgentServer(options);
-  // Description:
-  //     StartDeployAgentServer.
-  //
-  // Inputs:
-
-  //     options: {
-  bind: string;
-  target: string;
-  token?: string;
-  statePath?: string;
-  tlsCert?: string;
-  tlsKey?: string;
-  requireHash?: boolean;
-  requireSignature?: boolean;
-  requireCertify?: boolean;
-  trustedPublicKey?: string;
-}
-  //         Caller-supplied options.
-  //
-  // Outputs:
-  //     result: ReturnType<typeof createServer>
-  //         Return value from `startDeployAgentServer`.
-  //
-  // Example:
-
-  //     const result = startDeployAgentServer(options);
-
   const statePath = options.statePath ?? agentStatePathFor(options.target);
   const state = readAgentStateFromDisk(statePath);
   clearAgentDeploymentOnIdentityChange(state, options.target);
@@ -562,22 +309,6 @@ export function startDeployAgentServer(options: {
   writeAgentStateToDisk(state, statePath);
   const withRequestLock = createRequestLock();
   const requestHandler = (req: IncomingMessage, res: ServerResponse) => {
-    // Description:
-    //     RequestHandler.
-    //
-    // Inputs:
-    //     req: IncomingMessage
-    //         Caller-supplied req.
-    //     res: ServerResponse
-    //         Caller-supplied res.
-    //
-    // Outputs:
-    //     None.
-    //
-    // Example:
-
-    //     const result = requestHandler(req, res);
-
     void withRequestLock(() => handleRequest(req, res, state, statePath));
   };
   const scheme = options.tlsCert && options.tlsKey ? "https" : "http";

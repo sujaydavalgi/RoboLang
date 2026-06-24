@@ -51,37 +51,7 @@ export class ModuleRegistry {
     return this.modules.get(importPath)?.functions.get(name);
   }
 
-  static fromPrograms(entries: Array<[string, Program]>): ModuleRegistry {
-    // Description:
-    //     FromPrograms.
-    //
-    // Inputs:
-    //     entries: Array<[string, Program]>
-    //         Caller-supplied entries.
-    //
-    // Outputs:
-    //     result: ModuleRegistry
-    //         Return value from `fromPrograms`.
-    //
-    // Example:
-    //     const result = fromPrograms(entries);
-    // Compute registry for the following 
-  // Description:
-  //     CollectModules.
-  //
-  // Inputs:
-  //     dir: string
-  //         Caller-supplied dir.
-  //     out: Array<[string, Program]>
-  //         Caller-supplied out.
-  //
-  // Outputs:
-  //     None.
-  //
-  // Example:
-
-// const result = collectModules(dir, out);
-logic.
+  static fromPrograms(entries: Array<[string, Program]>): ModuleRegistry {    // Compute registry for the following logic.
     const registry = new ModuleRegistry();
 
     // Iterate over the collection.
@@ -97,20 +67,19 @@ logic.
 }
 
 function collectModules(dir: string, out: Array<[string, Program]>): void {
-  // Description:
-  //     CollectModules.
+  // CollectModules.
   //
-  // Inputs:
-  //     dir: string
-  //         Caller-supplied dir.
-  //     out: Array<[string, Program]>
-  //         Caller-supplied out.
+  // Parameters:
+  // - `dir` — input value
+  // - `out` — input value
   //
-  // Outputs:
-  //     None.
+  // Returns:
+  // Nothing.
+  //
+  // Options:
+  // None.
   //
   // Example:
-  //     const result = collectModules(dir, out);
 
   // const result = collectModules(dir, out);
   for (const entry of readdirSync(dir)) {
@@ -124,22 +93,7 @@ function collectModules(dir: string, out: Array<[string, Program]>): void {
 
     // continue when sd") is falsy.
     if (!entry.endsWith(".sd")) continue;
-    const source = readFileSync(p
-  // Description:
-  //     LoadProjectModules.
-  //
-  // Inputs:
-  //     projectRoot: string
-  //         Caller-supplied projectRoot.
-  //
-  // Outputs:
-  //     result: ModuleRegistry
-  //         Return value from `loadProjectModules`.
-  //
-  // Example:
-
-// const result = loadProjectModules(projectRoot);
-ath, "utf8");
+    const source = readFileSync(path, "utf8");
     const program = parse(tokenize(source));
 
     // continue when moduleName is falsy.
@@ -151,19 +105,18 @@ ath, "utf8");
 }
 
 export function loadProjectModules(projectRoot: string): ModuleRegistry {
-  // Description:
-  //     LoadProjectModules.
+  // LoadProjectModules.
   //
-  // Inputs:
-  //     projectRoot: string
-  //         Caller-supplied projectRoot.
+  // Parameters:
+  // - `projectRoot` — input value
   //
-  // Outputs:
-  //     result: ModuleRegistry
-  //         Return value from `loadProjectModules`.
+  // Returns:
+  // `ModuleRegistry`.
+  //
+  // Options:
+  // None.
   //
   // Example:
-  //     const result = loadProjectModules(projectRoot);
 
   // const result = loadProjectModules(projectRoot);
   const entries: Array<[string, Program]> = [];
@@ -195,22 +148,8 @@ export function loadProjectModules(projectRoot: string): ModuleRegistry {
 
         // Try the operation and handle failures below.
         try {
-          // continue when s
-  // Description:
-  //     ModuleNameFromPath.
-  //
-  // Inputs:
-  //     path: string
-  //         Caller-supplied path.
-  //
-  // Outputs:
-  //     result: string
-  //         Return value from `moduleNameFromPath`.
-  //
-  // Example:
 
-// const result = moduleNameFromPath(path);
-tatSync(src).isDirectory()) collectModules(src, entries.
+          // continue when statSync(src).isDirectory()) collectModules(src, entries.
           if (statSync(src).isDirectory()) collectModules(src, entries);
         } catch {
           /* no src */
@@ -224,19 +163,18 @@ tatSync(src).isDirectory()) collectModules(src, entries.
 }
 
 export function moduleNameFromPath(path: string): string {
-  // Description:
-  //     ModuleNameFromPath.
+  // ModuleNameFromPath.
   //
-  // Inputs:
-  //     path: string
-  //         Caller-supplied path.
+  // Parameters:
+  // - `path` — input value
   //
-  // Outputs:
-  //     result: string
-  //         Return value from `moduleNameFromPath`.
+  // Returns:
+  // Text result.
+  //
+  // Options:
+  // None.
   //
   // Example:
-  //     const result = moduleNameFromPath(path);
 
   // const result = moduleNameFromPath(path);
   const base = path.split("/").pop()?.replace(/\.sd$/, "") ?? "main";

@@ -153,32 +153,18 @@ type ParsedArgs = {
 };
 
 function parseArgs(argv: string[]): ParsedArgs {
-  // Description:
-  //     ParseArgs.
+  // ParseArgs.
   //
-  // Inputs:
-  //     argv: string[]
-  //         Caller-supplied argv.
+  // Parameters:
+  // - `argv` — input value
   //
-  // Outputs:
-  //     result: ParsedArgs
-  //         Return value from `parseArgs`.
+  // Returns:
+  // `ParsedArgs`.
   //
-  // Example:
-  //     const result = parseArgs(argv);
-  // Description:
-  //     ParseArgs.
-  //
-  // Inputs:
-  //     argv: string[]
-  //         Caller-supplied argv.
-  //
-  // Outputs:
-  //     result: ParsedArgs
-  //         Return value from `parseArgs`.
+  // Options:
+  // None.
   //
   // Example:
-  //     const result = parseArgs(argv);
 
   // const result = parseArgs(argv);
   const positional: string[] = [];
@@ -227,30 +213,18 @@ function parseArgs(argv: string[]): ParsedArgs {
 }
 
 function requireNative(message: string): void {
-  // Description:
-  //     RequireNative.
+  // RequireNative.
   //
-  // Inputs:
-  //     message: string
-  //         Caller-supplied message.
+  // Parameters:
+  // - `message` — input value
   //
-  // Outputs:
-  //     None.
+  // Returns:
+  // Nothing.
   //
-  // Example:
-  //     const result = requireNative(message);
-  // Description:
-  //     RequireNative.
-  //
-  // Inputs:
-  //     message: string
-  //         Caller-supplied message.
-  //
-  // Outputs:
-  //     None.
+  // Options:
+  // None.
   //
   // Example:
-  //     const result = requireNative(message);
 
   // const result = requireNative(message);
   if (!isCliAvailable()) {
@@ -261,36 +235,19 @@ function requireNative(message: string): void {
 }
 
 function flagStr(flags: Map<string, string | boolean>, key: string): string | undefined {
-  // Description:
-  //     FlagStr.
+  // FlagStr.
   //
-  // Inputs:
-  //     flags: Map<string, string | boolean>
-  //         Caller-supplied flags.
-  //     key: string
-  //         Caller-supplied key.
+  // Parameters:
+  // - `flags` — input value
+  // - `key` — input value
   //
-  // Outputs:
-  //     result: string | undefined
-  //         Return value from `flagStr`.
+  // Returns:
+  // `Some` / non-null value on success, otherwise `None` / null.
   //
-  // Example:
-  //     const result = flagStr(flags, key);
-  // Description:
-  //     FlagStr.
-  //
-  // Inputs:
-  //     flags: Map<string, string | boolean>
-  //         Caller-supplied flags.
-  //     key: string
-  //         Caller-supplied key.
-  //
-  // Outputs:
-  //     result: string | undefined
-  //         Return value from `flagStr`.
+  // Options:
+  // None.
   //
   // Example:
-  //     const result = flagStr(flags, key);
 
   // const result = flagStr(flags, key);
   const v = flags.get(key);
@@ -298,66 +255,37 @@ function flagStr(flags: Map<string, string | boolean>, key: string): string | un
 }
 
 function flagBool(flags: Map<string, string | boolean>, key: string): boolean {
-  // Description:
-  //     FlagBool.
+  // FlagBool.
   //
-  // Inputs:
-  //     flags: Map<string, string | boolean>
-  //         Caller-supplied flags.
-  //     key: string
-  //         Caller-supplied key.
+  // Parameters:
+  // - `flags` — input value
+  // - `key` — input value
   //
-  // Outputs:
-  //     result: boolean
-  //         Return value from `flagBool`.
+  // Returns:
+  // `true` or `false`.
   //
-  // Example:
-  //     const result = flagBool(flags, key);
-  // Description:
-  //     FlagBool.
-  //
-  // Inputs:
-  //     flags: Map<string, string | boolean>
-  //         Caller-supplied flags.
-  //     key: string
-  //         Caller-supplied key.
-  //
-  // Outputs:
-  //     result: boolean
-  //         Return value from `flagBool`.
+  // Options:
+  // None.
   //
   // Example:
-  //     const result = flagBool(flags, key);
 
   // const result = flagBool(flags, key);
   return flags.get(key) === true;
 }
 
 async function main(): Promise<void> {
-  // Description:
-  //     Main.
+  // Main.
   //
-  // Inputs:
-  //     None.
+  // Parameters:
+  // None.
   //
-  // Outputs:
-  //     result: Promise<void>
-  //         Return value from `main`.
+  // Returns:
+  // Nothing.
   //
-  // Example:
-  //     const result = main();
-  // Description:
-  //     Main.
-  //
-  // Inputs:
-  //     None.
-  //
-  // Outputs:
-  //     result: Promise<void>
-  //         Return value from `main`.
+  // Options:
+  // None.
   //
   // Example:
-  //     const result = main();
 
   // const result = main();
   const parsed = parseArgs(process.argv.slice(2));
@@ -495,32 +423,18 @@ async function main(): Promise<void> {
 }
 
 function absPath(filePath: string | undefined): string {
-  // Description:
-  //     AbsPath.
+  // AbsPath.
   //
-  // Inputs:
-  //     filePath: string | undefined
-  //         Caller-supplied filePath.
+  // Parameters:
+  // - `filePath` — input value
   //
-  // Outputs:
-  //     result: string
-  //         Return value from `absPath`.
+  // Returns:
+  // Text result.
   //
-  // Example:
-  //     const result = absPath(filePath);
-  // Description:
-  //     AbsPath.
-  //
-  // Inputs:
-  //     filePath: string | undefined
-  //         Caller-supplied filePath.
-  //
-  // Outputs:
-  //     result: string
-  //         Return value from `absPath`.
+  // Options:
+  // None.
   //
   // Example:
-  //     const result = absPath(filePath);
 
   // const result = absPath(filePath);
   if (!filePath) {
@@ -532,34 +446,19 @@ function absPath(filePath: string | undefined): string {
 }
 
 function handleCheck(filePath: string | undefined, json: boolean): void {
-  // Description:
-  //     HandleCheck.
+  // HandleCheck.
   //
-  // Inputs:
-  //     filePath: string | undefined
-  //         Caller-supplied filePath.
-  //     json: boolean
-  //         Caller-supplied json.
+  // Parameters:
+  // - `filePath` — input value
+  // - `json` — input value
   //
-  // Outputs:
-  //     None.
+  // Returns:
+  // Nothing.
   //
-  // Example:
-  //     const result = handleCheck(filePath, json);
-  // Description:
-  //     HandleCheck.
-  //
-  // Inputs:
-  //     filePath: string | undefined
-  //         Caller-supplied filePath.
-  //     json: boolean
-  //         Caller-supplied json.
-  //
-  // Outputs:
-  //     None.
+  // Options:
+  // None.
   //
   // Example:
-  //     const result = handleCheck(filePath, json);
 
   // const result = handleCheck(filePath, json);
   const abs = absPath(filePath);
@@ -596,23 +495,6 @@ function handleCertify(
   flags: Map<string, string | boolean>,
   json: boolean,
 ): void {
-  // Description:
-  //     HandleCertify.
-  //
-  // Inputs:
-  //     positional: string[]
-  //         Caller-supplied positional.
-  //     flags: Map<string, string | boolean>
-  //         Caller-supplied flags.
-  //     json: boolean
-  //         Caller-supplied json.
-  //
-  // Outputs:
-  //     None.
-  //
-  // Example:
-  //     const result = handleCertify(positional, flags, json);
-
   // Emit structured certification proof artifacts for audit workflows.
   const sub = positional[0];
   if (sub !== "prove") {
@@ -643,38 +525,20 @@ function handleCertify(
 }
 
 function handleVerify(filePath: string | undefined, json: boolean, flags: Map<string, string | boolean>): void {
-  // Description:
-  //     HandleVerify.
+  // HandleVerify.
   //
-  // Inputs:
-  //     filePath: string | undefined
-  //         Caller-supplied filePath.
-  //     json: boolean
-  //         Caller-supplied json.
-  //     flags: Map<string, string | boolean>
-  //         Caller-supplied flags.
+  // Parameters:
+  // - `filePath` — input value
+  // - `json` — input value
+  // - `flags` — input value
   //
-  // Outputs:
-  //     None.
+  // Returns:
+  // Nothing.
   //
-  // Example:
-  //     const result = handleVerify(filePath, json, flags);
-  // Description:
-  //     HandleVerify.
-  //
-  // Inputs:
-  //     filePath: string | undefined
-  //         Caller-supplied filePath.
-  //     json: boolean
-  //         Caller-supplied json.
-  //     flags: Map<string, string | boolean>
-  //         Caller-supplied flags.
-  //
-  // Outputs:
-  //     None.
+  // Options:
+  // None.
   //
   // Example:
-  //     const result = handleVerify(filePath, json, flags);
 
   // const result = handleVerify(filePath, json, flags);
   requireNative("Hardware verification requires the native Rust CLI.");
@@ -710,34 +574,19 @@ function handleVerify(filePath: string | undefined, json: boolean, flags: Map<st
 }
 
 function printVerifyHuman(result: VerifyResult, filePath: string): void {
-  // Description:
-  //     PrintVerifyHuman.
+  // PrintVerifyHuman.
   //
-  // Inputs:
-  //     result: VerifyResult
-  //         Caller-supplied result.
-  //     filePath: string
-  //         Caller-supplied filePath.
+  // Parameters:
+  // - `result` — input value
+  // - `filePath` — input value
   //
-  // Outputs:
-  //     None.
+  // Returns:
+  // Nothing.
   //
-  // Example:
-  //     const result = printVerifyHuman(result, filePath);
-  // Description:
-  //     PrintVerifyHuman.
-  //
-  // Inputs:
-  //     result: VerifyResult
-  //         Caller-supplied result.
-  //     filePath: string
-  //         Caller-supplied filePath.
-  //
-  // Outputs:
-  //     None.
+  // Options:
+  // None.
   //
   // Example:
-  //     const result = printVerifyHuman(result, filePath);
 
   // const result = printVerifyHuman(result, filePath);
   const compatible = result.compatible ?? result.ok;
@@ -766,21 +615,6 @@ function printVerifyHuman(result: VerifyResult, filePath: string): void {
 }
 
 function handleSecurity(positional: string[], json: boolean): void {
-  // Description:
-  //     HandleSecurity.
-  //
-  // Inputs:
-  //     positional: string[]
-  //         Caller-supplied positional.
-  //     json: boolean
-  //         Caller-supplied json.
-  //
-  // Outputs:
-  //     None.
-  //
-  // Example:
-  //     const result = handleSecurity(positional, json);
-
   // Run spanda security check or audit on a source file.
   const sub = positional[0];
   const filePath = positional[1];
@@ -841,8 +675,7 @@ function handleTelemetry(
       args.push(value);
     }
   }
-  const nativeArgs = ["telemetry", sub, ...args];
-  const native = runNativeCli(nativeArgs);
+  const native = runNativeCli(["telemetry", sub, ...args]);
   if (native.status === 0) {
     if (native.stdout) {
       process.stdout.write(native.stdout);
@@ -862,46 +695,21 @@ function handleRun(
   extraVerbose: boolean,
   flags: Map<string, string | boolean>,
 ): void {
-  // Description:
-  //     HandleRun.
+  // HandleRun.
   //
-  // Inputs:
-  //     filePath: string | undefined
-  //         Caller-supplied filePath.
-  //     verbose: boolean
-  //         Caller-supplied verbose.
-  //     json: boolean
-  //         Caller-supplied json.
-  //     extraVerbose: boolean
-  //         Caller-supplied extraVerbose.
-  //     flags: Map<string, string | boolean>
-  //         Caller-supplied flags.
+  // Parameters:
+  // - `filePath` — input value
+  // - `verbose` — input value
+  // - `json` — input value
+  // - `extraVerbose` — input value
   //
-  // Outputs:
-  //     None.
+  // Returns:
+  // Nothing.
+  //
+  // Options:
+  // None.
   //
   // Example:
-  //     const result = handleRun(filePath, verbose, json, extraVerbose, flags);
-  // Description:
-  //     HandleRun.
-  //
-  // Inputs:
-  //     filePath: string | undefined
-  //         Caller-supplied filePath.
-  //     verbose: boolean
-  //         Caller-supplied verbose.
-  //     json: boolean
-  //         Caller-supplied json.
-  //     extraVerbose: boolean
-  //         Caller-supplied extraVerbose.
-  //     flags: Map<string, string | boolean>
-  //         Caller-supplied flags.
-  //
-  // Outputs:
-  //     None.
-  //
-  // Example:
-  //     const result = handleRun(filePath, verbose, json, extraVerbose, flags);
 
   // const result = handleRun(filePath, verbose, json, extraVerbose);
   const abs = absPath(filePath);
@@ -928,42 +736,20 @@ function runSimulation(
   verbose: boolean,
   flags: Map<string, string | boolean>,
 ): void {
-  // Description:
-  //     RunSimulation.
+  // RunSimulation.
   //
-  // Inputs:
-  //     absPath: string
-  //         Caller-supplied absPath.
-  //     displayPath: string
-  //         Caller-supplied displayPath.
-  //     verbose: boolean
-  //         Caller-supplied verbose.
-  //     flags: Map<string, string | boolean>
-  //         Caller-supplied flags.
+  // Parameters:
+  // - `absPath` — input value
+  // - `displayPath` — input value
+  // - `verbose` — input value
   //
-  // Outputs:
-  //     None.
+  // Returns:
+  // Nothing.
+  //
+  // Options:
+  // None.
   //
   // Example:
-  //     const result = runSimulation(absPath, displayPath, verbose, flags);
-  // Description:
-  //     RunSimulation.
-  //
-  // Inputs:
-  //     absPath: string
-  //         Caller-supplied absPath.
-  //     displayPath: string
-  //         Caller-supplied displayPath.
-  //     verbose: boolean
-  //         Caller-supplied verbose.
-  //     flags: Map<string, string | boolean>
-  //         Caller-supplied flags.
-  //
-  // Outputs:
-  //     None.
-  //
-  // Example:
-  //     const result = runSimulation(absPath, displayPath, verbose, flags);
 
   // const result = runSimulation(absPath, displayPath, verbose);
   const { program } = compileFile(absPath);
@@ -1020,34 +806,19 @@ function runSimulation(
 }
 
 function handleFmt(filePath: string | undefined, json: boolean): void {
-  // Description:
-  //     HandleFmt.
+  // HandleFmt.
   //
-  // Inputs:
-  //     filePath: string | undefined
-  //         Caller-supplied filePath.
-  //     json: boolean
-  //         Caller-supplied json.
+  // Parameters:
+  // - `filePath` — input value
+  // - `json` — input value
   //
-  // Outputs:
-  //     None.
+  // Returns:
+  // Nothing.
   //
-  // Example:
-  //     const result = handleFmt(filePath, json);
-  // Description:
-  //     HandleFmt.
-  //
-  // Inputs:
-  //     filePath: string | undefined
-  //         Caller-supplied filePath.
-  //     json: boolean
-  //         Caller-supplied json.
-  //
-  // Outputs:
-  //     None.
+  // Options:
+  // None.
   //
   // Example:
-  //     const result = handleFmt(filePath, json);
 
   // const result = handleFmt(filePath, json);
   requireNative("Formatting requires the native Rust CLI.");
@@ -1072,34 +843,19 @@ function handleFmt(filePath: string | undefined, json: boolean): void {
 }
 
 function handleLint(filePath: string | undefined, json: boolean): void {
-  // Description:
-  //     HandleLint.
+  // HandleLint.
   //
-  // Inputs:
-  //     filePath: string | undefined
-  //         Caller-supplied filePath.
-  //     json: boolean
-  //         Caller-supplied json.
+  // Parameters:
+  // - `filePath` — input value
+  // - `json` — input value
   //
-  // Outputs:
-  //     None.
+  // Returns:
+  // Nothing.
   //
-  // Example:
-  //     const result = handleLint(filePath, json);
-  // Description:
-  //     HandleLint.
-  //
-  // Inputs:
-  //     filePath: string | undefined
-  //         Caller-supplied filePath.
-  //     json: boolean
-  //         Caller-supplied json.
-  //
-  // Outputs:
-  //     None.
+  // Options:
+  // None.
   //
   // Example:
-  //     const result = handleLint(filePath, json);
 
   // const result = handleLint(filePath, json);
   requireNative("Linting requires the native Rust CLI.");
@@ -1132,38 +888,20 @@ function handleLint(filePath: string | undefined, json: boolean): void {
 }
 
 function handleDoc(filePath: string | undefined, json: boolean, outPath: string | undefined): void {
-  // Description:
-  //     HandleDoc.
+  // HandleDoc.
   //
-  // Inputs:
-  //     filePath: string | undefined
-  //         Caller-supplied filePath.
-  //     json: boolean
-  //         Caller-supplied json.
-  //     outPath: string | undefined
-  //         Caller-supplied outPath.
+  // Parameters:
+  // - `filePath` — input value
+  // - `json` — input value
+  // - `outPath` — input value
   //
-  // Outputs:
-  //     None.
+  // Returns:
+  // Nothing.
   //
-  // Example:
-  //     const result = handleDoc(filePath, json, outPath);
-  // Description:
-  //     HandleDoc.
-  //
-  // Inputs:
-  //     filePath: string | undefined
-  //         Caller-supplied filePath.
-  //     json: boolean
-  //         Caller-supplied json.
-  //     outPath: string | undefined
-  //         Caller-supplied outPath.
-  //
-  // Outputs:
-  //     None.
+  // Options:
+  // None.
   //
   // Example:
-  //     const result = handleDoc(filePath, json, outPath);
 
   // const result = handleDoc(filePath, json, outPath);
   requireNative("Documentation generation requires the native Rust CLI.");
@@ -1188,38 +926,20 @@ function handleDoc(filePath: string | undefined, json: boolean, outPath: string 
 }
 
 function handleCodegen(filePath: string | undefined, target: string | undefined, outPath: string | undefined): void {
-  // Description:
-  //     HandleCodegen.
+  // HandleCodegen.
   //
-  // Inputs:
-  //     filePath: string | undefined
-  //         Caller-supplied filePath.
-  //     target: string | undefined
-  //         Caller-supplied target.
-  //     outPath: string | undefined
-  //         Caller-supplied outPath.
+  // Parameters:
+  // - `filePath` — input value
+  // - `target` — input value
+  // - `outPath` — input value
   //
-  // Outputs:
-  //     None.
+  // Returns:
+  // Nothing.
   //
-  // Example:
-  //     const result = handleCodegen(filePath, target, outPath);
-  // Description:
-  //     HandleCodegen.
-  //
-  // Inputs:
-  //     filePath: string | undefined
-  //         Caller-supplied filePath.
-  //     target: string | undefined
-  //         Caller-supplied target.
-  //     outPath: string | undefined
-  //         Caller-supplied outPath.
-  //
-  // Outputs:
-  //     None.
+  // Options:
+  // None.
   //
   // Example:
-  //     const result = handleCodegen(filePath, target, outPath);
 
   // const result = handleCodegen(filePath, target, outPath);
   requireNative("Codegen requires the native Rust CLI.");
@@ -1240,37 +960,11 @@ function handleCodegen(filePath: string | undefined, target: string | undefined,
 }
 
 function deployStateFilePath(): string {
-  // Description:
-  //     DeployStateFilePath.
-  //
-  // Inputs:
-  //     None.
-  //
-  // Outputs:
-  //     result: string
-  //         Return value from `deployStateFilePath`.
-  //
-  // Example:
-  //     const result = deployStateFilePath();
-
   // Resolve the on-disk OTA deploy state file path.
   return process.env.SPANDA_DEPLOY_STATE ?? defaultStatePath();
 }
 
 function readDeployStateFromDisk(): DeployState {
-  // Description:
-  //     ReadDeployStateFromDisk.
-  //
-  // Inputs:
-  //     None.
-  //
-  // Outputs:
-  //     result: DeployState
-  //         Return value from `readDeployStateFromDisk`.
-  //
-  // Example:
-  //     const result = readDeployStateFromDisk();
-
   // Load persisted OTA deploy state, or return an empty record when missing.
   const path = deployStateFilePath();
   if (!existsSync(path)) {
@@ -1280,19 +974,6 @@ function readDeployStateFromDisk(): DeployState {
 }
 
 function writeDeployStateToDisk(state: DeployState): void {
-  // Description:
-  //     WriteDeployStateToDisk.
-  //
-  // Inputs:
-  //     state: DeployState
-  //         Caller-supplied state.
-  //
-  // Outputs:
-  //     None.
-  //
-  // Example:
-  //     const result = writeDeployStateToDisk(state);
-
   // Persist OTA deploy state, creating parent directories when needed.
   const path = resolve(deployStateFilePath());
   mkdirSync(dirname(path), { recursive: true });
@@ -1300,19 +981,6 @@ function writeDeployStateToDisk(state: DeployState): void {
 }
 
 function compileProgramOrExit(filePath: string) {
-  // Description:
-  //     CompileProgramOrExit.
-  //
-  // Inputs:
-  //     filePath: string
-  //         Caller-supplied filePath.
-  //
-  // Outputs:
-  //     None.
-  //
-  // Example:
-  //     const result = compileProgramOrExit(filePath);
-
   // Compile a Spanda source file and exit with a CLI error on failure.
   const abs = absPath(filePath);
   try {
@@ -1325,20 +993,6 @@ function compileProgramOrExit(filePath: string) {
 }
 
 function agentsRegistryPath(): string {
-  // Description:
-  //     AgentsRegistryPath.
-  //
-  // Inputs:
-  //     None.
-  //
-  // Outputs:
-  //     result: string
-  //         Return value from `agentsRegistryPath`.
-  //
-  // Example:
-
-  //     const result = agentsRegistryPath();
-
   return process.env.SPANDA_DEPLOY_AGENTS ?? defaultAgentsPath();
 }
 
@@ -1348,45 +1002,22 @@ async function handleDeployOta(
   flags: Map<string, string | boolean>,
   json: boolean,
 ): Promise<void> {
-  // Description:
-  //     HandleDeployOta.
+  // Handle OTA deploy subcommands in the TypeScript CLI.
   //
-  // Inputs:
-  //     subcommand: string
-  //         Caller-supplied subcommand.
-  //     args: string[]
-  //         Caller-supplied args.
-  //     flags: Map<string, string | boolean>
-  //         Caller-supplied flags.
-  //     json: boolean
-  //         Caller-supplied json.
+  // Parameters:
+  // - `subcommand` — plan, rollout, rollback, or status
+  // - `args` — remaining positional arguments after the subcommand
+  // - `flags` — parsed CLI flags
+  // - `json` — emit JSON output when true
   //
-  // Outputs:
-  //     result: Promise<void>
-  //         Return value from `handleDeployOta`.
+  // Returns:
+  // Nothing.
+  //
+  // Options:
+  // None.
   //
   // Example:
-  //     const result = handleDeployOta(subcommand, args, flags, json);
-  // Description:
-  //     HandleDeployOta.
-  //
-  // Inputs:
-  //     subcommand: string
-  //         Caller-supplied subcommand.
-  //     args: string[]
-  //         Caller-supplied args.
-  //     flags: Map<string, string | boolean>
-  //         Caller-supplied flags.
-  //     json: boolean
-  //         Caller-supplied json.
-  //
-  // Outputs:
-  //     result: Promise<void>
-  //         Return value from `handleDeployOta`.
-  //
-  // Example:
-
-  //     const result = handleDeployOta(subcommand, args, flags, json);
+  // handleDeployOta("plan", ["examples/robotics/ota_deployment.sd"], flags, false);
 
   if (subcommand === "status") {
     const state = readDeployStateFromDisk();
@@ -1528,21 +1159,6 @@ function printRolloutResult(
   result: ReturnType<typeof planRollout>,
   json: boolean,
 ): void {
-  // Description:
-  //     PrintRolloutResult.
-  //
-  // Inputs:
-  //     result: ReturnType<typeof planRollout>
-  //         Caller-supplied result.
-  //     json: boolean
-  //         Caller-supplied json.
-  //
-  // Outputs:
-  //     None.
-  //
-  // Example:
-  //     const result = printRolloutResult(result, json);
-
   // Print rollout or rollback results as JSON or human-readable lines.
   if (json) {
     console.log(JSON.stringify(result, null, 2));
@@ -1559,21 +1175,6 @@ function printRolloutResult(
 }
 
 function handleDeployWasm(filePath: string | undefined, outPath: string | undefined): void {
-  // Description:
-  //     HandleDeployWasm.
-  //
-  // Inputs:
-  //     filePath: string | undefined
-  //         Caller-supplied filePath.
-  //     outPath: string | undefined
-  //         Caller-supplied outPath.
-  //
-  // Outputs:
-  //     None.
-  //
-  // Example:
-  //     const result = handleDeployWasm(filePath, outPath);
-
   // Emit a WASM deploy manifest using the native Rust CLI.
   requireNative("WASM deploy manifest requires the native Rust CLI.");
   const abs = absPath(filePath);
@@ -1592,25 +1193,6 @@ function handleDeployWasm(filePath: string | undefined, outPath: string | undefi
 }
 
 function handleDeployAgent(subcommand: string | undefined, args: string[], json: boolean): void | Promise<void> {
-  // Description:
-  //     HandleDeployAgent.
-  //
-  // Inputs:
-  //     subcommand: string | undefined
-  //         Caller-supplied subcommand.
-  //     args: string[]
-  //         Caller-supplied args.
-  //     json: boolean
-  //         Caller-supplied json.
-  //
-  // Outputs:
-  //     result: void | Promise<void>
-  //         Return value from `handleDeployAgent`.
-  //
-  // Example:
-
-  //     const result = handleDeployAgent(subcommand, args, json);
-
   if (subcommand === "start") {
     let bind = "127.0.0.1:8765";
     let target = "";
@@ -1753,41 +1335,21 @@ async function handleDeploy(
   flags: Map<string, string | boolean>,
   json: boolean,
 ): Promise<void> {
-  // Description:
-  //     HandleDeploy.
+  // Route deploy commands to OTA handlers or legacy WASM manifest generation.
   //
-  // Inputs:
-  //     positional: string[]
-  //         Caller-supplied positional.
-  //     flags: Map<string, string | boolean>
-  //         Caller-supplied flags.
-  //     json: boolean
-  //         Caller-supplied json.
+  // Parameters:
+  // - `positional` — command arguments after `deploy`
+  // - `flags` — parsed CLI flags
+  // - `json` — emit JSON output when true
   //
-  // Outputs:
-  //     result: Promise<void>
-  //         Return value from `handleDeploy`.
+  // Returns:
+  // Nothing.
+  //
+  // Options:
+  // None.
   //
   // Example:
-  //     const result = handleDeploy(positional, flags, json);
-  // Description:
-  //     HandleDeploy.
-  //
-  // Inputs:
-  //     positional: string[]
-  //         Caller-supplied positional.
-  //     flags: Map<string, string | boolean>
-  //         Caller-supplied flags.
-  //     json: boolean
-  //         Caller-supplied json.
-  //
-  // Outputs:
-  //     result: Promise<void>
-  //         Return value from `handleDeploy`.
-  //
-  // Example:
-
-  //     const result = handleDeploy(positional, flags, json);
+  // handleDeploy(["plan", "examples/robotics/ota_deployment.sd"], flags, false);
 
   const sub = positional[0];
   if (sub === "agent") {
@@ -1807,45 +1369,11 @@ function handleFleetOrchestrate(
   remote: boolean,
   flags: Map<string, string | boolean>,
 ): void | Promise<void> {
-  // Description:
-  //     HandleFleetOrchestrate.
-  //
-  // Inputs:
-  //     filePath: string | undefined
-  //         Caller-supplied filePath.
-  //     json: boolean
-  //         Caller-supplied json.
-  //     remote: boolean
-  //         Caller-supplied remote.
-  //     flags: Map<string, string | boolean>
-  //         Caller-supplied flags.
-  //
-  // Outputs:
-  //     result: void | Promise<void>
-  //         Return value from `handleFleetOrchestrate`.
-  //
-  // Example:
-  //     const result = handleFleetOrchestrate(filePath, json, remote, flags);
-
   // Coordinate fleet missions declared in a Spanda program.
   const meshUrl = flagStr(flags, "mesh-url") ?? (remote ? defaultFleetMeshUrl() : undefined);
   const meshToken = flagStr(flags, "mesh-token");
   const { abs, program } = compileProgramOrExit(filePath ?? "");
   const printResult = (result: Awaited<ReturnType<typeof orchestrateFleets>>) => {
-    // Description:
-    //     PrintResult.
-    //
-    // Inputs:
-    //     result: Awaited<ReturnType<typeof orchestrateFleets>>
-    //         Caller-supplied result.
-    //
-    // Outputs:
-    //     None.
-    //
-    // Example:
-
-    //     const result = printResult(result);
-
     if (json) {
       console.log(JSON.stringify(result, null, 2));
       return;
@@ -1879,51 +1407,13 @@ function handleFleetOrchestrate(
     return orchestrateFleetsMesh(program, abs, meshUrl, meshToken).then(printResult);
   }
   if (remote) {
-    const registry = readFleetAgentRegistry
-  // Description:
-  //     HandleFleetAgent.
-  //
-  // Inputs:
-  //     subcommand: string | undefined
-  //         Caller-supplied subcommand.
-  //     args: string[]
-  //         Caller-supplied args.
-  //     json: boolean
-  //         Caller-supplied json.
-  //
-  // Outputs:
-  //     result: void | Promise<void>
-  //         Return value from `handleFleetAgent`.
-  //
-  // Example:
-
-// const result = handleFleetAgent(subcommand, args, json);
-FromDisk(defaultFleetAgentsPath());
+    const registry = readFleetAgentRegistryFromDisk(defaultFleetAgentsPath());
     return orchestrateFleetsRemote(program, abs, registry).then(printResult);
   }
   printResult(orchestrateFleets(program, abs));
 }
 
 function handleFleetAgent(subcommand: string | undefined, args: string[], json: boolean): void | Promise<void> {
-  // Description:
-  //     HandleFleetAgent.
-  //
-  // Inputs:
-  //     subcommand: string | undefined
-  //         Caller-supplied subcommand.
-  //     args: string[]
-  //         Caller-supplied args.
-  //     json: boolean
-  //         Caller-supplied json.
-  //
-  // Outputs:
-  //     result: void | Promise<void>
-  //         Return value from `handleFleetAgent`.
-  //
-  // Example:
-
-  //     const result = handleFleetAgent(subcommand, args, json);
-
   if (subcommand === "start") {
     let bind = "127.0.0.1:8766";
     let robotName = "";
@@ -2029,25 +1519,7 @@ function handleFleetAgent(subcommand: string | undefined, args: string[], json: 
         const missionReady = body.mission_ready ?? readiness?.mission_ready;
         process.exit(missionReady ? 0 : 1);
       } catch (err) {
-        conso
-  // Description:
-  //     HandleFleet.
-  //
-  // Inputs:
-  //     positional: string[]
-  //         Caller-supplied positional.
-  //     flags: Map<string, string | boolean>
-  //         Caller-supplied flags.
-  //     json: boolean
-  //         Caller-supplied json.
-  //
-  // Outputs:
-  //     None.
-  //
-  // Example:
-
-// const result = handleFleet(positional, flags, json);
-le.error(String(err));
+        console.error(String(err));
         process.exit(1);
       }
     })();
@@ -2062,23 +1534,21 @@ function handleFleet(
   flags: Map<string, string | boolean>,
   json: boolean,
 ): void {
-  // Description:
-  //     HandleFleet.
+  // Route fleet subcommands to orchestration or native multi-robot simulation.
   //
-  // Inputs:
-  //     positional: string[]
-  //         Caller-supplied positional.
-  //     flags: Map<string, string | boolean>
-  //         Caller-supplied flags.
-  //     json: boolean
-  //         Caller-supplied json.
+  // Parameters:
+  // - `positional` — command arguments after `fleet`
+  // - `flags` — parsed CLI flags
+  // - `json` — emit JSON output when true
   //
-  // Outputs:
-  //     None.
+  // Returns:
+  // Nothing.
+  //
+  // Options:
+  // None.
   //
   // Example:
-
-  //     const result = handleFleet(positional, flags, json);
+  // handleFleet(["orchestrate", "examples/robotics/nav2_bridge.sd"], flags, false);
 
   const sub = positional[0];
   if (sub === "readiness") {
@@ -2155,20 +1625,19 @@ function handleFleet(
 }
 
 function handleIr(filePath: string | undefined, json: boolean): void {
-  // Description:
-  //     HandleIr.
+  // HandleIr.
   //
-  // Inputs:
-  //     filePath: string | undefined
-  //         Caller-supplied filePath.
-  //     json: boolean
-  //         Caller-supplied json.
+  // Parameters:
+  // - `filePath` — input value
+  // - `json` — input value
   //
-  // Outputs:
-  //     None.
+  // Returns:
+  // Nothing.
+  //
+  // Options:
+  // None.
   //
   // Example:
-  //     const result = handleIr(filePath, json);
 
   // const result = handleIr(filePath, json);
   requireNative("Spanda IR lowering requires the native Rust CLI.");
@@ -2185,25 +1654,7 @@ function handleIr(filePath: string | undefined, json: boolean): void {
 
   // Handle any remaining cases.
   } else {
-    process.stdou
-  // Description:
-  //     HandleNativeCodegen.
-  //
-  // Inputs:
-  //     command: "llvm-ir" | "compile-native"
-  //         Caller-supplied command.
-  //     filePath: string | undefined
-  //         Caller-supplied filePath.
-  //     flags: Map<string, string | boolean>
-  //         Caller-supplied flags.
-  //
-  // Outputs:
-  //     None.
-  //
-  // Example:
-
-// const result = handleNativeCodegen(command, filePath, flags);
-t.write(result.stdout ?? "");
+    process.stdout.write(result.stdout ?? "");
     process.stderr.write(result.stderr ?? "");
   }
   process.exit(result.status === 0 ? 0 : 1);
@@ -2214,22 +1665,20 @@ function handleNativeCodegen(
   filePath: string | undefined,
   flags: Map<string, string | boolean>,
 ): void {
-  // Description:
-  //     HandleNativeCodegen.
+  // HandleNativeCodegen.
   //
-  // Inputs:
-  //     command: "llvm-ir" | "compile-native"
-  //         Caller-supplied command.
-  //     filePath: string | undefined
-  //         Caller-supplied filePath.
-  //     flags: Map<string, string | boolean>
-  //         Caller-supplied flags.
+  // Parameters:
+  // - `command` — input value
+  // - `filePath` — input value
+  // - `flags` — input value
   //
-  // Outputs:
-  //     None.
+  // Returns:
+  // Nothing.
+  //
+  // Options:
+  // None.
   //
   // Example:
-  //     const result = handleNativeCodegen(command, filePath, flags);
 
   // const result = handleNativeCodegen(command, filePath, flags);
   requireNative(`${command} requires the native Rust CLI.`);
@@ -2243,23 +1692,7 @@ function handleNativeCodegen(
 
   // continue when triple) args.push("--target-triple", triple.
   if (triple) args.push("--target-triple", triple);
-  args.p
-  // Description:
-  //     HandleDebug.
-  //
-  // Inputs:
-  //     filePath: string | undefined
-  //         Caller-supplied filePath.
-  //     flags: Map<string, string | boolean>
-  //         Caller-supplied flags.
-  //
-  // Outputs:
-  //     None.
-  //
-  // Example:
-
-// const result = handleDebug(filePath, flags);
-ush(abs);
+  args.push(abs);
   const result = runNativeCli(args);
   process.stdout.write(result.stdout ?? "");
   process.stderr.write(result.stderr ?? "");
@@ -2267,20 +1700,19 @@ ush(abs);
 }
 
 function handleDebug(filePath: string | undefined, flags: Map<string, string | boolean>): void {
-  // Description:
-  //     HandleDebug.
+  // HandleDebug.
   //
-  // Inputs:
-  //     filePath: string | undefined
-  //         Caller-supplied filePath.
-  //     flags: Map<string, string | boolean>
-  //         Caller-supplied flags.
+  // Parameters:
+  // - `filePath` — input value
+  // - `flags` — input value
   //
-  // Outputs:
-  //     None.
+  // Returns:
+  // Nothing.
+  //
+  // Options:
+  // None.
   //
   // Example:
-  //     const result = handleDebug(filePath, flags);
 
   // const result = handleDebug(filePath, flags);
   requireNative("Debug requires the native Rust CLI.");
@@ -2299,25 +1731,7 @@ function handleDebug(filePath: string | undefined, flags: Map<string, string | b
 
   // Handle any remaining cases.
   } else {
-    console.log("Debug pauses:"
-  // Description:
-  //     HandleSwarm.
-  //
-  // Inputs:
-  //     positional: string[]
-  //         Caller-supplied positional.
-  //     flags: Map<string, string | boolean>
-  //         Caller-supplied flags.
-  //     json: boolean
-  //         Caller-supplied json.
-  //
-  // Outputs:
-  //     None.
-  //
-  // Example:
-
-// const result = handleSwarm(positional, flags, json);
-);
+    console.log("Debug pauses:");
 
     // Process each pause.
     for (const p of result.pauses) {
@@ -2332,23 +1746,6 @@ function handleSwarm(
   flags: Map<string, string | boolean>,
   json: boolean,
 ): void {
-  // Description:
-  //     HandleSwarm.
-  //
-  // Inputs:
-  //     positional: string[]
-  //         Caller-supplied positional.
-  //     flags: Map<string, string | boolean>
-  //         Caller-supplied flags.
-  //     json: boolean
-  //         Caller-supplied json.
-  //
-  // Outputs:
-  //     None.
-  //
-  // Example:
-  //     const result = handleSwarm(positional, flags, json);
-
   // Route swarm subcommands to the experimental coordinator runtime.
   const sub = positional[0];
   if (sub !== "coordinate") {
@@ -2358,19 +1755,6 @@ function handleSwarm(
   const meshUrl = flagStr(flags, "mesh-url");
   const meshToken = flagStr(flags, "mesh-token");
   const run = async () => {
-    // Description:
-    //     Run.
-    //
-    // Inputs:
-    //     None.
-    //
-    // Outputs:
-    //     None.
-    //
-    // Example:
-
-    //     const result = run();
-
     const { abs, program } = compileProgramOrExit(positional[1] ?? "");
     const state = readSwarmStateFromDisk();
     const result = meshUrl
@@ -2398,27 +1782,7 @@ function handleSwarm(
           );
         }
         for (const delivery of swarm.peerDeliveries) {
-          co
-  // Description:
-  //     HandlePackage.
-  //
-  // Inputs:
-  //     command: string
-  //         Caller-supplied command.
-  //     positional: string[]
-  //         Caller-supplied positional.
-  //     flags: Map<string, string | boolean>
-  //         Caller-supplied flags.
-  //     json: boolean
-  //         Caller-supplied json.
-  //
-  // Outputs:
-  //     None.
-  //
-  // Example:
-
-// const result = handlePackage(command, positional, flags, json);
-nsole.log(`    follow: ${delivery.fromRobot} -> ${delivery.toRobot} step=${delivery.step}`);
+          console.log(`    follow: ${delivery.fromRobot} -> ${delivery.toRobot} step=${delivery.step}`);
         }
         if (meshUrl) {
           console.log(`    mesh: relayed=${swarm.remoteRelayed ?? 0} failed=${swarm.remoteFailed ?? 0}`);
@@ -2436,24 +1800,21 @@ function handlePackage(
   flags: Map<string, string | boolean>,
   json: boolean,
 ): void {
-  // Description:
-  //     HandlePackage.
+  // HandlePackage.
   //
-  // Inputs:
-  //     command: string
-  //         Caller-supplied command.
-  //     positional: string[]
-  //         Caller-supplied positional.
-  //     flags: Map<string, string | boolean>
-  //         Caller-supplied flags.
-  //     json: boolean
-  //         Caller-supplied json.
+  // Parameters:
+  // - `command` — input value
+  // - `positional` — input value
+  // - `flags` — input value
+  // - `json` — input value
   //
-  // Outputs:
-  //     None.
+  // Returns:
+  // Nothing.
+  //
+  // Options:
+  // None.
   //
   // Example:
-  //     const result = handlePackage(command, positional, flags, json);
 
   // const result = handlePackage(command, positional, flags, json);
   if (command === "verify-adapter" && !isCliAvailable()) {
@@ -2481,23 +1842,6 @@ function handlePackage(
 
   // continue when pathFlag) args.push("--path", pathFlag.
   if (pathFlag) args.push("--path", pathFlag);
-  // Description:
-  //     HandleVerifyAdapterFallback.
-  //
-  // Inputs:
-  //     positional: string[]
-  //         Caller-supplied positional.
-  //     flags: Map<string, string | boolean>
-  //         Caller-supplied flags.
-  //     json: boolean
-  //         Caller-supplied json.
-  //
-  // Outputs:
-  //     None.
-  //
-  // Example:
-
-  //     const result = handleVerifyAdapterFallback(positional, flags, json);
   const git = flagStr(flags, "git");
 
   // continue when git) args.push("--git", git.
@@ -2514,23 +1858,6 @@ function handleVerifyAdapterFallback(
   flags: Map<string, string | boolean>,
   json: boolean,
 ): void {
-  // Description:
-  //     HandleVerifyAdapterFallback.
-  //
-  // Inputs:
-  //     positional: string[]
-  //         Caller-supplied positional.
-  //     flags: Map<string, string | boolean>
-  //         Caller-supplied flags.
-  //     json: boolean
-  //         Caller-supplied json.
-  //
-  // Outputs:
-  //     None.
-  //
-  // Example:
-  //     const result = handleVerifyAdapterFallback(positional, flags, json);
-
   // Validate adapter package metadata without the native Rust CLI.
   const project = flagStr(flags, "project") ?? process.cwd();
   const importPath = flagStr(flags, "import");
@@ -2546,22 +1873,7 @@ function handleVerifyAdapterFallback(
         console.log(`  ${icon} ${issue.message}`);
       }
       if (!adapterVerifyOk(issues)) process.exit(1);
-  // Description:
-  //     HandleRegistry.
-  //
-  // Inputs:
-  //     positional: string[]
-  //         Caller-supplied positional.
-  //     json: boolean
-  //         Caller-supplied json.
-  //
-  // Outputs:
-  //     None.
-  //
-  // Example:
-
-     // const result = handleRegistry(positional, json);
-     const manifest = readAdapterManifestSection(project);
+      const manifest = readAdapterManifestSection(project);
       console.log(`✓ Adapter package verification passed for ${manifest.packageName}`);
     }
   } catch (err) {
@@ -2576,20 +1888,19 @@ function handleVerifyAdapterFallback(
 }
 
 function handleRegistry(positional: string[], json: boolean): void {
-  // Description:
-  //     HandleRegistry.
+  // HandleRegistry.
   //
-  // Inputs:
-  //     positional: string[]
-  //         Caller-supplied positional.
-  //     json: boolean
-  //         Caller-supplied json.
+  // Parameters:
+  // - `positional` — input value
+  // - `json` — input value
   //
-  // Outputs:
-  //     None.
+  // Returns:
+  // Nothing.
+  //
+  // Options:
+  // None.
   //
   // Example:
-  //     const result = handleRegistry(positional, json);
 
   // const result = handleRegistry(positional, json);
   requireNative("Registry commands require the native Rust CLI.");
@@ -2620,25 +1931,7 @@ function handleRegistry(positional: string[], json: boolean): void {
     // continue when pkg is falsy.
     if (!pkg) {
       console.error("Error: missing package name");
-      proce
-  // Description:
-  //     HandleReadinessNative.
-  //
-  // Inputs:
-  //     command: string
-  //         Caller-supplied command.
-  //     positional: string[]
-  //         Caller-supplied positional.
-  //     flags: Map<string, string | boolean>
-  //         Caller-supplied flags.
-  //
-  // Outputs:
-  //     None.
-  //
-  // Example:
-
-// const result = handleReadinessNative(command, positional, flags);
-ss.exit(1);
+      process.exit(1);
     }
     const result = runNativeCli(["registry", "info", pkg]);
     console.log(result.stdout ?? "");
@@ -2656,24 +1949,6 @@ function handleReadinessNative(
   positional: string[],
   flags: Map<string, string | boolean>,
 ): void {
-  // Description:
-  //     HandleReadinessNative.
-  //
-  // Inputs:
-  //     command: string
-  //         Caller-supplied command.
-  //     positional: string[]
-  //         Caller-supplied positional.
-  //     flags: Map<string, string | boolean>
-  //         Caller-supplied flags.
-  //
-  // Outputs:
-  //     None.
-  //
-  // Example:
-
-  //     const result = handleReadinessNative(command, positional, flags);
-
   if (isCliAvailable()) {
     const args = [command, ...positional];
     for (const [key, value] of flags) {
@@ -2683,21 +1958,7 @@ function handleReadinessNative(
         args.push(`--${key}`, value);
       }
     }
-    const res
-  // Description:
-  //     PrintError.
-  //
-  // Inputs:
-  //     err: unknown
-  //         Caller-supplied err.
-  //
-  // Outputs:
-  //     None.
-  //
-  // Example:
-
-// const result = printError(err);
-ult = runNativeCli(args);
+    const result = runNativeCli(args);
     if (result.stdout) process.stdout.write(result.stdout);
     if (result.stderr) process.stderr.write(result.stderr);
     process.exit(result.status ?? 1);
@@ -2714,18 +1975,18 @@ ult = runNativeCli(args);
 }
 
 function printError(err: unknown): void {
-  // Description:
-  //     PrintError.
+  // PrintError.
   //
-  // Inputs:
-  //     err: unknown
-  //         Caller-supplied err.
+  // Parameters:
+  // - `err` — input value
   //
-  // Outputs:
-  //     None.
+  // Returns:
+  // Nothing.
+  //
+  // Options:
+  // None.
   //
   // Example:
-  //     const result = printError(err);
 
   // const result = printError(err);
   if (err instanceof LexerError) {

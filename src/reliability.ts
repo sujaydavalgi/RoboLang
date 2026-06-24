@@ -20,33 +20,19 @@ export type Diagnostic = {
 };
 
 export function validateTaskTiming(task: TaskDecl): Diagnostic[] {
-  // Description:
-  //     ValidateTaskTiming.
+  // Validate periodic task period, deadline, and jitter constraints.
   //
-  // Inputs:
-  //     task: TaskDecl
-  //         Caller-supplied task.
+  // Parameters:
+  // - `task` — task declaration to inspect
   //
-  // Outputs:
-  //     result: Diagnostic[]
-  //         Return value from `validateTaskTiming`.
+  // Returns:
+  // Diagnostics for invalid timing configuration.
   //
-  // Example:
-  //     const result = validateTaskTiming(task);
-  // Description:
-  //     ValidateTaskTiming.
-  //
-  // Inputs:
-  //     task: TaskDecl
-  //         Caller-supplied task.
-  //
-  // Outputs:
-  //     result: Diagnostic[]
-  //         Return value from `validateTaskTiming`.
+  // Options:
+  // None.
   //
   // Example:
-
-  //     const result = validateTaskTiming(task);
+  // const diags = validateTaskTiming(task);
 
   const { name, intervalMs, deadlineMs, jitterMsMax, span } = task;
   const diags: Diagnostic[] = [];
@@ -97,33 +83,19 @@ export function validateTaskTiming(task: TaskDecl): Diagnostic[] {
 }
 
 export function validateTaskPriority(task: TaskDecl): Diagnostic[] {
-  // Description:
-  //     ValidateTaskPriority.
+  // Validate priority/isolation combinations for safety-critical tasks.
   //
-  // Inputs:
-  //     task: TaskDecl
-  //         Caller-supplied task.
+  // Parameters:
+  // - `task` — task declaration to inspect
   //
-  // Outputs:
-  //     result: Diagnostic[]
-  //         Return value from `validateTaskPriority`.
+  // Returns:
+  // Diagnostics for invalid priority configuration.
   //
-  // Example:
-  //     const result = validateTaskPriority(task);
-  // Description:
-  //     ValidateTaskPriority.
-  //
-  // Inputs:
-  //     task: TaskDecl
-  //         Caller-supplied task.
-  //
-  // Outputs:
-  //     result: Diagnostic[]
-  //         Return value from `validateTaskPriority`.
+  // Options:
+  // None.
   //
   // Example:
-
-  //     const result = validateTaskPriority(task);
+  // const diags = validateTaskPriority(task);
 
   const { name, priority, isolated, span } = task;
   const diags: Diagnostic[] = [];
@@ -140,33 +112,19 @@ export function validateTaskPriority(task: TaskDecl): Diagnostic[] {
 }
 
 export function validatePipeline(pipeline: PipelineDecl): Diagnostic[] {
-  // Description:
-  //     ValidatePipeline.
+  // Validate pipeline latency budget configuration.
   //
-  // Inputs:
-  //     pipeline: PipelineDecl
-  //         Caller-supplied pipeline.
+  // Parameters:
+  // - `pipeline` — pipeline declaration
   //
-  // Outputs:
-  //     result: Diagnostic[]
-  //         Return value from `validatePipeline`.
+  // Returns:
+  // Diagnostics for invalid pipeline budgets.
   //
-  // Example:
-  //     const result = validatePipeline(pipeline);
-  // Description:
-  //     ValidatePipeline.
-  //
-  // Inputs:
-  //     pipeline: PipelineDecl
-  //         Caller-supplied pipeline.
-  //
-  // Outputs:
-  //     result: Diagnostic[]
-  //         Return value from `validatePipeline`.
+  // Options:
+  // None.
   //
   // Example:
-
-  //     const result = validatePipeline(pipeline);
+  // const diags = validatePipeline(pipeline);
 
   const { name, budgetMs, span } = pipeline;
   const diags: Diagnostic[] = [];
@@ -183,37 +141,20 @@ export function validatePipeline(pipeline: PipelineDecl): Diagnostic[] {
 }
 
 export function validateWatchdog(watchdog: WatchdogDecl, taskNames: string[]): Diagnostic[] {
-  // Description:
-  //     ValidateWatchdog.
+  // Validate watchdog timeout and monitored task target.
   //
-  // Inputs:
-  //     watchdog: WatchdogDecl
-  //         Caller-supplied watchdog.
-  //     taskNames: string[]
-  //         Caller-supplied taskNames.
+  // Parameters:
+  // - `watchdog` — watchdog declaration
+  // - `taskNames` — known task names in the robot block
   //
-  // Outputs:
-  //     result: Diagnostic[]
-  //         Return value from `validateWatchdog`.
+  // Returns:
+  // Diagnostics for invalid watchdog configuration.
   //
-  // Example:
-  //     const result = validateWatchdog(watchdog, taskNames);
-  // Description:
-  //     ValidateWatchdog.
-  //
-  // Inputs:
-  //     watchdog: WatchdogDecl
-  //         Caller-supplied watchdog.
-  //     taskNames: string[]
-  //         Caller-supplied taskNames.
-  //
-  // Outputs:
-  //     result: Diagnostic[]
-  //         Return value from `validateWatchdog`.
+  // Options:
+  // None.
   //
   // Example:
-
-  //     const result = validateWatchdog(watchdog, taskNames);
+  // const diags = validateWatchdog(watchdog, taskNames);
 
   const { name, target, timeoutMs, span } = watchdog;
   const diags: Diagnostic[] = [];
@@ -238,37 +179,20 @@ export function validateWatchdog(watchdog: WatchdogDecl, taskNames: string[]): D
 }
 
 export function validateResourceBudget(budget: ResourceBudgetDecl, span: Span): Diagnostic[] {
-  // Description:
-  //     ValidateResourceBudget.
+  // Validate per-task resource budget ceilings for conflicts and invalid values.
   //
-  // Inputs:
-  //     budget: ResourceBudgetDecl
-  //         Caller-supplied budget.
-  //     span: Span
-  //         Caller-supplied span.
+  // Parameters:
+  // - `budget` — resource budget block
+  // - `span` — enclosing task span for diagnostics
   //
-  // Outputs:
-  //     result: Diagnostic[]
-  //         Return value from `validateResourceBudget`.
+  // Returns:
+  // Diagnostics for invalid or conflicting budgets.
   //
-  // Example:
-  //     const result = validateResourceBudget(budget, span);
-  // Description:
-  //     ValidateResourceBudget.
-  //
-  // Inputs:
-  //     budget: ResourceBudgetDecl
-  //         Caller-supplied budget.
-  //     span: Span
-  //         Caller-supplied span.
-  //
-  // Outputs:
-  //     result: Diagnostic[]
-  //         Return value from `validateResourceBudget`.
+  // Options:
+  // None.
   //
   // Example:
-
-  //     const result = validateResourceBudget(budget, span);
+  // const diags = validateResourceBudget(budget, taskSpan);
 
   const {
     batteryPctMax,
@@ -281,22 +205,6 @@ export function validateResourceBudget(budget: ResourceBudgetDecl, span: Span): 
   const diags: Diagnostic[] = [];
 
   const checkPct = (label: string, value: number | null | undefined) => {
-    // Description:
-    //     CheckPct.
-    //
-    // Inputs:
-    //     label: string
-    //         Caller-supplied label.
-    //     value: number | null | undefined
-    //         Caller-supplied value.
-    //
-    // Outputs:
-    //     None.
-    //
-    // Example:
-
-    //     const result = checkPct(label, value);
-
     if (value !== undefined && value !== null) {
       if (value <= 0 || value > 100) {
         diags.push({
@@ -330,41 +238,11 @@ export function validateResourceBudget(budget: ResourceBudgetDecl, span: Span): 
     cpuPctMax !== undefined &&
     cpuPctMax !== null &&
     gpuPctMax !== undefined &&
-    gpuPctMax !
-  // Description:
-  //     HasSafeRecoverAction.
-  //
-  // Inputs:
-  //     body: Stmt[]
-  //         Caller-supplied body.
-  //
-  // Outputs:
-  //     result: boolean
-  //         Return value from `hasSafeRecoverAction`.
-  //
-  // Example:
-
-// const result = hasSafeRecoverAction(body);
-== null &&
+    gpuPctMax !== null &&
     cpuPctMax + gpuPctMax > 100
   ) {
     diags.push({
-      message: `Resource budget cpu (${cpuPctMax}%) + gpu (${gpuPctMax}%) exceeds 100%. Suggestion: reduce one ceilin
-  // Description:
-  //     ValidateRecover.
-  //
-  // Inputs:
-  //     recover: RecoverDecl
-  //         Caller-supplied recover.
-  //
-  // Outputs:
-  //     result: Diagnostic[]
-  //         Return value from `validateRecover`.
-  //
-  // Example:
-
-// const result = validateRecover(recover);
-g.`,
+      message: `Resource budget cpu (${cpuPctMax}%) + gpu (${gpuPctMax}%) exceeds 100%. Suggestion: reduce one ceiling.`,
       line: span.start.line,
       column: span.start.column,
     });
@@ -374,61 +252,31 @@ g.`,
 }
 
 function hasSafeRecoverAction(body: Stmt[]): boolean {
-  // Description:
-  //     HasSafeRecoverAction.
-  //
-  // Inputs:
-  //     body: Stmt[]
-  //         Caller-supplied body.
-  //
-  // Outputs:
-  //     result: boolean
-  //         Return value from `hasSafeRecoverAction`.
-  //
-  // Example:
-
-  //     const result = hasSafeRecoverAction(body);
-
   return body.some(
     (stmt) => stmt.kind === "StopAllActuatorsStmt" || stmt.kind === "EnterModeStmt",
   );
 }
 
 export function validateRecover(recover: RecoverDecl): Diagnostic[] {
-  // Description:
-  //     ValidateRecover.
+  // Validate recovery handler safety requirements.
   //
-  // Inputs:
-  //     recover: RecoverDecl
-  //         Caller-supplied recover.
+  // Parameters:
+  // - `recover` — recovery handler declaration
   //
-  // Outputs:
-  //     result: Diagnostic[]
-  //         Return value from `validateRecover`.
+  // Returns:
+  // Diagnostics when recovery blocks omit safety actions for runtime errors.
+  //
+  // Options:
+  // None.
   //
   // Example:
-
-  //     const result = validateRecover(recover);
+  // const diags = validateRecover(recover);
 
   const { errorName, body, span } = recover;
   const diags: Diagnostic[] = [];
 
   if (errorName === "RuntimeError" && !hasSafeRecoverAction(body)) {
-  // Description:
-  //     TaskPriorityLabel.
-  //
-  // Inputs:
-  //     priority: TaskPriority
-  //         Caller-supplied priority.
-  //
-  // Outputs:
-  //     result: string
-  //         Return value from `taskPriorityLabel`.
-  //
-  // Example:
-
-  //     const result = taskPriorityLabel(priority);
-  diags.push({
+    diags.push({
       message:
         "Recovery from RuntimeError should stop actuators or enter degraded mode. Suggestion: add stop_all_actuators() or enter degraded_mode;",
       line: span.start.line,
@@ -440,20 +288,5 @@ export function validateRecover(recover: RecoverDecl): Diagnostic[] {
 }
 
 export function taskPriorityLabel(priority: TaskPriority): string {
-  // Description:
-  //     TaskPriorityLabel.
-  //
-  // Inputs:
-  //     priority: TaskPriority
-  //         Caller-supplied priority.
-  //
-  // Outputs:
-  //     result: string
-  //         Return value from `taskPriorityLabel`.
-  //
-  // Example:
-
-  //     const result = taskPriorityLabel(priority);
-
   return priority;
 }
