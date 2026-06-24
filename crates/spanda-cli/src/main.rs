@@ -17,7 +17,11 @@ use spanda_ast::foundations::{DeployDecl, TaskDecl};
 use spanda_ast::nodes::{BehaviorDecl, Program, RobotDecl};
 use spanda_codegen::{generate as codegen, wasm_deploy_manifest, CodegenTarget};
 use spanda_debug::DebugOptions;
-use spanda_docs::{generate_cli_man_pages, generate_language_reference, generate_markdown};
+use spanda_docs::{
+    generate_cli_man_pages, generate_docs_for_path, generate_html, generate_json_docs,
+    generate_language_reference, generate_markdown, list_man_pages, lookup_man_page,
+    markdown_man_to_roff,
+};
 use spanda_driver::{
     check, compile, lower_to_sir, playback_mission, replay_mission, run, run_debug, tokenize,
     verify_compatibility_with_registry, RunOptions, RunResult,
@@ -153,7 +157,8 @@ fn usage() {
            spanda fleet agent list [--json]\n\
            spanda fmt [--json] <file.sd>\n\
            spanda lint [--json] <file.sd>\n\
-           spanda doc [--json] [--out <file.md>] <file.sd>\n\
+           spanda doc [--json] [--html] [--out <file|dir>] <file.sd|dir/>\n\
+           spanda man [<command>] [--roff]\n\
            spanda reference [--json] [--out <file.md>] [--man-dir <dir>]\n\
            spanda codegen [--target native|wasm|esp32] [--out <file>] <file.sd>\n\
            {}\n\
@@ -1296,6 +1301,41 @@ fn human_security_report(file: &str, mode: &str, report: &SecurityReport) {
     }
 }
 
+fn dispatch_man(args: &[String]) {
+    let mut roff = false;
+    let mut query: Option<String> = None;
+    for arg in args {
+        if arg == "--roff" {
+            roff = true;
+        } else if !arg.starts_with('-') && query.is_none() {
+            query = Some(arg.clone());
+        }
+    }
+    if let Some(q) = query {
+        match lookup_man_page(&q) {
+            Some((name, body)) => {
+                if roff {
+                    let page = name.strip_suffix(".md").unwrap_or(&name);
+                    print!("{}", markdown_man_to_roff(&body, page));
+                } else {
+                    print!("{body}");
+                }
+            }
+            None => {
+                eprintln!("No man page for: {q}");
+                eprintln!("Available: {}", list_man_pages().join(", "));
+                process::exit(1);
+            }
+        }
+    } else {
+        println!("Spanda manual pages:\n");
+        for page in list_man_pages() {
+            let short = page.strip_prefix("spanda-").unwrap_or(&page);
+            println!("  {short}");
+        }
+    }
+}
+
 fn dispatch_package(command: &str, rest: &[String]) {
     //
     // Parameters:
@@ -1583,6 +1623,12 @@ fn main() {
         return;
     }
 
+    if command == "man" {
+        dispatch_man(&args[2..]);
+        let _ = io::stdout().flush();
+        return;
+    }
+
     // Take this path when is package command(command).
     if is_package_command(command) {
         dispatch_package(command, &args[2..]);
@@ -1590,6 +1636,7 @@ fn main() {
         return;
     }
     let mut json = false;
+    let mut html = false;
     let mut verbose = false;
     let mut target: Option<String> = None;
     let mut all_targets = false;
@@ -1638,6 +1685,7 @@ fn main() {
         // Match on as str and handle each case.
         match args[i].as_str() {
             "--json" => json = true,
+            "--html" => html = true,
             "--verification-json" => {
                 verification_json = true;
                 json = true;
@@ -2090,39 +2138,97 @@ fn main() {
         }
         "doc" => {
             let file = file.unwrap_or_else(|| {
-                eprintln!("Missing file path");
+                eprintln!("Missing file or directory path");
                 usage();
                 process::exit(1);
             });
-            let source = read_source(&file);
-
-            // Match on generate markdown and handle each case.
-            match generate_markdown(&source) {
-                Ok(markdown) => {
-                    // Take this path when let Some(ref out) = out path.
-                    if let Some(ref out) = out_path {
-                        fs::write(out, &markdown).unwrap_or_else(|e| {
-                            eprintln!("Error writing {out}: {e}");
-                            process::exit(1);
-                        });
-
-                        // Take the branch when json is false.
-                        if !json {
-                            println!("✓ wrote docs to {out}");
+            let path = Path::new(&file);
+            if path.is_dir() || out_path.is_some() {
+                let out = out_path.as_deref().map(Path::new);
+                match generate_docs_for_path(path, html, out) {
+                    Ok(batch) => {
+                        for (failed, err) in &batch.errors {
+                            eprintln!("Warning: {}: {err}", failed.display());
                         }
-                    } else if !json {
-                        print!("{markdown}");
+                        if batch.outputs.is_empty() && !batch.errors.is_empty() {
+                            process::exit(1);
+                        }
+                        if json {
+                            let resp = serde_json::json!({
+                                "ok": batch.errors.is_empty(),
+                                "count": batch.outputs.len(),
+                                "errors": batch.errors.iter().map(|(p, e)| {
+                                    serde_json::json!({"file": p.display().to_string(), "error": e})
+                                }).collect::<Vec<_>>(),
+                                "files": batch.outputs.iter().map(|(p, _)| p.display().to_string()).collect::<Vec<_>>(),
+                            });
+                            println!("{}", serde_json::to_string(&resp).unwrap());
+                        } else if let Some(out) = out {
+                            println!(
+                                "✓ wrote {} doc file(s) to {} ({} skipped)",
+                                batch.outputs.len(),
+                                out.display(),
+                                batch.errors.len()
+                            );
+                        } else if batch.outputs.len() == 1 {
+                            print!("{}", batch.outputs[0].1);
+                        } else {
+                            for (p, _) in &batch.outputs {
+                                println!("{}", p.display());
+                            }
+                        }
                     }
-
-                    // Take this path when json.
-                    if json {
-                        let resp = DocResponse { ok: true, markdown };
-                        println!("{}", serde_json::to_string(&resp).unwrap());
+                    Err(e) => {
+                        eprintln!("Error: {e}");
+                        process::exit(1);
                     }
                 }
-                Err(e) => {
-                    eprintln!("Error: {e}");
-                    process::exit(1);
+            } else {
+                let source = read_source(&file);
+                if json {
+                    match generate_json_docs(&source, html) {
+                        Ok(resp) => println!("{}", serde_json::to_string(&resp).unwrap()),
+                        Err(e) => {
+                            eprintln!("Error: {e}");
+                            process::exit(1);
+                        }
+                    }
+                } else if html {
+                    match generate_html(&source, None) {
+                        Ok(content) => {
+                            if let Some(ref out) = out_path {
+                                fs::write(out, &content).unwrap_or_else(|e| {
+                                    eprintln!("Error writing {out}: {e}");
+                                    process::exit(1);
+                                });
+                                println!("✓ wrote HTML docs to {out}");
+                            } else {
+                                print!("{content}");
+                            }
+                        }
+                        Err(e) => {
+                            eprintln!("Error: {e}");
+                            process::exit(1);
+                        }
+                    }
+                } else {
+                    match generate_markdown(&source) {
+                        Ok(markdown) => {
+                            if let Some(ref out) = out_path {
+                                fs::write(out, &markdown).unwrap_or_else(|e| {
+                                    eprintln!("Error writing {out}: {e}");
+                                    process::exit(1);
+                                });
+                                println!("✓ wrote docs to {out}");
+                            } else {
+                                print!("{markdown}");
+                            }
+                        }
+                        Err(e) => {
+                            eprintln!("Error: {e}");
+                            process::exit(1);
+                        }
+                    }
                 }
             }
         }
