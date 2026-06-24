@@ -64,7 +64,7 @@ fn mesh_coordinator_relays_fleet_recovery_to_agents() {
     let resp = relay_recovery_via_mesh(
         &format!("http://127.0.0.1:{mesh_port}"),
         &FleetRecoveryRequest {
-            action: "reassign mission".into(),
+            action: "pause mission".into(),
             fleet_name: Some("PatrolFleet".into()),
             from_robot: Some("RoverAlpha".into()),
             members: vec!["RoverAlpha".into(), "RoverBeta".into()],
@@ -81,9 +81,10 @@ fn mesh_coordinator_relays_fleet_recovery_to_agents() {
         None,
     )
     .expect("agent status");
-    assert!(status.body.contains("reassign mission"));
+    assert!(status.body.contains("pause mission"));
     assert!(status.body.contains("last_recovery_commands"));
     assert!(status.body.contains("recovery_active"));
+    assert!(status.body.contains("\"mission_paused\":true"));
 }
 
 #[test]

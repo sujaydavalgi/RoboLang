@@ -30,6 +30,12 @@ pub struct FleetAgentState {
     pub last_recovery_commands: Vec<String>,
     #[serde(default)]
     pub recovery_active: Option<String>,
+    #[serde(default)]
+    pub recovery_actions_applied: Vec<String>,
+    #[serde(default)]
+    pub mission_paused: bool,
+    #[serde(default)]
+    pub recovery_mode: Option<String>,
 }
 
 pub fn default_fleet_agent_state_path() -> PathBuf {
@@ -73,6 +79,25 @@ fn clear_fleet_agent_on_identity_change(state: &mut FleetAgentState, new_robot_n
     if !state.robot_name.is_empty() && state.robot_name != new_robot_name {
         state.last_peer_messages.clear();
         state.token = None;
+        state.last_recovery_commands.clear();
+        state.recovery_active = None;
+        state.recovery_actions_applied.clear();
+        state.mission_paused = false;
+        state.recovery_mode = None;
+    }
+}
+
+fn apply_recovery_action(state: &mut FleetAgentState, action: &str) {
+    state.recovery_active = Some(action.to_string());
+    state.recovery_actions_applied.push(action.to_string());
+    let lower = action.to_ascii_lowercase();
+    if lower.contains("pause") && lower.contains("mission") {
+        state.mission_paused = true;
+    }
+    if lower.contains("degraded") {
+        state.recovery_mode = Some("degraded".into());
+    } else if lower.contains("safe") && lower.contains("mode") {
+        state.recovery_mode = Some("safe".into());
     }
 }
 
@@ -130,6 +155,15 @@ pub fn handle_fleet_agent_request(
                 },
             }
         }
+        ("POST", "/v1/recovery/ack") => {
+            state.recovery_active = None;
+            state.mission_paused = false;
+            state.recovery_mode = None;
+            HttpResponse {
+                status: 200,
+                body: r#"{"ok":true}"#.into(),
+            }
+        }
         ("POST", "/v1/program") => {
             let Ok(payload) = serde_json::from_str::<serde_json::Value>(&request.body) else {
                 return HttpResponse {
@@ -157,6 +191,9 @@ pub fn handle_fleet_agent_request(
                 "last_peer_messages": state.last_peer_messages,
                 "last_recovery_commands": state.last_recovery_commands,
                 "recovery_active": state.recovery_active,
+                "recovery_actions_applied": state.recovery_actions_applied,
+                "mission_paused": state.mission_paused,
+                "recovery_mode": state.recovery_mode,
                 "has_program": state.program.is_some(),
                 "healthy": true,
             }))
@@ -223,7 +260,7 @@ pub fn handle_fleet_agent_request(
             state.last_peer_messages.push(message);
             if payload.topic == "fleet_recovery" {
                 state.last_recovery_commands.push(payload.step.clone());
-                state.recovery_active = Some(payload.step.clone());
+                apply_recovery_action(state, &payload.step);
             }
             HttpResponse {
                 status: 200,
