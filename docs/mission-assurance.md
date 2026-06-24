@@ -69,6 +69,7 @@ Mission assurance **composes** with:
 
 ## Examples
 
+- `examples/showcase/assurance/rover.sd` — one-command demo via `spanda demo assurance`
 - `examples/assurance/rover_assurance.sd`
 - `examples/anomaly/navigation_anomaly.sd`
 - `examples/diagnostics/gps_failure.sd`

@@ -182,7 +182,7 @@ CLI, LSP, debugger, docs site, and contributor ergonomics.
 |------|--------|
 | Native CLI (`check`, `verify`, `run`, `sim`, `fleet`, `fmt`, `lint`) | **Stable** |
 | `cargo install spanda` | **Stable** |
-| Bundled `spanda demo {rover,safety,verify,fleet,health,readiness}` | **Stable** |
+| Bundled `spanda demo {rover,safety,verify,fleet,health,readiness,assurance}` | **Stable** |
 | Operations dashboard (`packages/web` Operations view) | **Experimental** |
 | mdBook GitHub Pages | **Stable** |
 | LSP hover + SafeAction quick-fix | **Stable** |
