@@ -16,7 +16,6 @@ from doc_validation_lib import (
     find_rust_functions,
     find_ts_arrows,
     find_ts_callables,
-    scan_file,
     should_scan,
 )
 from migrate_legacy_inline_docs import build_structured_block, module_hint_from_path
@@ -150,7 +149,6 @@ def process_ts(path: Path) -> bool:
 
 def process_py(path: Path) -> bool:
     text = path.read_text(encoding="utf-8")
-    original = text
     for fm in find_py_functions(text, path):
         if assess_callable(text, fm).documented:
             continue

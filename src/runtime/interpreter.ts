@@ -56,7 +56,7 @@ import {
 } from "./values.js";
 import { callExternBridge } from "../ffi/subprocess-bridge.js";
 import { ConcurrencyRuntime } from "../concurrency.js";
-import { recordSensorReading, recordTaskHeartbeat, recordTopicPublish } from "../telemetry-store.js";
+import { recordSensorReading, recordTopicPublish } from "../telemetry-store.js";
 import type { MissionTrace, ReplayStateSnapshot } from "../replay.js";
 import { setProviderCallObserver } from "./provider-observer.js";
 import { createHealthPollState, pollRuntimeHealthChanges, type HealthPollState } from "./health-runtime.js";

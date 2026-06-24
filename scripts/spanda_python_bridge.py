@@ -1017,7 +1017,6 @@ def _onnx_anomaly_infer(features_json: str) -> float:
 
 
     """
-    import json
     import os
 
     try:
@@ -1044,6 +1043,7 @@ def _onnx_anomaly_infer(features_json: str) -> float:
         if outputs and len(outputs[0].flat) > 0:
             return float(outputs[0].flat[0])
     except Exception:
+        # Fall back to heuristic scoring when ONNX inference fails.
         pass
     return 1.0 if observed < 0.85 or volatility > 0.25 else 0.0
 

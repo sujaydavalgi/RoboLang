@@ -722,8 +722,7 @@ def render_coverage_report(assessments: list[DocAssessment]) -> str:
         "",
         f"Generated: {date.today().isoformat()}",
         "",
-        "This report is produced by `scripts/validate_documentation.py`. "
-        "See [coding-standards.md](./coding-standards.md) for the required docstring format.",
+        "This report is produced by `scripts/validate_documentation.py`. See [coding-standards.md](./coding-standards.md) for the required docstring format.",
         "",
         "## Summary",
         "",
@@ -766,8 +765,7 @@ def render_coverage_report(assessments: list[DocAssessment]) -> str:
             "",
             "## Remaining gaps (public APIs, sample)",
             "",
-            "Public APIs missing one or more required sections. "
-            "Run `python3 scripts/validate_documentation.py --warn` for the full list.",
+            "Public APIs missing one or more required sections. Run `python3 scripts/validate_documentation.py --warn` for the full list.",
             "",
         ]
     )
@@ -783,8 +781,7 @@ def render_coverage_report(assessments: list[DocAssessment]) -> str:
             "",
             "## CI enforcement",
             "",
-            "CI runs `python3 scripts/validate_documentation.py --warn --report` on every pull request. "
-            "Warnings are emitted for public APIs that lack structured documentation; builds do not fail yet.",
+            "CI runs `python3 scripts/validate_documentation.py --warn --report` on every pull request. Warnings are emitted for public APIs that lack structured documentation; builds do not fail yet.",
             "",
             "## Regenerating",
             "",

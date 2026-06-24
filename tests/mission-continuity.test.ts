@@ -7,7 +7,7 @@ import {
   planTakeoverTs,
   type ContinuityContext,
 } from "../src/mission-continuity.js";
-import { loadCheckpoint, persistCheckpoint, loadCheckpointStore, saveCheckpointStore, recordCheckpoint } from "../src/continuity-checkpoint.js";
+import { loadCheckpoint, persistCheckpoint, loadCheckpointStore, saveCheckpointStore } from "../src/continuity-checkpoint.js";
 
 const warehouseSource = `
 hardware RoverV1 {

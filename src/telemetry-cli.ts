@@ -3,7 +3,7 @@
  * @module
  */
 
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import http from "node:http";
 import { dirname } from "node:path";
 import {
