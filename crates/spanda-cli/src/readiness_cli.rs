@@ -5,11 +5,13 @@ use spanda_lexer::tokenize;
 use spanda_parser::parse;
 use spanda_readiness::{
     analyze_failure, audit_program, build_runtime_context_with_config, evaluate_fleet_readiness,
-    evaluate_readiness_with_runtime, evaluate_safety_coverage, evaluate_twin_readiness,
-    format_audit, format_failure_analysis, format_fleet_readiness, format_mission_verification,
-    format_readiness, format_safety_coverage, format_safety_report, generate_safety_report,
-    readiness_options_from_flags, verify_approvals, verify_fleet, verify_mission, ReadinessOptions,
-    ReportFormat,
+    analyze_readiness_trends, default_readiness_history_path, evaluate_readiness_with_runtime,
+    evaluate_safety_coverage, evaluate_twin_readiness, format_audit, format_failure_analysis,
+    format_fleet_readiness, format_mission_verification, format_readiness, format_readiness_trends,
+    format_safety_coverage, format_safety_report, generate_safety_report,
+    load_readiness_history, parse_forecast_horizon, readiness_options_from_flags,
+    record_readiness_snapshot, verify_approvals, verify_fleet, verify_mission, ReadinessOptions,
+    ReadinessPolicy, ReportFormat,
 };
 use std::fs;
 use std::path::Path;
@@ -20,6 +22,8 @@ struct ParsedReadinessCli {
     file: String,
     options: ReadinessOptions,
     agent_json: bool,
+    record: bool,
+    history_path: Option<String>,
     system_config: Option<std::sync::Arc<spanda_config::ResolvedSystemConfig>>,
 }
 
@@ -123,6 +127,8 @@ fn parse_readiness_cli(args: &[String]) -> ParsedReadinessCli {
     let mut agent_json = false;
     let mut config_path: Option<String> = None;
     let mut baseline_path: Option<String> = None;
+    let mut history_path: Option<String> = None;
+    let mut record = false;
     let mut file: Option<String> = None;
     let mut i = 0usize;
     while i < args.len() {
@@ -147,6 +153,15 @@ fn parse_readiness_cli(args: &[String]) -> ParsedReadinessCli {
             }
             "--simulate" => simulate = true,
             "--strict" => strict = true,
+            "--record" => record = true,
+            "--history" => {
+                i += 1;
+                if i >= args.len() {
+                    eprintln!("--history requires a path");
+                    process::exit(1);
+                }
+                history_path = Some(args[i].clone());
+            }
             "--config" => {
                 i += 1;
                 if i >= args.len() {
@@ -218,6 +233,8 @@ fn parse_readiness_cli(args: &[String]) -> ParsedReadinessCli {
         file,
         options,
         agent_json,
+        record,
+        history_path,
         system_config,
     }
 }
@@ -297,6 +314,18 @@ pub fn cmd_readiness(args: &[String]) {
 
     let program = parse_program(&source);
     let report = evaluate_with_options(&program, &parsed.options);
+    if parsed.record {
+        let default_history = default_readiness_history_path();
+        let history_path = parsed
+            .history_path
+            .as_deref()
+            .map(std::path::Path::new)
+            .unwrap_or(&default_history);
+        if let Err(error) = record_readiness_snapshot(&report, &parsed.file, history_path) {
+            eprintln!("Failed to record readiness history: {error}");
+            process::exit(1);
+        }
+    }
     println!("{}", format_readiness(&report, parsed.format));
     if !report.mission_ready {
         process::exit(1);
@@ -645,6 +674,62 @@ pub fn cmd_safety_coverage(args: &[String]) {
     println!("{}", format_safety_coverage(&report, json, markdown));
 }
 
+/// `spanda readiness trends <file.sd> [--forecast 7d] [--history <path>] [--json]`
+pub fn cmd_readiness_trends(args: &[String]) {
+    let mut file: Option<String> = None;
+    let mut forecast_days: Option<u32> = None;
+    let mut history_path: Option<String> = None;
+    let mut json = false;
+    let mut index = 0usize;
+    while index < args.len() {
+        match args[index].as_str() {
+            "--json" => json = true,
+            "--forecast" => {
+                index += 1;
+                if index >= args.len() {
+                    eprintln!("--forecast requires a horizon such as 7d");
+                    process::exit(1);
+                }
+                forecast_days = parse_forecast_horizon(&args[index]);
+                if forecast_days.is_none() {
+                    eprintln!("Invalid --forecast value: {}", args[index]);
+                    process::exit(1);
+                }
+            }
+            "--history" => {
+                index += 1;
+                if index >= args.len() {
+                    eprintln!("--history requires a path");
+                    process::exit(1);
+                }
+                history_path = Some(args[index].clone());
+            }
+            other if !other.starts_with('-') && file.is_none() => file = Some(other.to_string()),
+            other => {
+                eprintln!("Unknown argument: {other}");
+                process::exit(1);
+            }
+        }
+        index += 1;
+    }
+    let file = file.unwrap_or_else(|| {
+        eprintln!("Usage: spanda readiness trends <file.sd> [--forecast 7d] [--history <path>] [--json]");
+        process::exit(1);
+    });
+    let default_history = default_readiness_history_path();
+    let path = history_path
+        .as_deref()
+        .map(std::path::Path::new)
+        .unwrap_or(&default_history);
+    let history = load_readiness_history(path);
+    let minimum_score = ReadinessPolicy::default().minimum_score;
+    let report = analyze_readiness_trends(&history, &file, forecast_days, minimum_score);
+    println!("{}", format_readiness_trends(&report, json));
+    if report.sample_count < 2 || report.forecast.as_ref().is_some_and(|f| f.risk_warning) {
+        process::exit(1);
+    }
+}
+
 /// Top-level readiness dispatch for subcommands.
 pub fn readiness_dispatch(args: &[String]) {
     // Description:
@@ -661,9 +746,15 @@ pub fn readiness_dispatch(args: &[String]) {
 
     //     let result = spanda_cli::readiness_cli::readiness_dispatch(args);
 
+    if args.first().map(String::as_str) == Some("trends") {
+        cmd_readiness_trends(&args[1..]);
+        return;
+    }
+
     if args.is_empty() {
         eprintln!(
-            "Usage: spanda readiness <file.sd> [--target <profile>] [--runtime] [--inject-health-faults] [--json|--agent-json|--markdown|--html]"
+            "Usage: spanda readiness <file.sd> [--record] [--target <profile>] [--runtime] [--inject-health-faults] [--json|--agent-json|--markdown|--html]\n\
+             spanda readiness trends <file.sd> [--forecast 7d] [--history <path>] [--json]"
         );
         process::exit(1);
     }
