@@ -59,6 +59,7 @@ Platform overview: [platform-overview.md](./platform-overview.md)
 | **Health & kill switch** | `health_check`, `health_policy`, fleet `require` runtime; `kill_switch`, `remote_signed`, `on kill_switch` handlers |
 | **Self-healing & recovery** | `recovery_policy`, recovery planner, validation gates, audit/traceability; runtime dispatch (modes, speed caps, fleet mesh relay, reassign → continuity mesh); CLI `heal`, `recover`, `recovery-report`, `recovery knowledge`, `sim --inject-failure`; fleet agent interpreter + assurance recovery; mission operator approval gating |
 | **Mission continuity** | Checkpoint resume, state transfer, succession ranking, takeover/delegation; CLI `continuity`, `takeover`, `delegate`, `succession`; `continuity_policy`; diagnostics in `spanda check --readiness-json`; `spanda demo continuity`; official `spanda-mission-continuity` package |
+| **Differentiation NOW** | `spanda contract verify`, `spanda explain`, `spanda audit decisions`, `spanda safety-coverage`, `spanda recovery-coverage`; `spanda demo differentiation` |
 | **Mission assurance** | `knowledge_model`, `state_estimator`, `anomaly_detector`, `on anomaly`, `prognostics`, `mitigation`, `resilience_policy`, `assurance_case`; CLI `assure`, `anomaly scan`, `diagnose`, `state estimate`, `prognostics`, `mission verify`, `resilience check`, `mitigation plan`; `spanda demo assurance` |
 | **Weighted sensor fusion** | `observe { }`, `state_estimator`, `fusion.read()` with type-weighted confidence; `spanda-fusion` package |
 | **Learned anomaly runtime** | `learned backend assurance.anomaly`; EMA volatility; optional ONNX (`SPANDA_ANOMALY_ONNX_MODEL_PATH`) |
@@ -93,7 +94,6 @@ Platform overview: [platform-overview.md](./platform-overview.md)
 
 | Area | Description |
 |------|-------------|
-| **Differentiation (NOW)** | Mission Contracts, Explainability, Decision Audit Trail, Safety Coverage, Recovery Coverage — see [differentiation-roadmap.md](./differentiation-roadmap.md) |
 | **Differentiation (NEXT)** | What-If Analysis, Mission Risk Analysis, Readiness Forecasting, Trust Graph, Scorecards |
 | **Differentiation (LATER)** | Digital Mission Twin, Certification Packs, Mission Time Travel, Human/Robot Teaming, Autonomous Governance |
 | **Platform maturity (Phase A)** | `spanda graph`, `explain`, `package trust`, deployment gates — see [platform-maturity-roadmap.md](./platform-maturity-roadmap.md) |

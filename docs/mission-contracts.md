@@ -1,6 +1,6 @@
 # Mission Contracts
 
-**Status:** Planned · **Horizon:** NOW (0–3 months) · **Priority:** P0
+**Status:** Stable (static analysis v1) · **Horizon:** NOW
 
 Make missions **verifiable first-class entities** with explicit guarantees, constraints, assumptions, invariants, and objectives.
 

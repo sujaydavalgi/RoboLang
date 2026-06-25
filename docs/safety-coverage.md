@@ -1,6 +1,6 @@
 # Safety Coverage
 
-**Status:** Planned · **Horizon:** NOW (0–3 months) · **Priority:** P0
+**Status:** Stable · **Horizon:** NOW · **Priority:** P0
 
 Coverage reporting for safety scenarios — identify what is protected, partially protected, or uncovered before deploy.
 

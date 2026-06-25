@@ -100,11 +100,11 @@ Design specs and topic guides are **shipped**; CLI crates and commands are **not
 
 | Item | CLI | Crate | Docs | Code |
 |------|-----|-------|------|------|
-| Mission Contracts | `spanda contract verify` | `spanda-contract` | [mission-contracts.md](./mission-contracts.md) | **Planned** |
-| Explainability | `spanda explain` | `spanda-explain` | [explainability.md](./explainability.md) | **Planned** |
-| Decision Audit Trail | trace emission + `spanda audit decisions` | `spanda-decision` | [decision-audit-trail.md](./decision-audit-trail.md) | **Planned** |
-| Safety Coverage | `spanda safety-coverage` | extends `spanda-readiness` | [safety-coverage.md](./safety-coverage.md) | **Planned** |
-| Recovery Coverage | `spanda recovery-coverage` | extends `spanda-assurance` | [recovery-coverage.md](./recovery-coverage.md) | **Planned** |
+| Mission Contracts | `spanda contract verify` | `spanda-contract` | [mission-contracts.md](./mission-contracts.md) | **Stable** (static analysis v1) |
+| Explainability | `spanda explain` | `spanda-explain` | [explainability.md](./explainability.md) | **Stable** (static v1) |
+| Decision Audit Trail | trace synthesis + `spanda audit decisions` | `spanda-decision` | [decision-audit-trail.md](./decision-audit-trail.md) | **Stable** (trace parse v1) |
+| Safety Coverage | `spanda safety-coverage` | extends `spanda-readiness` | [safety-coverage.md](./safety-coverage.md) | **Stable** |
+| Recovery Coverage | `spanda recovery-coverage` | extends `spanda-assurance` | [recovery-coverage.md](./recovery-coverage.md) | **Stable** |
 
 **Exit criteria:** `spanda demo differentiation` + `scripts/differentiation_smoke.sh`.
 
@@ -318,7 +318,7 @@ CLI, LSP, debugger, docs site, and contributor ergonomics.
 |------|--------|
 | Native CLI (`check`, `verify`, `run`, `sim`, `fleet`, `fmt`, `lint`) | **Stable** |
 | `cargo install spanda` | **Stable** |
-| Bundled `spanda demo {rover,safety,verify,fleet,health,readiness,assurance,self-healing,continuity}` | **Stable** |
+| Bundled `spanda demo {rover,safety,verify,fleet,health,readiness,assurance,self-healing,continuity,differentiation}` | **Stable** |
 | Operations dashboard (`packages/web` Operations view) | **Experimental** — local readiness scoring, live agent fetch, continuity panel, WASM telemetry panel |
 | mdBook GitHub Pages | **Stable** |
 | LSP hover + SafeAction quick-fix | **Stable** |
@@ -358,12 +358,12 @@ CLI, LSP, debugger, docs site, and contributor ergonomics.
 | Hosted registry (38 packages) + `spanda publish` mirror | **Stable** |
 | CI verify guide + adoption paths (P1 enablers) | **Stable** — [ci-verify.md](./ci-verify.md), [adoption-path.md](./adoption-path.md) |
 | VS Code Marketplace listing | **Partial** — only open P0 blocker; needs maintainer `VSCE_PAT` |
-| Mission Contracts (`spanda contract verify`) | **Planned** — docs shipped; crate not started |
-| Explainability (`spanda explain`) | **Planned** — docs shipped; crate not started |
-| Decision Audit Trail (`spanda audit decisions`) | **Planned** — docs shipped; crate not started |
-| Safety / Recovery Coverage CLIs | **Planned** — extends existing readiness/assurance crates |
+| Mission Contracts (`spanda contract verify`) | **Stable** — static analysis over mission_plan + policies |
+| Explainability (`spanda explain`) | **Stable** — static explain v1 |
+| Decision Audit Trail (`spanda audit decisions`) | **Stable** — trace parse + synthesis v1 |
+| Safety / Recovery Coverage CLIs | **Stable** |
 
-**Exit criteria:** Marketplace publish + `spanda demo differentiation` + `scripts/differentiation_smoke.sh` (not yet implemented).
+**Exit criteria:** Marketplace publish + `spanda demo differentiation` + `scripts/differentiation_smoke.sh` — **differentiation smoke shipped**; Marketplace still pending `VSCE_PAT`.
 
 See [product-strategy.md](./product-strategy.md) § v0.5 beta and [tier-3-priority-plan.md](./tier-3-priority-plan.md) § P0–P1.
 

@@ -1,6 +1,6 @@
 # Recovery Coverage
 
-**Status:** Planned · **Horizon:** NOW (0–3 months) · **Priority:** P0
+**Status:** Stable · **Horizon:** NOW · **Priority:** P0
 
 Measure recovery readiness — which known failures have recovery plans and which paths are missing.
 

@@ -1,6 +1,6 @@
 # Decision Audit Trail
 
-**Status:** Planned · **Horizon:** NOW (0–3 months) · **Priority:** P0
+**Status:** Stable (trace parse v1) · **Horizon:** NOW · **Priority:** P0
 
 Trace every important autonomous decision through the operational stack.
 

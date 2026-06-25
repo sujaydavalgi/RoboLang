@@ -1,6 +1,6 @@
 # Explainability
 
-**Status:** Planned · **Phase:** Build, Operate, Recover · **Priority:** P0.3 (static), P3.2 (trace decisions)
+**Status:** Stable (static v1) · **Phase:** Build, Operate, Recover · **Priority:** P0.3
 
 Help engineers understand code, missions, verification results, and autonomous decisions.
 
