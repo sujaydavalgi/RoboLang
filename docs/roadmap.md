@@ -41,7 +41,7 @@ Full analysis: [platform-maturity-roadmap.md](./platform-maturity-roadmap.md)
 |---|------|-------|----------|--------|
 | 1 | AI-assisted development (`generate`, `explain`, `suggest`) | Build, Operate | P0.3 / P3.3 | **Future** |
 | 2 | Dependency graph visualization | Build, Operate | P0.1 | **Experimental** |
-| 3 | Threat modeling | Verify, Deploy | P1.2 | **Planned** |
+| 3 | Threat modeling | Verify, Deploy | P1.2 | **Experimental** |
 | 4 | Configuration drift detection | Deploy, Operate | P1.1 | **Experimental** |
 | 5 | Policy engine | Verify, Operate | P1.5 | **Planned** |
 | 6 | Compliance profiles | Verify, Deploy | P2.4 | **Future** |

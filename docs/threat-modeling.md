@@ -1,6 +1,6 @@
 # Threat Modeling
 
-**Status:** Planned · **Phase:** Verify, Deploy · **Priority:** P1.2
+**Status:** Experimental · **Phase:** Verify, Deploy · **Priority:** P1.2
 
 Pre-deployment security analysis for autonomous systems declared in Spanda source.
 
@@ -36,6 +36,6 @@ Builds on `spanda-security` (`security check`), `trust-boundaries.md`, and capab
 
 ## Crate
 
-`spanda-threat` — static analysis; optional linkage to `spanda security audit` records.
+`spanda-threat` — static analysis composing `spanda-security`, connectivity declarations, and deploy surfaces.
 
 See [security-assurance.md](./security-assurance.md) · [platform-maturity-roadmap.md](./platform-maturity-roadmap.md).
