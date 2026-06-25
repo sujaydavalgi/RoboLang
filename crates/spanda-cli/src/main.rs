@@ -19,6 +19,7 @@ mod diff_cli;
 mod score_cli;
 mod chaos_cli;
 mod estimate_cli;
+mod generate_cli;
 mod adr_cli;
 mod integrity_cli;
 mod tamper_cli;
@@ -260,7 +261,9 @@ fn usage() {
            spanda estimate <file.sd> [--target <profile>] [--json]\n\
            spanda adr <file.sd> [--json] [--out <dir>]\n\
            spanda tamper-check <file.sd> [--json]\n\
-           spanda integrity <file.sd> [--baseline <file.sd>] [--json]\n",
+           spanda integrity <file.sd> [--baseline <file.sd>] [--json]\n\
+           spanda generate mission|robot|health-policy [--json] [--out <file.sd>]\n\
+           spanda suggest <file.sd> [--json]\n",
         deploy_ota::deploy_usage_lines()
     );
 }
@@ -1628,6 +1631,18 @@ fn main() {
 
     if command == "integrity" {
         integrity_cli::integrity_dispatch(&args[2..]);
+        let _ = io::stdout().flush();
+        return;
+    }
+
+    if command == "generate" {
+        generate_cli::generate_dispatch(&args[2..]);
+        let _ = io::stdout().flush();
+        return;
+    }
+
+    if command == "suggest" {
+        generate_cli::suggest_dispatch(&args[2..]);
         let _ = io::stdout().flush();
         return;
     }

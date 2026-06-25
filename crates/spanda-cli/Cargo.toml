@@ -56,6 +56,7 @@ spanda-policy = { path = "../spanda-policy" }
 spanda-chaos = { path = "../spanda-chaos" }
 spanda-estimate = { path = "../spanda-estimate" }
 spanda-compliance = { path = "../spanda-compliance" }
+spanda-generate = { path = "../spanda-generate" }
 spanda-adr = { path = "../spanda-adr" }
 spanda-tamper = { path = "../spanda-tamper" }
 spanda-decision = { path = "../spanda-decision" }
