@@ -205,7 +205,7 @@ Ordered by **adoption impact × trust impact ÷ implementation risk**.
 | P3.1 | **Tamper / integrity framework** | Verify-time `spanda tamper-check` shipped; runtime integrity and `spanda integrity` planned |
 | P3.2 | **Explainability reports** (trace decisions) | `spanda explain decision <trace>` shipped; richer replay v3 traces planned |
 | P3.3 | **AI generate / suggest** | Guardrailed codegen; mock-first; human review required |
-| P3.4 | **Runtime policy enforcement** | Depends on policy engine maturity |
+| P3.4 | **Runtime policy enforcement** | `spanda run|sim --enforce-policy` for max_speed and operation_hours |
 | P3.5 | **Spoofing detection** (GPS/sensor) | Package-backed; hardware-specific |
 
 ---

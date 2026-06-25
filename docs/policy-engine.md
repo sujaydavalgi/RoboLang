@@ -2,7 +2,7 @@
 
 **Status:** Experimental (verify-time) · **Phase:** Verify, Operate · **Priority:** P1.5 (verify-time), P3.4 (runtime)
 
-Declarative operational rules enforced at verification. Runtime enforcement is planned (P3.4).
+Declarative operational rules enforced at verification and during run/sim when `--enforce-policy` is set.
 
 ## Syntax
 
@@ -33,6 +33,8 @@ policy WarehousePolicy {
 ```bash
 spanda verify examples/showcase/policy/warehouse.sd --policy WarehousePolicy
 spanda verify examples/showcase/policy/warehouse.sd --policy WarehousePolicy --json
+spanda sim examples/showcase/policy/warehouse.sd --enforce-policy WarehousePolicy
+spanda run examples/showcase/policy/warehouse.sd --enforce-policy WarehousePolicy
 ```
 
 Policy evaluation runs after hardware compatibility when `--policy` is set. Failures surface as policy violations in the verify report.
@@ -50,7 +52,7 @@ Policy evaluation runs after hardware compatibility when `--policy` is set. Fail
 |-------|------|---------|--------|
 | 1 | Verify-time | `spanda verify --policy WarehousePolicy` | **Experimental** |
 | 2 | Readiness | Policy factor in readiness score | Planned |
-| 3 | Runtime | Policy monitor in interpreter (feature-gated) | Planned (P3.4) |
+| 3 | Runtime | Policy monitor in interpreter (`--enforce-policy`) | **Experimental** |
 
 ## Integration
 

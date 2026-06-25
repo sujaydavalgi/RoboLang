@@ -99,4 +99,8 @@ echo "== showcase smoke: decision explain =="
 chmod +x scripts/decision_explain_smoke.sh
 ./scripts/decision_explain_smoke.sh
 
+echo "== showcase smoke: policy runtime =="
+chmod +x scripts/policy_runtime_smoke.sh
+./scripts/policy_runtime_smoke.sh
+
 echo "Showcase smoke tests passed."
