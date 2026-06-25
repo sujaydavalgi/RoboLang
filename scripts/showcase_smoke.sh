@@ -111,4 +111,8 @@ echo "== showcase smoke: spoof =="
 chmod +x scripts/spoof_smoke.sh
 ./scripts/spoof_smoke.sh
 
+echo "== showcase smoke: trust demos =="
+chmod +x scripts/trust_showcase_smoke.sh
+./scripts/trust_showcase_smoke.sh
+
 echo "Showcase smoke tests passed."

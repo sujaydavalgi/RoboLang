@@ -309,11 +309,11 @@ When each area ships: update `CHANGELOG.md`, `feature-status.md`, `getting-start
 
 | Deliverable | CLI |
 |-------------|-----|
-| Tamper framework | `spanda tamper-check` (verify-time); `spanda integrity` (verify-time); runtime tamper (planned) |
+| Tamper framework | `spanda tamper-check` (verify-time + `.trace` runtime); `spanda integrity` (verify-time); runtime tamper via trace analysis |
 | Explainability | `spanda explain decision <trace>` |
 | AI assist | `spanda generate`, `spanda suggest` (mock-first, guardrailed) |
 | Spoofing detection | `spanda spoof-check <file.sd\|file.trace>` (coverage + trace plausibility) |
-| Showcase demos | `examples/showcase/gps_spoofing/`, `package_tampering/`, … |
+| Showcase demos | `examples/showcase/gps_spoofing/`, `package_tampering/`, `mission_tampering/`, `runtime_intrusion/` |
 
 ---
 
@@ -410,9 +410,9 @@ tamper_policy CriticalResponse {
 | Example | Demonstrates |
 |---------|--------------|
 | `examples/showcase/gps_spoofing/` | GPS vs IMU conflict, spoofing alert |
-| `examples/showcase/package_tampering/` | Modified package hash detection |
+| `examples/showcase/package_tampering/` | Modified package import lowers trust score |
 | `examples/showcase/mission_tampering/` | Mission hash drift since approval |
-| `examples/showcase/runtime_intrusion/` | Unexpected capability usage |
+| `examples/showcase/runtime_intrusion/` | Unexpected capability usage in mission trace |
 
 ### Remaining gaps (honest)
 

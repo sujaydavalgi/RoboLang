@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "source": "examples/showcase/runtime_intrusion/rover.sd",
+  "deterministic": true,
+  "frames": [
+    {
+      "sim_time_ms": 0.0,
+      "event": "topic_publish",
+      "payload": {
+        "topic": "/telemetry"
+      }
+    },
+    {
+      "sim_time_ms": 120.0,
+      "event": "security_audit",
+      "payload": {
+        "kind": "agent_capability_denied",
+        "agent": "Intruder",
+        "action": "execute",
+        "target": "wheels",
+        "denied": true
+      }
+    },
+    {
+      "sim_time_ms": 180.0,
+      "event": "capability_denied",
+      "payload": {
+        "capability": "remote_shell",
+        "robot": "Rover",
+        "unauthorized": true
+      }
+    }
+  ]
+}
