@@ -53,6 +53,7 @@ spanda-threat = { path = "../spanda-threat" }
 spanda-diff = { path = "../spanda-diff" }
 spanda-score = { path = "../spanda-score" }
 spanda-policy = { path = "../spanda-policy" }
+spanda-chaos = { path = "../spanda-chaos" }
 spanda-decision = { path = "../spanda-decision" }
 spanda-telemetry-store = { path = "../spanda-telemetry-store", features = ["sqlite", "push"] }
 spanda-lint = { path = "../spanda-lint" }
