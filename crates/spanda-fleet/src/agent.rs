@@ -66,6 +66,14 @@ pub struct FleetAgentState {
     pub mission_progress_percent: Option<f64>,
     #[serde(default)]
     pub mission_handoff_from: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub program_hash: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub hardware_profile: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub firmware_version: Option<String>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub packages: Vec<String>,
 }
 
 pub fn default_fleet_agent_state_path() -> PathBuf {
@@ -550,6 +558,10 @@ pub fn handle_fleet_agent_request(
                 "mission_progress_percent": state.mission_progress_percent,
                 "mission_handoff_from": state.mission_handoff_from,
                 "has_program": state.program.is_some(),
+                "program_hash": state.program_hash,
+                "hardware_profile": state.hardware_profile,
+                "firmware_version": state.firmware_version,
+                "packages": state.packages,
                 "healthy": true,
             }))
             .unwrap_or_else(|_| "{}".into()),

@@ -25,6 +25,12 @@ pub struct AgentState {
     pub program: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub program_hash: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub hardware_profile: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub firmware_version: Option<String>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub packages: Vec<String>,
     #[serde(default)]
     pub require_hash: bool,
     #[serde(default)]
@@ -49,6 +55,12 @@ struct RolloutRequest {
     certification_proof: Option<CertificationProofSummary>,
     artifact_signature: Option<String>,
     artifact_public_key: Option<String>,
+    #[serde(default)]
+    packages: Vec<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    hardware_profile: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    firmware_version: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -366,6 +378,9 @@ pub fn handle_agent_request(state: &mut AgentState, request: HttpRequest) -> Htt
                 "previous_version": state.previous_version,
                 "program": state.program,
                 "program_hash": state.program_hash,
+                "hardware_profile": state.hardware_profile,
+                "firmware_version": state.firmware_version,
+                "packages": state.packages,
                 "healthy": true,
             }))
             .unwrap_or_else(|_| "{}".into()),
@@ -431,6 +446,19 @@ pub fn handle_agent_request(state: &mut AgentState, request: HttpRequest) -> Htt
             state.current_version = payload.version.clone();
             state.program = payload.program.clone();
             state.program_hash = payload.program_hash.clone();
+            if let Some(hw) = payload.hardware_profile.as_ref() {
+                state.hardware_profile = Some(hw.clone());
+            } else if let Some(assignment) = payload.assignments.iter().find(|a| {
+                crate::service::deploy_target_key(&a.robot_name, &a.hardware) == state.target
+            }) {
+                state.hardware_profile = Some(assignment.hardware.clone());
+            }
+            if let Some(fw) = payload.firmware_version.as_ref() {
+                state.firmware_version = Some(fw.clone());
+            }
+            if !payload.packages.is_empty() {
+                state.packages = payload.packages.clone();
+            }
             HttpResponse {
                 status: 200,
                 body: serde_json::to_string(&RolloutResponse {

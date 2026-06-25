@@ -419,3 +419,48 @@ pub fn registry_by_robot(registry: &FleetAgentRegistry) -> HashMap<String, Fleet
         .map(|entry| (entry.robot_name.clone(), entry))
         .collect()
 }
+
+/// Fleet agent `/v1/status` payload for drift and operations checks.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct FleetAgentStatusResponse {
+    pub ok: bool,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub robot_name: Option<String>,
+    #[serde(default)]
+    pub healthy: bool,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub program_hash: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub hardware_profile: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub firmware_version: Option<String>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub packages: Vec<String>,
+}
+
+pub fn fleet_agent_status(entry: &FleetAgentEntry) -> Result<FleetAgentStatusResponse, String> {
+    // Fetch live status from a fleet peer agent.
+    //
+    // Parameters:
+    // - `entry` — registered fleet agent connection
+    //
+    // Returns:
+    // Parsed `/v1/status` JSON or transport error text.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // let status = fleet_agent_status(&entry)?;
+
+    let url = agent_endpoint(&entry.url, "/v1/status")?;
+    let response = http_request("GET", &url, None, entry.token.as_deref())?;
+    decode_fleet_status(response)
+}
+
+fn decode_fleet_status(response: HttpResponse) -> Result<FleetAgentStatusResponse, String> {
+    if response.status >= 400 {
+        return Err(format!("fleet agent HTTP {}: {}", response.status, response.body));
+    }
+    serde_json::from_str(&response.body).map_err(|e| e.to_string())
+}

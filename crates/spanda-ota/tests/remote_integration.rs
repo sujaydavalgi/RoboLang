@@ -61,6 +61,8 @@ fn remote_rollout_updates_agent_state() {
     assert!(result.success, "remote rollout failed: {:?}", result.steps);
     let status = agent_status(&entry).expect("agent status");
     assert_eq!(status.current_version, "2.0.0");
+    assert_eq!(status.program_hash, plan.program_hash);
+    assert_eq!(status.hardware_profile.as_deref(), Some("JetsonOrin"));
 
     bundle.version = "2.1.0".into();
     sign_deploy_bundle(&mut bundle, "test-signing-key").expect("resign bundle");

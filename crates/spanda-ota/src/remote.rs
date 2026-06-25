@@ -32,6 +32,18 @@ pub struct AgentStatusResponse {
     pub current_version: String,
     pub previous_version: Option<String>,
     pub healthy: bool,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub program: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub program_hash: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub hardware_profile: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub firmware_version: Option<String>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub packages: Vec<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub robot_name: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -48,6 +60,12 @@ struct RolloutRequest {
     certification_proof: Option<CertificationProofSummary>,
     artifact_signature: Option<String>,
     artifact_public_key: Option<String>,
+    #[serde(default)]
+    packages: Vec<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    hardware_profile: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    firmware_version: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -397,6 +415,9 @@ pub fn agent_rollout(
         certification_proof: certification_proof.cloned(),
         artifact_signature: bundle.signature.clone(),
         artifact_public_key: bundle.public_key.clone(),
+        packages: Vec::new(),
+        hardware_profile: None,
+        firmware_version: None,
     })
     .map_err(|e| e.to_string())?;
     let response = http_request("POST", &url, Some(&payload), entry.token.as_deref())?;
