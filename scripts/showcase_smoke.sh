@@ -67,4 +67,8 @@ echo "== showcase smoke: policy =="
 chmod +x scripts/policy_smoke.sh
 ./scripts/policy_smoke.sh
 
+echo "== showcase smoke: chaos =="
+chmod +x scripts/chaos_smoke.sh
+./scripts/chaos_smoke.sh
+
 echo "Showcase smoke tests passed."

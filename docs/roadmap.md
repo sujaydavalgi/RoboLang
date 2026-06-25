@@ -46,7 +46,7 @@ Full analysis: [platform-maturity-roadmap.md](./platform-maturity-roadmap.md)
 | 5 | Policy engine | Verify, Operate | P1.5 | **Experimental** |
 | 6 | Compliance profiles | Verify, Deploy | P2.4 | **Future** |
 | 7 | Explainability reports | Operate, Recover | P0.3 / P3.2 | **Experimental** |
-| 8 | Chaos engineering | Simulate, Recover | P2.1 | **Planned** |
+| 8 | Chaos engineering | Simulate, Recover | P2.1 | **Experimental** |
 | 9 | Mission resource estimation | Simulate, Deploy | P2.3 | **Planned** |
 | 10 | Readiness trend analysis | Operate | P2.2 | **Planned** |
 | 11 | Package trust framework | Verify, Build | P0.4 | **Experimental** |
