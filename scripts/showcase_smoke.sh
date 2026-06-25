@@ -139,4 +139,8 @@ echo "== showcase smoke: fleet mesh tamper =="
 chmod +x scripts/fleet_mesh_tamper_smoke.sh
 ./scripts/fleet_mesh_tamper_smoke.sh
 
+echo "== showcase smoke: composite program trust =="
+chmod +x scripts/trust_program_smoke.sh
+./scripts/trust_program_smoke.sh
+
 echo "Showcase smoke tests passed."

@@ -24,6 +24,7 @@ mod generate_cli;
 mod adr_cli;
 mod integrity_cli;
 mod tamper_cli;
+mod trust_cli;
 mod spoof_cli;
 mod fault_cli;
 mod network_cli;
@@ -1604,7 +1605,7 @@ fn main() {
     }
 
     if command == "trust" {
-        package::cmd_trust(&args[2..]);
+        trust_cli::cmd_trust(&args[2..]);
         let _ = io::stdout().flush();
         return;
     }

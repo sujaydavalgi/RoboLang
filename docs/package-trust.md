@@ -32,7 +32,7 @@ spanda trust spanda-mqtt --project examples/showcase/rover
 
 - `spanda explain --config` includes a `package_trust` section for configured packages
 - `spanda deploy gate --config` runs a `package_trust` gate when packages are declared in `spanda.toml`
-- Feeds composite `TrustScore` in tamper framework (future)
+- Feeds composite `TrustScore` in `spanda-trust` (`spanda trust <file.sd>`)
 
 ## Crate
 

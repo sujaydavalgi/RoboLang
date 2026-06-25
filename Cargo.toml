@@ -67,6 +67,7 @@ members = [
     "crates/spanda-adr",
     "crates/spanda-generate",
     "crates/spanda-tamper",
+    "crates/spanda-trust",
     "crates/spanda-spoofing",
     "crates/spanda-telemetry-store",
     "crates/spanda-transport",

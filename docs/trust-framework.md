@@ -1,6 +1,6 @@
 # Trust Framework
 
-**Status:** Planned · **Phase:** Verify, Operate · **Priority:** P0.4 (package), P3.1 (composite)
+**Status:** Experimental · **Phase:** Verify, Operate · **Priority:** P0.4 (package), P3.1 (composite)
 
 Unified trust scoring across packages, devices, firmware, configuration, and runtime behavior.
 
@@ -8,7 +8,7 @@ Unified trust scoring across packages, devices, firmware, configuration, and run
 
 | Input | Weight (initial) | Source |
 |-------|------------------|--------|
-| Package trust | 20% | `spanda package trust` |
+| Package trust | 20% | `spanda trust <package>` |
 | Device integrity | 20% | Agent attestation (package adapter) |
 | Firmware integrity | 15% | Hash vs declared firmware |
 | Configuration integrity | 20% | `spanda integrity` |
