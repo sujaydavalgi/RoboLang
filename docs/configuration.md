@@ -82,6 +82,31 @@ tags = "append"
 
 Strategies: `replace` (default), `append`, `merge_by_id`.
 
+## Device identity
+
+Declare flat `[[devices]]` records (or extend fleet `[[fleet.robots.compute.devices]]`) with network and bus identity fields:
+
+```toml
+[[devices]]
+id = "camera-front-001"
+type = "Camera"
+logical_name = "front_camera"
+ip = "192.168.1.42"
+mac = "AA:BB:CC:DD:EE:FF"
+serial = "CAM-12345"
+provider = "spanda-vision"
+protocol = "rtsp"
+endpoint = "rtsp://192.168.1.42/stream"
+capabilities = ["capture_image", "stream_video"]
+trust_level = "verified"
+security_identity = "camera-front-001"
+robot_id = "rover-001"
+```
+
+Supported identity fields include: `logical_name`, `serial`, `mac`/`mac_address`, `ip`/`ip_address`, `hostname`, `dns_name`, `mdns_name`, `endpoint`/`endpoint_url`, `protocol`, `port`, `bus`, `can_id`, `usb_path`, `pci_path`, `bluetooth_address`, `ble_uuid`, `cellular_imei`, `sim_iccid`, `gps_device_id`, `firmware_version`, `hardware_revision`, `security_identity`, `certificate_fingerprint`, `trust_level`, `redundant_group`, `failover_priority`.
+
+Reference fragments via `[config] network_devices = "spanda.network-devices.toml"` (merged into `[[devices]]` with `merge_by_id`).
+
 ## CLI
 
 | Command | Purpose |
@@ -91,10 +116,13 @@ Strategies: `replace` (default), `append`, `merge_by_id`.
 | `spanda config graph` | Show config dependency graph |
 | `spanda config diff <a> <b>` | Diff two config files |
 | `spanda config report` | Full configuration report |
+| `spanda config report --network` | Network/device identity report only |
+| `spanda device discover` | List configured devices; optional `--subnet` scan |
+| `spanda device inspect <id>` | Inspect one device identity record |
 | `spanda device-tree inspect <robot>` | Inspect one robot's hierarchy |
 | `spanda device-tree graph` | Print device hierarchy |
+| `spanda network scan --subnet CIDR` | TCP probe hosts on a subnet |
 | `spanda map verify <file.sd>` | Verify logical-to-physical mapping |
-| `spanda replay <trace> --config spanda.toml` | Replay with project providers and health policies |
 | `spanda readiness <file.sd> --config spanda.toml` | Readiness with config validation |
 
 Add `--json` to any command for machine-readable output. Use `--config <path>` to point at a non-default manifest location.
@@ -106,7 +134,8 @@ Add `--json` to any command for machine-readable output. Use `--config <path>` t
 | Hardware verification | `ResolvedSystemConfig::device_tree`, hardware profiles |
 | Capability verification | Device `capabilities`, provider registry |
 | Readiness | `--config` loads and validates before evaluation |
-| Assurance / diagnosis | `assurance`, `mission`, `recovery` sections |
+| Device registry | `[[devices]]` identity records merged into `DeviceRegistry` |
+| Assurance / diagnosis | `assurance`, `mission`, `recovery` sections + traceability rows |
 | Health framework | `health` section and per-robot policies |
 | Provider registry | `providers` fragment + package dependencies |
 | Security | `security.devices.*` identities and trust flags |

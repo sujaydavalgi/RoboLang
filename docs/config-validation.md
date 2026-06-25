@@ -21,6 +21,17 @@
 | `safety.no_emergency_stop` | error | Actuator missing `emergency_stop` |
 | `security.untrusted_actuator` | error | Untrusted device controls actuator |
 | `security.identity_missing` | warning | Networked device without identity |
+| `device.duplicate_ip` | error | Same IP assigned to multiple devices |
+| `device.duplicate_mac` | error | Same MAC assigned to multiple devices |
+| `device.duplicate_serial` | error | Same serial assigned to multiple devices |
+| `device.ip_unreachable` | warning | IP probe failed (`SPANDA_CONFIG_PROBE_NETWORK=1`) |
+| `device.protocol_provider_mismatch` | warning | Protocol unlikely for provider |
+| `device.endpoint_missing` | warning | Network device without endpoint or IP |
+| `device.insecure_endpoint` | warning | Endpoint uses insecure scheme |
+| `device.remote_actuator_insecure` | error | Remote actuator without TLS/signature |
+| `mapping.logical_ambiguous` | error | Logical name maps to multiple devices without redundancy |
+| `device.redundant_missing_priority` | error | Redundant group missing unique failover priority |
+| `device.redundant_group_singleton` | warning | Redundant group has only one member |
 | `mapping.gap` | error/warning | Logical-to-physical mapping issue |
 
 ## Provider validation
