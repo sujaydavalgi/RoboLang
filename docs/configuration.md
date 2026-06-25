@@ -115,6 +115,8 @@ Reference fragments via `[config] network_devices = "spanda.network-devices.toml
 | `spanda config validate` | Run validation rules |
 | `spanda config graph` | Show config dependency graph |
 | `spanda config diff <a> <b>` | Diff two config files |
+| `spanda config drift --baseline <dir>` | Semantic drift vs approved baseline |
+| `spanda drift --baseline <dir>` | Same as `config drift` |
 | `spanda config report` | Full configuration report |
 | `spanda config report --network` | Network/device identity report only |
 | `spanda device discover` | List configured devices; optional `--subnet` scan |
@@ -124,6 +126,7 @@ Reference fragments via `[config] network_devices = "spanda.network-devices.toml
 | `spanda network scan --subnet CIDR` | TCP probe hosts on a subnet |
 | `spanda map verify <file.sd>` | Verify logical-to-physical mapping |
 | `spanda readiness <file.sd> --config spanda.toml` | Readiness with config validation |
+| `spanda readiness <file.sd> --baseline <dir>` | Readiness with baseline drift checks |
 
 Add `--json` to any command for machine-readable output. Use `--config <path>` to point at a non-default manifest location.
 

@@ -1,36 +1,47 @@
 # Configuration Drift Detection
 
-**Status:** Planned · **Phase:** Deploy, Operate · **Priority:** P1.1
+**Status:** Experimental · **Phase:** Deploy, Operate · **Priority:** P1.1
 
-Detect mismatch between **expected** (declared in `.sd` and audit baseline) and **actual** (agent, twin, or fleet telemetry).
+Detect mismatch between **expected** (approved baseline configuration) and **actual** (live resolved configuration), plus optional program-to-config mapping alignment.
 
 ## CLI
 
 ```bash
-spanda drift rover.sd
-spanda drift rover.sd --agent Rover@JetsonOrin
-spanda drift rover.sd --json
+# Compare approved baseline against live project config
+spanda drift --baseline configs/approved/ --config spanda.toml
+
+# Same via config subcommand
+spanda config drift --baseline configs/approved/ --config spanda.toml
+
+# Include program mapping checks against live config
+spanda drift --baseline configs/approved/ --config spanda.toml rover.sd
+
+# Readiness with baseline drift gates
+spanda readiness rover.sd --config spanda.toml --baseline configs/approved/
+
+# JSON output
+spanda drift --baseline configs/approved/ --config spanda.toml --json
 ```
 
 ## Comparison dimensions
 
-| Dimension | Expected | Actual |
-|-----------|----------|--------|
-| Hardware | `deploy`, `requires_hardware` | Agent `/v1/status` hardware report |
-| Packages | `spanda.toml` lock + registry | Installed package manifest on device |
-| Firmware | Declared version/hash | Agent firmware report |
-| Configuration | Approved `.sd` hash | Live program hash on agent |
+| Dimension | Baseline | Current |
+|-----------|----------|---------|
+| Configuration | Merged TOML keys | Live merged TOML |
+| Fleet | `fleet.id`, robot ids | Live fleet tree |
+| Device | `DeviceRegistry` identity fields | Live device records |
+| Provider / Package | Declared providers and packages | Live manifests |
+| Mapping | Logical-to-physical sensors/actuators | Live mapping |
+| Program | — | `.sd` sensors/actuators vs live map (when file provided) |
 
 ## Output
 
-`DriftReport` — per-dimension deltas, severity, suggested remediation.
+`ConfigDriftReport` — structured findings with `dimension`, `severity`, `message`, and optional `path`. Medium-or-higher severity fails the check (exit code 1).
 
 ## Foundation
 
-Extends `spanda-readiness::twin` (`configuration_drift`, `capability_drift`, `health_drift`) to fleet agents and audit baselines.
+Implemented in `spanda-config::drift` (semantic comparison on `ResolvedSystemConfig`). Readiness integrates drift via `--baseline`. Agent/firmware/hardware drift (live agent `/v1/status`) remains planned.
 
-## Crate
+## Related
 
-`spanda-drift` — composes readiness, hardware verify, and package metadata.
-
-See [readiness.md](./readiness.md) · [platform-maturity-roadmap.md](./platform-maturity-roadmap.md).
+[configuration.md](./configuration.md) · [readiness.md](./readiness.md) · [platform-maturity-roadmap.md](./platform-maturity-roadmap.md)

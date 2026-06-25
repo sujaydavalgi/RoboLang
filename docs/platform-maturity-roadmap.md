@@ -19,7 +19,7 @@ Each area is classified by lifecycle phase, maturity tier, and primary outcome.
 | 1 | AI-assisted development (`generate`, `explain`, `suggest`) | Build, Operate | Future | Faster authoring; explain failures | `spanda-explain` |
 | 2 | Dependency graph visualization | Build, Operate | Planned | System understandability | `spanda-graph` |
 | 3 | Threat modeling | Verify, Deploy | Planned | Pre-deploy security awareness | `spanda-threat` |
-| 4 | Configuration drift detection | Deploy, Operate | Planned | Expected vs actual parity | `spanda-drift` |
+| 4 | Configuration drift detection | Deploy, Operate | Experimental | Expected vs actual parity | `spanda-config::drift` |
 | 5 | Policy engine | Verify, Operate | Planned | Declarative operational rules | `spanda-policy` |
 | 6 | Compliance profiles | Verify, Deploy | Future | Industry-specific gates | `spanda-compliance` |
 | 7 | Explainability reports | Operate, Recover | Future | Decision transparency | `spanda-explain` |
