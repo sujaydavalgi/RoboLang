@@ -119,4 +119,8 @@ echo "== showcase smoke: trust demos =="
 chmod +x scripts/trust_showcase_smoke.sh
 ./scripts/trust_showcase_smoke.sh
 
+echo "== showcase smoke: tamper diagnose =="
+chmod +x scripts/tamper_diagnose_smoke.sh
+./scripts/tamper_diagnose_smoke.sh
+
 echo "Showcase smoke tests passed."

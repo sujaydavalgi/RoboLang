@@ -403,7 +403,7 @@ tamper_policy CriticalResponse {
 | Trust Report | `spanda trust <file>` | JSON, Markdown, HTML |
 | Security Assurance | `spanda security assurance <file>` | JSON, Markdown, HTML |
 
-**Diagnosis:** `spanda diagnose tamper.trace` → tamper source, affected components, impact, recovery recommendations (extends `spanda-assurance::diagnosis`).
+**Diagnosis:** `spanda diagnose tamper <trace>` — tamper source, affected components, impact, recovery recommendations (shipped in `spanda-tamper::diagnosis`).
 
 ### Demos (planned)
 

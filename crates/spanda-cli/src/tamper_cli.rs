@@ -3,7 +3,8 @@
 use spanda_lexer::tokenize;
 use spanda_parser::parse;
 use spanda_tamper::{
-    format_tamper_report, generate_runtime_tamper_check, generate_tamper_check, MissionTrace,
+    diagnose_tamper_trace, format_tamper_diagnosis, format_tamper_report,
+    generate_runtime_tamper_check, generate_tamper_check, MissionTrace, TamperDiagnosisFormat,
     TamperFormat,
 };
 use std::fs;
@@ -74,6 +75,23 @@ pub fn tamper_check_dispatch(args: &[String]) {
     };
 
     println!("{}", format_tamper_report(&report, format));
+    if !report.passed {
+        process::exit(1);
+    }
+}
+
+/// `spanda diagnose tamper <file.trace> [--json]`
+pub fn tamper_diagnose_dispatch(args: &[String]) {
+    let file = file_arg(args);
+    let path = Path::new(&file);
+    let trace = load_trace(path);
+    let report = diagnose_tamper_trace(&trace, &file);
+    let format = if args.iter().any(|a| a == "--json") {
+        TamperDiagnosisFormat::Json
+    } else {
+        TamperDiagnosisFormat::Text
+    };
+    println!("{}", format_tamper_diagnosis(&report, format));
     if !report.passed {
         process::exit(1);
     }

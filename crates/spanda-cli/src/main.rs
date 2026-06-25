@@ -1796,6 +1796,11 @@ fn main() {
     }
 
     if command == "diagnose" {
+        if args.get(2).map(String::as_str) == Some("tamper") {
+            tamper_cli::tamper_diagnose_dispatch(&args[3..]);
+            let _ = io::stdout().flush();
+            return;
+        }
         assurance_cli::cmd_diagnose_assurance(&args[2..]);
         let _ = io::stdout().flush();
         return;

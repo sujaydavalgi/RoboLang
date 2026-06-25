@@ -2221,6 +2221,7 @@ dependencies = [
  "spanda-parser",
  "spanda-readiness",
  "spanda-security",
+ "spanda-spoofing",
  "spanda-threat",
 ]
 

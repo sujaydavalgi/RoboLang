@@ -27,16 +27,11 @@ Hardware tampering · Sensor spoofing · GPS spoofing · Firmware modification �
 ```bash
 spanda tamper-check rover.sd
 spanda tamper-check rover.sd --json
-spanda diagnose tamper.trace   # planned
-```
-
-Verify-time `spanda tamper-check` composes threat modeling, safety audit, security analysis, and structural integrity signals (`spanda-tamper`). Runtime analysis accepts `.trace` files or `--runtime` and scans mission traces for capability denials and tamper events.
-
-```bash
-spanda tamper-check rover.sd
 spanda tamper-check mission.trace
-spanda tamper-check mission.trace --json
+spanda diagnose tamper mission.trace [--json]
 ```
+
+Verify-time `spanda tamper-check` composes threat modeling, safety audit, security analysis, and structural integrity signals. Runtime analysis accepts `.trace` files (or `--runtime`) for capability denials and tamper events. `spanda diagnose tamper <trace>` adds tamper source, affected components, impact, timeline, and recovery recommendations (composes runtime tamper + spoofing alerts).
 
 ## Integration
 

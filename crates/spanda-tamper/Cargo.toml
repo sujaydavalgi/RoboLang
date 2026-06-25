@@ -17,6 +17,7 @@ spanda-ast = { path = "../spanda-ast" }
 spanda-readiness = { path = "../spanda-readiness" }
 spanda-security = { path = "../spanda-security" }
 spanda-threat = { path = "../spanda-threat" }
+spanda-spoofing = { path = "../spanda-spoofing" }
 
 [dev-dependencies]
 spanda-lexer = { path = "../spanda-lexer" }
