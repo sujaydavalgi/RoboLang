@@ -44,10 +44,10 @@ Full analysis: [platform-maturity-roadmap.md](./platform-maturity-roadmap.md)
 | 3 | Threat modeling | Verify, Deploy | P1.2 | **Experimental** |
 | 4 | Configuration drift detection | Deploy, Operate | P1.1 | **Experimental** |
 | 5 | Policy engine | Verify, Operate | P1.5 | **Experimental** |
-| 6 | Compliance profiles | Verify, Deploy | P2.4 | **Future** |
+| 6 | Compliance profiles | Verify, Deploy | P2.4 | **Experimental** |
 | 7 | Explainability reports | Operate, Recover | P0.3 / P3.2 | **Experimental** |
 | 8 | Chaos engineering | Simulate, Recover | P2.1 | **Experimental** |
-| 9 | Mission resource estimation | Simulate, Deploy | P2.3 | **Planned** |
+| 9 | Mission resource estimation | Simulate, Deploy | P2.3 | **Experimental** |
 | 10 | Readiness trend analysis | Operate | P2.2 | **Experimental** |
 | 11 | Package trust framework | Verify, Build | P0.4 | **Experimental** |
 | 12 | Architecture decision records | Build | P2.5 | **Planned** |

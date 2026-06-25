@@ -21,10 +21,10 @@ Each area is classified by lifecycle phase, maturity tier, and primary outcome.
 | 3 | Threat modeling | Verify, Deploy | Planned | Pre-deploy security awareness | `spanda-threat` |
 | 4 | Configuration drift detection | Deploy, Operate | Experimental | Expected vs actual parity | `spanda-config::drift` |
 | 5 | Policy engine | Verify, Operate | Planned | Declarative operational rules | `spanda-policy` — **Experimental** (verify-time) |
-| 6 | Compliance profiles | Verify, Deploy | Future | Industry-specific gates | `spanda-compliance` |
+| 6 | Compliance profiles | Verify, Deploy | Future | Industry-specific gates | `spanda-compliance` — **Experimental** |
 | 7 | Explainability reports | Operate, Recover | Future | Decision transparency | `spanda-explain` |
 | 8 | Chaos engineering | Simulate, Recover | Planned | Resilience validation | `spanda-chaos` — **Experimental** |
-| 9 | Mission resource estimation | Simulate, Deploy | Planned | Pre-flight cost awareness | `spanda-estimate` |
+| 9 | Mission resource estimation | Simulate, Deploy | Planned | Pre-flight cost awareness | `spanda-estimate` — **Experimental** |
 | 10 | Readiness trend analysis | Operate | Planned | Predictive degradation | extends `spanda-readiness` — **Experimental** |
 | 11 | Package trust framework | Verify, Build | Planned | Ecosystem trust | `spanda-trust` |
 | 12 | Architecture decision records | Build | Planned | Design rationale capture | `spanda-adr` |
