@@ -153,6 +153,7 @@ language = "0.2"
 
 [config]
 devices = "spanda.devices.toml"
+network_devices = "spanda.network-devices.toml"
 providers = "spanda.providers.toml"
 fleet = "spanda.fleet.toml"
 security = "spanda.security.toml"
@@ -181,6 +182,9 @@ Fragment files hold domain-specific TOML (device tree, providers, health policie
 spanda config resolve
 spanda config validate
 spanda config report
+spanda config report --network
+spanda device discover
+spanda map verify rover.sd --config spanda.toml
 ```
 
 See [configuration.md](configuration.md), [cascading-config.md](cascading-config.md), [device-tree.md](device-tree.md), and [config-validation.md](config-validation.md).

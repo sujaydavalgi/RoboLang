@@ -43,7 +43,7 @@
 | [how-packages-work.md](./how-packages-work.md) | **Package loading pipeline and CLI workflow** |
 | [configuration.md](./configuration.md) | **Cascading TOML configuration and ResolvedSystemConfig** |
 | [cascading-config.md](./cascading-config.md) | **Layered config overrides (base → environment → deployment → robot)** |
-| [device-tree.md](./device-tree.md) | **Fleet/device hierarchy in TOML** |
+| [device-tree.md](./device-tree.md) | **Fleet/device hierarchy and device identity in TOML** |
 | [config-validation.md](./config-validation.md) | **Configuration validation rules and CLI** |
 | [spanda-toml.md](./spanda-toml.md) | **`spanda.toml` manifest reference (package + system config)** |
 | [how-providers-work.md](./how-providers-work.md) | **Provider registry, traits, and dispatch** |

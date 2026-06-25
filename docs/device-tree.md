@@ -49,19 +49,59 @@ Place fleet/device definitions in `spanda.devices.toml` or `spanda.fleet.toml` a
 | Field | Description |
 |-------|-------------|
 | `id` | Unique device identifier |
-| `type` | Device class (GPS, Lidar, DifferentialDrive, …) |
+| `logical_name` | Program-facing name for logical-to-physical mapping |
+| `type` | Device class (GPS, Lidar, Camera, DifferentialDrive, …) |
 | `provider` | Spanda provider package name |
-| `port` | Serial/USB port path |
+| `port` / `network_port` | Serial/USB path or TCP/UDP port |
 | `bus` | CAN or other bus identifier |
+| `can_id` | CAN frame identifier (e.g. `0x12`) |
 | `mount` | Physical mount location |
 | `capabilities` | Capability tokens this device exposes |
-| `firmware` / `version` | Firmware metadata (warned when missing) |
+| `ip` / `ip_address` | IPv4 address for networked devices |
+| `mac` / `mac_address` | MAC address |
+| `hostname`, `dns_name`, `mdns_name` | Network naming |
+| `endpoint` / `endpoint_url` | Service URL (`rtsp://…`, `https://…`) |
+| `protocol` | Wire protocol (`rtsp`, `can`, `mqtt`, …) |
+| `serial` | Manufacturer serial number |
+| `firmware` / `firmware_version` | Firmware metadata |
+| `hardware_revision` | Hardware revision string |
 | `trusted` | Trust flag for actuator control |
-| `identity` | Security identity for networked devices |
+| `trust_level` | `unverified`, `verified`, `trusted`, `restricted` |
+| `identity` / `security_identity` | Security identity for networked devices |
+| `certificate_fingerprint` | TLS cert fingerprint for remote endpoints |
+| `redundant_group` / `failover_priority` | Redundant device failover metadata |
+| `robot_id` | Owning robot when declared in flat `[[devices]]` |
+
+## Flat device registry (`[[devices]]`)
+
+Network and bus devices can be declared outside the fleet hierarchy and merged by `id`:
+
+```toml
+[[devices]]
+id = "camera-front-001"
+type = "Camera"
+logical_name = "front_camera"
+ip = "192.168.1.42"
+mac = "AA:BB:CC:DD:EE:FF"
+serial = "CAM-12345"
+provider = "spanda-vision"
+protocol = "rtsp"
+endpoint = "rtsp://192.168.1.42/stream"
+capabilities = ["capture_image", "stream_video"]
+trust_level = "verified"
+security_identity = "camera-front-001"
+robot_id = "rover-001"
+```
+
+Reference via `[config] network_devices = "spanda.network-devices.toml"` in `spanda.toml`. Records merge with fleet nested devices on matching `id`.
 
 ## CLI inspection
 
 ```bash
+spanda device discover [--subnet 192.168.1.0/24]
+spanda device inspect camera-front-001
+spanda network scan --subnet 192.168.1.0/24
+spanda config report --network
 spanda device-tree graph
 spanda device-tree inspect rover-001
 spanda map verify patrol.sd --config spanda.toml
