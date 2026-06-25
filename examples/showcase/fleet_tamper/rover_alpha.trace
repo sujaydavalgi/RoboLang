@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "source": "examples/showcase/fleet_tamper/fleet.sd",
+  "deterministic": true,
+  "frames": [
+    {
+      "sim_time_ms": 0.0,
+      "event": "topic_publish",
+      "payload": {
+        "topic": "/telemetry",
+        "robot": "RoverAlpha"
+      }
+    },
+    {
+      "sim_time_ms": 120.0,
+      "event": "security_audit",
+      "payload": {
+        "kind": "agent_capability_denied",
+        "agent": "Intruder",
+        "action": "execute",
+        "target": "wheels",
+        "robot": "RoverAlpha",
+        "denied": true
+      }
+    }
+  ]
+}

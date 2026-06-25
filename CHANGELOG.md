@@ -30,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Tamper / integrity (verify-time):** new `spanda-tamper` crate with `generate_tamper_check`; CLI `spanda tamper-check <file.sd> [--json]`; `scripts/tamper_smoke.sh`; docs [tamper-detection.md](docs/tamper-detection.md).
 - **Runtime tamper (trace analysis):** `generate_runtime_tamper_check` in `spanda-tamper`; `spanda tamper-check <file.trace> [--runtime]`; trust showcase `examples/showcase/runtime_intrusion/`; `scripts/trust_showcase_smoke.sh`.
 - **Tamper diagnosis:** `diagnose_tamper_trace` in `spanda-tamper`; CLI `spanda diagnose tamper <file.trace> [--json]`; `scripts/tamper_diagnose_smoke.sh`.
+- **Fleet tamper correlation:** `correlate_fleet_tamper` in `spanda-tamper`; CLI `spanda tamper-check --fleet <manifest.json>`; showcase `examples/showcase/fleet_tamper/`; `scripts/fleet_tamper_smoke.sh`.
 - **Trust showcase demos:** `examples/showcase/package_tampering/`, `mission_tampering/`, `runtime_intrusion/` with tamper and integrity workflows.
 - **Integrity verification (verify-time):** `generate_integrity_report` in `spanda-tamper`; CLI `spanda integrity <file.sd> [--baseline <file.sd>] [--agent <Robot@Hardware>] [--json]`; `scripts/integrity_smoke.sh`; docs [integrity-verification.md](docs/integrity-verification.md).
 - **Decision trace explainability:** `spanda explain decision <mission.trace> [--json]` with evidence, safety checks, and rejected alternatives; `scripts/decision_explain_smoke.sh`.

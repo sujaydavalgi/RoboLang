@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "source": "examples/showcase/fleet_tamper/fleet.sd",
+  "deterministic": true,
+  "frames": [
+    {
+      "sim_time_ms": 0.0,
+      "event": "topic_publish",
+      "payload": {
+        "topic": "/telemetry",
+        "robot": "RoverBeta"
+      }
+    },
+    {
+      "sim_time_ms": 150.0,
+      "event": "security_audit",
+      "payload": {
+        "kind": "agent_capability_denied",
+        "agent": "Intruder",
+        "action": "execute",
+        "target": "wheels",
+        "robot": "RoverBeta",
+        "denied": true
+      }
+    },
+    {
+      "sim_time_ms": 180.0,
+      "event": "capability_denied",
+      "payload": {
+        "capability": "remote_shell",
+        "robot": "RoverBeta",
+        "unauthorized": true
+      }
+    }
+  ]
+}

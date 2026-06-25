@@ -123,4 +123,8 @@ echo "== showcase smoke: tamper diagnose =="
 chmod +x scripts/tamper_diagnose_smoke.sh
 ./scripts/tamper_diagnose_smoke.sh
 
+echo "== showcase smoke: fleet tamper =="
+chmod +x scripts/fleet_tamper_smoke.sh
+./scripts/fleet_tamper_smoke.sh
+
 echo "Showcase smoke tests passed."

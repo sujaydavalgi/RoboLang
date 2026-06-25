@@ -1,0 +1,30 @@
+// Fleet tamper correlation showcase
+//
+//   spanda tamper-check --fleet examples/showcase/fleet_tamper/manifest.json
+//   spanda diagnose tamper --fleet examples/showcase/fleet_tamper/manifest.json
+
+hardware RoverV1 {
+  sensors [ GPS, Lidar ];
+  actuators [ DifferentialDrive ];
+  connectivity [ WiFi ];
+}
+
+fleet PatrolFleet {
+  RoverAlpha;
+  RoverBeta;
+}
+
+robot RoverAlpha {
+  sensor gps: GPS;
+  actuator wheels: DifferentialDrive;
+  behavior patrol() { wheels.drive(linear: 0.2 m/s, angular: 0.0 rad/s); }
+}
+
+robot RoverBeta {
+  sensor gps: GPS;
+  actuator wheels: DifferentialDrive;
+  behavior patrol() { wheels.drive(linear: 0.2 m/s, angular: 0.0 rad/s); }
+}
+
+deploy RoverAlpha to RoverV1;
+deploy RoverBeta to RoverV1;

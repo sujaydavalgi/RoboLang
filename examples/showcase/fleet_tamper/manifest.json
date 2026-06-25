@@ -1,0 +1,13 @@
+{
+  "fleet": "PatrolFleet",
+  "members": [
+    {
+      "robot": "RoverAlpha",
+      "trace": "rover_alpha.trace"
+    },
+    {
+      "robot": "RoverBeta",
+      "trace": "rover_beta.trace"
+    }
+  ]
+}

@@ -29,9 +29,11 @@ spanda tamper-check rover.sd
 spanda tamper-check rover.sd --json
 spanda tamper-check mission.trace
 spanda diagnose tamper mission.trace [--json]
+spanda tamper-check --fleet fleet_tamper/manifest.json [--json]
+spanda diagnose tamper --fleet fleet_tamper/manifest.json [--json]
 ```
 
-Verify-time `spanda tamper-check` composes threat modeling, safety audit, security analysis, and structural integrity signals. Runtime analysis accepts `.trace` files (or `--runtime`) for capability denials and tamper events. `spanda diagnose tamper <trace>` adds tamper source, affected components, impact, timeline, and recovery recommendations (composes runtime tamper + spoofing alerts).
+Verify-time `spanda tamper-check` composes threat modeling, safety audit, security analysis, and structural integrity signals. Runtime analysis accepts `.trace` files (or `--runtime`) for capability denials and tamper events. `spanda diagnose tamper <trace>` adds tamper source, affected components, impact, timeline, and recovery recommendations. `spanda tamper-check --fleet <manifest.json>` correlates tamper signals across fleet member traces (shared agents, simultaneous events, coordinated denials).
 
 ## Integration
 
