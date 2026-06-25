@@ -141,6 +141,7 @@ Package commands (require native CLI: npm run build:rust):
   spanda config resolve|validate|graph|diff|drift|report [--json] [--network] [--config <spanda.toml>]
   spanda drift <file.sd> [--agent <Robot@Hardware>] [--config <spanda.toml>] [--json]
   spanda drift --baseline <dir> [--config <spanda.toml>] [program.sd] [--json]
+  spanda graph <file.sd> [--format json|mermaid|dot|text] [--json] [--config <spanda.toml>]
   spanda device discover|inspect <id> [--subnet CIDR] [--json] [--config <spanda.toml>]
   spanda device-tree inspect <robot-id>|graph [--json] [--config <spanda.toml>]
   spanda network scan --subnet <CIDR> [--json] [--ports 80,443,554]
@@ -391,6 +392,9 @@ async function main(): Promise<void> {
         break;
       case "registry":
         handleRegistry(positional, json);
+        break;
+      case "graph":
+        handleGraphNative(positional, flags);
         break;
       case "config":
       case "device":
@@ -1967,6 +1971,24 @@ function handleRegistry(positional: string[], json: boolean): void {
     console.error("Usage: spanda registry search <query> | spanda registry info <package>");
     process.exit(1);
   }
+}
+
+function handleGraphNative(
+  positional: string[],
+  flags: Map<string, string | boolean>,
+): void {
+  const args = ["graph", ...positional];
+  for (const [key, value] of flags) {
+    if (value === true) {
+      args.push(`--${key}`);
+    } else if (typeof value === "string") {
+      args.push(`--${key}`, value);
+    }
+  }
+  const result = runNativeCli(args);
+  if (result.stdout) process.stdout.write(result.stdout);
+  if (result.stderr) process.stderr.write(result.stderr);
+  process.exit(result.status ?? 1);
 }
 
 function handleConfigNative(

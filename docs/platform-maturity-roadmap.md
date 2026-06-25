@@ -17,7 +17,7 @@ Each area is classified by lifecycle phase, maturity tier, and primary outcome.
 | # | Area | Phase(s) | Tier | Outcome | New crate (proposed) |
 |---|------|----------|------|---------|----------------------|
 | 1 | AI-assisted development (`generate`, `explain`, `suggest`) | Build, Operate | Future | Faster authoring; explain failures | `spanda-explain` |
-| 2 | Dependency graph visualization | Build, Operate | Planned | System understandability | `spanda-graph` |
+| 2 | Dependency graph visualization | Build, Operate | Experimental | System understandability | `spanda-graph` |
 | 3 | Threat modeling | Verify, Deploy | Planned | Pre-deploy security awareness | `spanda-threat` |
 | 4 | Configuration drift detection | Deploy, Operate | Experimental | Expected vs actual parity | `spanda-config::drift` |
 | 5 | Policy engine | Verify, Operate | Planned | Declarative operational rules | `spanda-policy` |
@@ -29,7 +29,7 @@ Each area is classified by lifecycle phase, maturity tier, and primary outcome.
 | 11 | Package trust framework | Verify, Build | Planned | Ecosystem trust | `spanda-trust` |
 | 12 | Architecture decision records | Build | Planned | Design rationale capture | `spanda-adr` |
 | 13 | Mission differencing | Build, Verify | Planned | Change-impact analysis | `spanda-diff` |
-| 14 | Deployment gates | Deploy | Planned | Unsafe deploy prevention | extends `spanda-readiness` |
+| 14 | Deployment gates | Deploy | Experimental | Unsafe deploy prevention | extends `spanda-readiness` |
 | 15 | Autonomous systems scorecard | Operate | Planned | Executive visibility | `spanda-score` |
 | 16 | Hack / tamper detection | Verify, Operate, Recover | Future | Runtime trust & integrity | `spanda-tamper` |
 

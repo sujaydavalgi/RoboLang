@@ -1,6 +1,6 @@
 # Dependency Graphs
 
-**Status:** Planned · **Phase:** Build, Operate · **Priority:** P0.1
+**Status:** Experimental · **Phase:** Build, Operate · **Priority:** P0.1
 
 Visualize how a Spanda program composes missions, capabilities, hardware, providers, packages, and safety rules.
 
@@ -11,6 +11,7 @@ spanda graph rover.sd
 spanda graph rover.sd --format mermaid
 spanda graph rover.sd --format dot
 spanda graph rover.sd --json
+spanda graph rover.sd --config spanda.toml
 ```
 
 ## Graph hierarchy
@@ -33,13 +34,14 @@ Mission
 | Hardware | `hardware`, `deploy`, `requires_hardware` |
 | Providers | Import paths + provider registry |
 | Packages | `spanda.toml` dependencies |
-| Safety | `safety { }`, kill switch, zones |
+| Safety | kill switches, robot safety blocks |
 
 ## Output formats
 
 - **JSON** — machine-readable graph (`nodes`, `edges`, `metadata`)
 - **Mermaid** — embed in docs and PRs
 - **Graphviz DOT** — `dot -Tpng` for presentations
+- **text** — default human-readable listing
 
 ## Crate
 
@@ -47,6 +49,6 @@ Mission
 
 ## Integration
 
-Composes with `spanda-capability`, `spanda-hardware`, `spanda-package`, and readiness traceability rows.
+Composes with `spanda-capability`, `spanda-config`, and readiness traceability rows.
 
 See [platform-maturity-roadmap.md](./platform-maturity-roadmap.md).

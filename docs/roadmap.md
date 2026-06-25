@@ -40,7 +40,7 @@ Full analysis: [platform-maturity-roadmap.md](./platform-maturity-roadmap.md)
 | # | Area | Phase | Priority | Status |
 |---|------|-------|----------|--------|
 | 1 | AI-assisted development (`generate`, `explain`, `suggest`) | Build, Operate | P0.3 / P3.3 | **Future** |
-| 2 | Dependency graph visualization | Build, Operate | P0.1 | **Planned** |
+| 2 | Dependency graph visualization | Build, Operate | P0.1 | **Experimental** |
 | 3 | Threat modeling | Verify, Deploy | P1.2 | **Planned** |
 | 4 | Configuration drift detection | Deploy, Operate | P1.1 | **Experimental** |
 | 5 | Policy engine | Verify, Operate | P1.5 | **Planned** |
@@ -52,7 +52,7 @@ Full analysis: [platform-maturity-roadmap.md](./platform-maturity-roadmap.md)
 | 11 | Package trust framework | Verify, Build | P0.4 | **Planned** |
 | 12 | Architecture decision records | Build | P2.5 | **Planned** |
 | 13 | Mission differencing | Build, Verify | P1.3 | **Planned** |
-| 14 | Deployment gates | Deploy | P0.2 | **Planned** |
+| 14 | Deployment gates | Deploy | P0.2 | **Experimental** |
 | 15 | Autonomous systems scorecard | Operate | P1.4 | **Planned** |
 | 16 | Hack / tamper detection | Verify, Operate, Recover | P3.1 | **Future** |
 

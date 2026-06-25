@@ -1,37 +1,37 @@
 # Deployment Gates
 
-**Status:** Planned · **Phase:** Deploy · **Priority:** P0.2
+**Status:** Experimental · **Phase:** Deploy · **Priority:** P0.2
 
 Prevent unsafe deployment when operational gates fail.
 
 ## Types
 
-- `DeploymentPolicy` — named set of gate rules
-- `DeploymentGate` — single pass/fail check with threshold
+- `DeploymentGatePolicy` — named thresholds (`default`, `production`)
+- `DeploymentGate` — single pass/fail check with message
+- `DeploymentGateReport` — composite gate result
 
 ## Example gates
 
 | Gate | Condition |
 |------|-----------|
-| Readiness | Score > 90 |
-| Safety | Safety audit PASS |
-| Health | All `health_check` healthy |
-| Capability verification | Traceability matrix PASS |
-| Certify | `spanda certify prove` valid (extends `--require-certify`) |
+| Readiness | Score ≥ threshold and `mission_ready` |
+| Safety | Safety audit has no critical/high findings |
+| Capability | Capability traceability matrix PASS |
+| Health | No high-severity health readiness issues |
 
 ## CLI
 
 ```bash
 spanda deploy gate rover.sd
 spanda deploy gate rover.sd --policy production
-spanda deploy rollout plan.json --gate
+spanda deploy gate rover.sd --json --config spanda.toml
 ```
 
-Deployment is **blocked** when any required gate fails.
+Deployment is **blocked** (exit code 1) when any gate fails.
 
 ## Foundation
 
-Extends existing `deploy rollout --require-certify`, readiness `mission_ready`, and safety auditor.
+Extends `spanda-readiness` (`evaluate_deployment_gates`), safety auditor, and capability traceability. Complements `deploy rollout --require-certify`.
 
 ## Integration
 
