@@ -23,6 +23,9 @@ Industry-specific verification templates — not accredited certifications.
 - Required capabilities
 - Required readiness thresholds
 - Secure communication (defense)
+- Tamper response policy (`tamper_policy`) for defense and medical profiles
+
+Reports include an explicit **template notice** — profiles are engineering templates, not legal accreditation.
 
 ## CLI
 

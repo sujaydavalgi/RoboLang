@@ -28,6 +28,7 @@ pub struct ComplianceEvaluationReport {
     pub profile: String,
     pub program: String,
     pub description: String,
+    pub template_notice: String,
     pub passed: bool,
     pub violations: Vec<ComplianceViolation>,
 }
@@ -90,6 +91,9 @@ pub fn evaluate_compliance_profile(
     if profile.requires_secure_comm {
         check_secure_comm(&profile, program, &mut violations);
     }
+    if profile.requires_tamper_policy {
+        check_tamper_policy(&profile, program, &mut violations);
+    }
 
     let passed = if profile.warn_only {
         true
@@ -103,6 +107,7 @@ pub fn evaluate_compliance_profile(
         profile: profile.name.clone(),
         program: source_label.into(),
         description: profile.description.clone(),
+        template_notice: profile.template_notice.to_string(),
         passed,
         violations,
     })
@@ -120,6 +125,7 @@ pub fn format_compliance_report(report: &ComplianceEvaluationReport, json: bool)
             report.profile, report.program
         ),
         report.description.clone(),
+        report.template_notice.clone(),
         if report.passed {
             "Result: PASS".into()
         } else {
@@ -350,6 +356,23 @@ fn check_secure_comm(
             "requires_secure_comm",
             ComplianceSeverity::Error,
             "profile requires secure_comm, signed records, or trust boundaries",
+            violations,
+        );
+    }
+}
+
+fn check_tamper_policy(
+    profile: &ComplianceProfile,
+    program: &Program,
+    violations: &mut Vec<ComplianceViolation>,
+) {
+    let (has_policy, branch_count) = spanda_tamper::tamper_policy_coverage(program);
+    if !has_policy || branch_count == 0 {
+        push_violation(
+            profile,
+            "requires_tamper_policy",
+            ComplianceSeverity::Error,
+            "profile requires at least one tamper_policy response branch",
             violations,
         );
     }

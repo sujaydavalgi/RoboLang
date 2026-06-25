@@ -2,6 +2,9 @@
 
 use serde::{Deserialize, Serialize};
 
+const ACCREDITATION_TEMPLATE_NOTICE: &str =
+    "Template profile only — not legal accreditation or certification.";
+
 /// Template requirements for an industry compliance profile.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct ComplianceProfile {
@@ -15,7 +18,10 @@ pub struct ComplianceProfile {
     pub max_speed_mps: Option<f64>,
     pub operation_hours: Option<String>,
     pub requires_secure_comm: bool,
+    pub requires_tamper_policy: bool,
     pub warn_only: bool,
+    #[serde(skip)]
+    pub template_notice: &'static str,
 }
 
 /// List built-in compliance profile names.
@@ -32,20 +38,6 @@ pub fn list_builtin_profiles() -> Vec<&'static str> {
 
 /// Resolve a built-in compliance profile by name.
 pub fn builtin_profile(name: &str) -> Option<ComplianceProfile> {
-    // Look up a profile template by case-insensitive name.
-    //
-    // Parameters:
-    // - `name` — profile identifier
-    //
-    // Returns:
-    // Profile template when recognized.
-    //
-    // Options:
-    // None.
-    //
-    // Example:
-    // let profile = builtin_profile("warehouse")?;
-
     match name.trim().to_ascii_lowercase().as_str() {
         "industrial" => Some(industrial_profile()),
         "warehouse" => Some(warehouse_profile()),
@@ -69,7 +61,9 @@ fn industrial_profile() -> ComplianceProfile {
         max_speed_mps: Some(1.5),
         operation_hours: None,
         requires_secure_comm: false,
+        requires_tamper_policy: false,
         warn_only: false,
+        template_notice: ACCREDITATION_TEMPLATE_NOTICE,
     }
 }
 
@@ -88,7 +82,9 @@ fn warehouse_profile() -> ComplianceProfile {
         max_speed_mps: Some(2.0),
         operation_hours: Some("06:00-22:00".into()),
         requires_secure_comm: false,
+        requires_tamper_policy: false,
         warn_only: false,
+        template_notice: ACCREDITATION_TEMPLATE_NOTICE,
     }
 }
 
@@ -104,7 +100,9 @@ fn medical_profile() -> ComplianceProfile {
         max_speed_mps: Some(1.0),
         operation_hours: None,
         requires_secure_comm: false,
+        requires_tamper_policy: true,
         warn_only: false,
+        template_notice: ACCREDITATION_TEMPLATE_NOTICE,
     }
 }
 
@@ -120,7 +118,9 @@ fn agriculture_profile() -> ComplianceProfile {
         max_speed_mps: Some(2.5),
         operation_hours: None,
         requires_secure_comm: false,
+        requires_tamper_policy: false,
         warn_only: false,
+        template_notice: ACCREDITATION_TEMPLATE_NOTICE,
     }
 }
 
@@ -136,7 +136,9 @@ fn defense_profile() -> ComplianceProfile {
         max_speed_mps: Some(1.2),
         operation_hours: None,
         requires_secure_comm: true,
+        requires_tamper_policy: true,
         warn_only: false,
+        template_notice: ACCREDITATION_TEMPLATE_NOTICE,
     }
 }
 
@@ -152,6 +154,8 @@ fn research_profile() -> ComplianceProfile {
         max_speed_mps: None,
         operation_hours: None,
         requires_secure_comm: false,
+        requires_tamper_policy: false,
         warn_only: true,
+        template_notice: ACCREDITATION_TEMPLATE_NOTICE,
     }
 }
