@@ -1,5 +1,6 @@
 //! Secure boot contract detection for trust.jetson and trust.pi package imports.
 
+use crate::attestation::{query_live_attestation, LiveAttestationResult};
 use serde::{Deserialize, Serialize};
 use spanda_ast::nodes::{ImportDecl, Program};
 use spanda_package::evaluate_package_trust;
@@ -12,6 +13,8 @@ pub struct SecureBootEntry {
     pub trust_score: u32,
     pub passed: bool,
     pub detail: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub live_attestation: Option<LiveAttestationResult>,
 }
 
 /// Secure-boot coverage rollup for verify-time integrity and tamper checks.
@@ -20,6 +23,8 @@ pub struct SecureBootCoverage {
     pub contracts: Vec<SecureBootEntry>,
     pub score: u32,
     pub passed: bool,
+    #[serde(default)]
+    pub live_attested: bool,
 }
 
 impl Default for SecureBootCoverage {
@@ -28,6 +33,7 @@ impl Default for SecureBootCoverage {
             contracts: Vec::new(),
             score: 0,
             passed: true,
+            live_attested: false,
         }
     }
 }
@@ -75,7 +81,10 @@ pub fn contract_to_package(import_path: &str) -> Option<&'static str> {
 }
 
 /// Evaluate secure-boot contract coverage from program imports.
-pub fn evaluate_secure_boot_coverage(program: &Program) -> SecureBootCoverage {
+pub fn evaluate_secure_boot_coverage(
+    program: &Program,
+    program_label: Option<&str>,
+) -> SecureBootCoverage {
     // Score secure-boot contract imports using registry package trust signals.
     //
     // Parameters:
@@ -88,9 +97,10 @@ pub fn evaluate_secure_boot_coverage(program: &Program) -> SecureBootCoverage {
     // None.
     //
     // Example:
-    // let coverage = evaluate_secure_boot_coverage(&program);
+    // let coverage = evaluate_secure_boot_coverage(&program, Some("rover.sd"));
 
     let mut contracts = Vec::new();
+    let mut live_attested = false;
     for import in program.imports() {
         let ImportDecl::ImportDecl { path, .. } = import;
         if !is_secure_boot_contract(path) {
@@ -98,13 +108,25 @@ pub fn evaluate_secure_boot_coverage(program: &Program) -> SecureBootCoverage {
         }
         let package = contract_to_package(path).expect("secure boot contract maps to package");
         let trust = evaluate_package_trust(package, None, None);
-        contracts.push(SecureBootEntry {
+        let mut entry = SecureBootEntry {
             contract: path.clone(),
             package: package.to_string(),
             trust_score: trust.score,
             passed: trust.passed,
             detail: format!("{}/100 tier={}", trust.score, trust.tier),
-        });
+            live_attestation: None,
+        };
+        if let Some(live) = query_live_attestation(path, package, program_label) {
+            live_attested = true;
+            entry.live_attestation = Some(live.clone());
+            entry.trust_score = ((entry.trust_score + live.score) / 2).min(100);
+            entry.passed = entry.passed && live.attested;
+            entry.detail = format!(
+                "{}; live boot_state={} score={}",
+                entry.detail, live.boot_state, live.score
+            );
+        }
+        contracts.push(entry);
     }
 
     let score = if contracts.is_empty() {
@@ -117,5 +139,6 @@ pub fn evaluate_secure_boot_coverage(program: &Program) -> SecureBootCoverage {
         contracts,
         score,
         passed,
+        live_attested,
     }
 }

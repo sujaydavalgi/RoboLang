@@ -2224,6 +2224,7 @@ dependencies = [
  "serde_json",
  "sha2",
  "spanda-ast",
+ "spanda-deploy-http",
  "spanda-lexer",
  "spanda-package",
  "spanda-parser",

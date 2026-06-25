@@ -119,7 +119,7 @@ pub fn generate_tamper_check(program: &Program, source_label: &str) -> TamperRep
     }
 
     collect_structural_findings(program, &mut findings);
-    collect_secure_boot_findings(program, &mut findings);
+    collect_secure_boot_findings(program, source_label, &mut findings);
 
     let (has_tamper_policy, branch_count) = tamper_policy_coverage(program);
     if has_tamper_policy {
@@ -268,10 +268,19 @@ fn collect_structural_findings(program: &Program, findings: &mut Vec<TamperFindi
     }
 }
 
-fn collect_secure_boot_findings(program: &Program, findings: &mut Vec<TamperFinding>) {
-    let coverage = evaluate_secure_boot_coverage(program);
+fn collect_secure_boot_findings(
+    program: &Program,
+    source_label: &str,
+    findings: &mut Vec<TamperFinding>,
+) {
+    let coverage = evaluate_secure_boot_coverage(program, Some(source_label));
     for entry in &coverage.contracts {
         if entry.passed {
+            let live = entry
+                .live_attestation
+                .as_ref()
+                .map(|live| format!(" boot_state={}", live.boot_state))
+                .unwrap_or_default();
             findings.push(TamperFinding {
                 category: "secure_boot".into(),
                 severity: TamperSeverity::Info,
@@ -279,7 +288,7 @@ fn collect_secure_boot_findings(program: &Program, findings: &mut Vec<TamperFind
                     "Secure-boot contract `{}` verified via {}",
                     entry.contract, entry.package
                 ),
-                evidence: Some(format!("trust_score={}/100", entry.trust_score)),
+                evidence: Some(format!("trust_score={}/100{live}", entry.trust_score)),
                 line: None,
             });
         } else {

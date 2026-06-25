@@ -1,6 +1,7 @@
 //! Verify-time tamper and integrity analysis for Spanda programs.
 //!
 pub mod assurance;
+pub mod attestation;
 pub mod detect;
 pub mod diagnosis;
 pub mod fleet;
@@ -13,6 +14,7 @@ pub use assurance::{
     format_security_assurance_report, generate_security_assurance, SecurityAssuranceFormat,
     SecurityAssuranceReport, SecurityAssuranceSection,
 };
+pub use attestation::{query_live_attestation, LiveAttestationResult};
 pub use detect::{
     format_tamper_report, generate_tamper_check, TamperFinding, TamperFormat, TamperReport,
     TamperSeverity, TamperStatus,

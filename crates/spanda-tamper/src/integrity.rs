@@ -65,6 +65,10 @@ pub struct AgentIntegrityActual {
     pub program_hash: Option<String>,
     pub hardware_profile: Option<String>,
     pub healthy: bool,
+    #[serde(default)]
+    pub attestation_verified: Option<bool>,
+    #[serde(default)]
+    pub boot_state: Option<String>,
 }
 
 /// Hash a serializable artifact into a SHA-256 hex digest.
@@ -245,7 +249,7 @@ pub fn generate_integrity_report(
             .iter()
             .all(|artifact| artifact.status == ArtifactIntegrityStatus::Trusted)
     };
-    let secure_boot = evaluate_secure_boot_coverage(program);
+    let secure_boot = evaluate_secure_boot_coverage(program, Some(source_label));
     let rollup_passed = passed && secure_boot.passed;
 
     IntegrityReport {
@@ -348,6 +352,33 @@ pub fn compare_agent_integrity(
             baseline_hash: baseline,
         });
     }
+    if let Some(verified) = actual.attestation_verified {
+        let status = if verified {
+            ArtifactIntegrityStatus::Trusted
+        } else {
+            ArtifactIntegrityStatus::Modified
+        };
+        artifacts.push(IntegrityArtifact {
+            artifact_type: "agent".into(),
+            name: format!("{}/attestation", actual.agent_id),
+            hash: if verified {
+                "verified".into()
+            } else {
+                "unverified".into()
+            },
+            status,
+            baseline_hash: Some("verified".into()),
+        });
+    }
+    if let Some(boot_state) = &actual.boot_state {
+        artifacts.push(IntegrityArtifact {
+            artifact_type: "agent".into(),
+            name: format!("{}/boot_state", actual.agent_id),
+            hash: boot_state.clone(),
+            status: ArtifactIntegrityStatus::Unknown,
+            baseline_hash: None,
+        });
+    }
     artifacts
 }
 
@@ -442,14 +473,24 @@ pub fn format_integrity_report(report: &IntegrityReport, format: IntegrityFormat
         }
     }
     if !report.secure_boot.contracts.is_empty() {
+        let live = if report.secure_boot.live_attested {
+            " live=1"
+        } else {
+            ""
+        };
         lines.push(format!(
-            "Secure boot: score {}/100 passed={}",
-            report.secure_boot.score, report.secure_boot.passed
+            "Secure boot: score {}/100 passed={}{}",
+            report.secure_boot.score, report.secure_boot.passed, live
         ));
         for entry in &report.secure_boot.contracts {
+            let live = entry
+                .live_attestation
+                .as_ref()
+                .map(|live| format!(" live={}", live.boot_state))
+                .unwrap_or_default();
             lines.push(format!(
-                "  {} via {} — {}/100 ({})",
-                entry.contract, entry.package, entry.trust_score, entry.detail
+                "  {} via {} — {}/100 ({}){}",
+                entry.contract, entry.package, entry.trust_score, entry.detail, live
             ));
         }
     }

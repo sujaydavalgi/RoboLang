@@ -68,10 +68,34 @@ fn agent_integrity_detects_program_hash_mismatch() {
             program_hash: Some("live-hash".into()),
             hardware_profile: Some("RoverV1".into()),
             healthy: true,
+            attestation_verified: None,
+            boot_state: None,
         },
     );
     assert!(checks.iter().any(|artifact| {
         artifact.name.ends_with("program_hash")
+            && artifact.status == ArtifactIntegrityStatus::Modified
+    }));
+}
+
+#[test]
+fn agent_integrity_flags_unverified_attestation() {
+    let checks = compare_agent_integrity(
+        &AgentIntegrityExpected {
+            program_hash: None,
+            hardware_profile: None,
+        },
+        &AgentIntegrityActual {
+            agent_id: "Rover@Jetson".into(),
+            program_hash: None,
+            hardware_profile: None,
+            healthy: true,
+            attestation_verified: Some(false),
+            boot_state: Some("compromised".into()),
+        },
+    );
+    assert!(checks.iter().any(|artifact| {
+        artifact.name.ends_with("attestation")
             && artifact.status == ArtifactIntegrityStatus::Modified
     }));
 }
@@ -88,6 +112,8 @@ fn agent_integrity_trusted_when_agent_matches_expected() {
             program_hash: Some("same-hash".into()),
             hardware_profile: Some("RoverV1".into()),
             healthy: true,
+            attestation_verified: None,
+            boot_state: None,
         },
     );
     assert!(checks.iter().all(|artifact| {
