@@ -290,7 +290,7 @@ When each area ships: update `CHANGELOG.md`, `feature-status.md`, `getting-start
 | Drift detection | `spanda drift <file> [--agent <id>]` | `spanda-drift` |
 | Threat model | `spanda threat-model <file>` | `spanda-threat` | Security fixture scoring |
 | Mission diff | `spanda diff <a.sd> <b.sd>` | `spanda-diff` | Showcase rover pair |
-| Scorecard | `spanda score <file>` | `spanda-score` |
+| Scorecard | `spanda score <file>` | `spanda-score` | Readiness rover fixture |
 | Policy (verify) | `policy { }` syntax + `spanda verify --policy` | `spanda-policy` |
 
 **Exit criteria:** CI drift check on twin; scorecard JSON in Operations dashboard.

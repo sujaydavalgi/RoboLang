@@ -59,4 +59,8 @@ echo "== showcase smoke: mission diff =="
 chmod +x scripts/diff_smoke.sh
 ./scripts/diff_smoke.sh
 
+echo "== showcase smoke: scorecard =="
+chmod +x scripts/scorecard_smoke.sh
+./scripts/scorecard_smoke.sh
+
 echo "Showcase smoke tests passed."

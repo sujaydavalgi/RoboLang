@@ -53,7 +53,7 @@ Full analysis: [platform-maturity-roadmap.md](./platform-maturity-roadmap.md)
 | 12 | Architecture decision records | Build | P2.5 | **Planned** |
 | 13 | Mission differencing | Build, Verify | P1.3 | **Experimental** |
 | 14 | Deployment gates | Deploy | P0.2 | **Experimental** |
-| 15 | Autonomous systems scorecard | Operate | P1.4 | **Planned** |
+| 15 | Autonomous systems scorecard | Operate | P1.4 | **Experimental** |
 | 16 | Hack / tamper detection | Verify, Operate, Recover | P3.1 | **Future** |
 
 ### Phased delivery
