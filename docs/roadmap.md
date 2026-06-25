@@ -50,7 +50,7 @@ Full analysis: [platform-maturity-roadmap.md](./platform-maturity-roadmap.md)
 | 9 | Mission resource estimation | Simulate, Deploy | P2.3 | **Experimental** |
 | 10 | Readiness trend analysis | Operate | P2.2 | **Experimental** |
 | 11 | Package trust framework | Verify, Build | P0.4 | **Experimental** |
-| 12 | Architecture decision records | Build | P2.5 | **Planned** |
+| 12 | Architecture decision records | Build | P2.5 | **Experimental** |
 | 13 | Mission differencing | Build, Verify | P1.3 | **Experimental** |
 | 14 | Deployment gates | Deploy | P0.2 | **Experimental** |
 | 15 | Autonomous systems scorecard | Operate | P1.4 | **Experimental** |

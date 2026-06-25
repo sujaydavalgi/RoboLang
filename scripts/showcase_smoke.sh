@@ -83,4 +83,8 @@ echo "== showcase smoke: compliance =="
 chmod +x scripts/compliance_smoke.sh
 ./scripts/compliance_smoke.sh
 
+echo "== showcase smoke: adr =="
+chmod +x scripts/adr_smoke.sh
+./scripts/adr_smoke.sh
+
 echo "Showcase smoke tests passed."
