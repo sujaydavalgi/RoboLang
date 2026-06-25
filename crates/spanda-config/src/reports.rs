@@ -1,5 +1,6 @@
 //! Human-readable and JSON configuration reports.
 //!
+use crate::device_identity::traceability_rows;
 use crate::resolved::ResolvedSystemConfig;
 use serde::Serialize;
 
@@ -12,6 +13,7 @@ pub struct ConfigReportBundle {
     pub capabilities: CapabilitySummary,
     pub health: HealthSummary,
     pub trust_security: TrustSecuritySummary,
+    pub network: NetworkSummary,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -54,6 +56,25 @@ pub struct HealthSummary {
 pub struct TrustSecuritySummary {
     pub identities: Vec<IdentityEntry>,
     pub untrusted_devices: Vec<String>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct NetworkSummary {
+    pub device_count: usize,
+    pub networked_devices: usize,
+    pub traceability: Vec<crate::device_identity::TraceabilityRow>,
+    pub endpoints: Vec<NetworkEndpointEntry>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct NetworkEndpointEntry {
+    pub device_id: String,
+    pub logical_name: Option<String>,
+    pub ip_address: Option<String>,
+    pub mac_address: Option<String>,
+    pub protocol: Option<String>,
+    pub endpoint_url: Option<String>,
+    pub trust_level: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -108,6 +129,22 @@ pub fn generate_report_bundle(resolved: &ResolvedSystemConfig) -> ConfigReportBu
         }
     }
 
+    let traceability = traceability_rows(&resolved.device_registry);
+    let mut endpoints = Vec::new();
+    for device in &resolved.device_registry.devices {
+        if device.is_networked() {
+            endpoints.push(NetworkEndpointEntry {
+                device_id: device.id.clone(),
+                logical_name: device.logical_name.clone(),
+                ip_address: device.ip_address.clone(),
+                mac_address: device.mac_address.clone(),
+                protocol: device.protocol.clone(),
+                endpoint_url: device.endpoint_url.clone(),
+                trust_level: device.trust_level.clone(),
+            });
+        }
+    }
+
     ConfigReportBundle {
         resolved: ResolvedSummary {
             project: resolved.project_name().into(),
@@ -135,10 +172,20 @@ pub fn generate_report_bundle(resolved: &ResolvedSystemConfig) -> ConfigReportBu
             identities,
             untrusted_devices: untrusted,
         },
+        network: NetworkSummary {
+            device_count: resolved.device_registry.devices.len(),
+            networked_devices: resolved.device_registry.network_devices().len(),
+            traceability,
+            endpoints,
+        },
     }
 }
 
 pub fn format_report_text(bundle: &ConfigReportBundle) -> String {
+    format_report_text_with_options(bundle, false)
+}
+
+pub fn format_report_text_with_options(bundle: &ConfigReportBundle, network_only: bool) -> String {
     // Render the report bundle as plain text for terminal output.
     //
     // Parameters:
@@ -154,6 +201,35 @@ pub fn format_report_text(bundle: &ConfigReportBundle) -> String {
     // println!("{}", format_report_text(&bundle));
 
     let mut out = String::new();
+    if network_only {
+        out.push_str("=== Network / Device Identity ===\n");
+        out.push_str(&format!(
+            "Devices: {} ({} networked)\n",
+            bundle.network.device_count, bundle.network.networked_devices
+        ));
+        for entry in &bundle.network.endpoints {
+            out.push_str(&format!(
+                "  {} logical={:?} ip={:?} mac={:?} proto={:?}\n",
+                entry.device_id,
+                entry.logical_name,
+                entry.ip_address,
+                entry.mac_address,
+                entry.protocol
+            ));
+            if let Some(ref url) = entry.endpoint_url {
+                out.push_str(&format!("    endpoint: {url}\n"));
+            }
+        }
+        out.push_str("\n=== Traceability ===\n");
+        for row in &bundle.network.traceability {
+            out.push_str(&format!(
+                "  {} -> {:?} provider={:?} serial={:?}\n",
+                row.device_id, row.logical_name, row.provider, row.serial
+            ));
+        }
+        return out;
+    }
+
     out.push_str("=== Resolved Configuration ===\n");
     out.push_str(&format!("Project: {}\n", bundle.resolved.project));
     if let Some(ref fleet) = bundle.resolved.fleet_id {

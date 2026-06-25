@@ -48,9 +48,13 @@ pub struct DeviceNode {
     #[serde(rename = "type")]
     pub device_type: String,
     #[serde(default)]
+    pub logical_name: Option<String>,
+    #[serde(default)]
     pub provider: Option<String>,
     #[serde(default)]
     pub port: Option<String>,
+    #[serde(default)]
+    pub network_port: Option<u16>,
     #[serde(default)]
     pub bus: Option<String>,
     #[serde(default)]
@@ -59,6 +63,10 @@ pub struct DeviceNode {
     pub capabilities: Vec<String>,
     #[serde(default)]
     pub firmware: Option<String>,
+    #[serde(default, alias = "firmware_version")]
+    pub firmware_version: Option<String>,
+    #[serde(default)]
+    pub hardware_revision: Option<String>,
     #[serde(default)]
     pub version: Option<String>,
     #[serde(default)]
@@ -66,7 +74,49 @@ pub struct DeviceNode {
     #[serde(default)]
     pub identity: Option<String>,
     #[serde(default)]
+    pub security_identity: Option<String>,
+    #[serde(default)]
+    pub certificate_fingerprint: Option<String>,
+    #[serde(default)]
+    pub trust_level: Option<String>,
+    #[serde(default)]
     pub safety_critical: Option<bool>,
+    #[serde(default)]
+    pub serial: Option<String>,
+    #[serde(default, alias = "mac")]
+    pub mac_address: Option<String>,
+    #[serde(default, alias = "ip")]
+    pub ip_address: Option<String>,
+    #[serde(default)]
+    pub hostname: Option<String>,
+    #[serde(default)]
+    pub dns_name: Option<String>,
+    #[serde(default)]
+    pub mdns_name: Option<String>,
+    #[serde(default, alias = "endpoint")]
+    pub endpoint_url: Option<String>,
+    #[serde(default)]
+    pub protocol: Option<String>,
+    #[serde(default)]
+    pub can_id: Option<String>,
+    #[serde(default)]
+    pub usb_path: Option<String>,
+    #[serde(default)]
+    pub pci_path: Option<String>,
+    #[serde(default)]
+    pub bluetooth_address: Option<String>,
+    #[serde(default)]
+    pub ble_uuid: Option<String>,
+    #[serde(default)]
+    pub cellular_imei: Option<String>,
+    #[serde(default)]
+    pub sim_iccid: Option<String>,
+    #[serde(default)]
+    pub gps_device_id: Option<String>,
+    #[serde(default)]
+    pub redundant_group: Option<String>,
+    #[serde(default)]
+    pub failover_priority: Option<u32>,
 }
 
 impl DeviceTree {

@@ -4,6 +4,7 @@
 //! Downstream consumers should use [`ResolvedSystemConfig`] rather than raw
 //! TOML or JSON files.
 //!
+pub mod device_identity;
 pub mod device_tree;
 pub mod error;
 pub mod integration;
@@ -11,12 +12,18 @@ pub mod json;
 pub mod layer;
 pub mod manifest;
 pub mod mapping;
+pub mod network_validation;
 pub mod reports;
 pub mod resolved;
 pub mod resolver;
 pub mod system_context;
 pub mod validation;
 
+pub use device_identity::{
+    discover_matches, identity_from_device_node, scan_subnet, traceability_rows,
+    DeviceIdentityRecord, DeviceRegistry, DiscoveryMatch, Ipv4Subnet, NetworkHostProbe,
+    TraceabilityRow, TrustLevel,
+};
 pub use device_tree::{ComputeNode, DeviceNode, DeviceTree, FleetNode, RobotNode};
 pub use error::{ConfigError, ConfigResult};
 pub use integration::{
@@ -31,8 +38,10 @@ pub use manifest::{
     MANIFEST_FILENAME,
 };
 pub use mapping::{ActuatorMapping, LogicalPhysicalMap, RobotMapping, SensorMapping};
+pub use network_validation::validate_device_registry;
 pub use reports::{
-    config_drift_report, format_report_text, generate_report_bundle, ConfigReportBundle,
+    config_drift_report, format_report_text, format_report_text_with_options,
+    generate_report_bundle, ConfigReportBundle,
 };
 pub use resolved::ResolvedSystemConfig;
 pub use resolver::{diff_configs, merge_values, ConfigResolver, ResolverOptions};

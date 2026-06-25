@@ -1,0 +1,26 @@
+[[devices]]
+id = "camera-front-001"
+type = "Camera"
+logical_name = "front_camera"
+ip = "192.168.1.42"
+hostname = "front-camera.local"
+mac = "AA:BB:CC:DD:EE:FF"
+serial = "CAM-12345"
+provider = "spanda-vision"
+protocol = "rtsp"
+endpoint = "rtsp://192.168.1.42/stream"
+capabilities = ["capture_image", "stream_video"]
+trust_level = "verified"
+security_identity = "camera-front-001"
+robot_id = "rover-001"
+
+[[devices]]
+id = "motor-controller-001"
+type = "MotorController"
+logical_name = "wheels"
+bus = "can0"
+can_id = "0x12"
+serial = "MC-9811"
+provider = "spanda-canbus"
+capabilities = ["move", "stop", "emergency_stop"]
+robot_id = "rover-001"

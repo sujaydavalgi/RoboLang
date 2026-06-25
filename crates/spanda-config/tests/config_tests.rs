@@ -181,9 +181,10 @@ fn logical_physical_mapping() {
     let resolved = ConfigResolver::new()
         .resolve_from_dir(&root)
         .expect("resolve");
-    assert_eq!(resolved.logical_map.sensors.len(), 2);
-    assert_eq!(resolved.logical_map.actuators.len(), 1);
+    assert_eq!(resolved.logical_map.sensors.len(), 3);
+    assert_eq!(resolved.logical_map.actuators.len(), 2);
     assert!(resolved.logical_map.actuators["drive-controller"].has_emergency_stop);
+    assert!(resolved.logical_map.actuators["wheels"].has_emergency_stop);
 }
 
 #[test]
@@ -357,4 +358,79 @@ fn assurance_policy_reads_minimum_score() {
         .expect("resolve");
     let policy = spanda_config::assurance_policy(&resolved);
     assert_eq!(policy.minimum_score, 70);
+}
+
+#[test]
+fn parses_flat_device_identity_registry() {
+    let root = fixture_root();
+    let resolved = ConfigResolver::new()
+        .resolve_from_dir(&root)
+        .expect("resolve");
+    let camera = resolved
+        .device_registry
+        .get("camera-front-001")
+        .expect("camera");
+    assert_eq!(camera.logical_name.as_deref(), Some("front_camera"));
+    assert_eq!(camera.ip_address.as_deref(), Some("192.168.1.42"));
+    assert_eq!(camera.protocol.as_deref(), Some("rtsp"));
+}
+
+#[test]
+fn logical_map_uses_configured_logical_names() {
+    let root = fixture_root();
+    let resolved = ConfigResolver::new()
+        .resolve_from_dir(&root)
+        .expect("resolve");
+    let sensor = resolved
+        .logical_map
+        .sensors
+        .get("front_camera")
+        .expect("front_camera mapping");
+    assert_eq!(sensor.physical_device_id, "camera-front-001");
+}
+
+#[test]
+fn detects_duplicate_ip_in_registry() {
+    use spanda_config::{validate_device_registry, DeviceIdentityRecord, DeviceRegistry};
+    let registry = DeviceRegistry {
+        devices: vec![
+            DeviceIdentityRecord {
+                id: "a".into(),
+                device_type: "Camera".into(),
+                ip_address: Some("10.0.0.1".into()),
+                ..Default::default()
+            },
+            DeviceIdentityRecord {
+                id: "b".into(),
+                device_type: "Camera".into(),
+                ip_address: Some("10.0.0.1".into()),
+                ..Default::default()
+            },
+        ],
+    };
+    let report = validate_device_registry(&registry, &[]);
+    assert!(!report.passed);
+    assert!(report
+        .findings
+        .iter()
+        .any(|f| f.code == "device.duplicate_ip"));
+}
+
+#[test]
+fn subnet_parser_emits_hosts() {
+    let subnet = spanda_config::Ipv4Subnet::parse("192.168.1.0/24").expect("cidr");
+    let hosts = subnet.hosts();
+    assert!(!hosts.is_empty());
+    assert!(hosts.len() <= 254);
+}
+
+#[test]
+fn network_report_includes_traceability() {
+    let root = fixture_root();
+    let resolved = ConfigResolver::new()
+        .resolve_from_dir(&root)
+        .expect("resolve");
+    let bundle = spanda_config::generate_report_bundle(&resolved);
+    assert!(bundle.network.networked_devices >= 1);
+    assert!(!bundle.network.traceability.is_empty());
 }

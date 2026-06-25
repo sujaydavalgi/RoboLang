@@ -6,3 +6,6 @@ package = "spanda-lidar"
 
 [providers.spanda-canbus]
 package = "spanda-canbus"
+
+[providers.spanda-vision]
+package = "spanda-vision"

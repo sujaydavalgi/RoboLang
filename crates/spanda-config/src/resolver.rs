@@ -1,11 +1,13 @@
 //! Configuration layer merging and resolution engine.
 //!
+use crate::device_identity::DeviceRegistry;
 use crate::device_tree::DeviceTree;
 use crate::error::{ConfigError, ConfigResult};
 use crate::json::load_config_value;
 use crate::layer::{ConfigGraph, ConfigGraphEdge, ConfigMergeStrategy};
 use crate::manifest::{MergeStrategyHint, SpandaManifest, MANIFEST_FILENAME};
 use crate::mapping::LogicalPhysicalMap;
+use crate::network_validation::validate_device_registry;
 use crate::resolved::ResolvedSystemConfig;
 use crate::validation::{validate_device_tree, validate_logical_map, ConfigValidationReport};
 use std::collections::{HashMap, HashSet};
@@ -139,7 +141,9 @@ impl ConfigResolver {
         }
 
         let device_tree = DeviceTree::from_toml_value(&merged);
-        let logical_map = LogicalPhysicalMap::from_device_tree(&device_tree);
+        let device_registry = DeviceRegistry::from_resolved_parts(&device_tree, &merged);
+        let logical_map =
+            LogicalPhysicalMap::from_device_tree_and_registry(&device_tree, &device_registry);
         let providers = extract_providers(&merged);
         let packages = extract_packages(&merged);
 
@@ -149,8 +153,9 @@ impl ConfigResolver {
         };
         if self.options.validate {
             let device_report = validate_device_tree(&device_tree, &providers);
+            let registry_report = validate_device_registry(&device_registry, &providers);
             let map_report = validate_logical_map(&logical_map);
-            validation = merge_reports(device_report, map_report);
+            validation = merge_reports(merge_reports(device_report, registry_report), map_report);
         }
 
         Ok(ResolvedSystemConfig {
@@ -160,6 +165,7 @@ impl ConfigResolver {
             layers_applied,
             fragments_loaded,
             device_tree,
+            device_registry,
             logical_map,
             providers,
             packages,

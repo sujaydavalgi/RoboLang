@@ -37,6 +37,8 @@ pub struct ConfigReferences {
     #[serde(default)]
     pub devices: Option<String>,
     #[serde(default)]
+    pub network_devices: Option<String>,
+    #[serde(default)]
     pub providers: Option<String>,
     #[serde(default)]
     pub fleet: Option<String>,
@@ -228,6 +230,7 @@ impl SpandaManifest {
         }
         push_opt!("hardware", refs.hardware);
         push_opt!("devices", refs.devices);
+        push_opt!("network_devices", refs.network_devices);
         push_opt!("providers", refs.providers);
         push_opt!("fleet", refs.fleet);
         push_opt!("security", refs.security);

@@ -1,12 +1,12 @@
 //! Fully resolved system configuration consumed by runtime and verification.
 //!
+use crate::device_identity::{DeviceIdentityRecord, DeviceRegistry};
 use crate::device_tree::DeviceTree;
 use crate::layer::ConfigGraph;
 use crate::manifest::SpandaManifest;
 use crate::mapping::LogicalPhysicalMap;
 use crate::validation::ConfigValidationReport;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 use std::path::PathBuf;
 
 /// Final merged configuration for a Spanda autonomous system.
@@ -18,6 +18,7 @@ pub struct ResolvedSystemConfig {
     pub layers_applied: Vec<String>,
     pub fragments_loaded: Vec<String>,
     pub device_tree: DeviceTree,
+    pub device_registry: DeviceRegistry,
     pub logical_map: LogicalPhysicalMap,
     pub providers: Vec<String>,
     pub packages: Vec<String>,
@@ -88,11 +89,11 @@ impl ResolvedSystemConfig {
         serde_json::to_string_pretty(&self.raw)
     }
 
-    pub fn provider_set(&self) -> HashMap<String, bool> {
-        let mut map = HashMap::new();
-        for p in &self.providers {
-            map.insert(p.clone(), true);
-        }
-        map
+    pub fn device_by_logical_name(&self, logical: &str) -> Vec<&DeviceIdentityRecord> {
+        self.device_registry.by_logical_name(logical)
+    }
+
+    pub fn traceability_rows(&self) -> Vec<crate::device_identity::TraceabilityRow> {
+        crate::device_identity::traceability_rows(&self.device_registry)
     }
 }
