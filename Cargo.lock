@@ -1886,6 +1886,7 @@ dependencies = [
  "spanda-lexer",
  "spanda-lib-registry",
  "spanda-parser",
+ "spanda-policy",
  "spanda-providers",
  "spanda-regex-lang",
  "spanda-runtime",
@@ -2016,6 +2017,7 @@ dependencies = [
 name = "spanda-policy"
 version = "0.4.0"
 dependencies = [
+ "chrono",
  "serde",
  "serde_json",
  "spanda-ast",
