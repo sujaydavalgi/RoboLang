@@ -44,6 +44,12 @@ pub struct AgentStatusResponse {
     pub packages: Vec<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub robot_name: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub attestation_contract: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub attestation_verified: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub boot_state: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

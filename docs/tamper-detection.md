@@ -38,6 +38,8 @@ Verify-time `spanda tamper-check` composes threat modeling, safety audit, securi
 
 **Tamper policies:** declare `tamper_policy` blocks with `on tamper severity Critical { ... }` or `on tamper signal capability_denied { ... }` branches. At runtime, matching signals dispatch recovery actions (`enter SafeMode`, `stop_all_actuators()`, `audit.record(...)`). **Critical** destructive actions (stop, kill switch, safe mode) require operator approval unless `SPANDA_OPERATOR_APPROVAL=1`. See `examples/showcase/tamper_policy/`.
 
+**Secure boot:** import `trust.jetson` or `trust.pi` for contract stubs; optional live attestation via `SPANDA_ATTESTATION_ENDPOINT`. See [hardware-attestation.md](./hardware-attestation.md) and `examples/showcase/secure_boot/`.
+
 ## Integration
 
 Readiness · Assurance · Diagnosis · Health · Security · Capability verification · Hardware verification · Trust score · Audit · Replay

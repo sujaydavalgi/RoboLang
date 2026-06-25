@@ -421,7 +421,7 @@ Branches match runtime signals (`tamper severity Critical`, `tamper signal capab
 
 | Gap | Notes |
 |-----|-------|
-| Hardware secure boot | Wired into `tamper-check` and `integrity` via `trust.jetson` / `trust.pi` imports; vendor TPM integration optional |
+| Hardware secure boot | Contract stubs + verify-time/live attestation (`SPANDA_ATTESTATION_ENDPOINT`); deploy agent status fields; vendor TPM optional |
 | Real-time spoofing ML | Optional `SPANDA_SPOOFING_ML_ENDPOINT` HTTP backend; package contracts in `spanda-gps` / `spanda-fusion` |
 | Fleet-wide tamper correlation | Shipped — offline `--fleet <manifest.json>` and live `--mesh-url` ingest |
 | Legal/compliance certification | Template profiles with explicit accreditation notice — not accredited standards |

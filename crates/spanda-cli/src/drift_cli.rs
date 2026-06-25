@@ -245,6 +245,9 @@ fn snapshot_from_deploy_status(id: &str, status: &AgentStatusResponse) -> AgentD
         current_version: Some(status.current_version.clone()),
         packages: status.packages.clone(),
         healthy: status.healthy,
+        attestation_contract: status.attestation_contract.clone(),
+        attestation_verified: status.attestation_verified,
+        boot_state: status.boot_state.clone(),
     }
 }
 
@@ -259,6 +262,7 @@ fn snapshot_from_fleet_status(id: &str, status: &FleetAgentStatusResponse) -> Ag
         current_version: None,
         packages: status.packages.clone(),
         healthy: status.healthy,
+        ..AgentDriftSnapshot::default()
     }
 }
 

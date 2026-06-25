@@ -105,6 +105,9 @@ fn snapshot_from_deploy_status(id: &str, status: &AgentStatusResponse) -> AgentD
         current_version: Some(status.current_version.clone()),
         packages: status.packages.clone(),
         healthy: status.healthy,
+        attestation_contract: status.attestation_contract.clone(),
+        attestation_verified: status.attestation_verified,
+        boot_state: status.boot_state.clone(),
     }
 }
 
@@ -119,10 +122,9 @@ fn snapshot_from_fleet_status(id: &str, status: &FleetAgentStatusResponse) -> Ag
         current_version: None,
         packages: status.packages.clone(),
         healthy: status.healthy,
+        ..AgentDriftSnapshot::default()
     }
 }
-
-/// `spanda integrity <file.sd> [--baseline <file.sd>] [--agent <Robot@Hardware>] [--json]`
 pub fn integrity_dispatch(args: &[String]) {
     let file = file_arg(args);
     let path = Path::new(&file);
@@ -183,6 +185,8 @@ pub fn integrity_dispatch(args: &[String]) {
                 program_hash: snapshot.program_hash,
                 hardware_profile: snapshot.hardware_profile,
                 healthy: snapshot.healthy,
+                attestation_verified: snapshot.attestation_verified,
+                boot_state: snapshot.boot_state.clone(),
             },
         );
         apply_agent_integrity(&mut report, &snapshot.agent_id, checks);

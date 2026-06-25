@@ -39,6 +39,12 @@ pub struct AgentState {
     pub require_certify: bool,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub trusted_public_key: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub attestation_contract: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub attestation_verified: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub boot_state: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -169,6 +175,28 @@ pub fn save_agent_state(path: &Path, state: &AgentState) -> Result<(), String> {
     }
     let text = serde_json::to_string_pretty(state).map_err(|e| e.to_string())?;
     fs::write(path, text).map_err(|e| e.to_string())
+}
+
+fn apply_attestation_env(state: &mut AgentState) {
+    if let Ok(contract) = std::env::var("SPANDA_ATTESTATION_CONTRACT") {
+        let trimmed = contract.trim();
+        if !trimmed.is_empty() {
+            state.attestation_contract = Some(trimmed.to_string());
+        }
+    }
+    if let Ok(boot_state) = std::env::var("SPANDA_BOOT_STATE") {
+        let trimmed = boot_state.trim();
+        if !trimmed.is_empty() {
+            state.boot_state = Some(trimmed.to_string());
+        }
+    }
+    if std::env::var("SPANDA_ATTESTATION_VERIFIED")
+        .ok()
+        .map(|value| value == "1")
+        .unwrap_or(false)
+    {
+        state.attestation_verified = Some(true);
+    }
 }
 
 fn unauthorized(request: &HttpRequest, state: &AgentState) -> bool {
@@ -381,6 +409,9 @@ pub fn handle_agent_request(state: &mut AgentState, request: HttpRequest) -> Htt
                 "hardware_profile": state.hardware_profile,
                 "firmware_version": state.firmware_version,
                 "packages": state.packages,
+                "attestation_contract": state.attestation_contract,
+                "attestation_verified": state.attestation_verified,
+                "boot_state": state.boot_state,
                 "healthy": true,
             }))
             .unwrap_or_else(|_| "{}".into()),
@@ -626,6 +657,7 @@ pub fn run_deploy_agent_server(options: &DeployAgentServerOptions) -> Result<(),
     state.require_signature = *require_signature || state.require_signature;
     state.require_certify = *require_certify || state.require_certify;
     state.trusted_public_key = trusted_public_key.clone().or(state.trusted_public_key);
+    apply_attestation_env(&mut state);
     save_agent_state(state_path, &state)?;
     let listener = TcpListener::bind(bind).map_err(|e| format!("bind {bind} failed: {e}"))?;
     let shared = Arc::new(Mutex::new(state));

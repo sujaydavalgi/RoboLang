@@ -488,6 +488,12 @@ pub struct AgentDriftSnapshot {
     pub packages: Vec<String>,
     #[serde(default)]
     pub healthy: bool,
+    #[serde(default)]
+    pub attestation_contract: Option<String>,
+    #[serde(default)]
+    pub attestation_verified: Option<bool>,
+    #[serde(default)]
+    pub boot_state: Option<String>,
 }
 
 /// Expected deploy state derived from a program and resolved configuration.
