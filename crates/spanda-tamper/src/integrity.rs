@@ -40,8 +40,28 @@ pub struct IntegrityArtifact {
 pub struct IntegrityReport {
     pub program: String,
     pub baseline: Option<String>,
+    #[serde(default)]
+    pub agent: Option<String>,
     pub artifacts: Vec<IntegrityArtifact>,
+    #[serde(default)]
+    pub agent_artifacts: Vec<IntegrityArtifact>,
     pub passed: bool,
+}
+
+/// Expected deploy posture for agent integrity comparison.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct AgentIntegrityExpected {
+    pub program_hash: Option<String>,
+    pub hardware_profile: Option<String>,
+}
+
+/// Live agent status snapshot for integrity comparison.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct AgentIntegrityActual {
+    pub agent_id: String,
+    pub program_hash: Option<String>,
+    pub hardware_profile: Option<String>,
+    pub healthy: bool,
 }
 
 /// Hash a serializable artifact into a SHA-256 hex digest.
@@ -226,8 +246,135 @@ pub fn generate_integrity_report(
     IntegrityReport {
         program: source_label.into(),
         baseline: baseline_label.map(str::to_string),
+        agent: None,
         artifacts,
+        agent_artifacts: Vec::new(),
         passed,
+    }
+}
+
+/// Compare expected deploy posture against a live agent snapshot.
+pub fn compare_agent_integrity(
+    expected: &AgentIntegrityExpected,
+    actual: &AgentIntegrityActual,
+) -> Vec<IntegrityArtifact> {
+    // Map agent status fields to integrity artifacts with Trusted/Modified status.
+    //
+    // Parameters:
+    // - `expected` — declared program hash and hardware profile
+    // - `actual` — live agent `/v1/status` fields
+    //
+    // Returns:
+    // Per-field integrity artifacts for the agent target.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // let checks = compare_agent_integrity(&expected, &actual);
+
+    let mut artifacts = Vec::new();
+    let health_status = if actual.healthy {
+        ArtifactIntegrityStatus::Trusted
+    } else {
+        ArtifactIntegrityStatus::Modified
+    };
+    artifacts.push(IntegrityArtifact {
+        artifact_type: "agent".into(),
+        name: format!("{}/health", actual.agent_id),
+        hash: if actual.healthy {
+            "healthy".into()
+        } else {
+            "unhealthy".into()
+        },
+        status: health_status,
+        baseline_hash: Some("healthy".into()),
+    });
+    if let Some(expected_hw) = &expected.hardware_profile {
+        let (status, hash, baseline) = match &actual.hardware_profile {
+            Some(live) if live == expected_hw => (
+                ArtifactIntegrityStatus::Trusted,
+                live.clone(),
+                Some(expected_hw.clone()),
+            ),
+            Some(live) => (
+                ArtifactIntegrityStatus::Modified,
+                live.clone(),
+                Some(expected_hw.clone()),
+            ),
+            None => (
+                ArtifactIntegrityStatus::Modified,
+                "missing".into(),
+                Some(expected_hw.clone()),
+            ),
+        };
+        artifacts.push(IntegrityArtifact {
+            artifact_type: "agent".into(),
+            name: format!("{}/hardware_profile", actual.agent_id),
+            hash,
+            status,
+            baseline_hash: baseline,
+        });
+    }
+    if let Some(expected_hash) = &expected.program_hash {
+        let (status, hash, baseline) = match &actual.program_hash {
+            Some(live) if live == expected_hash => (
+                ArtifactIntegrityStatus::Trusted,
+                live.clone(),
+                Some(expected_hash.clone()),
+            ),
+            Some(live) => (
+                ArtifactIntegrityStatus::Modified,
+                live.clone(),
+                Some(expected_hash.clone()),
+            ),
+            None => (
+                ArtifactIntegrityStatus::Modified,
+                "missing".into(),
+                Some(expected_hash.clone()),
+            ),
+        };
+        artifacts.push(IntegrityArtifact {
+            artifact_type: "agent".into(),
+            name: format!("{}/program_hash", actual.agent_id),
+            hash,
+            status,
+            baseline_hash: baseline,
+        });
+    }
+    artifacts
+}
+
+/// Attach agent integrity artifacts to a report and update pass/fail rollup.
+pub fn apply_agent_integrity(
+    report: &mut IntegrityReport,
+    agent_id: &str,
+    agent_artifacts: Vec<IntegrityArtifact>,
+) {
+    // Merge agent comparison artifacts into an integrity report.
+    //
+    // Parameters:
+    // - `report` — integrity report to update in place
+    // - `agent_id` — agent target identifier
+    // - `agent_artifacts` — per-field agent integrity checks
+    //
+    // Returns:
+    // None.
+    //
+    // Options:
+    // None.
+    //
+    // Example:
+    // apply_agent_integrity(&mut report, "Rover@RoverV1", checks);
+
+    report.agent = Some(agent_id.into());
+    report.agent_artifacts = agent_artifacts;
+    if report
+        .agent_artifacts
+        .iter()
+        .any(|artifact| artifact.status == ArtifactIntegrityStatus::Modified)
+    {
+        report.passed = false;
     }
 }
 
@@ -265,11 +412,23 @@ pub fn format_integrity_report(report: &IntegrityReport, format: IntegrityFormat
             "Result: FAIL".into()
         },
     ];
+    if let Some(agent) = &report.agent {
+        lines.insert(2, format!("Agent: {agent}"));
+    }
     if report.artifacts.is_empty() {
         lines.push("No artifacts found.".into());
     } else {
         lines.push("Artifacts:".into());
         for artifact in &report.artifacts {
+            lines.push(format!(
+                "  [{:?}] {}:{} — {}",
+                artifact.status, artifact.artifact_type, artifact.name, artifact.hash
+            ));
+        }
+    }
+    if !report.agent_artifacts.is_empty() {
+        lines.push("Agent artifacts:".into());
+        for artifact in &report.agent_artifacts {
             lines.push(format!(
                 "  [{:?}] {}:{} — {}",
                 artifact.status, artifact.artifact_type, artifact.name, artifact.hash

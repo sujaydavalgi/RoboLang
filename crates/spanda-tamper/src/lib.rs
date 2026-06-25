@@ -8,6 +8,7 @@ pub use detect::{
     TamperSeverity, TamperStatus,
 };
 pub use integrity::{
-    format_integrity_report, generate_integrity_report, ArtifactIntegrityStatus, IntegrityArtifact,
-    IntegrityFormat, IntegrityReport,
+    apply_agent_integrity, compare_agent_integrity, format_integrity_report,
+    generate_integrity_report, AgentIntegrityActual, AgentIntegrityExpected,
+    ArtifactIntegrityStatus, IntegrityArtifact, IntegrityFormat, IntegrityReport,
 };
