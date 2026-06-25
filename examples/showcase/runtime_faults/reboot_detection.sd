@@ -1,0 +1,34 @@
+// Reboot detection showcase
+//
+//   spanda fault scan examples/showcase/runtime_faults/reboot_detection.sd --inject-reboot
+//   spanda fault report examples/showcase/runtime_faults/reboot_detection.sd
+
+robot PatrolRover {
+  sensor gps: GPS;
+  actuator wheels: DifferentialDrive;
+
+  safety {
+    max_speed = 0.8 m/s;
+  }
+
+  heartbeat RoverRuntime every 1s timeout 5s {
+    on_missed {
+      mark Degraded;
+      audit.record("runtime_heartbeat_missed");
+    }
+  }
+
+  behavior patrol() {
+    loop every 100ms {
+      wheels.drive(linear: 0.2 m/s, angular: 0.0 rad/s);
+    }
+  }
+}
+
+on reboot unexpected {
+  run post_reboot_diagnostics;
+}
+
+health_check RoverHealth for robot PatrolRover {
+  check gps.status == Healthy;
+}

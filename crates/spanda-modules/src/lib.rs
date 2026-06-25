@@ -244,6 +244,7 @@ mod tests {
             recovery_policies: vec![],
             continuity_policies: vec![],
             assurance_cases: vec![],
+            runtime_fault_triggers: vec![],
             robots: vec![],
             span: empty_span(),
         }

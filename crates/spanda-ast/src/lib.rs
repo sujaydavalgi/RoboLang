@@ -2,6 +2,7 @@
 //!
 pub mod assurance_decl;
 pub mod comm_decl;
+pub mod fault_decl;
 pub mod foundations;
 pub mod nodes;
 pub mod regex;

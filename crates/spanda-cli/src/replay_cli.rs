@@ -12,12 +12,26 @@ pub fn human_replay(
     from: Option<&str>,
     deterministic: bool,
     playback: bool,
+    show_faults: bool,
     as_json: bool,
 ) {
     let trace = MissionTrace::load(trace_file).unwrap_or_else(|error| {
         eprintln!("{error}");
         process::exit(1);
     });
+
+    if show_faults {
+        if as_json {
+            let faults = spanda_runtime_faults::faults_from_trace(&trace);
+            println!(
+                "{}",
+                serde_json::to_string_pretty(&faults).unwrap_or_default()
+            );
+        } else {
+            println!("{}", spanda_runtime_faults::format_trace_faults(&trace));
+        }
+        return;
+    }
     let offset_ms = if let Some(raw) = from {
         parse_replay_offset(raw).unwrap_or_else(|error| {
             eprintln!("{error}");

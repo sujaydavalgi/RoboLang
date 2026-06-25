@@ -100,9 +100,7 @@ fn cmd_push(args: &[String]) {
             "--watch" => watch = true,
             "--interval" => {
                 i += 1;
-                interval_ms = args
-                    .get(i)
-                    .and_then(|value| value.parse::<u64>().ok());
+                interval_ms = args.get(i).and_then(|value| value.parse::<u64>().ok());
             }
             other => {
                 eprintln!("Unknown telemetry push flag: {other}");
@@ -263,7 +261,10 @@ fn cmd_list(args: &[String]) {
         return;
     }
     if events.is_empty() {
-        println!("No telemetry events found in {}", store.store_path().display());
+        println!(
+            "No telemetry events found in {}",
+            store.store_path().display()
+        );
         return;
     }
     for event in events {
@@ -467,7 +468,14 @@ fn cmd_replay(args: &[String]) {
         eprintln!("Run with --record to link a mission trace on session end.");
         process::exit(1);
     };
-    replay_cli::human_replay(&trace_path, from.as_deref(), deterministic, playback, json);
+    replay_cli::human_replay(
+        &trace_path,
+        from.as_deref(),
+        deterministic,
+        playback,
+        false,
+        json,
+    );
 }
 
 fn cmd_info(args: &[String]) {
@@ -713,10 +721,7 @@ fn print_event(event: &TelemetryEvent) {
             timestamp_ms,
         } => println!(
             "[runtime_metrics] {timestamp_ms}ms session={session_id} keys={}",
-            metrics
-                .as_object()
-                .map(|object| object.len())
-                .unwrap_or(0)
+            metrics.as_object().map(|object| object.len()).unwrap_or(0)
         ),
     }
 }

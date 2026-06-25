@@ -1663,6 +1663,7 @@ impl<B: RobotBackend> Interpreter<B> {
             recovery_policies: vec![],
             continuity_policies: vec![],
             assurance_cases: vec![],
+            runtime_fault_triggers: vec![],
             robots: vec![],
             span: Default::default(),
         };
@@ -1962,6 +1963,8 @@ mod runtime_audit;
 mod runtime_builtins;
 #[path = "runtime_connectivity.rs"]
 mod runtime_connectivity;
+#[path = "runtime_continuity.rs"]
+mod runtime_continuity;
 #[path = "runtime_declarations.rs"]
 mod runtime_declarations;
 #[path = "runtime_eval.rs"]
@@ -1980,8 +1983,6 @@ mod runtime_navigation;
 mod runtime_program;
 #[path = "runtime_recovery.rs"]
 mod runtime_recovery;
-#[path = "runtime_continuity.rs"]
-mod runtime_continuity;
 #[path = "runtime_reliability.rs"]
 mod runtime_reliability;
 #[path = "runtime_robot.rs"]
@@ -2007,7 +2008,7 @@ mod runtime_twin;
 #[path = "runtime_world_model.rs"]
 mod runtime_world_model;
 
-pub use runtime_recovery::{execute_recovery_on_program, RecoveryExecutionSnapshot};
 pub use runtime_continuity::{
-    execute_continuity_on_program, continuity_context_from_request, ContinuityExecutionSnapshot,
+    continuity_context_from_request, execute_continuity_on_program, ContinuityExecutionSnapshot,
 };
+pub use runtime_recovery::{execute_recovery_on_program, RecoveryExecutionSnapshot};

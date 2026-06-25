@@ -49,6 +49,11 @@
 | [realtime.md](./realtime.md) | **Deadline-aware tasks, jitter bounds, wall-clock scheduling** |
 | [reliability.md](./reliability.md) | **Pipelines, watchdogs, recovery, retry/fallback, operating modes** |
 | [watchdogs.md](./watchdogs.md) | Task heartbeats and timeout handling |
+| [runtime-fault-detection.md](./runtime-fault-detection.md) | **Runtime fault detection: crashes, reboots, memory leaks, resource pressure** |
+| [crash-detection.md](./crash-detection.md) | Process/provider crash detection and recovery |
+| [reboot-detection.md](./reboot-detection.md) | Unexpected reboot detection and post-reboot diagnostics |
+| [memory-leak-detection.md](./memory-leak-detection.md) | Memory growth monitoring and leak events |
+| [runtime-health.md](./runtime-health.md) | Runtime health status and CLI reporting |
 | [degraded-modes.md](./degraded-modes.md) | Operating `mode` blocks and graceful degradation |
 | [replay.md](./replay.md) | **Mission trace record, deterministic replay, frame playback** |
 | [regex.md](./regex.md) | **First-class regex literals, triggers, and validation rules** |

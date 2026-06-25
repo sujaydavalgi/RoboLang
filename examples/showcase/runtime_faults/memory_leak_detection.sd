@@ -1,0 +1,42 @@
+// Memory leak detection showcase
+//
+//   spanda fault scan examples/showcase/runtime_faults/memory_leak_detection.sd
+//   spanda fault report examples/showcase/runtime_faults/memory_leak_detection.sd --json
+
+robot PatrolRover {
+  sensor lidar: Lidar;
+  actuator wheels: DifferentialDrive;
+
+  safety {
+    max_speed = 0.8 m/s;
+    stop_if lidar.nearest_distance < 0.5 m;
+  }
+
+  memory_watch RoverRuntime {
+    threshold growth > 100 MB over 10 min;
+    action {
+      mark Warning;
+      create MemoryLeakEvent;
+    }
+  }
+
+  behavior patrol() {
+    loop every 100ms {
+      wheels.drive(linear: 0.3 m/s, angular: 0.0 rad/s);
+    }
+  }
+}
+
+health_check RoverHealth for robot PatrolRover {
+  check lidar.status == Healthy;
+}
+
+health_policy RoverPolicy {
+  on Degraded { wheels.stop(); }
+  on Critical { emergency_stop; }
+}
+
+on memory_leak detected {
+  mark Degraded;
+  notify_operator;
+}

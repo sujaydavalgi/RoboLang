@@ -1380,6 +1380,7 @@ dependencies = [
  "spanda-parser",
  "spanda-readiness",
  "spanda-runtime",
+ "spanda-runtime-faults",
  "spanda-security",
  "spanda-sir",
  "spanda-telemetry-store",
@@ -1966,6 +1967,22 @@ dependencies = [
  "serde_json",
  "serde_yaml",
  "spanda-ast",
+]
+
+[[package]]
+name = "spanda-runtime-faults"
+version = "0.4.0"
+dependencies = [
+ "serde",
+ "serde_json",
+ "spanda-assurance",
+ "spanda-ast",
+ "spanda-capability",
+ "spanda-error",
+ "spanda-lexer",
+ "spanda-parser",
+ "spanda-readiness",
+ "spanda-runtime",
 ]
 
 [[package]]

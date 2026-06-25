@@ -555,6 +555,8 @@ pub enum Program {
         continuity_policies: Vec<crate::assurance_decl::ContinuityPolicyDecl>,
         #[serde(default)]
         assurance_cases: Vec<crate::assurance_decl::AssuranceCaseDecl>,
+        #[serde(default)]
+        runtime_fault_triggers: Vec<crate::fault_decl::RuntimeFaultTriggerDecl>,
         robots: Vec<RobotDecl>,
         span: Span,
     },
@@ -639,6 +641,14 @@ pub enum RobotDecl {
         kill_switches: Vec<crate::foundations::KillSwitchDecl>,
         #[serde(default)]
         health_checks: Vec<crate::foundations::HealthCheckDecl>,
+        #[serde(default)]
+        heartbeats: Vec<crate::fault_decl::HeartbeatDecl>,
+        #[serde(default)]
+        memory_watches: Vec<crate::fault_decl::MemoryWatchDecl>,
+        #[serde(default)]
+        resource_watches: Vec<crate::fault_decl::ResourceWatchDecl>,
+        #[serde(default)]
+        restart_policies: Vec<crate::fault_decl::RestartPolicyDecl>,
         span: Span,
     },
 }

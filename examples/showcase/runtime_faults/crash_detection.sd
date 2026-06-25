@@ -1,0 +1,38 @@
+// Crash detection showcase
+//
+//   spanda fault scan examples/showcase/runtime_faults/crash_detection.sd --inject-crash
+//   spanda runtime health examples/showcase/runtime_faults/crash_detection.sd
+
+robot PatrolRover {
+  sensor lidar: Lidar;
+  actuator wheels: DifferentialDrive;
+
+  safety {
+    max_speed = 0.8 m/s;
+    stop_if lidar.nearest_distance < 0.5 m;
+  }
+
+  restart_policy ProviderRuntime {
+    max_restarts: 3 within 5 min;
+    on_exceeded {
+      enter degraded_mode;
+      disable provider;
+      request_operator_review;
+    }
+  }
+
+  behavior patrol() {
+    loop every 100ms {
+      wheels.drive(linear: 0.3 m/s, angular: 0.0 rad/s);
+    }
+  }
+}
+
+on runtime crash {
+  diagnose root_cause;
+  recover using RestartRuntime;
+}
+
+health_check RoverHealth for robot PatrolRover {
+  check lidar.status == Healthy;
+}

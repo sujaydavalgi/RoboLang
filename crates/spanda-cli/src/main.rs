@@ -8,6 +8,7 @@ mod decision_cli;
 mod demo_cli;
 mod deploy_ota;
 mod explain_cli;
+mod fault_cli;
 mod package;
 mod readiness_cli;
 mod recovery_cli;
@@ -29,8 +30,8 @@ use spanda_docs::{
     markdown_man_to_roff,
 };
 use spanda_driver::{
-    check, compile, lower_to_sir, run, run_debug, tokenize,
-    verify_compatibility_with_registry, RunOptions, RunResult,
+    check, compile, lower_to_sir, run, run_debug, tokenize, verify_compatibility_with_registry,
+    RunOptions, RunResult,
 };
 use spanda_error::SpandaError;
 use spanda_format::format_source;
@@ -1589,6 +1590,18 @@ fn main() {
         return;
     }
 
+    if command == "fault" {
+        fault_cli::fault_dispatch(&args[2..]);
+        let _ = io::stdout().flush();
+        return;
+    }
+
+    if command == "runtime" {
+        fault_cli::runtime_dispatch(&args[2..]);
+        let _ = io::stdout().flush();
+        return;
+    }
+
     if command == "telemetry" {
         let sub = args.get(2).map(String::as_str).unwrap_or("");
         telemetry_cli::cmd_telemetry(sub, &args[3..]);
@@ -1658,6 +1671,7 @@ fn main() {
     let mut metrics_json = false;
     let mut replay_deterministic = false;
     let mut replay_playback = false;
+    let mut replay_show_faults = false;
     let mut replay_from: Option<String> = None;
     let mut trace_output: Option<String> = None;
     let mut twin_export_path: Option<String> = None;
@@ -1753,6 +1767,7 @@ fn main() {
             }
             "--deterministic" => replay_deterministic = true,
             "--playback" => replay_playback = true,
+            "--show-faults" => replay_show_faults = true,
             "--wall-clock" => wall_clock = true,
             "--from" => {
                 i += 1;
@@ -1865,6 +1880,7 @@ fn main() {
             replay_from.as_deref(),
             replay_deterministic,
             replay_playback,
+            replay_show_faults,
             json,
         );
         let _ = io::stdout().flush();

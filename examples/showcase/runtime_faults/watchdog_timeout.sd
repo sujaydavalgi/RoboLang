@@ -1,0 +1,37 @@
+// Watchdog timeout showcase
+//
+//   spanda fault scan examples/showcase/runtime_faults/watchdog_timeout.sd
+
+robot PatrolRover {
+  sensor lidar: Lidar;
+  actuator wheels: DifferentialDrive;
+
+  safety {
+    max_speed = 0.8 m/s;
+    stop_if lidar.nearest_distance < 0.5 m;
+  }
+
+  watchdog patrol_pipeline timeout 500ms {
+    wheels.stop();
+  }
+
+  resource_watch {
+    memory > 85%;
+    cpu > 90% for 30s;
+    disk_free < 500 MB;
+  }
+
+  behavior patrol() {
+    loop every 100ms {
+      wheels.drive(linear: 0.3 m/s, angular: 0.0 rad/s);
+    }
+  }
+}
+
+on watchdog timeout {
+  enter degraded_mode;
+}
+
+health_check RoverHealth for robot PatrolRover {
+  check lidar.status == Healthy;
+}

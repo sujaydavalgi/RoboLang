@@ -708,6 +708,7 @@ impl Parser {
         let mut recovery_policies = Vec::new();
         let mut continuity_policies = Vec::new();
         let mut assurance_cases = Vec::new();
+        let mut runtime_fault_triggers = Vec::new();
         let mut robots = Vec::new();
 
         // Repeat while self.check(TokenType::Import).
@@ -797,6 +798,8 @@ impl Parser {
                 mission_plans.push(self.parse_mission_plan()?);
             } else if self.check(TokenType::Ident) && self.peek().lexeme == "operating_mode" {
                 operating_modes.push(self.parse_operating_mode()?);
+            } else if self.check(TokenType::On) && self.is_runtime_fault_trigger() {
+                runtime_fault_triggers.push(self.parse_runtime_fault_trigger()?);
             } else if self.check(TokenType::Robot) {
                 robots.push(self.parse_robot()?);
             } else {
@@ -849,6 +852,7 @@ impl Parser {
             recovery_policies,
             continuity_policies,
             assurance_cases,
+            runtime_fault_triggers,
             robots,
             span: self.span_from(&start, self.previous()),
         })
@@ -3587,6 +3591,10 @@ impl Parser {
         let mut exposes_capabilities = Vec::new();
         let mut robot_kill_switches = Vec::new();
         let mut robot_health_checks = Vec::new();
+        let mut heartbeats = Vec::new();
+        let mut memory_watches = Vec::new();
+        let mut resource_watches = Vec::new();
+        let mut restart_policies = Vec::new();
 
         // Repeat while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof).
         while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof) {
@@ -3733,6 +3741,14 @@ impl Parser {
                 robot_kill_switches.push(self.parse_kill_switch()?);
             } else if self.check(TokenType::Ident) && self.peek().lexeme == "health_check" {
                 robot_health_checks.push(self.parse_health_check()?);
+            } else if self.check(TokenType::Ident) && self.peek().lexeme == "heartbeat" {
+                heartbeats.push(self.parse_heartbeat()?);
+            } else if self.check(TokenType::Ident) && self.peek().lexeme == "memory_watch" {
+                memory_watches.push(self.parse_memory_watch()?);
+            } else if self.check(TokenType::Ident) && self.peek().lexeme == "resource_watch" {
+                resource_watches.push(self.parse_resource_watch()?);
+            } else if self.check(TokenType::Ident) && self.peek().lexeme == "restart_policy" {
+                restart_policies.push(self.parse_restart_policy()?);
             } else {
                 let t = self.peek();
                 return Err(SpandaError::Parse {
@@ -3797,6 +3813,10 @@ impl Parser {
             exposes_capabilities,
             kill_switches: robot_kill_switches,
             health_checks: robot_health_checks,
+            heartbeats,
+            memory_watches,
+            resource_watches,
+            restart_policies,
             span: self.span_from(&start, &end),
         })
     }
@@ -9665,7 +9685,10 @@ impl Parser {
         use spanda_ast::assurance_decl::{ContinuityPolicyBranch, ContinuityPolicyDecl};
         let start = self.advance();
         let name = self.parse_label("Expected continuity_policy name")?;
-        self.expect(TokenType::Lbrace, "Expected '{' after continuity_policy name")?;
+        self.expect(
+            TokenType::Lbrace,
+            "Expected '{' after continuity_policy name",
+        )?;
         let mut branches = Vec::new();
         while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof) {
             if self.check(TokenType::On) {
@@ -9792,6 +9815,260 @@ impl Parser {
         Ok(OperatingModeDecl::OperatingModeDecl {
             name,
             mode_kind,
+            span: self.span_from(&start, &end),
+        })
+    }
+
+    fn is_runtime_fault_trigger(&self) -> bool {
+        let event_keywords = [
+            "runtime",
+            "memory_leak",
+            "memory",
+            "reboot",
+            "restart_loop",
+            "restart",
+            "watchdog",
+            "crash",
+            "oom",
+            "deadlock",
+            "heartbeat",
+        ];
+        self.tokens
+            .get(self.pos + 1)
+            .map(|t| event_keywords.iter().any(|k| t.lexeme == *k))
+            .unwrap_or(false)
+    }
+
+    fn parse_runtime_fault_trigger(
+        &mut self,
+    ) -> Result<spanda_ast::fault_decl::RuntimeFaultTriggerDecl, SpandaError> {
+        use spanda_ast::fault_decl::RuntimeFaultTriggerDecl;
+        let start = self.advance();
+        let mut event_parts = Vec::new();
+        while !self.check(TokenType::Lbrace) && !self.check(TokenType::Eof) {
+            event_parts.push(self.advance().lexeme);
+        }
+        let event = event_parts.join(" ");
+        self.expect(
+            TokenType::Lbrace,
+            "Expected '{' after runtime fault trigger event",
+        )?;
+        let mut body = Vec::new();
+        while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof) {
+            body.push(self.parse_action_statement()?);
+        }
+        let end = self.expect(
+            TokenType::Rbrace,
+            "Expected '}' to close runtime fault trigger",
+        )?;
+        Ok(RuntimeFaultTriggerDecl::RuntimeFaultTriggerDecl {
+            event,
+            body,
+            span: self.span_from(&start, &end),
+        })
+    }
+
+    fn parse_heartbeat(&mut self) -> Result<spanda_ast::fault_decl::HeartbeatDecl, SpandaError> {
+        use spanda_ast::fault_decl::HeartbeatDecl;
+        let start = self.advance();
+        let target = self.parse_label("Expected heartbeat target name")?;
+        self.expect(
+            TokenType::Every,
+            "Expected 'every' in heartbeat declaration",
+        )?;
+        let interval_ms = self.parse_duration()?;
+        if self.check(TokenType::Ident) && self.peek().lexeme == "timeout" {
+            self.advance();
+        } else {
+            return Err(SpandaError::Parse {
+                message: "Expected 'timeout' in heartbeat declaration".into(),
+                line: self.peek().line,
+                column: self.peek().column,
+            });
+        }
+        let timeout_ms = self.parse_duration()?;
+        self.expect(TokenType::Lbrace, "Expected '{' after heartbeat timeout")?;
+        let mut on_missed_actions = Vec::new();
+        if self.check(TokenType::Ident) && self.peek().lexeme == "on_missed" {
+            self.advance();
+            self.expect(TokenType::Lbrace, "Expected '{' after on_missed")?;
+            while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof) {
+                on_missed_actions.push(self.parse_action_statement()?);
+            }
+            self.expect(TokenType::Rbrace, "Expected '}' to close on_missed")?;
+        }
+        let end = self.expect(TokenType::Rbrace, "Expected '}' to close heartbeat")?;
+        Ok(HeartbeatDecl::HeartbeatDecl {
+            target,
+            interval_ms,
+            timeout_ms,
+            on_missed_actions,
+            span: self.span_from(&start, &end),
+        })
+    }
+
+    fn parse_memory_watch(
+        &mut self,
+    ) -> Result<spanda_ast::fault_decl::MemoryWatchDecl, SpandaError> {
+        use spanda_ast::fault_decl::MemoryWatchDecl;
+        let start = self.advance();
+        let target = self.parse_label("Expected memory_watch target name")?;
+        self.expect(TokenType::Lbrace, "Expected '{' after memory_watch target")?;
+        let mut growth_threshold = String::new();
+        let mut growth_window = String::new();
+        let mut actions = Vec::new();
+        while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof) {
+            if self.check(TokenType::Ident) && self.peek().lexeme == "threshold" {
+                self.advance();
+                let mut parts = Vec::new();
+                while !self.check(TokenType::Semicolon) && !self.check(TokenType::Eof) {
+                    parts.push(self.advance().lexeme);
+                }
+                self.expect(TokenType::Semicolon, "Expected ';' after threshold")?;
+                if parts.len() >= 4 {
+                    growth_threshold = format!("{} {}", parts[2], parts[3]);
+                    if parts.len() > 5 {
+                        growth_window = parts[5..].join(" ");
+                    } else if parts.len() > 4 {
+                        growth_window = parts[4..].join(" ");
+                    }
+                } else {
+                    growth_threshold = parts.join(" ");
+                }
+            } else if self.check(TokenType::Action)
+                || (self.check(TokenType::Ident) && self.peek().lexeme == "action")
+            {
+                self.advance();
+                self.expect(TokenType::Lbrace, "Expected '{' after action")?;
+                while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof) {
+                    actions.push(self.parse_action_statement()?);
+                }
+                self.expect(TokenType::Rbrace, "Expected '}' to close action")?;
+            } else {
+                return Err(SpandaError::Parse {
+                    message: "Expected threshold or action in memory_watch".into(),
+                    line: self.peek().line,
+                    column: self.peek().column,
+                });
+            }
+        }
+        let end = self.expect(TokenType::Rbrace, "Expected '}' to close memory_watch")?;
+        Ok(MemoryWatchDecl::MemoryWatchDecl {
+            target,
+            growth_threshold,
+            growth_window,
+            actions,
+            span: self.span_from(&start, &end),
+        })
+    }
+
+    fn parse_resource_watch(
+        &mut self,
+    ) -> Result<spanda_ast::fault_decl::ResourceWatchDecl, SpandaError> {
+        use spanda_ast::fault_decl::{ResourceWatchCondition, ResourceWatchDecl};
+        let start = self.advance();
+        self.expect(TokenType::Lbrace, "Expected '{' after resource_watch")?;
+        let mut conditions = Vec::new();
+        while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof) {
+            let cond_start = self.peek().clone();
+            let resource = self.parse_dotted_name("Expected resource name")?;
+            let op = self.parse_comparison_op().map_err(|_| SpandaError::Parse {
+                message: "Expected comparison operator in resource_watch".into(),
+                line: self.peek().line,
+                column: self.peek().column,
+            })?;
+            let mut threshold = self.advance().lexeme.clone();
+            if self.check(TokenType::UnitLiteral) {
+                threshold = format!("{threshold} {}", self.advance().lexeme);
+            } else if self.check(TokenType::Ident) {
+                let next = self.peek().lexeme.as_str();
+                if next == "MB" || next == "GB" || next == "KB" || next == "ms" || next == "min" {
+                    threshold = format!("{threshold} {}", self.advance().lexeme);
+                }
+            }
+            if self.check(TokenType::Percent) {
+                self.advance();
+                threshold.push('%');
+            }
+            let mut duration = None;
+            if (self.check(TokenType::Ident) || self.check(TokenType::For))
+                && self.peek().lexeme == "for"
+            {
+                self.advance();
+                let mut dur_parts = Vec::new();
+                while !self.check(TokenType::Semicolon) && !self.check(TokenType::Eof) {
+                    dur_parts.push(self.advance().lexeme);
+                }
+                duration = Some(dur_parts.join(" "));
+            }
+            self.expect(
+                TokenType::Semicolon,
+                "Expected ';' after resource_watch condition",
+            )?;
+            conditions.push(ResourceWatchCondition {
+                resource,
+                operator: op,
+                threshold,
+                duration,
+                span: self.span_from(&cond_start, self.previous()),
+            });
+        }
+        let end = self.expect(TokenType::Rbrace, "Expected '}' to close resource_watch")?;
+        Ok(ResourceWatchDecl::ResourceWatchDecl {
+            conditions,
+            span: self.span_from(&start, &end),
+        })
+    }
+
+    fn parse_restart_policy(
+        &mut self,
+    ) -> Result<spanda_ast::fault_decl::RestartPolicyDecl, SpandaError> {
+        use spanda_ast::fault_decl::RestartPolicyDecl;
+        let start = self.advance();
+        let target = self.parse_label("Expected restart_policy target name")?;
+        self.expect(
+            TokenType::Lbrace,
+            "Expected '{' after restart_policy target",
+        )?;
+        let mut max_restarts = 3u32;
+        let mut window = "5 min".into();
+        let mut on_exceeded_actions = Vec::new();
+        while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof) {
+            if self.check(TokenType::Ident) && self.peek().lexeme == "max_restarts" {
+                self.advance();
+                self.expect(TokenType::Colon, "Expected ':' after max_restarts")?;
+                let num_tok = self.advance();
+                max_restarts = num_tok.lexeme.parse().unwrap_or(3);
+                if self.check(TokenType::Ident) && self.peek().lexeme == "within" {
+                    self.advance();
+                    let mut win_parts = Vec::new();
+                    while !self.check(TokenType::Semicolon) && !self.check(TokenType::Eof) {
+                        win_parts.push(self.advance().lexeme);
+                    }
+                    window = win_parts.join(" ");
+                }
+                self.expect(TokenType::Semicolon, "Expected ';' after max_restarts")?;
+            } else if self.check(TokenType::Ident) && self.peek().lexeme == "on_exceeded" {
+                self.advance();
+                self.expect(TokenType::Lbrace, "Expected '{' after on_exceeded")?;
+                while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof) {
+                    on_exceeded_actions.push(self.parse_action_statement()?);
+                }
+                self.expect(TokenType::Rbrace, "Expected '}' to close on_exceeded")?;
+            } else {
+                return Err(SpandaError::Parse {
+                    message: "Expected max_restarts or on_exceeded in restart_policy".into(),
+                    line: self.peek().line,
+                    column: self.peek().column,
+                });
+            }
+        }
+        let end = self.expect(TokenType::Rbrace, "Expected '}' to close restart_policy")?;
+        Ok(RestartPolicyDecl::RestartPolicyDecl {
+            target,
+            max_restarts,
+            window,
+            on_exceeded_actions,
             span: self.span_from(&start, &end),
         })
     }
