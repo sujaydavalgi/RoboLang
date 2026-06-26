@@ -199,6 +199,33 @@ See [tier-3-experimental.md](./tier-3-experimental.md) and [tier-3-golden-paths.
 | Package manager | **Stable** | Hosted index + local mirror; `spanda publish` copies to `registry/packages/` |
 | LLVM / native codegen | **Experimental** | `compile-native` early stage |
 
+### Enterprise operations (20 pillars)
+
+| Pillar | Status | Key surfaces |
+|--------|--------|--------------|
+| **Control Center** | **Experimental** | `spanda control-center serve`, `ControlCenterPanel`, Tauri desktop scaffold |
+| **Device Pool** | **Experimental** | Lifecycle states, assign/trust/quarantine/retire, failover chains |
+| **Device Discovery** | **Experimental** | Subnet, mDNS, BLE, USB, CAN, MQTT, ROS2 host probes; pool ingest |
+| **Provisioning** | **Experimental** | `POST /v1/provision`, discover → ready workflow |
+| **Configuration Management** | **Experimental** | Snapshots, diff, resolve; approval **Planned** |
+| **RBAC** | **Experimental** | 7 roles, `SPANDA_API_KEY`, `/v1/rbac/matrix` |
+| **Secret Management** | **Experimental** | `ManagedSecretVault`, rotation metadata |
+| **Telemetry** | **Experimental** | Health/readiness/mission signals; trend analysis; forecasting **Planned** |
+| **Alerting** | **Experimental** | Webhook + email core; Slack/Teams/PagerDuty packages **Planned** |
+| **Configuration Drift** | **Experimental** | Config + firmware dimensions; package/provider/capability/policy/safety **Planned** |
+| **OTA & Rollback** | **Experimental** | Canary, blue/green, phased dry-run; production fleet automation **Planned** |
+| **Package Trust** | **Experimental** | `spanda trust`, `/v1/trust/package`, trust score |
+| **SDKs** | **Experimental** | Python SDK, REST v1, WebSocket; gRPC **Planned**; CLI reference **Stable** |
+| **Operator Workflows** | **Experimental** | Mission approve, takeover, quarantine, recovery approval |
+| **SRE** | **Experimental** | `/v1/sre/summary`; incident workflow UI **Planned** |
+| **Reporting** | **Experimental** | HTML, Markdown, JSON, PDF, CSV exports |
+| **Compliance** | **Experimental** | Evidence packs, `GET /v1/compliance/export` |
+| **APIs** | **Experimental** | REST v1 + OpenAPI; JSON-RPC gateway; native gRPC **Planned** |
+| **Observability** | **Experimental** | OTLP trace export, correlation IDs, WebSocket telemetry |
+| **Digital Thread** | **Experimental** | `GET /v1/digital-thread/query`; full graph UI **Planned** |
+
+See [enterprise-operations-roadmap.md](./enterprise-operations-roadmap.md) · [control-center.md](./control-center.md) · [device-pool.md](./device-pool.md)
+
 ---
 
 ## Known limitations (v0.4.0)

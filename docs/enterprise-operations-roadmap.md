@@ -12,6 +12,50 @@ Strategic expansion plan for Spanda as a **complete Autonomous Systems Platform*
 
 ---
 
+## 0. Platform context
+
+Spanda has evolved into a **complete Autonomous Systems Platform**. The enterprise operations expansion does **not** remove, redesign, or duplicate any existing capability — it adds operational governance, visibility, and integration surfaces on top of the pillars already shipped.
+
+### Existing platform pillars (foundation)
+
+| Category | Pillars already in the platform |
+|----------|--------------------------------|
+| **Build** | Language, Compiler, Package Ecosystem, Provider Registry |
+| **Verify** | Hardware Verification, Capability Verification, Safety Validation, Package Trust (scoring engine) |
+| **Simulate** | Simulation, Digital Twin, Replay |
+| **Deploy** | Cascading Configuration, Device Tree, OTA deploy CLI, Deployment Gates |
+| **Operate** | Readiness, Health, Fleet, Mission Assurance, Mission Continuity, Delegation, Takeover |
+| **Observe** | Telemetry store, Persistent replay, Runtime fault detection |
+| **Recover** | Diagnosis, Recovery (self-healing), Mission Continuity |
+| **Govern** | Security, Encryption, RBAC hooks, Policy engine, Compliance profiles |
+| **Audit** | Audit records, Decision audit trail, Explainability, Tamper Detection |
+| **Trust** | Composite trust, Secure-boot attestation, Integrity verification |
+
+### Integration mandate
+
+Every new enterprise pillar must integrate with:
+
+| Spine capability | Role in enterprise |
+|------------------|-------------------|
+| **Readiness** | Gates for provision, deploy, OTA promote, operator actions |
+| **Assurance** | Anomaly, prognostics, assurance cases in Control Center |
+| **Diagnosis** | Root-cause reports, drift correlation, incident context |
+| **Recovery** | Operator approval, failover chains, alert escalation |
+| **Trust** | Provisioning validation, package trust, device quarantine |
+| **Health** | Fleet policies, SRE uptime, degraded/offline lifecycle |
+| **Device Registry** | Device Pool inventory, discovery ingest, assignment |
+| **Configuration** | Cascading TOML, snapshots, drift baselines |
+| **Traceability** | Capability matrices, digital thread links |
+| **Audit** | Mutation logging, compliance evidence, reporting |
+| **Security** | RBAC, secrets, encryption, tamper response |
+| **Packages** | Discovery transports, alert channels, SDK bindings |
+
+### Lean-core rule (repeated)
+
+Contracts and orchestration live in focused Rust crates (`spanda-api`, `spanda-config`, `spanda-security`, `spanda-ops`, `spanda-telemetry-store`, …). Vendor SDKs, transport adapters, time-series backends, alert channel integrations, and industry compliance packs ship in **optional packages**.
+
+---
+
 ## 1. Platform pillar classification
 
 Enterprise operations pillars compose existing engines — they do **not** replace Language, Runtime, Compiler, Verification, Safety, Simulation, Health, Fleet, Packages, or the maturity/differentiation roadmaps.
@@ -29,14 +73,14 @@ Enterprise operations pillars compose existing engines — they do **not** repla
 | 9 | **Alerting** | Operate, Recover | Experimental | Multi-channel incident notifications |
 | 10 | **Configuration Drift** | Operate, Verify | Experimental | Expected vs actual parity across dimensions |
 | 11 | **OTA & Rollback** | Deploy | Experimental | Canary, blue/green, phased rollout |
-| 12 | **Package Trust** | Verify, Build | Experimental | Signature, reputation, vulnerability scoring |
-| 13 | **SDKs** | Build, Operate | Experimental | Python SDK + REST v1; JSON-RPC gateway; WebSocket client |
+| 12 | **Package Trust** | Verify, Build | Experimental | Signature, reputation, vulnerability, coverage, compatibility scoring |
+| 13 | **SDKs** | Build, Operate | Experimental | Python SDK, REST v1, JSON-RPC gateway, WebSocket stream; CLI as reference SDK |
 | 14 | **Operator Workflows** | Operate, Recover | Experimental | Mission approval, takeover, quarantine, device trust |
 | 15 | **SRE** | Operate, Observe | Experimental | SLO/SLA, MTTR/MTBF, incident reporting |
 | 16 | **Reporting** | Govern, Audit | Experimental | Fleet, mission, compliance, executive exports (incl. PDF) |
 | 17 | **Compliance** | Verify, Govern, Audit | Experimental | Evidence packs, immutable audit trails |
-| 18 | **APIs** | All | Experimental | REST v1 + OpenAPI; JSON-RPC gateway |
-| 19 | **Observability** | Operate, Observe | Experimental | Trace log, OTLP export to Jaeger, WebSocket telemetry stream |
+| 18 | **APIs** | All | Experimental | REST v1 + OpenAPI; JSON-RPC gateway; native gRPC **Planned** |
+| 19 | **Observability** | Operate, Observe | Experimental | Metrics, logs, traces, events; OTLP export; correlation IDs |
 | 20 | **Digital Thread** | Build → Retire | Experimental | End-to-end traceability chain (v1 query) |
 
 ### Tier definitions
@@ -326,19 +370,50 @@ flowchart LR
 
 ## 6. Pillar specifications
 
-### 6.1 Device Pool
+### 6.1 Control Center
+
+Web-based operational visibility for robots, fleets, swarms, devices, sensors, missions, readiness, health, trust, security, and diagnostics.
+
+| Layer | Stack |
+|-------|-------|
+| UI | React + TypeScript (`ControlCenterPanel` in `@spanda/web`) |
+| State | React Query + context |
+| Desktop | Tauri (`@spanda/control-center-desktop`) — future signed installers |
+| Backend | Rust `spanda-api` (`spanda control-center serve`) |
+| Build | Vite (shared with `@spanda/web`) |
+
+**Modules:** Dashboard, Fleet View, Mission View, Device Pool, Readiness, Health, Assurance, Diagnosis, Recovery, Security, Configuration, Simulation, Replay, Audit, Administration.
+
+### 6.2 Device Pool
 
 Central inventory extending `DeviceRegistry` with lifecycle states:
 
-**Device types:** Robots, Sensors, Actuators, Accessories, Compute Modules, Controllers, Gateways, Cameras, GPS, Lidar, Radar, BLE/WiFi/LTE/5G/USB/CAN/EtherCAT/PLC devices.
+**Device types:** Robots, Sensors, Actuators, Accessories, Compute Modules, Controllers, Gateways, Cameras, GPS, Lidar, Radar, BLE Devices, WiFi Devices, LTE Devices, 5G Devices, USB Devices, CAN Devices, EtherCAT Devices, PLC Devices.
 
-**Lifecycle states:** Discovered → Quarantined → Verified → Assigned → **Active** → Healthy → Degraded → Offline → Failed → Retired.
+**Lifecycle states:**
+
+```
+Discovered → Quarantined → Verified → Assigned → Active → Healthy ⇄ Degraded → Offline → Failed → Retired
+```
+
+| State | Meaning |
+|-------|---------|
+| **Discovered** | Seen by discovery or manual entry; not yet validated |
+| **Quarantined** | Held pending trust/health review; no mission assignment |
+| **Verified** | Identity, firmware, and capability gates passed |
+| **Assigned** | Bound to robot/fleet; config layer applied |
+| **Active** | Deployed and reporting heartbeat (runtime substate) |
+| **Healthy** | Health policy pass; readiness above threshold |
+| **Degraded** | Partial fault; may continue with constraints |
+| **Offline** | No heartbeat within policy window |
+| **Failed** | Unrecoverable fault or repeated recovery failure |
+| **Retired** | End of life; audit record retained |
 
 **Operations:** `assign` / `unassign`, `quarantine`, `retire`, **`trust`** (API `POST /v1/devices/{id}/trust`, CLI `spanda device trust`, Control Center Trust/Approve); failover chains wired into recovery (`enrich_recovery_plan_with_failover`).
 
 **Core schema:** extends `[[devices]]` in `spanda.toml` with `lifecycle_state`, `assigned_robot`, `last_seen`, `provisioning_id`, `trust_level`.
 
-### 6.2 Device Discovery
+### 6.3 Device Discovery
 
 Core host-backed probes (`discovery_live`) with optional registry packages; discovery POST ingests matches into the device pool (`ingest_discovery_matches`).
 
@@ -346,16 +421,20 @@ Core host-backed probes (`discovery_live`) with optional registry packages; disc
 |-----------|----------------|--------|
 | IP subnet | core (`network scan`) | **Experimental** |
 | Manual | core (`[[devices]]`) | **Experimental** |
-| mDNS / DNS-SD | core (`dns-sd` / `avahi-browse`) + `spanda-discovery-mdns` registry | **Experimental** (host probe) / **Planned** (runtime package load) |
+| mDNS | core (`dns-sd` / `avahi-browse`) + `spanda-discovery-mdns` registry | **Experimental** (host probe) / **Planned** (runtime package load) |
+| DNS-SD | core (same probe path as mDNS) + `spanda-discovery-mdns` | **Experimental** |
 | USB | core (`lsusb` probe) + `spanda-discovery-usb` | **Experimental** (host probe) / **Planned** (package) |
 | Bluetooth / BLE | core (`bluetoothctl` probe) + `spanda-discovery-ble` | **Experimental** (host probe) / **Planned** (package) |
+| WiFi | core (subnet + mDNS correlation) + `spanda-discovery-wifi` | **Planned** |
+| LTE / 5G | modem status via device agent report + `spanda-discovery-cellular` | **Planned** |
 | CAN / EtherCAT | core (socketcan probe) + `spanda-discovery-can`, `spanda-discovery-ethercat` | **Experimental** (host probe) / **Planned** (package) |
 | ROS2 / DDS | core (`ros2 topic list` probe) + `spanda-ros2` | **Experimental** |
 | MQTT | core (broker probe) + `spanda-mqtt` | **Experimental** |
-| OPC-UA / Modbus | `spanda-opcua`, `spanda-modbus` | **Experimental** (stubs) |
+| OPC-UA | `spanda-opcua`, `spanda-discovery-opcua` | **Experimental** (stubs) |
+| Modbus TCP / RTU | `spanda-modbus`, `spanda-discovery-modbus` | **Experimental** (stubs) |
 | Serial | `spanda-discovery-serial` | **Planned** |
 
-### 6.3 Provisioning workflow
+### 6.4 Provisioning workflow
 
 ```
 Discover → Verify Identity → Trust Validation → Firmware Validation
@@ -374,7 +453,7 @@ Each gate composes existing engines:
 | Assign | `DeviceRegistry` | Robot/fleet binding |
 | Ready | `spanda-readiness` | Deployment gate pass |
 
-### 6.4 Configuration Management
+### 6.5 Configuration Management
 
 Extends cascading TOML ([cascading-config.md](./cascading-config.md)):
 
@@ -389,7 +468,7 @@ Extends cascading TOML ([cascading-config.md](./cascading-config.md)):
 | Diff | **Experimental** | `spanda config diff` |
 | Approval | Planned | RBAC-gated publish |
 
-### 6.5 RBAC
+### 6.6 RBAC
 
 | Role | Deploy | Operate | Approve | Override | Shutdown | Recover | Delete | Provision |
 |------|--------|---------|---------|----------|----------|---------|--------|-----------|
@@ -403,7 +482,7 @@ Extends cascading TOML ([cascading-config.md](./cascading-config.md)):
 
 Core: `spanda-security::rbac` with JWT/API-key auth at API boundary.
 
-### 6.6 Secret Management
+### 6.7 Secret Management
 
 Secures: API keys, certificates, private keys, robot credentials, cloud credentials, provider credentials.
 
@@ -411,7 +490,7 @@ Features: rotation, expiration, audit trail, encryption at rest (AES-256-GCM, ex
 
 Package backends: HashiCorp Vault, AWS Secrets Manager, Kubernetes secrets.
 
-### 6.7 Telemetry
+### 6.8 Telemetry
 
 Builds on [telemetry-store.md](./telemetry-store.md):
 
@@ -426,7 +505,7 @@ Builds on [telemetry-store.md](./telemetry-store.md):
 | Trend analysis | **Experimental** (`readiness trends`) |
 | Forecasting | Planned |
 
-### 6.8 Alerting
+### 6.9 Alerting
 
 | Channel | Package |
 |---------|---------|
@@ -442,7 +521,7 @@ Builds on [telemetry-store.md](./telemetry-store.md):
 
 Core: `spanda-ops::alerting` — rule engine, deduplication, severity routing.
 
-### 6.9 Configuration Drift
+### 6.10 Configuration Drift
 
 Extends [drift-detection.md](./drift-detection.md):
 
@@ -456,7 +535,7 @@ Extends [drift-detection.md](./drift-detection.md):
 | Policy | declared vs enforced | Planned |
 | Safety | certify hash vs runtime | Planned |
 
-### 6.10 OTA & Rollback
+### 6.11 OTA & Rollback
 
 Extends existing `spanda deploy plan|rollout|rollback|status`:
 
@@ -469,7 +548,34 @@ Extends existing `spanda deploy plan|rollout|rollback|status`:
 | Blue/Green | **Experimental** | `RolloutStrategy::BlueGreen` dry-run |
 | Phased rollout | **Experimental** | staged strategy in OTA plan API |
 
-### 6.11 Operator Workflows
+### 6.12 Package Trust
+
+Evaluates packages before install and deploy; composes with deployment gates and Control Center Security module.
+
+| Signal | Weight factor | Source |
+|--------|---------------|--------|
+| Package signature | Ed25519 verify | `spanda-package` registry |
+| Maintainer reputation | Historical publish record | registry metadata |
+| Security scan | Static analysis pass/fail | `spanda-package` scan hook |
+| Known vulnerabilities | CVE/advisory match | vulnerability DB package |
+| Test coverage | Declared + CI evidence | package manifest |
+| Compatibility | Target profile match | `spanda verify` matrix |
+
+**Output:** composite **Trust Score** (0–100) via `evaluate_package_trust` / `GET /v1/trust/package` / `spanda trust <package>`.
+
+### 6.13 SDKs
+
+Official SDK surfaces for external systems to interact with Readiness, Assurance, Diagnosis, Recovery, Health, Mission, and Fleet:
+
+| SDK | Status | Notes |
+|-----|--------|-------|
+| **CLI** | **Stable** | Reference implementation; all capabilities |
+| **REST** | **Experimental** | `/v1/*` + OpenAPI 3.1 (`GET /v1/openapi.json`) |
+| **gRPC** | **Planned** | Native tonic service; JSON-RPC gateway (`POST /v1/rpc`) ships today |
+| **WebSocket** | **Experimental** | `WS /v1/stream/telemetry` live telemetry |
+| **Python** | **Experimental** | `packages/sdk-python` (`pip install spanda-sdk`) |
+
+### 6.14 Operator Workflows
 
 | Workflow | Integration |
 |----------|-------------|
@@ -482,7 +588,7 @@ Extends existing `spanda deploy plan|rollout|rollback|status`:
 | Device Trust / Approve | `POST /v1/devices/{id}/trust`, `spanda device trust`, Control Center |
 | Device Quarantine | Device Pool lifecycle + trust downgrade |
 
-### 6.12 SRE
+### 6.15 SRE
 
 | Metric | Source |
 |--------|--------|
@@ -494,7 +600,7 @@ Extends existing `spanda deploy plan|rollout|rollback|status`:
 | Incident reports | alerting + audit |
 | Health trends | `spanda readiness trends` |
 
-### 6.13 Reporting
+### 6.16 Reporting
 
 | Report | Engines | Export formats |
 |--------|---------|----------------|
@@ -507,7 +613,46 @@ Extends existing `spanda deploy plan|rollout|rollback|status`:
 | Recovery | recovery planner, knowledge | HTML, Markdown, JSON, PDF, CSV |
 | Executive Dashboard | scorecard | HTML, PDF |
 
-### 6.14 Digital Thread
+### 6.17 Compliance
+
+Evidence packs for regulatory and internal audit workflows:
+
+| Capability | Status | Integration |
+|------------|--------|-------------|
+| Evidence packs | **Experimental** | `GET /v1/compliance/export` |
+| Approval history | **Experimental** | audit + operator workflow records |
+| Audit trails | **Stable** | `spanda-audit`, decision audit trail |
+| Digital signatures | **Experimental** | signed message + export bundles |
+| Immutable evidence | **Planned** | append-only evidence store package |
+| Policy compliance | **Experimental** | `spanda verify --policy` |
+| Safety compliance | **Experimental** | safety coverage + certify metadata |
+| Mission compliance | **Experimental** | mission contracts + assurance cases |
+
+### 6.18 APIs
+
+REST and gRPC APIs with **CLI parity** — every `spanda` command maps to an endpoint; no CLI-only capabilities.
+
+| Surface | Status |
+|---------|--------|
+| REST `/v1/*` | **Experimental** |
+| OpenAPI 3.1 | **Experimental** |
+| JSON-RPC gateway | **Experimental** (`POST /v1/rpc`) |
+| Native gRPC (tonic) | **Planned** |
+| API versioning | `/v1/` prefix; breaking changes require `/v2/` |
+
+### 6.19 Observability
+
+| Signal | Status | Integration |
+|--------|--------|-------------|
+| Metrics | **Planned** | OTLP metrics export |
+| Logs | **Experimental** | trace log + structured audit |
+| Traces | **Experimental** | OTLP export to Jaeger; correlation IDs (`X-Correlation-ID`) |
+| Events | **Experimental** | telemetry store + alerting |
+| Health / Readiness | **Experimental** | Control Center + SRE rollup |
+| Distributed tracing | **Planned** | backend package (`spanda-otel-collector`) |
+| OpenTelemetry | **Experimental** | `POST /v1/observability/otlp/export` |
+
+### 6.20 Digital Thread
 
 End-to-end traceability chain (v1 query shipped; full lifecycle graph UI planned):
 
@@ -525,7 +670,7 @@ Builds on `spanda-capability` traceability matrices + `spanda-audit` + mission c
 |---------|----------|---------|
 | **NOW** | 0–6 months (v0.5–v0.6) | Control Center, Device Pool, Provisioning, Telemetry, Alerting, RBAC, Secrets — **E1 shipped** (experimental) |
 | **NEXT** | 6–12 months (v0.6–v0.7) | SDKs, Configuration Drift (full), OTA strategies, Package Trust (UI), Observability — **E2–E3 shipped** (experimental) |
-| **LATER** | 12–18 months (v0.8–v1.0) | Compliance Packs, Executive Dashboards, Digital Thread, Predictive Analytics — **E4 shipped** (experimental; Tauri scaffold) |
+| **LATER** | 12–18 months (v0.8–v1.0) | Compliance Packs, Executive Dashboards, Digital Thread (full graph UI), **Predictive Analytics** (readiness forecasting, anomaly trends) — **E4 shipped** (experimental; Tauri scaffold) |
 
 ### Phase E1 — Control plane foundation (v0.5+, Q3–Q4 2026)
 
@@ -630,9 +775,24 @@ Spanda becomes a **complete Autonomous Systems Platform** covering:
 | Recover | Can failures self-heal safely? | Recovery + continuity + alerting |
 | Govern | Who can do what? | RBAC + secrets + audit |
 | Audit | Can I prove compliance? | Compliance + reporting + digital thread |
-| Improve | Can I learn from operations? | Trends + forecasting + scorecards |
+| Improve | Can I learn from operations? | Trends + forecasting + scorecards + predictive analytics |
 
 **Without losing:** safety-first language, lean-core architecture, and package extensibility.
+
+### Lifecycle coverage map
+
+| Phase | Enterprise pillars | Existing engines |
+|-------|-------------------|------------------|
+| Build | SDKs, Package Trust, Digital Thread | Language, packages, verify |
+| Verify | Provisioning gates, Drift, Compliance | Safety, readiness, assurance, tamper |
+| Simulate | Control Center Simulation module | Sim, replay, twins |
+| Deploy | Provisioning, OTA, Config Mgmt, Secrets | OTA CLI, deployment gates, cascading config |
+| Operate | Control Center, Operator Workflows, RBAC | Fleet, continuity, health |
+| Observe | Telemetry, Observability, SRE, Alerting | Telemetry store, runtime faults |
+| Recover | Operator Workflows, Alerting | Recovery planner, continuity |
+| Govern | RBAC, Secrets, Administration | Security, policy engine |
+| Audit | Reporting, Compliance, Audit module | Audit, decision trail, explain |
+| Continuously Improve | SRE, Reporting, Predictive Analytics | Readiness trends, scorecards, anomaly |
 
 ---
 

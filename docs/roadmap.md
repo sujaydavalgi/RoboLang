@@ -10,6 +10,47 @@ Platform overview: [platform-overview.md](./platform-overview.md) · Feature tru
 
 ---
 
+## Complete Autonomous Systems Platform
+
+Spanda is a **complete Autonomous Systems Platform** with a safety-first language at its core. Existing pillars (unchanged — see sections below) already cover:
+
+| Pillar | Role |
+|--------|------|
+| Language | Safety-typed `.sd` source, robot primitives, units |
+| Runtime | Interpreter, scheduler, HAL, provider dispatch |
+| Compiler | Parse, typecheck, optional LLVM codegen |
+| Package Ecosystem | Registry, install, publish, provider packages |
+| Provider Registry | Trait dispatch, official adapters |
+| Hardware Verification | `spanda verify`, deploy profiles |
+| Capability Verification | Traceability matrices, minimum-hardware |
+| Safety Validation | `ActionProposal` → `SafeAction`, zones, kill switch |
+| Readiness | Operational go/no-go scoring |
+| Assurance | Knowledge models, anomaly, prognostics |
+| Diagnosis | Root-cause analysis, tamper diagnosis |
+| Recovery | Self-healing planner, fleet mesh relay |
+| Trust | Composite program trust, secure-boot attestation |
+| Mission Continuity | Takeover, delegation, checkpoints |
+| Delegation / Takeover | Continuity framework, succession |
+| Mission Contracts | Static contract verification |
+| Explainability | `spanda explain`, decision traces |
+| Simulation | `spanda sim`, twins, fault injection |
+| Replay | Mission trace record and playback |
+| Health | `health_check`, fleet policies |
+| Digital Twin | Mirror fields, replay buffer |
+| Device Tree | Logical ↔ physical mapping |
+| Cascading Configuration | `spanda.toml` layers, `ConfigResolver` |
+| Security | Capabilities, signed messages, RBAC hooks |
+| Encryption | AES-GCM wire frames, TLS sessions |
+| Tamper Detection | Verify-time and runtime tamper checks |
+
+**Enterprise operations** (20 pillars below) closes the gap for production deployments in enterprise, industrial, robotics, medical, warehouse, agricultural, research, and defense — without redesigning the architecture above. Every enterprise pillar **composes** Readiness, Assurance, Diagnosis, Recovery, Trust, Health, Device Registry, Configuration, Traceability, Audit, Security, and Packages.
+
+**Success criteria:** Spanda must cover **Build · Verify · Simulate · Deploy · Operate · Observe · Recover · Govern · Audit · Continuously Improve** while preserving lean-core identity (contracts in workspace crates; vendor SDKs and heavy UI in optional packages).
+
+Full enterprise analysis: [enterprise-operations-roadmap.md](./enterprise-operations-roadmap.md)
+
+---
+
 ## Platform areas at a glance
 
 | Area | Current focus (v0.4) | Next (v0.5+) |
@@ -150,6 +191,63 @@ Phases E1–E4 are **shipped at experimental tier** (CI smoke + docs). The table
 **UI stack:** React + TypeScript (`ControlCenterPanel` in `@spanda/web`, desktop shell `@spanda/control-center-desktop`); Rust backend (`spanda-api`); Tauri desktop scaffold (experimental).
 
 **Lean-core:** Contracts in `spanda-api`, `spanda-config`, `spanda-security`, `spanda-ops`; vendor SDKs and alert channels in optional packages.
+
+### Enterprise integration spine
+
+Every enterprise pillar routes through the same platform spine — no duplicate engines:
+
+```mermaid
+flowchart TB
+  subgraph spine ["Platform spine (existing)"]
+    RDY["Readiness"]
+    ASR["Assurance"]
+    DIAG["Diagnosis"]
+    REC["Recovery"]
+    TRST["Trust"]
+    HLTH["Health"]
+    DEV["Device Registry"]
+    CFG["Configuration"]
+    TRACE["Traceability"]
+    AUD["Audit"]
+    SEC["Security"]
+    PKG["Packages"]
+  end
+
+  subgraph enterprise ["Enterprise operations (20 pillars)"]
+    CC["Control Center"]
+    DP["Device Pool"]
+    DISC["Discovery"]
+    PROV["Provisioning"]
+    CFM["Config Mgmt"]
+    RBAC["RBAC"]
+    SECM["Secrets"]
+    TEL["Telemetry"]
+    ALT["Alerting"]
+    DRFT["Drift"]
+    OTA["OTA & Rollback"]
+    PTR["Package Trust"]
+    SDK["SDKs"]
+    OPS["Operator Workflows"]
+    SRE["SRE"]
+    RPT["Reporting"]
+    CMP["Compliance"]
+    API["APIs"]
+    OBS["Observability"]
+    DT["Digital Thread"]
+  end
+
+  enterprise --> spine
+```
+
+| Deliverable | Document section |
+|-------------|------------------|
+| Platform pillar classification | [enterprise-operations-roadmap.md §1](./enterprise-operations-roadmap.md#1-platform-pillar-classification) |
+| Core vs package ownership | [§2](./enterprise-operations-roadmap.md#2-core-vs-package-ownership) |
+| UI architecture (Control Center) | [§3](./enterprise-operations-roadmap.md#3-ui-architecture-control-center) |
+| Backend API architecture | [§4](./enterprise-operations-roadmap.md#4-backend-api-architecture) |
+| Integration map | [§5](./enterprise-operations-roadmap.md#5-integration-map) |
+| Phased implementation (E1–E4) | [§7](./enterprise-operations-roadmap.md#7-phased-implementation-plan) |
+| Risks and mitigation | [§8](./enterprise-operations-roadmap.md#8-risks-and-mitigation) |
 
 ---
 

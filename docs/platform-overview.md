@@ -45,7 +45,8 @@ Spanda Platform
 ├── Spanda Mission Assurance
 ├── Spanda Fleet
 ├── Spanda Registry
-└── Spanda Providers
+├── Spanda Providers
+└── Enterprise Operations (Control Center, Device Pool, APIs, …)
 ```
 
 ### Spanda Language (.sd)
@@ -154,6 +155,16 @@ Extensibility through official and community packages.
 - Lean core: transport and domain logic live in packages, not the language spec.
 - Reference: [how-providers-work.md](./how-providers-work.md), [official-packages.md](./official-packages.md), [provider-interfaces.md](./provider-interfaces.md).
 
+### Enterprise Operations (Control Center)
+
+Production operations layer for fleet visibility, provisioning, governance, and integration — composes existing engines without duplicating them.
+
+- **Control Center:** `spanda control-center serve` — React/TypeScript UI (`ControlCenterPanel`), Rust `spanda-api` backend, Tauri desktop scaffold.
+- **Device Pool & Provisioning:** Central inventory, lifecycle states, discover → verify → assign → ready workflow.
+- **Governance:** RBAC, secret management, alerting, compliance exports, digital thread query.
+- **Integration:** REST v1, Python SDK, WebSocket telemetry, OTLP observability.
+- Reference: [enterprise-operations-roadmap.md](./enterprise-operations-roadmap.md), [control-center.md](./control-center.md).
+
 ---
 
 ## Typical workflow
@@ -173,6 +184,7 @@ Write (.sd)  →  check  →  verify  →  sim  →  deploy  →  operate
 4. **Assure** — `spanda assure` / `anomaly scan` / `state estimate` for mission assurance reports (optional `spanda demo assurance`).
 5. **Deploy** — `deploy Robot to Profile`; optional native codegen (experimental) or interpreter on edge.
 6. **Operate** — Health policies, readiness scoring, fleet coordination, mission continuity (takeover/delegation/succession), self-healing recovery, and mission replay for incidents.
+7. **Govern** — Control Center for fleet visibility; RBAC, secrets, alerting, compliance exports (experimental).
 
 Flagship walkthrough: [killer-demo.md](./killer-demo.md) · Platform demo: [examples/showcase/autonomous_rover/README.md](../examples/showcase/autonomous_rover/README.md) · Mission assurance: [examples/showcase/assurance/README.md](../examples/showcase/assurance/README.md) · Mission continuity: [examples/showcase/continuity/README.md](../examples/showcase/continuity/README.md).
 
@@ -194,6 +206,8 @@ See [product-strategy.md](./product-strategy.md) for competitive positioning and
 | [vision.md](./vision.md) | Long-term vision and philosophy |
 | [product-strategy.md](./product-strategy.md) | Priorities, pillars, release scope |
 | [roadmap.md](./roadmap.md) | Roadmap by platform area |
+| [enterprise-operations-roadmap.md](./enterprise-operations-roadmap.md) | Control Center, Device Pool, provisioning, APIs (20 pillars) |
+| [control-center.md](./control-center.md) | `spanda control-center serve`, REST v1, desktop scaffold |
 | [mission-assurance.md](./mission-assurance.md) | Mission assurance CLI, packages, and examples |
 | [mission-continuity.md](./mission-continuity.md) | Mission continuity, takeover, delegation, succession |
 | [continuity-policies.md](./continuity-policies.md) | `continuity_policy` syntax and validation |
