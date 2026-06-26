@@ -103,6 +103,15 @@ async fn grpc_live_control_center_endpoints() {
         .into_inner();
     assert!(thread.json.contains("digital_thread"));
 
+    let discovery = client
+        .discover_devices(QueryRequest {
+            query: "transport=mdns".into(),
+        })
+        .await
+        .expect("discover devices")
+        .into_inner();
+    assert!(discovery.json.contains("installed_packages"));
+
     if let Ok(baseline_id) = std::env::var("SPANDA_GRPC_BASELINE_ID") {
         let drift = client
             .detect_drift(DriftRequest { baseline_id })

@@ -420,6 +420,7 @@ fn discovery_run(query: &str) -> HttpResponse {
         Some(discovery) => json_ok(&serde_json::json!({
             "version": API_VERSION,
             "discovery": discovery,
+            "installed_packages": spanda_config::list_installed_discovery_packages(),
         })),
         None => bad_request("discovery failed"),
     }
@@ -487,6 +488,7 @@ fn discovery_post(
         "version": API_VERSION,
         "results": results,
         "registered": registered,
+        "installed_packages": spanda_config::list_installed_discovery_packages(),
     }))
 }
 
@@ -914,6 +916,57 @@ pub fn ota_status_json() -> String {
 /// JSON body for gRPC `GetOtlpMetrics` (parity with `GET /v1/observability/otlp/metrics`).
 pub fn otlp_metrics_json(state: &ControlCenterState) -> String {
     crate::observability::otlp_metrics_preview(state).body
+}
+
+/// JSON body for gRPC `DiscoverDevices` (parity with `GET /v1/discovery`).
+pub fn discovery_run_json(query: &str) -> String {
+    discovery_run(query).body
+}
+
+/// JSON body for gRPC `RunDiscovery` (parity with `POST /v1/devices/discover`).
+pub fn discovery_post_json(
+    state: &mut ControlCenterState,
+    body: &str,
+    ctx: Option<&RbacContext>,
+) -> String {
+    discovery_post(state, body, ctx).body
+}
+
+/// JSON body for gRPC `ProvisionDevice` (parity with `POST /v1/provision`).
+pub fn provision_run_json(
+    state: &mut ControlCenterState,
+    body: &str,
+    ctx: Option<&RbacContext>,
+) -> String {
+    provision_run(state, body, ctx).body
+}
+
+/// JSON body for gRPC `PlanOta` (parity with `POST /v1/ota/plan`).
+pub fn ota_plan_json(body: &str, ctx: Option<&RbacContext>) -> String {
+    e3::ota_plan(body, ctx).body
+}
+
+/// JSON body for gRPC `OperatorQuarantine` (parity with `POST /v1/operator/quarantine`).
+pub fn operator_quarantine_json(
+    state: &mut ControlCenterState,
+    body: &str,
+    ctx: Option<&RbacContext>,
+) -> String {
+    e3::operator_quarantine(state, body, ctx).body
+}
+
+/// JSON body for gRPC `OperatorMissionApprove` (parity with `POST /v1/operator/mission/approve`).
+pub fn operator_mission_approve_json(body: &str, ctx: Option<&RbacContext>) -> String {
+    e3::operator_mission_approve(body, ctx).body
+}
+
+/// JSON body for gRPC `ExportCompliance` (parity with `GET /v1/compliance/export`).
+pub fn compliance_export_json(
+    state: &ControlCenterState,
+    query: &str,
+    ctx: Option<&RbacContext>,
+) -> String {
+    e4::compliance_export(state, query, None, ctx).body
 }
 
 #[cfg(test)]

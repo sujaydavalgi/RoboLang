@@ -27,6 +27,10 @@ message QueryRequest {
   string query = 1;
 }
 
+message JsonBodyRequest {
+  string body_json = 1;
+}
+
 service ControlCenter {
   rpc Health(Empty) returns (HealthResponse);
   rpc GetDashboard(Empty) returns (JsonResponse);
@@ -43,5 +47,12 @@ service ControlCenter {
   rpc QueryDigitalThread(QueryRequest) returns (JsonResponse);
   rpc GetOtaStatus(Empty) returns (JsonResponse);
   rpc GetOtlpMetrics(Empty) returns (JsonResponse);
+  rpc DiscoverDevices(QueryRequest) returns (JsonResponse);
+  rpc RunDiscovery(JsonBodyRequest) returns (JsonResponse);
+  rpc ProvisionDevice(JsonBodyRequest) returns (JsonResponse);
+  rpc PlanOta(JsonBodyRequest) returns (JsonResponse);
+  rpc OperatorQuarantine(JsonBodyRequest) returns (JsonResponse);
+  rpc OperatorMissionApprove(JsonBodyRequest) returns (JsonResponse);
+  rpc ExportCompliance(QueryRequest) returns (JsonResponse);
   rpc DetectDrift(DriftRequest) returns (JsonResponse);
 }

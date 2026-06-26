@@ -1,6 +1,6 @@
 //! gRPC server smoke tests for Control Center.
 use spanda_api::grpc::spanda_v1::control_center_client::ControlCenterClient;
-use spanda_api::grpc::spanda_v1::{Empty, ReadinessRequest, TrustPackageRequest};
+use spanda_api::grpc::spanda_v1::{Empty, QueryRequest, ReadinessRequest, TrustPackageRequest};
 use spanda_api::{run_control_center_server, ControlCenterOptions};
 use std::net::TcpListener;
 use std::thread;
@@ -146,6 +146,15 @@ async fn grpc_expanded_endpoints_return_json() {
         .expect("otlp metrics")
         .into_inner();
     assert!(metrics.json.contains("resourceMetrics"));
+
+    let discovery = client
+        .discover_devices(QueryRequest {
+            query: "transport=mdns".into(),
+        })
+        .await
+        .expect("discover devices")
+        .into_inner();
+    assert!(discovery.json.contains("discovery"));
 }
 
 async fn connect(bind: &str) -> ControlCenterClient<Channel> {

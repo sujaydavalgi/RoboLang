@@ -9,8 +9,8 @@ pub mod spanda_v1 {
 
 use spanda_v1::control_center_server::{ControlCenter, ControlCenterServer};
 use spanda_v1::{
-    DriftRequest, Empty, HealthResponse, JsonResponse, QueryRequest, ReadinessRequest,
-    TrustPackageRequest,
+    DriftRequest, Empty, HealthResponse, JsonBodyRequest, JsonResponse, QueryRequest,
+    ReadinessRequest, TrustPackageRequest,
 };
 
 struct GrpcControlCenter {
@@ -24,6 +24,18 @@ impl GrpcControlCenter {
     {
         let guard = self.state.lock().map_err(|e| Status::internal(e.to_string()))?;
         let json = f(&guard);
+        Ok(JsonResponse { json })
+    }
+
+    fn with_state_mut<F>(&self, f: F) -> Result<JsonResponse, Status>
+    where
+        F: FnOnce(&mut crate::state::ControlCenterState) -> String,
+    {
+        let mut guard = self
+            .state
+            .lock()
+            .map_err(|e| Status::internal(e.to_string()))?;
+        let json = f(&mut guard);
         Ok(JsonResponse { json })
     }
 }
@@ -164,6 +176,72 @@ impl ControlCenter for GrpcControlCenter {
         _request: Request<Empty>,
     ) -> Result<Response<JsonResponse>, Status> {
         self.with_state(|state| crate::handlers::otlp_metrics_json(state))
+            .map(Response::new)
+    }
+
+    async fn discover_devices(
+        &self,
+        request: Request<QueryRequest>,
+    ) -> Result<Response<JsonResponse>, Status> {
+        let query = request.into_inner().query;
+        Ok(Response::new(JsonResponse {
+            json: crate::handlers::discovery_run_json(&query),
+        }))
+    }
+
+    async fn run_discovery(
+        &self,
+        request: Request<JsonBodyRequest>,
+    ) -> Result<Response<JsonResponse>, Status> {
+        let body = request.into_inner().body_json;
+        self.with_state_mut(|state| crate::handlers::discovery_post_json(state, &body, None))
+            .map(Response::new)
+    }
+
+    async fn provision_device(
+        &self,
+        request: Request<JsonBodyRequest>,
+    ) -> Result<Response<JsonResponse>, Status> {
+        let body = request.into_inner().body_json;
+        self.with_state_mut(|state| crate::handlers::provision_run_json(state, &body, None))
+            .map(Response::new)
+    }
+
+    async fn plan_ota(
+        &self,
+        request: Request<JsonBodyRequest>,
+    ) -> Result<Response<JsonResponse>, Status> {
+        let body = request.into_inner().body_json;
+        Ok(Response::new(JsonResponse {
+            json: crate::handlers::ota_plan_json(&body, None),
+        }))
+    }
+
+    async fn operator_quarantine(
+        &self,
+        request: Request<JsonBodyRequest>,
+    ) -> Result<Response<JsonResponse>, Status> {
+        let body = request.into_inner().body_json;
+        self.with_state_mut(|state| crate::handlers::operator_quarantine_json(state, &body, None))
+            .map(Response::new)
+    }
+
+    async fn operator_mission_approve(
+        &self,
+        request: Request<JsonBodyRequest>,
+    ) -> Result<Response<JsonResponse>, Status> {
+        let body = request.into_inner().body_json;
+        Ok(Response::new(JsonResponse {
+            json: crate::handlers::operator_mission_approve_json(&body, None),
+        }))
+    }
+
+    async fn export_compliance(
+        &self,
+        request: Request<QueryRequest>,
+    ) -> Result<Response<JsonResponse>, Status> {
+        let query = request.into_inner().query;
+        self.with_state(|state| crate::handlers::compliance_export_json(state, &query, None))
             .map(Response::new)
     }
 
