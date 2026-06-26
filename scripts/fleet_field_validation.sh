@@ -94,4 +94,7 @@ run_spanda heal "${FLEET_RECOVERY}" >/dev/null
 echo "== recovery runtime auto-trigger tests =="
 cargo test -p spanda-interpreter recovery_auto_triggers --quiet
 
+echo "== fleet agent interpreter recovery smoke =="
+"${ROOT}/scripts/fleet_agent_recovery_smoke.sh"
+
 echo "Fleet field validation OK"
