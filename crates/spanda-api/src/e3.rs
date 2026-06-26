@@ -206,6 +206,7 @@ pub fn sre_summary(state: &ControlCenterState) -> HttpResponse {
         })
         .count();
     let traces = state.trace_log.list_owned();
+    let incidents = state.incident_store.list_owned();
     json_ok(&serde_json::json!({
         "version": "v1",
         "availability_percent": if pool.total == 0 {
@@ -218,7 +219,102 @@ pub fn sre_summary(state: &ControlCenterState) -> HttpResponse {
         "alerts_total": alerts.len(),
         "alerts_critical": critical,
         "traces_recorded": traces.len(),
-        "mttr_hint_ms": null,
+        "incidents_total": incidents.len(),
+        "incidents_open": state.incident_store.open_count(),
+        "incidents_acknowledged": state.incident_store.acknowledged_count(),
+        "mttr_hint_ms": state.incident_store.mttr_hint_ms(),
+    }))
+}
+
+pub fn sre_incidents_list(state: &ControlCenterState) -> HttpResponse {
+    json_ok(&serde_json::json!({
+        "version": "v1",
+        "incidents": state.incident_store.list_owned(),
+    }))
+}
+
+pub fn sre_incidents_create(
+    state: &mut ControlCenterState,
+    body: &str,
+    ctx: Option<&RbacContext>,
+) -> HttpResponse {
+    if !ApiKeyStore::check(ctx, RbacAction::Operate) {
+        return unauthorized();
+    }
+    let payload: serde_json::Value = match serde_json::from_str(body) {
+        Ok(value) => value,
+        Err(error) => return bad_request(&error.to_string()),
+    };
+    let Some(title) = payload.get("title").and_then(|value| value.as_str()) else {
+        return bad_request("missing title");
+    };
+    let description = payload
+        .get("description")
+        .and_then(|value| value.as_str())
+        .unwrap_or("");
+    let severity = match payload
+        .get("severity")
+        .and_then(|value| value.as_str())
+        .unwrap_or("warning")
+    {
+        "critical" => spanda_ops::IncidentSeverity::Critical,
+        "info" => spanda_ops::IncidentSeverity::Info,
+        _ => spanda_ops::IncidentSeverity::Warning,
+    };
+    let source_alert_id = payload
+        .get("source_alert_id")
+        .and_then(|value| value.as_str())
+        .map(str::to_string);
+    let incident = state.incident_store.create(
+        title.to_string(),
+        description.to_string(),
+        severity,
+        source_alert_id,
+    );
+    let _ = crate::persistence::persist_runtime_state(state);
+    json_ok(&serde_json::json!({
+        "ok": true,
+        "incident": incident,
+    }))
+}
+
+pub fn sre_incident_ack(
+    state: &mut ControlCenterState,
+    incident_id: &str,
+    body: &str,
+    ctx: Option<&RbacContext>,
+) -> HttpResponse {
+    if !ApiKeyStore::check(ctx, RbacAction::Operate) {
+        return unauthorized();
+    }
+    let assignee = serde_json::from_str::<serde_json::Value>(body)
+        .ok()
+        .and_then(|value| value.get("assignee").and_then(|v| v.as_str()).map(str::to_string));
+    let Some(incident) = state.incident_store.acknowledge(incident_id, assignee) else {
+        return bad_request("incident not found or already resolved");
+    };
+    let _ = crate::persistence::persist_runtime_state(state);
+    json_ok(&serde_json::json!({
+        "ok": true,
+        "incident": incident,
+    }))
+}
+
+pub fn sre_incident_resolve(
+    state: &mut ControlCenterState,
+    incident_id: &str,
+    ctx: Option<&RbacContext>,
+) -> HttpResponse {
+    if !ApiKeyStore::check(ctx, RbacAction::Operate) {
+        return unauthorized();
+    }
+    let Some(incident) = state.incident_store.resolve(incident_id) else {
+        return bad_request("incident not found");
+    };
+    let _ = crate::persistence::persist_runtime_state(state);
+    json_ok(&serde_json::json!({
+        "ok": true,
+        "incident": incident,
     }))
 }
 

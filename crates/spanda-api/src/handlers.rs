@@ -188,6 +188,24 @@ pub fn handle_request(
         );
         return (response, correlation_id);
     }
+    if let Some(response) = route_sre_incident(
+        state,
+        path,
+        &request.method,
+        &request.body,
+        ctx.as_ref(),
+    ) {
+        e3::record_trace(
+            state,
+            &correlation_id,
+            &request.method,
+            path,
+            response.status,
+            started_ms,
+            ctx.as_ref(),
+        );
+        return (response, correlation_id);
+    }
     let response = match (path, request.method.as_str()) {
         ("/v1/tenant", "GET") => tenant_info(state),
         ("/v1/audit/mutations", "GET") => mutation_audit_list(state, ctx.as_ref()),
@@ -546,6 +564,28 @@ fn discovery_run(query: &str) -> HttpResponse {
             "installed_packages": spanda_config::list_installed_discovery_packages(),
         })),
         None => bad_request("discovery failed"),
+    }
+}
+
+fn route_sre_incident(
+    state: &mut ControlCenterState,
+    path: &str,
+    method: &str,
+    body: &str,
+    ctx: Option<&RbacContext>,
+) -> Option<HttpResponse> {
+    if path == "/v1/sre/incidents" && method == "GET" {
+        return Some(e3::sre_incidents_list(state));
+    }
+    if path == "/v1/sre/incidents" && method == "POST" {
+        return Some(e3::sre_incidents_create(state, body, ctx));
+    }
+    let rest = path.strip_prefix("/v1/sre/incidents/")?;
+    let (incident_id, action) = rest.split_once('/').unwrap_or((rest, ""));
+    match (action, method) {
+        ("ack", "POST") => Some(e3::sre_incident_ack(state, incident_id, body, ctx)),
+        ("resolve", "POST") => Some(e3::sre_incident_resolve(state, incident_id, ctx)),
+        _ => None,
     }
 }
 
@@ -1067,6 +1107,39 @@ pub fn readiness_run_json(state: &ControlCenterState, body: &str) -> String {
 /// JSON body for gRPC `GetSreSummary` (parity with `GET /v1/sre/summary`).
 pub fn sre_summary_json(state: &ControlCenterState) -> String {
     e3::sre_summary(state).body
+}
+
+/// JSON body for gRPC `ListSreIncidents` (parity with `GET /v1/sre/incidents`).
+pub fn sre_incidents_list_json(state: &ControlCenterState) -> String {
+    e3::sre_incidents_list(state).body
+}
+
+/// JSON body for gRPC `CreateSreIncident` (parity with `POST /v1/sre/incidents`).
+pub fn sre_incidents_create_json(
+    state: &mut ControlCenterState,
+    body: &str,
+    ctx: Option<&RbacContext>,
+) -> String {
+    e3::sre_incidents_create(state, body, ctx).body
+}
+
+/// JSON body for gRPC `AckSreIncident` (parity with `POST /v1/sre/incidents/{id}/ack`).
+pub fn sre_incident_ack_json(
+    state: &mut ControlCenterState,
+    incident_id: &str,
+    body: &str,
+    ctx: Option<&RbacContext>,
+) -> String {
+    e3::sre_incident_ack(state, incident_id, body, ctx).body
+}
+
+/// JSON body for gRPC `ResolveSreIncident` (parity with `POST /v1/sre/incidents/{id}/resolve`).
+pub fn sre_incident_resolve_json(
+    state: &mut ControlCenterState,
+    incident_id: &str,
+    ctx: Option<&RbacContext>,
+) -> String {
+    e3::sre_incident_resolve(state, incident_id, ctx).body
 }
 
 /// JSON body for gRPC `GetTrustPackage` (parity with `GET /v1/trust/package`).

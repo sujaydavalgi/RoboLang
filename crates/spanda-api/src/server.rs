@@ -65,6 +65,9 @@ pub fn run_control_center_server(options: &ControlCenterOptions) -> Result<(), S
     eprintln!("  GET  /v1/audit/mutations mutation audit trail (Bearer token)");
     eprintln!("  GET  /v1/openapi.json   OpenAPI 3.1 spec");
     eprintln!("  GET  /v1/drift          operational drift (?baseline_id=)");
+    eprintln!("  GET  /v1/sre/summary    SRE availability and incident rollup");
+    eprintln!("  GET  /v1/sre/incidents  incident workflow list");
+    eprintln!("  POST /v1/sre/incidents  open incident (Bearer token)");
     eprintln!("  POST /v1/ota/plan       canary / phased / blue-green rollout");
     eprintln!("  POST /v1/ota/execute    remote fleet rollout (dry-run supported)");
     eprintln!("  POST /v1/rpc            gRPC-compatible JSON gateway");
@@ -77,7 +80,7 @@ pub fn run_control_center_server(options: &ControlCenterOptions) -> Result<(), S
     eprintln!("  POST /v1/observability/otlp/export  push traces to Jaeger");
     if let Some(grpc_bind) = &options.grpc_bind {
         crate::grpc::spawn_grpc_server(grpc_bind.clone(), Arc::clone(&state));
-        eprintln!("  gRPC tonic server on {grpc_bind} (50 RPCs — Control Center service)");
+        eprintln!("  gRPC tonic server on {grpc_bind} (55 RPCs — Control Center service)");
     }
 
     if options.once {

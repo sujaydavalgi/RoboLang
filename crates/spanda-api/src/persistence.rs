@@ -2,7 +2,7 @@
 //!
 use crate::correlation::TraceLog;
 use crate::state::ControlCenterState;
-use spanda_ops::{Alert, AlertStore};
+use spanda_ops::{Alert, AlertStore, Incident, IncidentStore};
 use std::fs;
 use std::path::{Path, PathBuf};
 
@@ -15,6 +15,12 @@ struct PersistedAlerts {
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
 struct PersistedTraces {
     records: Vec<crate::correlation::TraceRecord>,
+    max_entries: usize,
+}
+
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
+struct PersistedIncidents {
+    incidents: Vec<Incident>,
     max_entries: usize,
 }
 
@@ -33,6 +39,10 @@ fn traces_path(dir: &Path) -> PathBuf {
     dir.join("control-center-traces.json")
 }
 
+fn incidents_path(dir: &Path) -> PathBuf {
+    dir.join("control-center-incidents.json")
+}
+
 /// Load alerts and traces from disk into runtime state.
 pub fn hydrate_runtime_state(state: &mut ControlCenterState) {
     let dir = default_state_dir();
@@ -44,6 +54,12 @@ pub fn hydrate_runtime_state(state: &mut ControlCenterState) {
     if let Ok(content) = fs::read_to_string(traces_path(&dir)) {
         if let Ok(persisted) = serde_json::from_str::<PersistedTraces>(&content) {
             state.trace_log = TraceLog::from_records(persisted.max_entries, persisted.records);
+        }
+    }
+    if let Ok(content) = fs::read_to_string(incidents_path(&dir)) {
+        if let Ok(persisted) = serde_json::from_str::<PersistedIncidents>(&content) {
+            state.incident_store =
+                IncidentStore::from_records(persisted.max_entries, persisted.incidents);
         }
     }
 }
@@ -60,6 +76,10 @@ pub fn persist_runtime_state(state: &ControlCenterState) -> Result<(), String> {
         records: state.trace_log.list_owned(),
         max_entries: state.trace_log.max_entries,
     };
+    let incidents = PersistedIncidents {
+        incidents: state.incident_store.list_owned(),
+        max_entries: state.incident_store.max_entries,
+    };
     fs::write(
         alerts_path(&dir),
         serde_json::to_string_pretty(&alerts).map_err(|error| error.to_string())?,
@@ -68,6 +88,11 @@ pub fn persist_runtime_state(state: &ControlCenterState) -> Result<(), String> {
     fs::write(
         traces_path(&dir),
         serde_json::to_string_pretty(&traces).map_err(|error| error.to_string())?,
+    )
+    .map_err(|error| error.to_string())?;
+    fs::write(
+        incidents_path(&dir),
+        serde_json::to_string_pretty(&incidents).map_err(|error| error.to_string())?,
     )
     .map_err(|error| error.to_string())?;
     Ok(())

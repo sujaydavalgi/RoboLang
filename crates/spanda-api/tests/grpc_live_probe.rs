@@ -73,6 +73,13 @@ async fn grpc_live_control_center_endpoints() {
         .into_inner();
     assert!(sre.json.contains("availability_percent"));
 
+    let incidents = client
+        .list_sre_incidents(Empty {})
+        .await
+        .expect("list incidents")
+        .into_inner();
+    assert!(incidents.json.contains("incidents"));
+
     let trust = client
         .get_trust_package(TrustPackageRequest {
             package_name: "spanda-mqtt".into(),

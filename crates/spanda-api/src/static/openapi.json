@@ -248,8 +248,19 @@
     },
     "/v1/sre/summary": {
       "get": {
-        "summary": "SRE availability and alert rollup",
+        "summary": "SRE availability and incident rollup",
         "responses": { "200": { "description": "SRE metrics" } }
+      }
+    },
+    "/v1/sre/incidents": {
+      "get": {
+        "summary": "List operational incidents",
+        "responses": { "200": { "description": "Incident list" } }
+      },
+      "post": {
+        "summary": "Open an incident",
+        "security": [{ "bearerAuth": [] }],
+        "responses": { "200": { "description": "Incident created" } }
       }
     },
     "/v1/observability/traces": {

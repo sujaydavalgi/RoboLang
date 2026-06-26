@@ -10,8 +10,9 @@ pub mod spanda_v1 {
 
 use spanda_v1::control_center_server::{ControlCenter, ControlCenterServer};
 use spanda_v1::{
-    DeviceBodyRequest, DeviceIdRequest, DriftRequest, Empty, HealthResponse, JsonBodyRequest,
-    JsonResponse, QueryRequest, ReadinessRequest, TrustPackageRequest,
+    DeviceBodyRequest, DeviceIdRequest, DriftRequest, Empty, HealthResponse, IncidentBodyRequest,
+    IncidentIdRequest, JsonBodyRequest, JsonResponse, QueryRequest, ReadinessRequest,
+    TrustPackageRequest,
 };
 
 struct GrpcControlCenter {
@@ -288,6 +289,74 @@ impl ControlCenter for GrpcControlCenter {
         self.guard_request(&request)?;
         self.with_state(|state| crate::handlers::sre_summary_json(state))
             .map(Response::new)
+    }
+
+    async fn list_sre_incidents(
+        &self,
+        request: Request<Empty>,
+    ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
+        self.with_state(|state| crate::handlers::sre_incidents_list_json(state))
+            .map(Response::new)
+    }
+
+    async fn create_sre_incident(
+        &self,
+        request: Request<JsonBodyRequest>,
+    ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
+        let ctx = self.rbac_from_request(&request);
+        if !spanda_security::ApiKeyStore::check(ctx.as_ref(), spanda_security::RbacAction::Operate)
+        {
+            return Err(Status::permission_denied("bearer token required"));
+        }
+        let body = request.into_inner().body_json;
+        let response = self.with_state_mut(|state| {
+            crate::handlers::sre_incidents_create_json(state, &body, ctx.as_ref())
+        })?;
+        self.audit_grpc_response("CreateSreIncident", &response.json, ctx.as_ref());
+        Ok(Response::new(response))
+    }
+
+    async fn ack_sre_incident(
+        &self,
+        request: Request<IncidentBodyRequest>,
+    ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
+        let ctx = self.rbac_from_request(&request);
+        if !spanda_security::ApiKeyStore::check(ctx.as_ref(), spanda_security::RbacAction::Operate)
+        {
+            return Err(Status::permission_denied("bearer token required"));
+        }
+        let inner = request.into_inner();
+        let response = self.with_state_mut(|state| {
+            crate::handlers::sre_incident_ack_json(
+                state,
+                &inner.incident_id,
+                &inner.body_json,
+                ctx.as_ref(),
+            )
+        })?;
+        self.audit_grpc_response("AckSreIncident", &response.json, ctx.as_ref());
+        Ok(Response::new(response))
+    }
+
+    async fn resolve_sre_incident(
+        &self,
+        request: Request<IncidentIdRequest>,
+    ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
+        let ctx = self.rbac_from_request(&request);
+        if !spanda_security::ApiKeyStore::check(ctx.as_ref(), spanda_security::RbacAction::Operate)
+        {
+            return Err(Status::permission_denied("bearer token required"));
+        }
+        let incident_id = request.into_inner().incident_id;
+        let response = self.with_state_mut(|state| {
+            crate::handlers::sre_incident_resolve_json(state, &incident_id, ctx.as_ref())
+        })?;
+        self.audit_grpc_response("ResolveSreIncident", &response.json, ctx.as_ref());
+        Ok(Response::new(response))
     }
 
     async fn get_trust_package(

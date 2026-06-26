@@ -40,6 +40,15 @@ message DeviceBodyRequest {
   string body_json = 2;
 }
 
+message IncidentIdRequest {
+  string incident_id = 1;
+}
+
+message IncidentBodyRequest {
+  string incident_id = 1;
+  string body_json = 2;
+}
+
 service ControlCenter {
   rpc Health(Empty) returns (HealthResponse);
   rpc GetTenant(Empty) returns (JsonResponse);
@@ -55,6 +64,10 @@ service ControlCenter {
   rpc ListFleetAgents(Empty) returns (JsonResponse);
   rpc EvaluateReadiness(ReadinessRequest) returns (JsonResponse);
   rpc GetSreSummary(Empty) returns (JsonResponse);
+  rpc ListSreIncidents(Empty) returns (JsonResponse);
+  rpc CreateSreIncident(JsonBodyRequest) returns (JsonResponse);
+  rpc AckSreIncident(IncidentBodyRequest) returns (JsonResponse);
+  rpc ResolveSreIncident(IncidentIdRequest) returns (JsonResponse);
   rpc GetTrustPackage(TrustPackageRequest) returns (JsonResponse);
   rpc GetOpenApi(Empty) returns (JsonResponse);
   rpc GetHealthSummary(Empty) returns (JsonResponse);
