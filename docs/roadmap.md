@@ -174,7 +174,7 @@ Phases E1–E4 are **shipped at experimental tier** (CI smoke + docs). The table
 | Area | Experimental today | Stable requires |
 |------|-------------------|-----------------|
 | Discovery | Host-backed core probes + registry package wrap | Additional registry transports (BLE, USB, …); vendor hardening |
-| Device Pool | Full lifecycle + trust + failover | Multi-tenant isolation, audit on every mutation, HA persistence |
+| Device Pool | Full lifecycle + trust + failover | Multi-tenant isolation; HA persistence beyond mutation JSONL |
 | APIs | REST v1 + OpenAPI | **Experimental** — rate limits + versioning policy shipped; HA persistence |
 | Observability | Trace log + OTLP push | OTLP metrics preview/export on Control Center; distributed trace backend integration |
 | Desktop | Tauri dev scaffold | Signed installers (`TAURI_BUILD=1` CI on macOS), auto-update |

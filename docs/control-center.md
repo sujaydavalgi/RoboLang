@@ -106,7 +106,7 @@ grpcurl -plaintext -d '{}' 127.0.0.1:50051 spanda.v1.ControlCenter/Health
 | `/v1/operator/quarantine` | POST | Bearer | Quarantine a device |
 | `/v1/operator/mission/approve` | POST | Bearer | Approve or reject a mission |
 | `/v1/rpc` | POST | — | gRPC-compatible JSON gateway |
-| **gRPC (tonic)** | — | — | Native `ControlCenter` service on `--grpc-bind` (47 RPCs; full REST parity except JSON-RPC gateway) |
+| **gRPC (tonic)** | — | — | Native `ControlCenter` service on `--grpc-bind` (48 RPCs; full REST parity except JSON-RPC gateway) |
 | `/v1/compliance/export` | GET/POST | Bearer | Accreditation bundle (`?profile=defense`) |
 | `/v1/digital-thread/query` | GET | — | Trace chain (`?capability=`, `?device_id=`) |
 | `/v1/executive/scorecard` | GET | — | Mission scorecard rollup |
@@ -118,6 +118,8 @@ Authenticate mutations with `Authorization: Bearer <SPANDA_API_KEY>`.
 **API versioning:** `GET /v1/version` documents supported versions. Clients may send `X-Spanda-Api-Version: v1`; unsupported values return `400`. Breaking changes ship under a new `/v2/` path prefix.
 
 **Rate limiting:** Set `SPANDA_API_RATE_LIMIT_PER_MINUTE` (per API key, or `anonymous` when unauthenticated). Excess requests return HTTP `429` with `Retry-After` (REST) or gRPC `RESOURCE_EXHAUSTED`.
+
+**Mutation audit:** Successful `POST`/`PATCH`/`PUT`/`DELETE` requests append hash-chained audit records (`GET /v1/audit/mutations`, Bearer required). Persisted to `.spanda/control-center-mutations.jsonl` (override with `SPANDA_MUTATION_AUDIT_PATH`).
 
 Pass optional `X-Correlation-ID` on any request; the server echoes it on the response and records traces for `/v1/observability/traces`.
 

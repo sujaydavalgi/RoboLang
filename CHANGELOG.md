@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **API rate limiting:** `spanda-security::RateLimiter` with `SPANDA_API_RATE_LIMIT_PER_MINUTE`; 429 + `Retry-After` on REST; `RESOURCE_EXHAUSTED` on gRPC.
+- **Mutation audit trail:** append-only audit on successful REST/gRPC mutations via `spanda-audit`; `GET /v1/audit/mutations`; JSONL persist at `.spanda/control-center-mutations.jsonl` (`SPANDA_MUTATION_AUDIT_PATH`); gRPC `ListAuditMutations`.
 - **API versioning policy:** `GET /v1/version`; `X-Spanda-Api-Version: v1` header enforcement on REST and gRPC.
 - **Live OTA fleet execute:** `SPANDA_DEPLOY_AGENTS` registry path for `POST /v1/ota/execute`; `scripts/ota_fleet_execute_smoke.sh`.
 - **gRPC full REST parity (read paths):** `GetDeviceTree`, `GetDeviceReports`, `GetFailoverChains`, `ListSecrets`, `GetRbacMatrix`, `GetAnalyticsReadiness`, `ExportReports`, `GetObservabilityTraces`, `GetOtlpTraces`, `ExportOtlpTraces`, `ExportOtlpMetrics` RPCs (39 total).
