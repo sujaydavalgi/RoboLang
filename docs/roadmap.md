@@ -174,10 +174,10 @@ Phases E1–E4 are **shipped at experimental tier** (CI smoke + docs). The table
 | Area | Experimental today | Stable requires |
 |------|-------------------|-----------------|
 | Discovery | Host-backed core probes + registry package wrap | Additional registry transports (BLE, USB, …); vendor hardening |
-| Device Pool | Full lifecycle + trust + failover | Multi-tenant isolation; HA persistence beyond mutation JSONL |
-| APIs | REST v1 + OpenAPI | **Experimental** — rate limits + versioning policy shipped; HA persistence |
-| Observability | Trace log + OTLP push | OTLP metrics preview/export on Control Center; distributed trace backend integration |
-| Desktop | Tauri dev scaffold | Signed installers (`TAURI_BUILD=1` CI on macOS), auto-update |
+| Device Pool | Full lifecycle + trust + failover | **Experimental** — multi-tenant isolation (`SPANDA_TENANT_ID`, API key `tenant_id`); HA persistence for alerts/traces |
+| APIs | REST v1 + OpenAPI | **Experimental** — rate limits + versioning + tenant gate; HA persistence (`SPANDA_CONTROL_CENTER_STATE_DIR`) |
+| Observability | Trace log + OTLP push | **Experimental** — `spanda-otel-collector` package + `SPANDA_OTEL_COLLECTOR_URL`; `GET /v1/observability/backend` |
+| Desktop | Tauri dev scaffold | Signed installers (`TAURI_BUILD=1` CI on macOS); **Experimental** — `tauri-plugin-updater` scaffold (`active: false` until pubkey) |
 | Drift / OTA | Full operational drift API (7 dimensions); plan dry-run | Live fleet rollout via `POST /v1/ota/execute` + deploy agents |
 
 **Exit criteria (E1):** `spanda control-center serve` + `scripts/enterprise_ops_smoke.sh` — **shipped**

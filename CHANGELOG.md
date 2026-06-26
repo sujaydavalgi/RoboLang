@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Multi-tenant isolation:** `SPANDA_TENANT_ID` scopes Control Center instances; API keys carry `tenant_id` (`SPANDA_API_KEYS_FILE` JSON); `GET /v1/tenant`; gRPC `GetTenant`; `403` on tenant mismatch for authenticated requests.
+- **HA persistence:** alerts and trace log hydrate/persist under `.spanda/` (`SPANDA_CONTROL_CENTER_STATE_DIR`); survives restarts for operator dashboards.
+- **Distributed trace backend:** registry package `spanda-otel-collector`; `SPANDA_OTEL_COLLECTOR_URL`; `GET /v1/observability/backend`; gRPC `GetObservabilityBackend`.
+- **Tauri auto-update scaffold:** `tauri-plugin-updater` in `@spanda/control-center-desktop` (inactive until signing pubkey is configured).
 - **Mutation audit trail:** append-only audit on successful REST/gRPC mutations via `spanda-audit`; `GET /v1/audit/mutations`; JSONL persist at `.spanda/control-center-mutations.jsonl` (`SPANDA_MUTATION_AUDIT_PATH`); gRPC `ListAuditMutations`.
 - **API versioning policy:** `GET /v1/version`; `X-Spanda-Api-Version: v1` header enforcement on REST and gRPC.
 - **Live OTA fleet execute:** `SPANDA_DEPLOY_AGENTS` registry path for `POST /v1/ota/execute`; `scripts/ota_fleet_execute_smoke.sh`.

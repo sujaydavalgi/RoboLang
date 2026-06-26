@@ -31,6 +31,7 @@ Open `http://127.0.0.1:8080/` for the Control Center UI, or use the **Control Ce
 | RPC | Description |
 |-----|-------------|
 | `Health` | Liveness probe |
+| `GetTenant` | Instance tenant scope (`GET /v1/tenant` parity) |
 | `GetDashboard` | Dashboard JSON (device pool, fleet agents, alerts) |
 | `ListDevices` | Device pool entries (`GET /v1/devices` parity) |
 | `ListFleetAgents` | Registered fleet agents (`GET /v1/fleet/agents` parity) |
@@ -39,6 +40,7 @@ Open `http://127.0.0.1:8080/` for the Control Center UI, or use the **Control Ce
 | `GetTrustPackage` | Package trust score (`GET /v1/trust/package` parity) |
 | `GetOpenApi` | OpenAPI 3.1 spec JSON (`GET /v1/openapi.json` parity) |
 | `GetOtlpMetrics` | OTLP metrics preview (`GET /v1/observability/otlp/metrics`) |
+| `GetObservabilityBackend` | Collector URL summary (`GET /v1/observability/backend`) |
 | `GetHealthSummary` | Health rollup (`GET /v1/health/summary`) |
 | `GetAssuranceSummary` | Assurance policy summary |
 | `GetDiagnosisSummary` | Diagnosis policy summary |
@@ -68,6 +70,7 @@ grpcurl -plaintext -d '{}' 127.0.0.1:50051 spanda.v1.ControlCenter/Health
 | Endpoint | Method | Auth | Description |
 |----------|--------|------|-------------|
 | `/v1/health` | GET | — | Liveness |
+| `/v1/tenant` | GET | — | Active tenant (`SPANDA_TENANT_ID`) |
 | `/v1/dashboard` | GET | — | Device pool summary, fleet agent count, alerts |
 | `/v1/devices` | GET | — | Device pool entries |
 | `/v1/devices/{id}` | GET | — | Single device record |
@@ -101,12 +104,14 @@ grpcurl -plaintext -d '{}' 127.0.0.1:50051 spanda.v1.ControlCenter/Health
 | `/v1/sre/summary` | GET | — | Availability and alert rollup |
 | `/v1/observability/traces` | GET | — | Recent API trace records |
 | `/v1/observability/otlp/traces` | GET | — | OTLP/JSON trace preview for Jaeger |
+| `/v1/observability/otlp/metrics` | GET | — | OTLP/JSON metrics preview |
+| `/v1/observability/backend` | GET | — | Configured OTLP collector endpoints |
 | `/v1/observability/otlp/export` | POST | Bearer | Push API traces to OTLP collector |
 | `/v1/stream/telemetry` | WebSocket | — | Live telemetry, traces, and alerts |
 | `/v1/operator/quarantine` | POST | Bearer | Quarantine a device |
 | `/v1/operator/mission/approve` | POST | Bearer | Approve or reject a mission |
 | `/v1/rpc` | POST | — | gRPC-compatible JSON gateway |
-| **gRPC (tonic)** | — | — | Native `ControlCenter` service on `--grpc-bind` (48 RPCs; full REST parity except JSON-RPC gateway) |
+| **gRPC (tonic)** | — | — | Native `ControlCenter` service on `--grpc-bind` (50 RPCs; full REST parity except JSON-RPC gateway) |
 | `/v1/compliance/export` | GET/POST | Bearer | Accreditation bundle (`?profile=defense`) |
 | `/v1/digital-thread/query` | GET | — | Trace chain (`?capability=`, `?device_id=`) |
 | `/v1/executive/scorecard` | GET | — | Mission scorecard rollup |
@@ -114,6 +119,10 @@ grpcurl -plaintext -d '{}' 127.0.0.1:50051 spanda.v1.ControlCenter/Health
 | `/v1/reports/export` | GET | Bearer | Combined report (`format=markdown`, `json`, or `pdf`) |
 
 Authenticate mutations with `Authorization: Bearer <SPANDA_API_KEY>`.
+
+**Multi-tenant isolation:** Set `SPANDA_TENANT_ID` on the Control Center instance (default `default`). API keys may include a `tenant_id` field in `SPANDA_API_KEYS_FILE` JSON; authenticated requests with a mismatched tenant return `403`.
+
+**HA persistence:** Alert history and API trace log hydrate from `.spanda/control-center-alerts.json` and `.spanda/control-center-traces.json` on startup (override directory with `SPANDA_CONTROL_CENTER_STATE_DIR`).
 
 **API versioning:** `GET /v1/version` documents supported versions. Clients may send `X-Spanda-Api-Version: v1`; unsupported values return `400`. Breaking changes ship under a new `/v2/` path prefix.
 

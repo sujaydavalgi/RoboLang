@@ -204,8 +204,8 @@ See [tier-3-experimental.md](./tier-3-experimental.md) and [tier-3-golden-paths.
 
 | Pillar | Status | Key surfaces |
 |--------|--------|--------------|
-| **Control Center** | **Experimental** | `spanda control-center serve`, `ControlCenterPanel`, Tauri desktop scaffold |
-| **Device Pool** | **Experimental** | Lifecycle states, assign/trust/quarantine/retire, failover chains |
+| **Control Center** | **Experimental** | `spanda control-center serve`, `ControlCenterPanel`, Tauri desktop scaffold + updater plugin (inactive until signing) |
+| **Device Pool** | **Experimental** | Lifecycle states, assign/trust/quarantine/retire, failover chains; multi-tenant API key scoping |
 | **Device Discovery** | **Experimental** | Subnet, mDNS, BLE, USB, CAN, MQTT, ROS2 host probes; pool ingest |
 | **Provisioning** | **Experimental** | `POST /v1/provision`, discover → ready workflow |
 | **Configuration Management** | **Experimental** | Snapshots, diff, resolve; approval **Planned** |
@@ -222,7 +222,7 @@ See [tier-3-experimental.md](./tier-3-experimental.md) and [tier-3-golden-paths.
 | **Reporting** | **Experimental** | HTML, Markdown, JSON, PDF, CSV exports |
 | **Compliance** | **Experimental** | Evidence packs, `GET /v1/compliance/export` |
 | **APIs** | **Experimental** | REST v1 + OpenAPI; JSON-RPC gateway; native gRPC (tonic) **Experimental** — 47 RPCs; rate limits (`SPANDA_API_RATE_LIMIT_PER_MINUTE`); versioning policy (`GET /v1/version`, `X-Spanda-Api-Version`) |
-| **Observability** | **Experimental** | OTLP trace export, correlation IDs, WebSocket telemetry; Control Center OTLP metrics preview/export |
+| **Observability** | **Experimental** | OTLP trace/metrics export, correlation IDs, WebSocket telemetry; `spanda-otel-collector` + `SPANDA_OTEL_COLLECTOR_URL`; HA trace log persistence |
 | **Digital Thread** | **Experimental** | `GET /v1/digital-thread/query`; full graph UI **Planned** |
 
 See [enterprise-operations-roadmap.md](./enterprise-operations-roadmap.md) · [control-center.md](./control-center.md) · [device-pool.md](./device-pool.md)
