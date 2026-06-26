@@ -95,6 +95,45 @@ class ControlCenterClient:
     def sre_summary(self) -> Any:
         return self._request("GET", "/v1/sre/summary")
 
+    def list_incidents(self) -> Any:
+        return self._request("GET", "/v1/sre/incidents")
+
+    def create_incident(
+        self,
+        title: str,
+        *,
+        description: str = "",
+        severity: str = "warning",
+        source_alert_id: Optional[str] = None,
+    ) -> Any:
+        body: dict[str, Any] = {
+            "title": title,
+            "description": description,
+            "severity": severity,
+        }
+        if source_alert_id:
+            body["source_alert_id"] = source_alert_id
+        return self._request("POST", "/v1/sre/incidents", body, auth=True)
+
+    def ack_incident(self, incident_id: str, *, assignee: Optional[str] = None) -> Any:
+        body: dict[str, Any] = {}
+        if assignee:
+            body["assignee"] = assignee
+        return self._request(
+            "POST",
+            f"/v1/sre/incidents/{incident_id}/ack",
+            body,
+            auth=True,
+        )
+
+    def resolve_incident(self, incident_id: str) -> Any:
+        return self._request(
+            "POST",
+            f"/v1/sre/incidents/{incident_id}/resolve",
+            {},
+            auth=True,
+        )
+
     def rpc(self, method: str, params: Optional[Mapping[str, Any]] = None) -> Any:
         return self._request(
             "POST",

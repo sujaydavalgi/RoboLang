@@ -263,6 +263,21 @@ PYTHONPATH="${ROOT}/packages/sdk-python/src:${PYTHONPATH:-}" \
   SPANDA_CONTROL_CENTER_URL="http://${BIND}" SPANDA_API_KEY="${SPANDA_API_KEY}" \
   python3 -c "from spanda_sdk import ControlCenterClient; c=ControlCenterClient(); assert c.health()['service']=='spanda-control-center'"
 
+echo "== E3 Python SDK SRE incidents =="
+PYTHONPATH="${ROOT}/packages/sdk-python/src:${PYTHONPATH:-}" \
+  SPANDA_CONTROL_CENTER_URL="http://${BIND}" SPANDA_API_KEY="${SPANDA_API_KEY}" \
+  python3 -c "
+from spanda_sdk import ControlCenterClient
+c = ControlCenterClient()
+summary = c.sre_summary()
+assert 'slo' in summary
+created = c.create_incident('sdk-smoke', description='enterprise ops smoke')
+iid = created['incident']['id']
+c.ack_incident(iid, assignee='sdk')
+c.resolve_incident(iid)
+assert c.list_incidents()['incidents']
+"
+
 echo "== E4 GET /v1/compliance/export?profile=defense =="
 curl -sf -H "Authorization: Bearer ${SPANDA_API_KEY}" \
   "http://${BIND}/v1/compliance/export?profile=defense" | grep -q audit_export_id
