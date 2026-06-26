@@ -4,6 +4,9 @@ use crate::program::parse_program_file;
 use crate::state::ControlCenterState;
 use serde::Deserialize;
 use spanda_compliance::{format_accreditation_report, generate_accreditation_report};
+use spanda_config::{
+    append_evidence_record, default_evidence_log_path, list_evidence_records,
+};
 use spanda_deploy_http::HttpResponse;
 use spanda_graph::{query_digital_thread, DigitalThreadQuery};
 use spanda_ops::render_text_pdf;
@@ -40,13 +43,38 @@ pub fn compliance_export(
         Err(message) => return bad_request(&message),
     };
     match generate_accreditation_report(&program, &profile, &label) {
-        Ok(report) => json_ok(&serde_json::json!({
-            "version": "v1",
-            "export": report,
-            "markdown": format_accreditation_report(&report, false),
-        })),
+        Ok(report) => {
+            let evidence_record = serde_json::json!({
+                "exported_at_ms": std::time::SystemTime::now()
+                    .duration_since(std::time::UNIX_EPOCH)
+                    .map(|duration| duration.as_secs_f64() * 1000.0)
+                    .unwrap_or(0.0),
+                "profile": profile,
+                "audit_export_id": report.audit_export_id,
+                "program": label,
+            });
+            let _ = append_evidence_record(&default_evidence_log_path(), &evidence_record);
+            json_ok(&serde_json::json!({
+                "version": "v1",
+                "export": report,
+                "markdown": format_accreditation_report(&report, false),
+                "evidence_appended": true,
+            }))
+        }
         Err(message) => bad_request(&message),
     }
+}
+
+pub fn compliance_evidence_list(ctx: Option<&RbacContext>) -> HttpResponse {
+    if !ApiKeyStore::check(ctx, RbacAction::Deploy) {
+        return unauthorized();
+    }
+    let records = list_evidence_records(&default_evidence_log_path()).unwrap_or_default();
+    json_ok(&serde_json::json!({
+        "version": "v1",
+        "evidence": records,
+        "store": default_evidence_log_path().to_string_lossy(),
+    }))
 }
 
 pub fn digital_thread_query(state: &ControlCenterState, query: &str) -> HttpResponse {
