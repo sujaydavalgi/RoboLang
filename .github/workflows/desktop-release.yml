@@ -1,0 +1,38 @@
+name: Desktop Control Center release
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'desktop-v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - uses: dtolnay/rust-toolchain@stable
+      - run: npm ci
+      - name: Build Tauri bundle
+        env:
+          TAURI_BUILD: "1"
+          SPANDA_DESKTOP_UPDATER_ACTIVE: ${{ secrets.TAURI_UPDATER_PUBKEY != '' && '1' || '0' }}
+        run: npm run build --workspace=@spanda/control-center-desktop
+      - name: Sign and notarize (optional)
+        env:
+          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+          APPLE_NOTARIZE_PROFILE: ${{ secrets.APPLE_NOTARIZE_PROFILE }}
+        run: ./scripts/sign_tauri_macos.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: control-center-desktop-macos
+          path: packages/control-center-desktop/src-tauri/target/release/bundle/macos
