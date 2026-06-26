@@ -55,16 +55,32 @@ type Tab =
   | "discovery"
   | "provisioning"
   | "mapping"
+  | "config"
   | "health"
   | "readiness"
+  | "drift"
+  | "alerts"
+  | "security"
+  | "ota"
   | "sre"
+  | "compliance"
+  | "audit"
+  | "digital-thread"
+  | "executive"
   | "traceability";
 
 type SreSummary = {
   availability_percent: number;
   incidents_open?: number;
   mttr_hint_ms?: number | null;
+  mtbf_hint_ms?: number | null;
   slo?: { target_percent?: number; met?: boolean };
+  health_trends?: {
+    degraded_percent?: number;
+    failed_percent?: number;
+    offline_percent?: number;
+  };
+  readiness_trends?: { sample_count?: number; warnings?: string[] };
 };
 
 type IncidentRow = {
@@ -94,6 +110,21 @@ export function ControlCenterPanel({ apiBase }: Props) {
   const [provisionLog, setProvisionLog] = useState<string | null>(null);
   const [sreSummary, setSreSummary] = useState<SreSummary | null>(null);
   const [incidents, setIncidents] = useState<IncidentRow[]>([]);
+  const [driftData, setDriftData] = useState<{
+    baselineId: string;
+    report: Record<string, unknown>;
+  } | null>(null);
+  const [alertsList, setAlertsList] = useState<Record<string, unknown>[]>([]);
+  const [trustReport, setTrustReport] = useState<Record<string, unknown> | null>(null);
+  const [rbacMatrix, setRbacMatrix] = useState<Record<string, unknown> | null>(null);
+  const [trustPackageName, setTrustPackageName] = useState("spanda-mqtt");
+  const [otaStatus, setOtaStatus] = useState<Record<string, unknown> | null>(null);
+  const [complianceExport, setComplianceExport] = useState<Record<string, unknown> | null>(null);
+  const [auditData, setAuditData] = useState<Record<string, unknown> | null>(null);
+  const [scorecard, setScorecard] = useState<Record<string, unknown> | null>(null);
+  const [digitalThread, setDigitalThread] = useState<Record<string, unknown> | null>(null);
+  const [configApprovals, setConfigApprovals] = useState<Record<string, unknown>[]>([]);
+  const [evidenceRecords, setEvidenceRecords] = useState<Record<string, unknown>[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -373,7 +404,202 @@ export function ControlCenterPanel({ apiBase }: Props) {
 
   useEffect(() => {
     if (tab === "sre") void loadSre();
-  }, [tab, base]);
+    if (tab === "drift") void loadDrift();
+    if (tab === "alerts") void loadAlerts();
+    if (tab === "security") void loadSecurity();
+    if (tab === "ota") void loadOta();
+    if (tab === "compliance") void loadCompliance();
+    if (tab === "audit") void loadAudit();
+    if (tab === "executive") void loadExecutive();
+    if (tab === "digital-thread") void loadDigitalThread();
+    if (tab === "config") void loadConfig();
+  }, [tab, base, trustPackageName, apiKey]);
+
+  const loadConfig = async () => {
+    setBusy(true);
+    try {
+      const approvalsRes = await fetch(`${base}/v1/config/approvals`);
+      if (approvalsRes.ok) {
+        const body = await approvalsRes.json();
+        setConfigApprovals(body.approvals ?? []);
+      }
+    } catch (e) {
+      setError(String(e));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const requestConfigApproval = async (snapshotId: string) => {
+    if (!apiKey) return;
+    setBusy(true);
+    try {
+      const res = await fetch(`${base}/v1/config/approvals`, {
+        method: "POST",
+        headers: authHeaders(),
+        body: JSON.stringify({
+          snapshot_id: snapshotId,
+          note: "Control Center approval request",
+        }),
+      });
+      if (!res.ok) throw new Error(`approval request ${res.status}`);
+      await loadConfig();
+    } catch (e) {
+      setError(String(e));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const resolveConfigApproval = async (approvalId: string, approve: boolean) => {
+    if (!apiKey) return;
+    setBusy(true);
+    try {
+      const action = approve ? "approve" : "reject";
+      const res = await fetch(
+        `${base}/v1/config/approvals/${encodeURIComponent(approvalId)}/${action}`,
+        { method: "POST", headers: authHeaders(), body: JSON.stringify({}) },
+      );
+      if (!res.ok) throw new Error(`approval ${action} ${res.status}`);
+      await loadConfig();
+    } catch (e) {
+      setError(String(e));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const loadDrift = async () => {
+    setBusy(true);
+    try {
+      const snapsRes = await fetch(`${base}/v1/config/snapshots`);
+      if (!snapsRes.ok) throw new Error(`snapshots ${snapsRes.status}`);
+      const snaps = await snapsRes.json();
+      const first = (snaps.snapshots ?? [])[0];
+      if (!first?.id) {
+        setDriftData(null);
+        return;
+      }
+      const driftRes = await fetch(
+        `${base}/v1/drift?baseline_id=${encodeURIComponent(first.id)}`,
+      );
+      if (!driftRes.ok) throw new Error(`drift ${driftRes.status}`);
+      const body = await driftRes.json();
+      setDriftData({ baselineId: first.id, report: body.report ?? body });
+    } catch (e) {
+      setError(String(e));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const loadAlerts = async () => {
+    setBusy(true);
+    try {
+      const res = await fetch(`${base}/v1/alerts`);
+      if (!res.ok) throw new Error(`alerts ${res.status}`);
+      const body = await res.json();
+      setAlertsList(body.alerts ?? []);
+    } catch (e) {
+      setError(String(e));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const loadSecurity = async () => {
+    setBusy(true);
+    try {
+      const [trustRes, rbacRes] = await Promise.all([
+        fetch(`${base}/v1/trust/package?name=${encodeURIComponent(trustPackageName)}`),
+        fetch(`${base}/v1/rbac/matrix`),
+      ]);
+      if (!trustRes.ok) throw new Error(`trust ${trustRes.status}`);
+      if (!rbacRes.ok) throw new Error(`rbac ${rbacRes.status}`);
+      setTrustReport(await trustRes.json());
+      setRbacMatrix(await rbacRes.json());
+    } catch (e) {
+      setError(String(e));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const loadOta = async () => {
+    setBusy(true);
+    try {
+      const res = await fetch(`${base}/v1/ota/status`);
+      if (!res.ok) throw new Error(`ota ${res.status}`);
+      setOtaStatus(await res.json());
+    } catch (e) {
+      setError(String(e));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const loadCompliance = async () => {
+    if (!apiKey) return;
+    setBusy(true);
+    try {
+      const [exportRes, evidenceRes] = await Promise.all([
+        fetch(`${base}/v1/compliance/export?profile=defense`, { headers: authHeaders() }),
+        fetch(`${base}/v1/compliance/evidence`, { headers: authHeaders() }),
+      ]);
+      if (!exportRes.ok) throw new Error(`compliance ${exportRes.status}`);
+      setComplianceExport(await exportRes.json());
+      if (evidenceRes.ok) {
+        const evidenceBody = await evidenceRes.json();
+        setEvidenceRecords(evidenceBody.evidence ?? []);
+      }
+    } catch (e) {
+      setError(String(e));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const loadAudit = async () => {
+    if (!apiKey) return;
+    setBusy(true);
+    try {
+      const res = await fetch(`${base}/v1/audit/mutations`, { headers: authHeaders() });
+      if (!res.ok) throw new Error(`audit ${res.status}`);
+      setAuditData(await res.json());
+    } catch (e) {
+      setError(String(e));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const loadExecutive = async () => {
+    setBusy(true);
+    try {
+      const res = await fetch(`${base}/v1/executive/scorecard`);
+      if (!res.ok) throw new Error(`scorecard ${res.status}`);
+      const body = await res.json();
+      setScorecard(body.scorecard ?? body);
+    } catch (e) {
+      setError(String(e));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const loadDigitalThread = async () => {
+    setBusy(true);
+    try {
+      const res = await fetch(`${base}/v1/digital-thread/query`);
+      if (!res.ok) throw new Error(`digital-thread ${res.status}`);
+      const body = await res.json();
+      setDigitalThread(body.digital_thread ?? body);
+    } catch (e) {
+      setError(String(e));
+    } finally {
+      setBusy(false);
+    }
+  };
 
   const exportReports = async () => {
     setBusy(true);
@@ -398,6 +624,17 @@ export function ControlCenterPanel({ apiBase }: Props) {
   };
 
   const pool = dashboard?.device_pool;
+
+  const digitalThreadMermaid = (thread: Record<string, unknown>) => {
+    const graph = thread.graph as { edges?: { from: string; to: string }[] } | undefined;
+    const edges = graph?.edges ?? [];
+    if (edges.length === 0) {
+      return "graph LR\n  empty[No graph edges]";
+    }
+    const lines = edges.slice(0, 40).map((edge) => `  ${edge.from} --> ${edge.to}`);
+    return `graph LR\n${lines.join("\n")}`;
+  };
+
   const tabs: Tab[] = [
     "dashboard",
     "devices",
@@ -405,9 +642,18 @@ export function ControlCenterPanel({ apiBase }: Props) {
     "discovery",
     "provisioning",
     "mapping",
+    "config",
     "health",
     "readiness",
+    "drift",
+    "alerts",
+    "security",
+    "ota",
     "sre",
+    "compliance",
+    "audit",
+    "digital-thread",
+    "executive",
     "traceability",
   ];
 
@@ -634,6 +880,22 @@ export function ControlCenterPanel({ apiBase }: Props) {
             <dd>{sreSummary.incidents_open ?? 0}</dd>
             <dt>MTTR hint (ms)</dt>
             <dd>{sreSummary.mttr_hint_ms ?? "—"}</dd>
+            <dt>MTBF hint (ms)</dt>
+            <dd>{sreSummary.mtbf_hint_ms ?? "—"}</dd>
+            {sreSummary.health_trends && (
+              <>
+                <dt>Degraded %</dt>
+                <dd>{sreSummary.health_trends.degraded_percent?.toFixed(1) ?? "—"}</dd>
+                <dt>Failed %</dt>
+                <dd>{sreSummary.health_trends.failed_percent?.toFixed(1) ?? "—"}</dd>
+              </>
+            )}
+            {sreSummary.readiness_trends && (
+              <>
+                <dt>Readiness samples</dt>
+                <dd>{sreSummary.readiness_trends.sample_count ?? 0}</dd>
+              </>
+            )}
           </dl>
           <button type="button" onClick={() => void createIncident()} disabled={busy || !apiKey}>
             Open incident
@@ -665,6 +927,173 @@ export function ControlCenterPanel({ apiBase }: Props) {
               </li>
             ))}
           </ul>
+        </div>
+      )}
+
+      {tab === "drift" && (
+        <div>
+          {!driftData && <p>Save a config snapshot first (`POST /v1/config/snapshots`).</p>}
+          {driftData && (
+            <>
+              <p>
+                Baseline: <code>{driftData.baselineId}</code> — passed:{" "}
+                <strong>{String(driftData.report.passed ?? "—")}</strong>
+              </p>
+              <h3>By dimension</h3>
+              <dl>
+                {Object.entries(
+                  (driftData.report.by_dimension as Record<string, number>) ?? {},
+                ).map(([name, count]) => (
+                  <div key={name}>
+                    <dt>{name}</dt>
+                    <dd>{count}</dd>
+                  </div>
+                ))}
+              </dl>
+              <pre>{JSON.stringify(driftData.report, null, 2)}</pre>
+              {apiKey && (
+                <button
+                  type="button"
+                  onClick={() => void requestConfigApproval(driftData.baselineId)}
+                  disabled={busy}
+                >
+                  Request publish approval
+                </button>
+              )}
+            </>
+          )}
+        </div>
+      )}
+
+      {tab === "config" && (
+        <div>
+          <h3>Approval queue</h3>
+          {!apiKey && (
+            <p className="demo-hint">
+              Set <code>VITE_SPANDA_API_KEY</code> with Approve role to resolve requests.
+            </p>
+          )}
+          <ul>
+            {configApprovals.length === 0 && <li>No approval requests</li>}
+            {configApprovals.map((approval) => (
+              <li key={String(approval.id)}>
+                <code>{String(approval.id)}</code> — snapshot{" "}
+                <code>{String(approval.snapshot_id)}</code> — {String(approval.status)}
+                {approval.status === "pending" && apiKey && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => void resolveConfigApproval(String(approval.id), true)}
+                      disabled={busy}
+                    >
+                      Approve
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => void resolveConfigApproval(String(approval.id), false)}
+                      disabled={busy}
+                    >
+                      Reject
+                    </button>
+                  </>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {tab === "alerts" && (
+        <ul>
+          {alertsList.length === 0 && <li>No alerts</li>}
+          {alertsList.map((alert) => (
+            <li key={String(alert.id)}>
+              <strong>{String(alert.severity)}</strong> — {String(alert.message)} (
+              {String(alert.source)})
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {tab === "security" && (
+        <div>
+          <label>
+            Package{" "}
+            <input
+              value={trustPackageName}
+              onChange={(event) => setTrustPackageName(event.target.value)}
+            />
+          </label>
+          <button type="button" onClick={() => void loadSecurity()} disabled={busy}>
+            Evaluate trust
+          </button>
+          {trustReport && (
+            <>
+              <h3>Package trust</h3>
+              <pre>{JSON.stringify(trustReport, null, 2)}</pre>
+            </>
+          )}
+          {rbacMatrix && (
+            <>
+              <h3>RBAC matrix</h3>
+              <pre>{JSON.stringify(rbacMatrix.matrix ?? rbacMatrix, null, 2)}</pre>
+            </>
+          )}
+        </div>
+      )}
+
+      {tab === "ota" && (
+        <div>
+          <p>Plan rollouts via <code>POST /v1/ota/plan</code>.</p>
+          {otaStatus && <pre>{JSON.stringify(otaStatus, null, 2)}</pre>}
+        </div>
+      )}
+
+      {tab === "compliance" && (
+        <div>
+          <button type="button" onClick={() => void loadCompliance()} disabled={busy || !apiKey}>
+            Export defense profile
+          </button>
+          {!apiKey && (
+            <p className="demo-hint">
+              Set <code>VITE_SPANDA_API_KEY</code> for compliance export.
+            </p>
+          )}
+          {complianceExport && <pre>{JSON.stringify(complianceExport, null, 2)}</pre>}
+          {evidenceRecords.length > 0 && (
+            <>
+              <h3>Immutable evidence log</h3>
+              <pre>{JSON.stringify(evidenceRecords, null, 2)}</pre>
+            </>
+          )}
+        </div>
+      )}
+
+      {tab === "audit" && (
+        <div>
+          <button type="button" onClick={() => void loadAudit()} disabled={busy || !apiKey}>
+            Load mutation audit
+          </button>
+          {auditData && <pre>{JSON.stringify(auditData, null, 2)}</pre>}
+        </div>
+      )}
+
+      {tab === "executive" && scorecard && (
+        <pre>{JSON.stringify(scorecard, null, 2)}</pre>
+      )}
+
+      {tab === "digital-thread" && digitalThread && (
+        <div>
+          <h3>Chain summary</h3>
+          <ul>
+            {((digitalThread.chain_summary as string[]) ?? []).map((step) => (
+              <li key={step}>{step}</li>
+            ))}
+          </ul>
+          <h3>Graph (mermaid)</h3>
+          <pre>{digitalThreadMermaid(digitalThread)}</pre>
+          <h3>Full report</h3>
+          <pre>{JSON.stringify(digitalThread, null, 2)}</pre>
         </div>
       )}
 
