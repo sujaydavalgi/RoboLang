@@ -42,6 +42,12 @@
         "responses": { "200": { "description": "Supported API versions" } }
       }
     },
+    "/v1/openapi.json": {
+      "get": {
+        "summary": "OpenAPI 3.1 specification for this API",
+        "responses": { "200": { "description": "OpenAPI document" } }
+      }
+    },
     "/v1/dashboard": {
       "get": {
         "summary": "Operations dashboard summary",
@@ -82,6 +88,25 @@
           { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
         ],
         "responses": { "200": { "description": "Device record" }, "404": { "description": "Not found" } }
+      },
+      "patch": {
+        "summary": "Update device lifecycle_state",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": { "lifecycle_state": { "type": "string" } },
+                "required": ["lifecycle_state"]
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Device updated" } }
       }
     },
     "/v1/devices/{id}/provision": {
@@ -157,6 +182,93 @@
         "summary": "Redundant device failover chains",
         "security": [{ "bearerAuth": [] }],
         "responses": { "200": { "description": "Failover chain definitions" } }
+      }
+    },
+    "/v1/fleet/agents": {
+      "get": {
+        "summary": "Registered fleet agents",
+        "responses": { "200": { "description": "Fleet agent registry" } }
+      }
+    },
+    "/v1/alerts": {
+      "get": {
+        "summary": "Alert history",
+        "responses": { "200": { "description": "Alert list" } }
+      }
+    },
+    "/v1/alerts/test": {
+      "post": {
+        "summary": "Dispatch test alert",
+        "security": [{ "bearerAuth": [] }],
+        "responses": { "200": { "description": "Test alert recorded" } }
+      }
+    },
+    "/v1/secrets": {
+      "get": {
+        "summary": "Secret metadata (no values)",
+        "security": [{ "bearerAuth": [] }],
+        "responses": { "200": { "description": "Secret metadata list" } }
+      }
+    },
+    "/v1/rbac/matrix": {
+      "get": {
+        "summary": "Role permission matrix",
+        "responses": { "200": { "description": "RBAC matrix" } }
+      }
+    },
+    "/v1/provision": {
+      "post": {
+        "summary": "Run discover → ready provisioning workflow",
+        "security": [{ "bearerAuth": [] }],
+        "responses": { "200": { "description": "Provision result" } }
+      }
+    },
+    "/v1/config/snapshots": {
+      "get": {
+        "summary": "List configuration snapshots",
+        "responses": { "200": { "description": "Snapshot metadata" } }
+      },
+      "post": {
+        "summary": "Save configuration snapshot",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": { "label": { "type": "string" } }
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Snapshot saved" } }
+      }
+    },
+    "/v1/discovery": {
+      "get": {
+        "summary": "Package-backed device discovery",
+        "parameters": [
+          { "name": "transport", "in": "query", "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Discovery matches" } }
+      }
+    },
+    "/v1/health/summary": {
+      "get": {
+        "summary": "Device pool health rollup",
+        "responses": { "200": { "description": "Health summary" } }
+      }
+    },
+    "/v1/assurance/summary": {
+      "get": {
+        "summary": "Assurance policy summary",
+        "responses": { "200": { "description": "Assurance summary" } }
+      }
+    },
+    "/v1/diagnosis/summary": {
+      "get": {
+        "summary": "Diagnosis policy summary",
+        "responses": { "200": { "description": "Diagnosis summary" } }
       }
     },
     "/v1/readiness/run": {
@@ -263,6 +375,26 @@
         "responses": { "200": { "description": "Incident created" } }
       }
     },
+    "/v1/sre/incidents/{id}/ack": {
+      "post": {
+        "summary": "Acknowledge an incident",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Incident acknowledged" } }
+      }
+    },
+    "/v1/sre/incidents/{id}/resolve": {
+      "post": {
+        "summary": "Resolve an incident",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Incident resolved" } }
+      }
+    },
     "/v1/observability/traces": {
       "get": {
         "summary": "Recent API trace records (OTLP-compatible export path)",
@@ -275,10 +407,87 @@
         "responses": { "200": { "description": "Observability backend summary" } }
       }
     },
+    "/v1/observability/otlp/traces": {
+      "get": {
+        "summary": "OTLP/JSON trace preview for Jaeger",
+        "responses": { "200": { "description": "resourceSpans payload" } }
+      }
+    },
     "/v1/observability/otlp/metrics": {
       "get": {
         "summary": "OTLP/JSON metrics preview",
         "responses": { "200": { "description": "resourceMetrics payload" } }
+      }
+    },
+    "/v1/observability/otlp/export": {
+      "post": {
+        "summary": "Push API traces to OTLP collector",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "endpoint", "in": "query", "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Export result" } }
+      }
+    },
+    "/v1/observability/otlp/export-metrics": {
+      "post": {
+        "summary": "Push API metrics to OTLP collector",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "endpoint", "in": "query", "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Export result" } }
+      }
+    },
+    "/v1/compliance/export": {
+      "get": {
+        "summary": "Compliance accreditation export",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "profile", "in": "query", "schema": { "type": "string", "default": "defense" } }
+        ],
+        "responses": { "200": { "description": "Compliance bundle" } }
+      },
+      "post": {
+        "summary": "Compliance export with JSON body profile",
+        "security": [{ "bearerAuth": [] }],
+        "responses": { "200": { "description": "Compliance bundle" } }
+      }
+    },
+    "/v1/digital-thread/query": {
+      "get": {
+        "summary": "Capability-to-device digital thread query",
+        "parameters": [
+          { "name": "capability", "in": "query", "schema": { "type": "string" } },
+          { "name": "device_id", "in": "query", "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Digital thread report with graph" } }
+      }
+    },
+    "/v1/executive/scorecard": {
+      "get": {
+        "summary": "Executive mission scorecard",
+        "responses": { "200": { "description": "Scorecard rollup" } }
+      }
+    },
+    "/v1/analytics/readiness": {
+      "get": {
+        "summary": "Readiness trends and forecast",
+        "parameters": [
+          { "name": "forecast_days", "in": "query", "schema": { "type": "integer" } }
+        ],
+        "responses": { "200": { "description": "Readiness analytics" } }
+      }
+    },
+    "/v1/reports/export": {
+      "get": {
+        "summary": "Combined executive report export",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "format", "in": "query", "schema": { "type": "string", "enum": ["markdown", "json", "pdf"] } },
+          { "name": "profile", "in": "query", "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Report payload" } }
       }
     },
     "/v1/audit/mutations": {

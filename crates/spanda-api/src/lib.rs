@@ -8,6 +8,7 @@ pub mod e4;
 pub mod grpc;
 pub mod handlers;
 pub mod observability;
+pub mod openapi_routes;
 pub mod persistence;
 pub mod program;
 pub mod server;
