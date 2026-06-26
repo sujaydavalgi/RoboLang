@@ -298,6 +298,12 @@ pub fn framework_packages() -> &'static [FrameworkPackage] {
             import_paths: &["assurance.diagnosis"],
         },
         FrameworkPackage {
+            name: "spanda-discovery-mdns",
+            description: "mDNS/DNS-SD device discovery transport",
+            category: super::category::PackageCategory::Hardware,
+            import_paths: &["discovery.mdns"],
+        },
+        FrameworkPackage {
             name: "spanda-prognostics",
             description: "Prognostics and remaining useful life",
             category: super::category::PackageCategory::Robotics,
