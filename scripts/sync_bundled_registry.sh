@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Copy minimal trust registry into the spanda CLI crate for offline secure-boot demos.
+# Copy offline registry slice into the spanda CLI crate for cargo install demos.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -15,13 +15,19 @@ from pathlib import Path
 root = Path(sys.argv[1])
 dest = Path(sys.argv[2])
 src_index = root / "registry" / "index.json"
-names = {"spanda-trust-jetson", "spanda-trust-pi"}
+names = {
+    "spanda-trust-jetson",
+    "spanda-trust-pi",
+    "spanda-gps",
+    "spanda-fusion",
+}
 
 entries = json.loads(src_index.read_text())
 subset = [entry for entry in entries if entry.get("name") in names]
-if len(subset) != len(names):
-    missing = names - {entry["name"] for entry in subset}
-    raise SystemExit(f"missing trust packages in index.json: {missing}")
+found = {entry["name"] for entry in subset}
+if found != names:
+    missing = names - found
+    raise SystemExit(f"missing bundled packages in index.json: {missing}")
 
 (dest / "index.json").write_text(json.dumps(subset, indent=2) + "\n")
 
@@ -32,5 +38,5 @@ for name in sorted(names):
         shutil.rmtree(dst_pkg)
     shutil.copytree(src_pkg, dst_pkg)
 
-print(f"✓ Bundled {len(subset)} trust packages to {dest}")
+print(f"✓ Bundled {len(subset)} registry packages to {dest}")
 PY

@@ -28,3 +28,5 @@ ensure_spanda_registry_url() {
     export SPANDA_REGISTRY_URL="file://${repo_root}/registry"
   fi
 }
+
+# Note: `spanda` also defaults SPANDA_REGISTRY_URL to bundled-registry at startup when unset.

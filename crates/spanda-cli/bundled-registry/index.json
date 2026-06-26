@@ -1,5 +1,47 @@
 [
   {
+    "name": "spanda-fusion",
+    "description": "Weighted sensor fusion backends",
+    "versions": [
+      "0.1.0"
+    ],
+    "category": "robotics",
+    "license": "Apache-2.0",
+    "import_paths": [
+      "assurance.fusion"
+    ],
+    "version_checksums": {
+      "0.1.0": "9aaf281937d06cfb90b4f6be5150397dd33f2adee944a137fe9d72e3663e4f20"
+    },
+    "version_signatures": {
+      "0.1.0": {
+        "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
+        "signature": "eec1eabc941faee9093b360cf114b1e9f3172b6701ad7e6298dcccc75dd6ab054b3a848ded2f2a84aa6fb110364decb2824729e3b921dd9ed2bb771a1c6d4a0c"
+      }
+    }
+  },
+  {
+    "name": "spanda-gps",
+    "description": "GPS/GNSS receiver adapters",
+    "versions": [
+      "0.1.0"
+    ],
+    "category": "positioning",
+    "license": "Apache-2.0",
+    "import_paths": [
+      "positioning.gps"
+    ],
+    "version_checksums": {
+      "0.1.0": "ec8c6d55943f2acaaac47f5b2401ef4bf5dd3b07695e110a75c9d59e01cd3c19"
+    },
+    "version_signatures": {
+      "0.1.0": {
+        "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
+        "signature": "7bae98f5ed458b4f3463e1f7c203d7f1c6ec380b5a393678f9c4fe88b43439c2a69e5ee4c929af68d538d9535bfebfa701d6c6a82cf35bf4d45a1d168f5e4504"
+      }
+    }
+  },
+  {
     "name": "spanda-trust-jetson",
     "description": "Jetson secure boot and attestation contract stubs",
     "versions": [
