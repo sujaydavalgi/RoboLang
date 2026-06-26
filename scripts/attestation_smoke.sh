@@ -21,4 +21,13 @@ TAMPER="$(cargo run -p spanda -q -- tamper-check "${ROOT}/examples/showcase/secu
 echo "$TAMPER" | grep -q "boot_state=verified"
 unset SPANDA_TPM_BACKEND SPANDA_TPM_QUOTE_PATH
 
+echo "== tpm vendor script backend smoke =="
+VENDOR_SCRIPT="${ROOT}/examples/showcase/secure_boot/fixtures/jetson-tpm-vendor.sh"
+export SPANDA_TPM_BACKEND=script
+export SPANDA_TPM_SCRIPT="${VENDOR_SCRIPT}"
+export SPANDA_REGISTRY_URL="file://${ROOT}/registry"
+TAMPER_VENDOR="$(cargo run -p spanda -q -- tamper-check "${ROOT}/examples/showcase/secure_boot/rover.sd" 2>&1 || true)"
+echo "$TAMPER_VENDOR" | grep -q "boot_state=verified"
+unset SPANDA_TPM_BACKEND SPANDA_TPM_SCRIPT
+
 echo "attestation smoke ok"

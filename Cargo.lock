@@ -2142,6 +2142,7 @@ dependencies = [
  "spanda-ffi",
  "spanda-hal",
  "spanda-lib-registry",
+ "spanda-package",
  "spanda-runtime",
  "spanda-security",
  "spanda-typecheck",

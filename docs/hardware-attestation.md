@@ -58,6 +58,11 @@ spanda tamper-check examples/showcase/secure_boot/rover.sd
 SPANDA_TPM_BACKEND=script \
 SPANDA_TPM_SCRIPT=examples/showcase/secure_boot/fixtures/emit-tpm-quote.sh \
 spanda tamper-check examples/showcase/secure_boot/rover.sd
+
+# Vendor adapter stubs (Jetson / Pi)
+SPANDA_TPM_BACKEND=script \
+SPANDA_TPM_SCRIPT=examples/showcase/secure_boot/fixtures/jetson-tpm-vendor.sh \
+spanda tamper-check examples/showcase/secure_boot/rover.sd
 ```
 
 HTTP takes precedence when both `SPANDA_ATTESTATION_ENDPOINT` and `SPANDA_TPM_BACKEND` are set.
