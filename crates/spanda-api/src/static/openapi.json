@@ -332,6 +332,8 @@
                   "version": { "type": "string" },
                   "canary_percent": { "type": "integer" },
                   "dry_run": { "type": "boolean" },
+                  "rollback_on_readiness_fail": { "type": "boolean", "description": "Rollback agent when post-deploy readiness fails" },
+                  "readiness_runtime": { "type": "boolean", "description": "Include runtime checks in post-deploy readiness gate" },
                   "assignments": { "type": "array", "items": { "type": "object" } }
                 },
                 "required": ["strategy", "version"]
@@ -357,6 +359,8 @@
                   "version": { "type": "string" },
                   "canary_percent": { "type": "integer" },
                   "dry_run": { "type": "boolean" },
+                  "rollback_on_readiness_fail": { "type": "boolean", "description": "Rollback agent when post-deploy readiness fails" },
+                  "readiness_runtime": { "type": "boolean", "description": "Include runtime checks in post-deploy readiness gate" },
                   "assignments": { "type": "array", "items": { "type": "object" } }
                 },
                 "required": ["strategy", "version"]

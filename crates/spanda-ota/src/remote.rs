@@ -462,6 +462,53 @@ pub fn agent_rollback(entry: &DeployAgentEntry) -> Result<AgentRolloutResponse, 
     decode_response(response)
 }
 
+fn readiness_mission_ready(body: &serde_json::Value) -> bool {
+    body.get("mission_ready")
+        .and_then(|value| value.as_bool())
+        .or_else(|| {
+            body.get("readiness")
+                .and_then(|readiness| readiness.get("mission_ready"))
+                .and_then(|value| value.as_bool())
+        })
+        .unwrap_or(false)
+}
+
+fn rollout_step_after_readiness_gate(
+    agent: &DeployAgentEntry,
+    options: &RolloutOptions,
+    step: &RolloutStep,
+) -> RolloutStep {
+    if !options.rollback_on_readiness_fail {
+        return RolloutStep {
+            status: RolloutStepStatus::Deployed,
+            ..step.clone()
+        };
+    }
+    let readiness_ok = match agent_readiness(
+        agent,
+        options.readiness_runtime,
+        options.readiness_inject_faults,
+    ) {
+        Ok(body) => readiness_mission_ready(&body),
+        Err(_) => false,
+    };
+    if readiness_ok {
+        return RolloutStep {
+            status: RolloutStepStatus::Deployed,
+            ..step.clone()
+        };
+    }
+    let rolled_back = agent_rollback(agent).map(|response| response.ok).unwrap_or(false);
+    RolloutStep {
+        status: if rolled_back {
+            RolloutStepStatus::RolledBack
+        } else {
+            RolloutStepStatus::Failed
+        },
+        ..step.clone()
+    }
+}
+
 pub fn execute_remote_rollout(
     plan: &DeployPlan,
     options: &RolloutOptions,
@@ -527,10 +574,13 @@ pub fn execute_remote_rollout(
             continue;
         };
         match agent_rollout(agent, bundle, plan.certification_proof.as_ref()) {
-            Ok(resp) if resp.ok => steps.push(RolloutStep {
-                status: RolloutStepStatus::Deployed,
-                ..step.clone()
-            }),
+            Ok(resp) if resp.ok => {
+                let gated = rollout_step_after_readiness_gate(agent, options, step);
+                if gated.status != RolloutStepStatus::Deployed {
+                    success = false;
+                }
+                steps.push(gated);
+            }
             Ok(resp) => {
                 steps.push(RolloutStep {
                     status: RolloutStepStatus::Failed,

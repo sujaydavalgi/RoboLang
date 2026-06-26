@@ -92,6 +92,12 @@ pub struct RolloutOptions {
     pub dry_run: bool,
     #[serde(default)]
     pub require_certify: bool,
+    #[serde(default)]
+    pub rollback_on_readiness_fail: bool,
+    #[serde(default)]
+    pub readiness_runtime: bool,
+    #[serde(default)]
+    pub readiness_inject_faults: bool,
 }
 
 impl Default for RolloutOptions {
@@ -117,6 +123,9 @@ impl Default for RolloutOptions {
             version: "1.0.0".into(),
             dry_run: false,
             require_certify: false,
+            rollback_on_readiness_fail: false,
+            readiness_runtime: true,
+            readiness_inject_faults: false,
         }
     }
 }

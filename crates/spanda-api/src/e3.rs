@@ -28,6 +28,12 @@ struct OtaPlanRequest {
     dry_run: bool,
     #[serde(default)]
     assignments: Vec<DeployAssignment>,
+    #[serde(default)]
+    rollback_on_readiness_fail: bool,
+    #[serde(default)]
+    readiness_runtime: bool,
+    #[serde(default)]
+    readiness_inject_faults: bool,
 }
 
 #[derive(Deserialize)]
@@ -122,11 +128,21 @@ fn parse_ota_plan_request(body: &str) -> Result<(DeployPlan, RolloutOptions), Ht
         certifications: vec![],
         certification_proof: None,
     };
+    let rollback_on_readiness_fail = req.rollback_on_readiness_fail
+        || std::env::var("SPANDA_OTA_ROLLBACK_ON_READINESS_FAIL")
+            .ok()
+            .map(|value| {
+                value == "1" || value.eq_ignore_ascii_case("true") || value.eq_ignore_ascii_case("yes")
+            })
+            .unwrap_or(false);
     let options = RolloutOptions {
         strategy,
         canary_percent: req.canary_percent.unwrap_or(10),
         version: req.version,
         dry_run: req.dry_run,
+        rollback_on_readiness_fail,
+        readiness_runtime: req.readiness_runtime,
+        readiness_inject_faults: req.readiness_inject_faults,
         ..RolloutOptions::default()
     };
     Ok((plan, options))
