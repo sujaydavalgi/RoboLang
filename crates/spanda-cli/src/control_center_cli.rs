@@ -484,6 +484,7 @@ fn ota_body_from_args(args: &[String]) -> String {
         process::exit(1);
     });
     let dry_run = args.iter().any(|arg| arg == "--dry-run");
+    let rollback_on_readiness_fail = args.iter().any(|arg| arg == "--rollback-on-readiness-fail");
     let canary_percent = flag_value(args, "--canary-percent")
         .and_then(|value| value.parse::<u64>().ok())
         .unwrap_or(10);
@@ -491,6 +492,7 @@ fn ota_body_from_args(args: &[String]) -> String {
         "strategy": strategy,
         "version": version,
         "dry_run": dry_run,
+        "rollback_on_readiness_fail": rollback_on_readiness_fail,
         "canary_percent": canary_percent,
         "assignments": [],
     })
