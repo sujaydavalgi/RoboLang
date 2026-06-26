@@ -140,7 +140,7 @@ Full analysis: [enterprise-operations-roadmap.md](./enterprise-operations-roadma
 | 17 | Compliance (evidence packs) | LATER | **Experimental** — `GET /v1/compliance/export` |
 | 18 | APIs (REST + gRPC CLI parity) | NEXT | **Experimental** — REST v1 + OpenAPI; tonic gRPC (60 RPCs); remote `spanda control-center` CLI |
 | 19 | Observability (OTel, traces, correlation) | NEXT | **Experimental** — trace log, OTLP export, correlation IDs, `spanda-otel-collector` backend wiring |
-| 20 | Digital Thread (requirement → retirement) | LATER | **Experimental** — `GET /v1/digital-thread/query` v1 / **Future** (full lifecycle graph UI) |
+| 20 | Digital Thread (requirement → retirement) | LATER | **Experimental** — lifecycle phases on query API + graph UI (`lifecycle_phase` filter) |
 
 ### Priority horizons
 
@@ -181,7 +181,7 @@ See **[stable-hardening-enterprise-ops.md](./stable-hardening-enterprise-ops.md)
 | Observability | OTLP traces/metrics + WebSocket + `spanda-otel-collector` | Managed collector HA guide |
 | Desktop | Tauri scaffold + glib patch + updater scaffold | Signed/notarized installers + active auto-update |
 | Drift / OTA | 7-dimension drift; plan + live execute | Mandatory certify gate in production policy |
-| Digital Thread | Interactive graph UI + query API | Full lifecycle graph (requirement → retirement) |
+| Digital Thread | Interactive graph UI + query API | **Shipped (experimental):** lifecycle phases (requirement → retirement) |
 | Compliance | Export + immutable evidence log | Multi-approver + scheduled delivery |
 
 **Exit criteria (E1):** `spanda control-center serve` + `scripts/enterprise_ops_smoke.sh` — **shipped**
