@@ -32,6 +32,12 @@ Open `http://127.0.0.1:8080/` for the Control Center UI, or use the **Control Ce
 |-----|-------------|
 | `Health` | Liveness probe |
 | `GetDashboard` | Dashboard JSON (device pool, fleet agents, alerts) |
+| `ListDevices` | Device pool entries (`GET /v1/devices` parity) |
+| `ListFleetAgents` | Registered fleet agents (`GET /v1/fleet/agents` parity) |
+| `EvaluateReadiness` | Readiness rollup (`POST /v1/readiness/run` parity) |
+| `GetSreSummary` | SRE availability rollup (`GET /v1/sre/summary` parity) |
+| `GetTrustPackage` | Package trust score (`GET /v1/trust/package` parity) |
+| `GetOpenApi` | OpenAPI 3.1 spec JSON (`GET /v1/openapi.json` parity) |
 | `DetectDrift` | Operational drift report (`baseline_id` in request) |
 
 Proto: `crates/spanda-api/proto/spanda/v1/control_center.proto`
@@ -86,7 +92,7 @@ grpcurl -plaintext -d '{}' 127.0.0.1:50051 spanda.v1.ControlCenter/Health
 | `/v1/operator/quarantine` | POST | Bearer | Quarantine a device |
 | `/v1/operator/mission/approve` | POST | Bearer | Approve or reject a mission |
 | `/v1/rpc` | POST | — | gRPC-compatible JSON gateway |
-| **gRPC (tonic)** | — | — | Native `ControlCenter` service on `--grpc-bind` (Health, GetDashboard, DetectDrift) |
+| **gRPC (tonic)** | — | — | Native `ControlCenter` service on `--grpc-bind` (9 RPCs; REST parity for devices, fleet, readiness, SRE, trust, OpenAPI, drift) |
 | `/v1/compliance/export` | GET/POST | Bearer | Accreditation bundle (`?profile=defense`) |
 | `/v1/digital-thread/query` | GET | — | Trace chain (`?capability=`, `?device_id=`) |
 | `/v1/executive/scorecard` | GET | — | Mission scorecard rollup |

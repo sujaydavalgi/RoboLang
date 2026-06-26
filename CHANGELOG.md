@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **gRPC expansion:** `ListDevices`, `ListFleetAgents`, `EvaluateReadiness`, `GetSreSummary`, `GetTrustPackage`, `GetOpenApi` RPCs on tonic `ControlCenter`; REST parity helpers in `handlers`; live probe `grpc_live_probe.rs`; `scripts/enterprise_ops_smoke.sh` gRPC section.
+- **Tauri CI:** `control-center-desktop` job (Linux compile check); `control-center-desktop-bundle` job (`TAURI_BUILD=1` on macOS main pushes).
+- **Fleet agent interpreter recovery (Stable):** `scripts/fleet_agent_recovery_smoke.sh`; wired into `scripts/fleet_field_validation.sh`; mesh integration test coverage.
+
 - **Self-healing runtime (Stable):** auto-trigger recovery during `run`/`sim` via `try_invoke_recovery_for_event` and `issue_to_recovery_issue`; approval polling every trigger maintenance tick with deferred retry; fleet mesh failure events (`fleet_mesh_recovery_failed`); mission health-critical recovery hook; tests `recovery_auto_triggers_during_run_on_health_fault`; extended `scripts/self_healing_smoke.sh`.
 - **Enterprise ops hardening:** native tonic gRPC (`--grpc-bind`, `ControlCenter` service with Health/GetDashboard/DetectDrift); full operational drift (`detect_operational_drift_full` with program + agent findings, `GET /v1/drift`); Tauri desktop build script (`scripts/build_control_center_desktop.sh`, `TAURI_BUILD=1` for installers); gRPC test `crates/spanda-api/tests/grpc_tests.rs`.
 - **Field validation:** `scripts/fleet_field_validation.sh` — multi-process fleet agents, mesh orchestrate, recovery/continuity mesh tests; wired into `scripts/showcase_smoke.sh`; golden-path robot names aligned (ScoutA/ScoutB).

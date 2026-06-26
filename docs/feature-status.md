@@ -104,7 +104,7 @@ Platform overview: [platform-overview.md](./platform-overview.md)
 | **Platform maturity (Phase D)** | Verify-time tamper/integrity, composite program trust, secure-boot attestation (vendor TPM + remote AK chain), compliance accreditation export, decision explain, runtime policy, AI generate/suggest, spoof-check with confidence gates, security assurance, tamper_policy runtime — **Experimental** |
 | **Platform maturity (Phase C–D)** | Readiness trends, resource estimation, compliance profiles, ADR, tamper check |
 | **Enterprise operations (E1–E4, experimental)** | Control Center (`spanda control-center serve`, embedded UI, `ControlCenterPanel` in `@spanda/web`, Tauri `@spanda/control-center-desktop` scaffold), REST v1 (`spanda-api`), Device Pool lifecycle (assign/trust/quarantine/retire, failover chains, recovery integration), host-backed discovery + pool ingest, RBAC v1 (`SPANDA_API_KEY`), `ManagedSecretVault`, alerting core (`spanda-ops`), provisioning/snapshots/discovery (E2), operational drift/OTA/trust/SRE/operator APIs + Python SDK + WebSocket telemetry + OTLP trace export to Jaeger (E3), compliance export/digital thread/executive scorecard/PDF reports (E4); see [enterprise-operations-roadmap.md](./enterprise-operations-roadmap.md), [control-center.md](./control-center.md) |
-| **Enterprise operations (NEXT)** | Native tonic gRPC (JSON-RPC gateway exists), full multi-dimension configuration drift, registry-backed discovery packages (host probes in core), vendor alert channel packages, OTLP metrics export, production desktop installers |
+| **Enterprise operations (NEXT)** | tonic gRPC expansion (9 RPCs), Tauri installer CI (`TAURI_BUILD=1` on macOS), registry-backed discovery packages, vendor alert channel packages, OTLP metrics export, full gRPC CLI parity |
 | **LLVM backend (production primary)** | Optimized native binaries replacing interpreter as default deploy path |
 | **Self-hosting compiler (full)** | Complete Spanda-authored compiler pipeline |
 | **ROS2 production adapter** | First-class, zero-config ROS2 deployment |
@@ -170,6 +170,7 @@ See [tier-3-experimental.md](./tier-3-experimental.md) and [tier-3-golden-paths.
 | mission continuity (static + CLI + diagnostics) | **Stable** | `spanda-assurance` continuity module; CLI `continuity`, `takeover`, `delegate`, `succession`; `continuity:*` diagnostics in check JSON and LSP |
 | mission continuity runtime dispatch | **Stable** | Interpreter mode-specific takeover, durable checkpoints, auto-trigger on health faults, fleet agent `/v1/continuity/execute`, mesh relay, swarm `--failed` handoff |
 | self-healing runtime dispatch | **Stable** | Auto-trigger on health faults, approval polling/retry, fleet mesh relay with failure events, mission approval gating; `scripts/fleet_field_validation.sh` |
+| fleet agent interpreter recovery | **Stable** | `POST /v1/recovery/execute` with `recovery_engine: interpreter`; `scripts/fleet_agent_recovery_smoke.sh` |
 | recovery diagnostics (CLI + LSP) | **Stable** | `spanda check --readiness-json` merges `recovery:*` categories; TS mirror in `scripts/lsp-readiness.mts` |
 | continuity diagnostics (CLI + LSP) | **Stable** | `spanda check --readiness-json` merges `continuity:*` categories including `continuity:mission`; TS mirror in `src/continuity-diagnostics.ts` |
 | learned anomaly backends | **Experimental** | Runtime `scan_learned`; ONNX optional |
@@ -215,12 +216,12 @@ See [tier-3-experimental.md](./tier-3-experimental.md) and [tier-3-golden-paths.
 | **Configuration Drift** | **Experimental** | Full operational drift API (`detect_operational_drift_full`); seven dimensions via Control Center `GET /v1/drift` |
 | **OTA & Rollback** | **Experimental** | Canary, blue/green, phased dry-run; production fleet automation **Planned** |
 | **Package Trust** | **Experimental** | `spanda trust`, `/v1/trust/package`, trust score |
-| **SDKs** | **Experimental** | Python SDK, REST v1, WebSocket; gRPC **Planned**; CLI reference **Stable** |
+| **SDKs** | **Experimental** | Python SDK, REST v1, WebSocket; tonic gRPC (9 RPCs); CLI reference **Stable** |
 | **Operator Workflows** | **Experimental** | Mission approve, takeover, quarantine, recovery approval |
 | **SRE** | **Experimental** | `/v1/sre/summary`; incident workflow UI **Planned** |
 | **Reporting** | **Experimental** | HTML, Markdown, JSON, PDF, CSV exports |
 | **Compliance** | **Experimental** | Evidence packs, `GET /v1/compliance/export` |
-| **APIs** | **Experimental** | REST v1 + OpenAPI; JSON-RPC gateway; native gRPC (tonic) **Experimental** — Health, GetDashboard, DetectDrift on `--grpc-bind` |
+| **APIs** | **Experimental** | REST v1 + OpenAPI; JSON-RPC gateway; native gRPC (tonic) **Experimental** — 9 RPCs on `--grpc-bind` |
 | **Observability** | **Experimental** | OTLP trace export, correlation IDs, WebSocket telemetry |
 | **Digital Thread** | **Experimental** | `GET /v1/digital-thread/query`; full graph UI **Planned** |
 

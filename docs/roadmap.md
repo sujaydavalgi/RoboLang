@@ -130,15 +130,15 @@ Full analysis: [enterprise-operations-roadmap.md](./enterprise-operations-roadma
 | 7 | Secret Management (rotation, audit) | NOW | **Experimental** — `ManagedSecretVault` contract |
 | 8 | Telemetry (time-series, trends) | NOW | **Experimental** — [telemetry-store.md](./telemetry-store.md) |
 | 9 | Alerting (multi-channel) | NOW | **Experimental** — `spanda-ops`, webhook/email env |
-| 10 | Configuration Drift (6 dimensions) | NEXT | **Experimental** (config, firmware) / **Planned** (package, provider, capability, policy, safety) |
+| 10 | Configuration Drift (7 dimensions) | NEXT | **Experimental** — `detect_operational_drift_full` via REST and gRPC |
 | 11 | OTA & Rollback (canary, blue/green) | NEXT | **Experimental** — rollout plan, rollback, canary/staged/blue_green dry-run |
 | 12 | Package Trust (scoring) | NEXT | **Experimental** — `spanda trust`, `/v1/trust/package` |
-| 13 | SDKs (Python, REST, gRPC, WebSocket) | NEXT | **Experimental** — Python SDK, REST v1, JSON-RPC gateway, WebSocket telemetry / **Planned** (native tonic gRPC) |
+| 13 | SDKs (Python, REST, gRPC, WebSocket) | NEXT | **Experimental** — Python SDK, REST v1, tonic gRPC (9 RPCs), WebSocket telemetry |
 | 14 | Operator Workflows (approve, takeover, quarantine) | NEXT | **Experimental** — device trust API/CLI/UI, mission approve, quarantine |
 | 15 | SRE (SLO, MTTR, incidents) | NEXT | **Experimental** — `/v1/sre/summary` rollup / **Planned** (incident workflow UI) |
 | 16 | Reporting (fleet, mission, compliance exports) | LATER | **Experimental** — markdown/PDF/JSON exports via `/v1/reports/export` / **Planned** (scheduled reports) |
 | 17 | Compliance (evidence packs) | LATER | **Experimental** — `GET /v1/compliance/export` |
-| 18 | APIs (REST + gRPC CLI parity) | NEXT | **Experimental** (REST v1 + OpenAPI) / **Planned** (native tonic gRPC) |
+| 18 | APIs (REST + gRPC CLI parity) | NEXT | **Experimental** — REST v1 + OpenAPI; tonic gRPC expanding (9 RPCs; full CLI parity **Planned**) |
 | 19 | Observability (OTel, traces, correlation) | NEXT | **Experimental** — trace log, OTLP export, correlation IDs / **Planned** (distributed tracing backend) |
 | 20 | Digital Thread (requirement → retirement) | LATER | **Experimental** — `GET /v1/digital-thread/query` v1 / **Future** (full lifecycle graph UI) |
 
@@ -175,10 +175,10 @@ Phases E1–E4 are **shipped at experimental tier** (CI smoke + docs). The table
 |------|-------------------|-----------------|
 | Discovery | Host-backed core probes + stubs | Registry packages loaded at runtime; vendor-specific hardening |
 | Device Pool | Full lifecycle + trust + failover | Multi-tenant isolation, audit on every mutation, HA persistence |
-| APIs | REST v1 + OpenAPI | Native tonic gRPC, rate limits, versioning policy |
+| APIs | REST v1 + OpenAPI | tonic gRPC (9 RPCs); rate limits, versioning policy, full CLI parity |
 | Observability | Trace log + OTLP push | Metrics export, distributed trace backend integration |
-| Desktop | Tauri dev scaffold | Signed installers, auto-update |
-| Drift / OTA | Config + firmware dimensions; plan dry-run | All six dimensions; production fleet rollout automation |
+| Desktop | Tauri dev scaffold | Signed installers (`TAURI_BUILD=1` CI on macOS), auto-update |
+| Drift / OTA | Full operational drift API (7 dimensions); plan dry-run | Production fleet rollout automation |
 
 **Exit criteria (E1):** `spanda control-center serve` + `scripts/enterprise_ops_smoke.sh` — **shipped**
 
@@ -326,8 +326,8 @@ See [mission-assurance.md](./mission-assurance.md), [state-estimation.md](./stat
 | Operator approval (env, Approval topics, mission `requires approval`, deferred retry) | **Stable** |
 | Fleet mesh recovery (`POST /v1/fleet/recovery`, `SPANDA_FLEET_MESH_URL`) | **Stable** |
 | Recovery reassign → continuity mesh relay | **Stable** | Fleet recovery `reassign mission` relays continuity when mesh URL is set |
-| Fleet agent assurance recovery (`POST /v1/recovery/execute`, deployed program) | **Experimental** |
-| Fleet agent interpreter recovery (`execute_recovery_on_program`, `recovery_engine`) | **Experimental** |
+| Fleet agent assurance recovery (`POST /v1/recovery/execute`, deployed program) | **Stable** |
+| Fleet agent interpreter recovery (`execute_recovery_on_program`, `recovery_engine`) | **Stable** |
 | TypeScript recovery diagnostics (LSP fallback) | **Stable** |
 | `spanda demo self-healing` | **Stable** |
 

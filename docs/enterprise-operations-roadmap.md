@@ -571,7 +571,7 @@ Official SDK surfaces for external systems to interact with Readiness, Assurance
 |-----|--------|-------|
 | **CLI** | **Stable** | Reference implementation; all capabilities |
 | **REST** | **Experimental** | `/v1/*` + OpenAPI 3.1 (`GET /v1/openapi.json`) |
-| **gRPC** | **Experimental** | Native tonic `ControlCenter` service (`--grpc-bind`); JSON-RPC gateway (`POST /v1/rpc`) also ships |
+| **gRPC** | **Experimental** | Native tonic `ControlCenter` service (`--grpc-bind`, 9 RPCs); JSON-RPC gateway (`POST /v1/rpc`) also ships |
 | **WebSocket** | **Experimental** | `WS /v1/stream/telemetry` live telemetry |
 | **Python** | **Experimental** | `packages/sdk-python` (`pip install spanda-sdk`) |
 
@@ -711,7 +711,7 @@ Builds on `spanda-capability` traceability matrices + `spanda-audit` + mission c
 | Deliverable | Component |
 |-------------|-----------|
 | Python SDK + REST OpenAPI | `spanda-sdk-python`, OpenAPI spec |
-| gRPC service | `spanda-api::grpc` — **shipped** (Health, GetDashboard, DetectDrift) |
+| gRPC service | `spanda-api::grpc` — **shipped** (9 RPCs: Health, GetDashboard, ListDevices, ListFleetAgents, EvaluateReadiness, GetSreSummary, GetTrustPackage, GetOpenApi, DetectDrift) |
 | Full drift detection (7 dimensions) | `detect_operational_drift_full` — **shipped** (config + program + agents + policy) |
 | OTA canary + phased rollout | `spanda-ota` |
 | Package Trust UI | Control Center Security module |
