@@ -91,8 +91,38 @@ fetch /v1/failover/chains | grep -q chains
 echo "== GET /v1/device-reports =="
 fetch /v1/device-reports | grep -q inventory
 
+echo "== POST /v1/devices/discover (multi-transport) =="
+SPANDA_DISCOVERY_MDNS_MATCHES="smoke-robot@127.0.0.1" \
+curl -sf -X POST \
+  -H "Authorization: Bearer ${SPANDA_API_KEY}" \
+  -H "Content-Type: application/json" \
+  -d '{"transports":["mdns"],"timeout_ms":500}' \
+  "http://${BIND}/v1/devices/discover" | grep -q '"registered"'
+
+echo "== POST /v1/devices/gps-001/trust =="
+curl -sf -X POST \
+  -H "Authorization: Bearer ${SPANDA_API_KEY}" \
+  "http://${BIND}/v1/devices/gps-001/trust" | grep -q 'device trusted by operator'
+
+echo "== POST /v1/devices/gps-001/assign =="
+curl -sf -X POST \
+  -H "Authorization: Bearer ${SPANDA_API_KEY}" \
+  -H "Content-Type: application/json" \
+  -d '{"robot_id":"rover-001"}' \
+  "http://${BIND}/v1/devices/gps-001/assign" | grep -q '"ok":true'
+
+echo "== POST /v1/devices/camera-front-001/trust (quarantine approval) =="
+curl -sf -X POST \
+  -H "Authorization: Bearer ${SPANDA_API_KEY}" \
+  "http://${BIND}/v1/devices/camera-front-001/trust" | grep -q '"lifecycle_state":"verified"'
+
+echo "== POST /v1/devices/drive-controller/quarantine =="
+curl -sf -X POST \
+  -H "Authorization: Bearer ${SPANDA_API_KEY}" \
+  "http://${BIND}/v1/devices/drive-controller/quarantine" | grep -q quarantined
+
 echo "== E2 GET /v1/discovery?transport=mdns =="
-fetch "/v1/discovery?transport=mdns" | grep -q mdns-stub-robot
+fetch "/v1/discovery?transport=mdns&timeout_ms=100" | grep -q '"transport":"mdns"'
 
 echo "== E2 GET /v1/health/summary =="
 fetch /v1/health/summary | grep -q overall_status
