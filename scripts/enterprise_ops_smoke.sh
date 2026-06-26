@@ -20,12 +20,17 @@ PORT="${SPANDA_CONTROL_CENTER_TEST_PORT:-}"
 if [[ -z "$PORT" ]]; then
   PORT=$(python3 -c 'import socket; s=socket.socket(); s.bind(("127.0.0.1", 0)); print(s.getsockname()[1]); s.close()')
 fi
+GRPC_PORT="${SPANDA_GRPC_TEST_PORT:-}"
+if [[ -z "$GRPC_PORT" ]]; then
+  GRPC_PORT=$(python3 -c 'import socket; s=socket.socket(); s.bind(("127.0.0.1", 0)); print(s.getsockname()[1]); s.close()')
+fi
 BIND="127.0.0.1:${PORT}"
+GRPC_BIND="127.0.0.1:${GRPC_PORT}"
 export SPANDA_API_KEY="enterprise-ops-smoke-key"
 
 export SPANDA_WS_STREAM_SECONDS=3
-echo "== start control-center on ${BIND} (warehouse config + program) =="
-run_spanda control-center serve --bind "$BIND" --config "$CONFIG" --program "$PROGRAM" &
+echo "== start control-center on ${BIND} + gRPC ${GRPC_BIND} (warehouse config + program) =="
+run_spanda control-center serve --bind "$BIND" --grpc-bind "$GRPC_BIND" --config "$CONFIG" --program "$PROGRAM" &
 SERVER_PID=$!
 sleep 2
 
@@ -161,6 +166,11 @@ fetch /v1/openapi.json | grep -q Spanda
 
 echo "== E3 GET /v1/drift?baseline_id =="
 fetch "/v1/drift?baseline_id=${BASELINE_ID}" | grep -q dimensions_checked
+export SPANDA_GRPC_BASELINE_ID="${BASELINE_ID}"
+
+echo "== E3 native gRPC (tonic) probe =="
+export SPANDA_GRPC_BIND="${GRPC_BIND}"
+cargo test -p spanda-api --test grpc_live_probe grpc_live_control_center_endpoints --quiet
 
 echo "== E3 POST /v1/ota/plan (canary dry-run) =="
 curl -sf -X POST \

@@ -847,6 +847,36 @@ pub fn encode_response(
     )
 }
 
+/// JSON body for gRPC `ListDevices` (parity with `GET /v1/devices`).
+pub fn devices_list_json(state: &ControlCenterState) -> String {
+    devices_list(state).body
+}
+
+/// JSON body for gRPC `ListFleetAgents` (parity with `GET /v1/fleet/agents`).
+pub fn fleet_agents_json() -> String {
+    fleet_agents().body
+}
+
+/// JSON body for gRPC `EvaluateReadiness` (parity with `POST /v1/readiness/run`).
+pub fn readiness_run_json(state: &ControlCenterState, body: &str) -> String {
+    readiness_run(state, body).body
+}
+
+/// JSON body for gRPC `GetSreSummary` (parity with `GET /v1/sre/summary`).
+pub fn sre_summary_json(state: &ControlCenterState) -> String {
+    e3::sre_summary(state).body
+}
+
+/// JSON body for gRPC `GetTrustPackage` (parity with `GET /v1/trust/package`).
+pub fn trust_package_json(query: &str) -> String {
+    e3::trust_package(query).body
+}
+
+/// JSON body for gRPC `GetOpenApi` (parity with `GET /v1/openapi.json`).
+pub fn openapi_json() -> String {
+    e3::openapi_spec().body
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

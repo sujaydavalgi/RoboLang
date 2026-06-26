@@ -1,17 +1,29 @@
 //! gRPC server smoke tests for Control Center.
 use spanda_api::grpc::spanda_v1::control_center_client::ControlCenterClient;
+use spanda_api::grpc::spanda_v1::{Empty, ReadinessRequest, TrustPackageRequest};
 use spanda_api::{run_control_center_server, ControlCenterOptions};
+use std::net::TcpListener;
 use std::thread;
 use std::time::Duration;
 use tonic::transport::Channel;
 
+fn pick_port() -> u16 {
+    TcpListener::bind("127.0.0.1:0")
+        .expect("bind ephemeral")
+        .local_addr()
+        .expect("local addr")
+        .port()
+}
+
 #[tokio::test]
 async fn grpc_health_and_dashboard() {
-    let http_bind = "127.0.0.1:18081";
-    let grpc_bind = "127.0.0.1:50051";
+    let http_port = pick_port();
+    let grpc_port = pick_port();
+    let http_bind = format!("127.0.0.1:{http_port}");
+    let grpc_bind = format!("127.0.0.1:{grpc_port}");
     let options = ControlCenterOptions {
-        bind: http_bind.into(),
-        grpc_bind: Some(grpc_bind.into()),
+        bind: http_bind,
+        grpc_bind: Some(grpc_bind.clone()),
         once: true,
         timeout_ms: 500,
         ..Default::default()
@@ -20,22 +32,92 @@ async fn grpc_health_and_dashboard() {
         let _ = run_control_center_server(&options);
     });
     thread::sleep(Duration::from_millis(400));
-    let channel = Channel::from_shared(format!("http://{grpc_bind}"))
-        .unwrap()
-        .connect()
-        .await
-        .expect("grpc connect");
-    let mut client = ControlCenterClient::new(channel);
+    let mut client = connect(&grpc_bind).await;
     let health = client
-        .health(spanda_api::grpc::spanda_v1::Empty {})
+        .health(Empty {})
         .await
         .expect("health rpc")
         .into_inner();
     assert_eq!(health.status, "ok");
     let dashboard = client
-        .get_dashboard(spanda_api::grpc::spanda_v1::Empty {})
+        .get_dashboard(Empty {})
         .await
         .expect("dashboard rpc")
         .into_inner();
     assert!(dashboard.json.contains("device_pool"));
+}
+
+#[tokio::test]
+async fn grpc_expanded_endpoints_return_json() {
+    let http_port = pick_port();
+    let grpc_port = pick_port();
+    let http_bind = format!("127.0.0.1:{http_port}");
+    let grpc_bind = format!("127.0.0.1:{grpc_port}");
+    let options = ControlCenterOptions {
+        bind: http_bind,
+        grpc_bind: Some(grpc_bind.clone()),
+        once: true,
+        timeout_ms: 500,
+        ..Default::default()
+    };
+    thread::spawn(move || {
+        let _ = run_control_center_server(&options);
+    });
+    thread::sleep(Duration::from_millis(400));
+    let mut client = connect(&grpc_bind).await;
+
+    let devices = client
+        .list_devices(Empty {})
+        .await
+        .expect("devices")
+        .into_inner();
+    assert!(devices.json.contains("\"devices\""));
+
+    let agents = client
+        .list_fleet_agents(Empty {})
+        .await
+        .expect("agents")
+        .into_inner();
+    assert!(agents.json.contains("\"agents\""));
+
+    let readiness = client
+        .evaluate_readiness(ReadinessRequest {
+            body_json: String::new(),
+        })
+        .await
+        .expect("readiness")
+        .into_inner();
+    assert!(readiness.json.contains("mission_ready"));
+
+    let sre = client
+        .get_sre_summary(Empty {})
+        .await
+        .expect("sre")
+        .into_inner();
+    assert!(sre.json.contains("availability_percent"));
+
+    let trust = client
+        .get_trust_package(TrustPackageRequest {
+            package_name: "spanda-mqtt".into(),
+        })
+        .await
+        .expect("trust")
+        .into_inner();
+    assert!(trust.json.contains("trust"));
+
+    let openapi = client
+        .get_open_api(Empty {})
+        .await
+        .expect("openapi")
+        .into_inner();
+    assert!(openapi.json.contains("openapi"));
+}
+
+async fn connect(bind: &str) -> ControlCenterClient<Channel> {
+    let channel = Channel::from_shared(format!("http://{bind}"))
+        .unwrap()
+        .connect()
+        .await
+        .expect("grpc connect");
+    ControlCenterClient::new(channel)
 }
