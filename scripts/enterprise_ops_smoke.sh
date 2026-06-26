@@ -177,6 +177,14 @@ curl -sf -X POST \
   -d '{}' \
   "http://${BIND}/v1/config/approvals/${APPROVAL_ID}/approve" | grep -q '"publish"'
 
+echo "== E2 CLI control-center remote API =="
+export SPANDA_CONTROL_CENTER_URL="http://${BIND}"
+run_spanda control-center dashboard | grep -q '"devices"'
+run_spanda control-center drift --baseline-id "${BASELINE_ID}" | grep -q dimensions_checked
+run_spanda control-center approvals list | grep -q approvals
+run_spanda control-center evidence list | grep -q evidence
+run_spanda control-center incidents list | grep -q incidents
+
 echo "== E3 GET /v1/openapi.json =="
 fetch /v1/openapi.json | grep -q Spanda
 

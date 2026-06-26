@@ -657,6 +657,17 @@ cargo run -p spanda -- control-center serve --bind 127.0.0.1:8080
 
 Open `http://127.0.0.1:8080` for the embedded Control Center HTML UI, or use the React panel in `@spanda/web` / the Tauri desktop shell.
 
+Remote API from the CLI (no server required on the client machine):
+
+```bash
+export SPANDA_CONTROL_CENTER_URL=http://127.0.0.1:8080
+export SPANDA_API_KEY=your-operator-key
+spanda control-center dashboard
+spanda control-center drift --baseline-id <snapshot-id>
+```
+
+See [control-center.md](./control-center.md) for incidents, approvals, evidence, and generic `api get|post`.
+
 ### Smoke test (API + desktop compile check)
 
 ```bash

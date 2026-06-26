@@ -22,6 +22,27 @@ spanda control-center serve --grpc-bind 127.0.0.1:50051
 
 Open `http://127.0.0.1:8080/` for the Control Center UI, or use the **Control Center** view in `@spanda/web` (set API URL to the serve address).
 
+### Remote CLI (REST parity)
+
+Query a running Control Center without curl — uses `SPANDA_CONTROL_CENTER_URL` (default `http://127.0.0.1:8080`) and `SPANDA_API_KEY` for mutations:
+
+```bash
+export SPANDA_CONTROL_CENTER_URL=http://127.0.0.1:8080
+export SPANDA_API_KEY=your-operator-key
+
+spanda control-center dashboard
+spanda control-center drift --baseline-id <snapshot-id>
+spanda control-center incidents list
+spanda control-center approvals list
+spanda control-center approvals submit --snapshot-id <id>
+spanda control-center approvals approve <approval-id>
+spanda control-center evidence list
+
+# Generic escape hatch for any /v1 path
+spanda control-center api get /v1/sre/summary
+spanda control-center api post /v1/ota/plan --body '{"strategy":"canary","version":"1.0","dry_run":true}'
+```
+
 ---
 
 ## Native gRPC (tonic)
