@@ -151,6 +151,31 @@ impl IncidentStore {
         }
         Some(resolved.iter().sum::<f64>() / resolved.len() as f64)
     }
+
+    /// Open an incident from a critical alert when no active incident references it.
+    pub fn maybe_open_from_alert(&mut self, alert: &crate::alerting::Alert) -> Option<Incident> {
+        if alert.severity != crate::alerting::AlertSeverity::Critical {
+            return None;
+        }
+        let already_open = self.incidents.iter().any(|incident| {
+            incident.source_alert_id.as_deref() == Some(alert.id.as_str())
+                && incident.status != IncidentStatus::Resolved
+        });
+        if already_open {
+            return None;
+        }
+        let severity = match alert.severity {
+            crate::alerting::AlertSeverity::Critical => IncidentSeverity::Critical,
+            crate::alerting::AlertSeverity::Warning => IncidentSeverity::Warning,
+            crate::alerting::AlertSeverity::Info => IncidentSeverity::Info,
+        };
+        Some(self.create(
+            format!("Alert: {:?}", alert.alert_type),
+            alert.message.clone(),
+            severity,
+            Some(alert.id.clone()),
+        ))
+    }
 }
 
 pub fn now_ms() -> f64 {
@@ -177,5 +202,22 @@ mod tests {
         store.resolve(&created.id);
         assert!(store.mttr_hint_ms().is_some());
         assert_eq!(store.open_count(), 0);
+    }
+
+    #[test]
+    fn incident_from_critical_alert() {
+        let mut store = IncidentStore::new(10);
+        let alert = crate::alerting::Alert {
+            id: "alert-1".into(),
+            alert_type: crate::alerting::AlertType::HealthCritical,
+            severity: crate::alerting::AlertSeverity::Critical,
+            message: "battery critical".into(),
+            source: "rover".into(),
+            timestamp_ms: 1.0,
+            delivered_via: vec![],
+        };
+        assert!(store.maybe_open_from_alert(&alert).is_some());
+        assert_eq!(store.open_count(), 1);
+        assert!(store.maybe_open_from_alert(&alert).is_none());
     }
 }

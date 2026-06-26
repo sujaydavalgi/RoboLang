@@ -188,6 +188,24 @@ pub fn handle_request(
         );
         return (response, correlation_id);
     }
+    if let Some(response) = route_config_approval(
+        state,
+        path,
+        &request.method,
+        &request.body,
+        ctx.as_ref(),
+    ) {
+        e3::record_trace(
+            state,
+            &correlation_id,
+            &request.method,
+            path,
+            response.status,
+            started_ms,
+            ctx.as_ref(),
+        );
+        return (response, correlation_id);
+    }
     if let Some(response) = route_sre_incident(
         state,
         path,
@@ -259,6 +277,7 @@ pub fn handle_request(
         ("/v1/compliance/export", "POST") => {
             e4::compliance_export(state, query, Some(&request.body), ctx.as_ref())
         }
+        ("/v1/compliance/evidence", "GET") => e4::compliance_evidence_list(ctx.as_ref()),
         ("/v1/digital-thread/query", "GET") => e4::digital_thread_query(state, query),
         ("/v1/executive/scorecard", "GET") => e4::executive_scorecard(state),
         ("/v1/analytics/readiness", "GET") => e4::analytics_readiness(state, query),
@@ -387,11 +406,18 @@ fn alerts_list(state: &ControlCenterState) -> HttpResponse {
     }))
 }
 
+fn record_alert(state: &mut ControlCenterState, mut alert: Alert) {
+    state.alert_dispatcher.dispatch(&mut alert);
+    state.alert_store.push(alert.clone());
+    let _ = state.incident_store.maybe_open_from_alert(&alert);
+    let _ = crate::persistence::persist_runtime_state(state);
+}
+
 fn alerts_test(state: &mut ControlCenterState, ctx: Option<&RbacContext>) -> HttpResponse {
     if !ApiKeyStore::check(ctx, RbacAction::Operate) {
         return unauthorized();
     }
-    let mut alert = Alert {
+    let alert = Alert {
         id: format!("test-{}", now_ms()),
         alert_type: AlertType::Custom,
         severity: AlertSeverity::Info,
@@ -400,9 +426,7 @@ fn alerts_test(state: &mut ControlCenterState, ctx: Option<&RbacContext>) -> Htt
         timestamp_ms: now_ms(),
         delivered_via: vec![],
     };
-    state.alert_dispatcher.dispatch(&mut alert);
-    state.alert_store.push(alert.clone());
-    let _ = crate::persistence::persist_runtime_state(state);
+    record_alert(state, alert.clone());
     json_ok(&serde_json::json!({
         "ok": true,
         "alert": alert,
@@ -463,18 +487,16 @@ fn provision_run(
     let registry = state.device_registry();
     let report = run_provision_workflow(device_id, &registry, robot_id);
     if !report.ready {
-        let mut alert = Alert {
+        let alert = Alert {
             id: format!("provision-{}", now_ms()),
             alert_type: AlertType::ReadinessFailed,
-            severity: AlertSeverity::Warning,
+            severity: AlertSeverity::Critical,
             message: format!("provisioning failed for device '{device_id}'"),
             source: "provisioning".into(),
             timestamp_ms: now_ms(),
             delivered_via: vec![],
         };
-        state.alert_dispatcher.dispatch(&mut alert);
-        state.alert_store.push(alert);
-        let _ = crate::persistence::persist_runtime_state(state);
+        record_alert(state, alert);
         if let Some(resolved) = state.resolved.as_mut() {
             if let Some(device) = resolved
                 .device_registry
@@ -540,6 +562,83 @@ fn config_snapshots_save(
     }
 }
 
+fn config_approvals_list() -> HttpResponse {
+    let path = spanda_config::default_approvals_path();
+    let queue = spanda_config::load_approval_queue(&path).unwrap_or_default();
+    json_ok(&serde_json::json!({
+        "version": API_VERSION,
+        "approvals": queue.requests,
+    }))
+}
+
+fn config_approvals_submit(body: &str, ctx: Option<&RbacContext>) -> HttpResponse {
+    if !ApiKeyStore::check(ctx, RbacAction::Deploy) {
+        return unauthorized();
+    }
+    let payload: serde_json::Value = match serde_json::from_str(body) {
+        Ok(value) => value,
+        Err(error) => return bad_request(&error.to_string()),
+    };
+    let Some(snapshot_id) = payload.get("snapshot_id").and_then(|v| v.as_str()) else {
+        return bad_request("missing snapshot_id");
+    };
+    let note = payload
+        .get("note")
+        .and_then(|v| v.as_str())
+        .map(str::to_string);
+    let requester = ctx
+        .map(|context| context.key_id.clone())
+        .unwrap_or_else(|| "anonymous".into());
+    let path = spanda_config::default_approvals_path();
+    let mut queue = spanda_config::load_approval_queue(&path).unwrap_or_default();
+    match spanda_config::submit_config_approval(&mut queue, snapshot_id, &requester, note) {
+        Ok(request) => {
+            let _ = spanda_config::save_approval_queue(&path, &queue);
+            json_ok(&serde_json::json!({
+                "version": API_VERSION,
+                "ok": true,
+                "approval": request,
+            }))
+        }
+        Err(error) => bad_request(&error.to_string()),
+    }
+}
+
+fn config_approvals_resolve(
+    request_id: &str,
+    approve: bool,
+    body: &str,
+    ctx: Option<&RbacContext>,
+) -> HttpResponse {
+    if !ApiKeyStore::check(ctx, RbacAction::Approve) {
+        return unauthorized();
+    }
+    let resolver = ctx
+        .map(|context| context.key_id.clone())
+        .unwrap_or_else(|| "anonymous".into());
+    let note = serde_json::from_str::<serde_json::Value>(body)
+        .ok()
+        .and_then(|value| value.get("note").and_then(|v| v.as_str()).map(str::to_string));
+    let path = spanda_config::default_approvals_path();
+    let mut queue = spanda_config::load_approval_queue(&path).unwrap_or_default();
+    let result = if approve {
+        spanda_config::approve_config_request(&mut queue, request_id, &resolver)
+    } else {
+        spanda_config::reject_config_request(&mut queue, request_id, &resolver, note)
+    };
+    match result {
+        Ok(request) => {
+            let _ = spanda_config::save_approval_queue(&path, &queue);
+            json_ok(&serde_json::json!({
+                "version": API_VERSION,
+                "ok": true,
+                "approval": request,
+            }))
+        }
+        Err(error) => bad_request(&error.to_string()),
+    }
+}
+
 fn discovery_run(query: &str) -> HttpResponse {
     let params = parse_query(query);
     let transport = params
@@ -564,6 +663,29 @@ fn discovery_run(query: &str) -> HttpResponse {
             "installed_packages": spanda_config::list_installed_discovery_packages(),
         })),
         None => bad_request("discovery failed"),
+    }
+}
+
+fn route_config_approval(
+    state: &mut ControlCenterState,
+    path: &str,
+    method: &str,
+    body: &str,
+    ctx: Option<&RbacContext>,
+) -> Option<HttpResponse> {
+    let _ = state;
+    if path == "/v1/config/approvals" && method == "GET" {
+        return Some(config_approvals_list());
+    }
+    if path == "/v1/config/approvals" && method == "POST" {
+        return Some(config_approvals_submit(body, ctx));
+    }
+    let rest = path.strip_prefix("/v1/config/approvals/")?;
+    let (request_id, action) = rest.split_once('/').unwrap_or((rest, ""));
+    match (action, method) {
+        ("approve", "POST") => Some(config_approvals_resolve(request_id, true, body, ctx)),
+        ("reject", "POST") => Some(config_approvals_resolve(request_id, false, body, ctx)),
+        _ => None,
     }
 }
 

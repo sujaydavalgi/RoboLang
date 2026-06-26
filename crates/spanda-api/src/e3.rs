@@ -212,6 +212,23 @@ pub fn sre_summary(state: &ControlCenterState) -> HttpResponse {
     } else {
         ((pool.healthy + pool.assigned) as f64 / pool.total as f64) * 100.0
     };
+    let health_trends = spanda_ops::health_trends_summary(
+        pool.degraded as usize,
+        pool.failed as usize,
+        pool.offline as usize,
+        pool.total as usize,
+    );
+    let readiness_trends = state.program_path.as_ref().and_then(|path| {
+        let history =
+            spanda_readiness::load_readiness_history(&spanda_readiness::default_readiness_history_path());
+        let label = path
+            .file_name()
+            .and_then(|name| name.to_str())
+            .unwrap_or("program.sd")
+            .to_string();
+        let report = spanda_readiness::analyze_readiness_trends(&history, &label, Some(7), 80);
+        serde_json::to_value(&report).ok()
+    });
     json_ok(&serde_json::json!({
         "version": "v1",
         "availability_percent": availability,
@@ -224,6 +241,9 @@ pub fn sre_summary(state: &ControlCenterState) -> HttpResponse {
         "incidents_open": state.incident_store.open_count(),
         "incidents_acknowledged": state.incident_store.acknowledged_count(),
         "mttr_hint_ms": state.incident_store.mttr_hint_ms(),
+        "mtbf_hint_ms": spanda_ops::mtbf_hint_ms(&alerts),
+        "health_trends": health_trends,
+        "readiness_trends": readiness_trends,
         "slo": spanda_ops::slo_status(availability),
     }))
 }

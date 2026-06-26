@@ -343,6 +343,7 @@
             <div class="stat"><dt>SLO met</dt><dd class="${slo.met ? "ok" : "error"}">${slo.met ? "yes" : "no"}</dd></div>
             <div class="stat"><dt>Incidents open</dt><dd>${sre.incidents_open ?? 0}</dd></div>
             <div class="stat"><dt>MTTR hint (ms)</dt><dd>${sre.mttr_hint_ms ?? "—"}</dd></div>
+            <div class="stat"><dt>MTBF hint (ms)</dt><dd>${sre.mtbf_hint_ms ?? "—"}</dd></div>
             <div class="stat"><dt>Alerts</dt><dd>${sre.alerts_total}</dd></div>
             <div class="stat"><dt>Critical</dt><dd>${sre.alerts_critical}</dd></div>
             <div class="stat"><dt>Traces</dt><dd>${sre.traces_recorded}</dd></div>

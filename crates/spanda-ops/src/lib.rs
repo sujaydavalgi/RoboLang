@@ -5,14 +5,16 @@ pub mod incidents;
 pub mod otlp_metrics;
 pub mod sre;
 pub mod otlp_traces;
+pub mod pagerduty;
 pub mod pdf_report;
 pub mod slack;
+pub mod teams;
 
 pub use alerting::{Alert, AlertChannel, AlertDispatcher, AlertSeverity, AlertStore, AlertType};
 pub use incidents::{
     Incident, IncidentSeverity, IncidentStatus, IncidentStore,
 };
-pub use sre::{slo_status, slo_target_percent};
+pub use sre::{health_trends_summary, mtbf_hint_ms, slo_status, slo_target_percent};
 pub use otlp_metrics::{
     env_metrics_endpoint, push_otlp_metrics, render_otlp_metrics_json, ControlCenterMetrics,
 };

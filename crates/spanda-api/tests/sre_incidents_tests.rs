@@ -88,4 +88,6 @@ fn incident_lifecycle_via_rest() {
         summary.body
     );
     assert!(summary_json.get("slo").is_some());
+    assert!(summary_json.get("health_trends").is_some());
+    assert!(summary_json.get("mtbf_hint_ms").is_some());
 }
