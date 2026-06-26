@@ -1,0 +1,18 @@
+[package]
+name = "spanda-discovery-cellular"
+version = "0.1.0"
+description = "LTE/5G modem discovery transport for Spanda Control Center"
+license = "Apache-2.0"
+
+[safety]
+level = "sensors"
+
+[capabilities]
+required = [
+  "network.discover",
+  "network.cellular",
+]
+
+[adapter]
+provides = ["discovery.cellular"]
+requires = ["network.cellular"]

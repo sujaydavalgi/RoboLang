@@ -9,6 +9,11 @@ const DISCOVERY_PACKAGES: &[(&str, &str)] = &[
     ("ble", "spanda-discovery-ble"),
     ("bluetooth", "spanda-discovery-ble"),
     ("usb", "spanda-discovery-usb"),
+    ("wifi", "spanda-discovery-wifi"),
+    ("cellular", "spanda-discovery-cellular"),
+    ("lte", "spanda-discovery-cellular"),
+    ("5g", "spanda-discovery-cellular"),
+    ("serial", "spanda-discovery-serial"),
 ];
 
 /// Map a transport name to its registry package when one exists.

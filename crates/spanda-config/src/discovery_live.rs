@@ -346,6 +346,86 @@ fn resolve_socket_addr(host: &str, port: u16) -> Option<SocketAddr> {
     format!("{host}:{port}").parse().ok()
 }
 
+fn env_match_list(env_key: &str, transport: &str, default_logical: &str) -> Vec<DiscoveryMatch> {
+    let Ok(custom) = std::env::var(env_key) else {
+        return Vec::new();
+    };
+    custom
+        .split(',')
+        .filter(|entry| !entry.trim().is_empty())
+        .enumerate()
+        .map(|(index, entry)| {
+            let parts: Vec<_> = entry.split('@').collect();
+            let id = parts.first().copied().unwrap_or("device");
+            let host = parts.get(1).copied().unwrap_or("127.0.0.1");
+            discovery_match(
+                &format!("{transport}-{id}-{index}"),
+                Some(default_logical),
+                host,
+                transport,
+            )
+        })
+        .collect()
+}
+
+/// Probe WiFi-associated hosts via env override or subnet correlation.
+pub fn probe_wifi(timeout_ms: u64) -> Vec<DiscoveryMatch> {
+    let env_matches = env_match_list("SPANDA_DISCOVERY_WIFI_MATCHES", "wifi", "wifi");
+    if !env_matches.is_empty() {
+        return env_matches;
+    }
+    if let Some(subnet) = default_discovery_subnet() {
+        let hosts = crate::device_identity::scan_subnet(&subnet, &[80, 443, 8080], timeout_ms);
+        if !hosts.is_empty() {
+            return hosts
+                .into_iter()
+                .enumerate()
+                .map(|(index, probe)| DiscoveryMatch {
+                    device_id: format!("wifi-host-{index}"),
+                    logical_name: Some("wifi".into()),
+                    configured_ip: probe.ip.clone(),
+                    probe,
+                    matched_by: "wifi".into(),
+                })
+                .collect();
+        }
+    }
+    Vec::new()
+}
+
+/// Probe cellular modems via env override (`SPANDA_DISCOVERY_CELLULAR_MATCHES`).
+pub fn probe_cellular() -> Vec<DiscoveryMatch> {
+    env_match_list(
+        "SPANDA_DISCOVERY_CELLULAR_MATCHES",
+        "cellular",
+        "cellular",
+    )
+}
+
+/// Probe serial devices via env override or shallow `/dev/tty*` listing.
+pub fn probe_serial() -> Vec<DiscoveryMatch> {
+    let env_matches = env_match_list("SPANDA_DISCOVERY_SERIAL_MATCHES", "serial", "serial");
+    if !env_matches.is_empty() {
+        return env_matches;
+    }
+    let mut matches = Vec::new();
+    if let Ok(entries) = std::fs::read_dir("/dev") {
+        for entry in entries.flatten() {
+            let name = entry.file_name().to_string_lossy().to_string();
+            if name.starts_with("ttyUSB") || name.starts_with("ttyACM") {
+                let path = format!("/dev/{name}");
+                matches.push(discovery_match(
+                    &format!("serial-{name}"),
+                    Some("serial"),
+                    &path,
+                    "serial",
+                ));
+            }
+        }
+    }
+    matches
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

@@ -1,0 +1,18 @@
+[package]
+name = "spanda-discovery-wifi"
+version = "0.1.0"
+description = "WiFi subnet discovery transport for Spanda Control Center"
+license = "Apache-2.0"
+
+[safety]
+level = "sensors"
+
+[capabilities]
+required = [
+  "network.discover",
+  "network.wifi",
+]
+
+[adapter]
+provides = ["discovery.wifi"]
+requires = ["network.wifi"]

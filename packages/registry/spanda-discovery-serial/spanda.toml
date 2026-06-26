@@ -1,0 +1,18 @@
+[package]
+name = "spanda-discovery-serial"
+version = "0.1.0"
+description = "Serial port discovery transport for Spanda Control Center"
+license = "Apache-2.0"
+
+[safety]
+level = "sensors"
+
+[capabilities]
+required = [
+  "device.discover",
+  "serial.scan",
+]
+
+[adapter]
+provides = ["discovery.serial"]
+requires = ["serial.port"]

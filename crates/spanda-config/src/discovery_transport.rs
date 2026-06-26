@@ -3,7 +3,8 @@
 use crate::discovery_registry::wrap_with_registry_package;
 use crate::device_identity::{DiscoveryMatch, DeviceIdentityRecord, NetworkHostProbe};
 use crate::discovery_live::{
-    default_discovery_subnet, probe_ble, probe_can, probe_mdns, probe_mqtt, probe_ros2, probe_usb,
+    default_discovery_subnet, probe_ble, probe_can, probe_cellular, probe_mdns, probe_mqtt,
+    probe_ros2, probe_serial, probe_usb, probe_wifi,
 };
 use serde::{Deserialize, Serialize};
 
@@ -163,11 +164,36 @@ fn probe_ros2_options(options: &DiscoveryOptions) -> Vec<DiscoveryMatch> {
     probe_ros2(options.timeout_ms.unwrap_or(2000))
 }
 
+fn probe_wifi_options(options: &DiscoveryOptions) -> Vec<DiscoveryMatch> {
+    probe_wifi(options.timeout_ms.unwrap_or(500))
+}
+
+fn probe_cellular_options(_options: &DiscoveryOptions) -> Vec<DiscoveryMatch> {
+    probe_cellular()
+}
+
+fn probe_serial_options(_options: &DiscoveryOptions) -> Vec<DiscoveryMatch> {
+    probe_serial()
+}
+
 live_transport!(MockBleDiscoveryTransport, "ble", probe_ble_options, "ble-stub-device");
 live_transport!(MockUsbDiscoveryTransport, "usb", probe_usb_options, "usb-stub-device");
 live_transport!(MockCanDiscoveryTransport, "can", probe_can_options, "can-stub-device");
 live_transport!(MockMqttDiscoveryTransport, "mqtt", probe_mqtt_options, "mqtt-stub-device");
 live_transport!(MockRos2DiscoveryTransport, "ros2", probe_ros2_options, "ros2-stub-device");
+live_transport!(MockWifiDiscoveryTransport, "wifi", probe_wifi_options, "wifi-stub-device");
+live_transport!(
+    MockCellularDiscoveryTransport,
+    "cellular",
+    probe_cellular_options,
+    "cellular-stub-device"
+);
+live_transport!(
+    MockSerialDiscoveryTransport,
+    "serial",
+    probe_serial_options,
+    "serial-stub-device"
+);
 
 /// Resolve a discovery transport by name (built-in stubs; packages extend via registry).
 pub fn discovery_transport_by_name(name: &str) -> Option<Box<dyn DeviceDiscoveryTransport>> {
@@ -177,8 +203,26 @@ pub fn discovery_transport_by_name(name: &str) -> Option<Box<dyn DeviceDiscovery
             "mdns",
             Box::new(MockMdnsDiscoveryTransport),
         )),
-        "ble" | "bluetooth" => Some(Box::new(MockBleDiscoveryTransport)),
-        "usb" => Some(Box::new(MockUsbDiscoveryTransport)),
+        "ble" | "bluetooth" => Some(wrap_with_registry_package(
+            "ble",
+            Box::new(MockBleDiscoveryTransport),
+        )),
+        "usb" => Some(wrap_with_registry_package(
+            "usb",
+            Box::new(MockUsbDiscoveryTransport),
+        )),
+        "wifi" => Some(wrap_with_registry_package(
+            "wifi",
+            Box::new(MockWifiDiscoveryTransport),
+        )),
+        "cellular" | "lte" | "5g" => Some(wrap_with_registry_package(
+            "cellular",
+            Box::new(MockCellularDiscoveryTransport),
+        )),
+        "serial" => Some(wrap_with_registry_package(
+            "serial",
+            Box::new(MockSerialDiscoveryTransport),
+        )),
         "can" => Some(Box::new(MockCanDiscoveryTransport)),
         "mqtt" => Some(Box::new(MockMqttDiscoveryTransport)),
         "ros2" | "dds" => Some(Box::new(MockRos2DiscoveryTransport)),
