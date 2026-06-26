@@ -425,11 +425,11 @@ Bundled copies ship in the `spanda` crate for `cargo install` — refresh with `
 
 | Gap | Notes |
 |-----|-------|
-| Hardware secure boot | Contract stubs + verify-time/live attestation + TPM backends with PCR quote, signature check, and optional PCR0 policy + bundled trust registry; vendor SDK integration optional |
-| Real-time spoofing ML | Shipped — HTTP + mock/file/script ML backends with confidence filtering |
+| Production vendor TPM SDK | Shipped adapter contract — `SPANDA_TPM_BACKEND=vendor` with SDK scripts; platform-native SDK binaries still operator-supplied |
+| Real-time spoofing ML | Shipped — HTTP + mock/file/script ML backends with confidence filtering and operator confirmation gates |
 | Fleet-wide tamper correlation | Shipped — offline `--fleet <manifest.json>` and live `--mesh-url` ingest |
-| Legal/compliance certification | Template profiles + defense/medical showcases — not accredited standards |
-| Zero false-positive guarantee | Confidence scores on spoofing ML; Critical tamper_policy destructive actions require operator approval (`SPANDA_OPERATOR_APPROVAL=1` to bypass in sim) |
+| Legal/compliance certification | Shipped engineering path — template profiles, accreditation export (`spanda compliance report`), explicit `template_only` disclaimer; not accredited regulatory approval |
+| Zero false-positive guarantee | Mitigated — `SPANDA_SPOOFING_MIN_CONFIDENCE`, remote AK chain validation, operator approval for Critical tamper/spoofing responses (`SPANDA_OPERATOR_APPROVAL=1` to bypass in sim); no absolute zero-FP warranty |
 
 ---
 

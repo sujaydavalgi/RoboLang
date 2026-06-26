@@ -34,7 +34,11 @@ Reports include an explicit **template notice** — profiles are engineering tem
 spanda verify examples/showcase/policy/warehouse.sd --profile warehouse
 spanda verify rover.sd --profile medical --json
 spanda readiness rover.sd --profile medical
+spanda compliance report examples/showcase/compliance/defense_rover.sd --profile defense
+spanda compliance report examples/showcase/compliance/defense_rover.sd --profile defense --json
 ```
+
+`spanda compliance report` exports an **accreditation bundle** with evidence checklist, audit export ID, and explicit `template_only` status — suitable for engineering audit trails, not legal certification.
 
 ## Integration
 
@@ -42,6 +46,6 @@ Built on readiness, capability verification, and assurance evidence checks in `s
 
 **Disclaimer:** Profiles are **templates** for engineering discipline, not regulatory approval.
 
-Showcase: `examples/showcase/policy/warehouse.sd`, `examples/showcase/compliance/defense_rover.sd`, `examples/showcase/compliance/medical_rover.sd` · smoke: `scripts/compliance_smoke.sh`
+Showcase: `examples/showcase/policy/warehouse.sd`, `examples/showcase/compliance/defense_rover.sd`, `examples/showcase/compliance/medical_rover.sd` · smoke: `scripts/compliance_smoke.sh`, `scripts/gaps_smoke.sh`
 
 See [policy-engine.md](./policy-engine.md) · [platform-maturity-roadmap.md](./platform-maturity-roadmap.md).
