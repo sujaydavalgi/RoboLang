@@ -82,7 +82,7 @@ Full analysis: [enterprise-operations-roadmap.md](./enterprise-operations-roadma
 |---|--------|----------|--------|
 | 1 | Control Center (web UI) | NOW | **Experimental** — `spanda control-center serve` |
 | 2 | Device Pool (central inventory) | NOW | **Experimental** (extends `DeviceRegistry` + lifecycle) |
-| 3 | Device Discovery (package transports) | NOW | **Experimental** (IP subnet, manual) / **Planned** (mDNS, BLE, CAN, …) |
+| 3 | Device Discovery (package transports) | NOW | **Experimental** — subnet, host-backed mDNS/BLE/USB/CAN/MQTT/ROS2 + pool ingest |
 | 4 | Provisioning (discover → ready workflow) | NOW | **Experimental** — `POST /v1/provision` |
 | 5 | Configuration Management (versioned cascading TOML) | NOW | **Experimental** (resolve, diff, snapshots) / **Planned** (approval) |
 | 6 | RBAC (roles + permissions) | NOW | **Experimental** — `SPANDA_API_KEY`, `/v1/rbac/matrix` |
@@ -93,7 +93,7 @@ Full analysis: [enterprise-operations-roadmap.md](./enterprise-operations-roadma
 | 11 | OTA & Rollback (canary, blue/green) | NEXT | **Experimental** (rollout, rollback) / **Planned** (canary, phased) |
 | 12 | Package Trust (scoring) | NEXT | **Experimental** — `spanda trust` |
 | 13 | SDKs (Python, REST, gRPC, WebSocket) | NEXT | **Planned** |
-| 14 | Operator Workflows (approve, takeover, quarantine) | NEXT | **Experimental** (takeover, approval env) / **Planned** (UI workflows) |
+| 14 | Operator Workflows (approve, takeover, quarantine) | NEXT | **Experimental** — device trust API/CLI/UI, mission approve, quarantine |
 | 15 | SRE (SLO, MTTR, incidents) | NEXT | **Planned** |
 | 16 | Reporting (fleet, mission, compliance exports) | LATER | **Planned** |
 | 17 | Compliance (evidence packs) | LATER | **Experimental** — `spanda compliance report` |
