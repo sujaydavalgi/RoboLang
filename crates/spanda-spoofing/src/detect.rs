@@ -37,6 +37,10 @@ pub struct SpoofingReport {
     pub passed: bool,
     #[serde(default)]
     pub ml_alerts_merged: u32,
+    #[serde(default)]
+    pub suppressed_low_confidence: u32,
+    #[serde(default)]
+    pub requires_operator_confirmation: bool,
 }
 
 /// Run spoof-check on a parsed program (static coverage analysis).
@@ -100,6 +104,8 @@ pub fn generate_program_spoof_check(program: &Program, source_label: &str) -> Sp
         alerts,
         passed,
         ml_alerts_merged: 0,
+        suppressed_low_confidence: 0,
+        requires_operator_confirmation: false,
     }
 }
 
@@ -124,6 +130,8 @@ pub fn generate_trace_spoof_check(trace: &MissionTrace, source_label: &str) -> S
     let ml_before = alerts.len();
     crate::ml::merge_ml_spoofing_alerts(trace, &mut alerts);
     let ml_alerts_merged = alerts.len().saturating_sub(ml_before) as u32;
+    let suppressed_low_confidence = crate::confidence::apply_spoofing_confidence_filter(&mut alerts);
+    let requires_operator_confirmation = crate::confidence::requires_operator_confirmation(&alerts);
     let passed = !alerts.iter().any(|alert| {
         matches!(
             alert.severity,
@@ -139,6 +147,8 @@ pub fn generate_trace_spoof_check(trace: &MissionTrace, source_label: &str) -> S
         alerts,
         passed,
         ml_alerts_merged,
+        suppressed_low_confidence,
+        requires_operator_confirmation,
     }
 }
 
@@ -223,6 +233,18 @@ fn format_spoofing_text(report: &SpoofingReport) -> String {
 
     if report.ml_alerts_merged > 0 {
         lines.push(format!("ML alerts merged: {}", report.ml_alerts_merged));
+    }
+    if report.suppressed_low_confidence > 0 {
+        lines.push(format!(
+            "Suppressed low-confidence alerts: {}",
+            report.suppressed_low_confidence
+        ));
+    }
+    if report.requires_operator_confirmation {
+        lines.push(
+            "Operator confirmation required before destructive tamper response (set SPANDA_OPERATOR_APPROVAL=1 in sim to bypass)."
+                .into(),
+        );
     }
 
     if !report.alerts.is_empty() {
