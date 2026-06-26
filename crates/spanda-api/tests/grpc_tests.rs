@@ -111,6 +111,41 @@ async fn grpc_expanded_endpoints_return_json() {
         .expect("openapi")
         .into_inner();
     assert!(openapi.json.contains("openapi"));
+
+    let health_summary = client
+        .get_health_summary(Empty {})
+        .await
+        .expect("health summary")
+        .into_inner();
+    assert!(health_summary.json.contains("overall_status"));
+
+    let assurance = client
+        .get_assurance_summary(Empty {})
+        .await
+        .expect("assurance")
+        .into_inner();
+    assert!(assurance.json.contains("loaded"));
+
+    let diagnosis = client
+        .get_diagnosis_summary(Empty {})
+        .await
+        .expect("diagnosis")
+        .into_inner();
+    assert!(diagnosis.json.contains("loaded"));
+
+    let ota = client
+        .get_ota_status(Empty {})
+        .await
+        .expect("ota")
+        .into_inner();
+    assert!(ota.json.contains("version"));
+
+    let metrics = client
+        .get_otlp_metrics(Empty {})
+        .await
+        .expect("otlp metrics")
+        .into_inner();
+    assert!(metrics.json.contains("resourceMetrics"));
 }
 
 async fn connect(bind: &str) -> ControlCenterClient<Channel> {

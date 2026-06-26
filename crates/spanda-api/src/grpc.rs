@@ -9,7 +9,8 @@ pub mod spanda_v1 {
 
 use spanda_v1::control_center_server::{ControlCenter, ControlCenterServer};
 use spanda_v1::{
-    DriftRequest, Empty, HealthResponse, JsonResponse, ReadinessRequest, TrustPackageRequest,
+    DriftRequest, Empty, HealthResponse, JsonResponse, QueryRequest, ReadinessRequest,
+    TrustPackageRequest,
 };
 
 struct GrpcControlCenter {
@@ -106,6 +107,64 @@ impl ControlCenter for GrpcControlCenter {
         Ok(Response::new(JsonResponse {
             json: crate::handlers::openapi_json(),
         }))
+    }
+
+    async fn get_health_summary(
+        &self,
+        _request: Request<Empty>,
+    ) -> Result<Response<JsonResponse>, Status> {
+        self.with_state(|state| crate::handlers::health_summary_json(state))
+            .map(Response::new)
+    }
+
+    async fn get_assurance_summary(
+        &self,
+        _request: Request<Empty>,
+    ) -> Result<Response<JsonResponse>, Status> {
+        self.with_state(|state| crate::handlers::assurance_summary_json(state))
+            .map(Response::new)
+    }
+
+    async fn get_diagnosis_summary(
+        &self,
+        _request: Request<Empty>,
+    ) -> Result<Response<JsonResponse>, Status> {
+        self.with_state(|state| crate::handlers::diagnosis_summary_json(state))
+            .map(Response::new)
+    }
+
+    async fn get_executive_scorecard(
+        &self,
+        _request: Request<Empty>,
+    ) -> Result<Response<JsonResponse>, Status> {
+        self.with_state(|state| crate::handlers::executive_scorecard_json(state))
+            .map(Response::new)
+    }
+
+    async fn query_digital_thread(
+        &self,
+        request: Request<QueryRequest>,
+    ) -> Result<Response<JsonResponse>, Status> {
+        let query = request.into_inner().query;
+        self.with_state(|state| crate::handlers::digital_thread_query_json(state, &query))
+            .map(Response::new)
+    }
+
+    async fn get_ota_status(
+        &self,
+        _request: Request<Empty>,
+    ) -> Result<Response<JsonResponse>, Status> {
+        Ok(Response::new(JsonResponse {
+            json: crate::handlers::ota_status_json(),
+        }))
+    }
+
+    async fn get_otlp_metrics(
+        &self,
+        _request: Request<Empty>,
+    ) -> Result<Response<JsonResponse>, Status> {
+        self.with_state(|state| crate::handlers::otlp_metrics_json(state))
+            .map(Response::new)
     }
 
     async fn detect_drift(

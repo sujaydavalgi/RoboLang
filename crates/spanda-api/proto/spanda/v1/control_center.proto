@@ -23,6 +23,10 @@ message TrustPackageRequest {
   string package_name = 1;
 }
 
+message QueryRequest {
+  string query = 1;
+}
+
 service ControlCenter {
   rpc Health(Empty) returns (HealthResponse);
   rpc GetDashboard(Empty) returns (JsonResponse);
@@ -32,5 +36,12 @@ service ControlCenter {
   rpc GetSreSummary(Empty) returns (JsonResponse);
   rpc GetTrustPackage(TrustPackageRequest) returns (JsonResponse);
   rpc GetOpenApi(Empty) returns (JsonResponse);
+  rpc GetHealthSummary(Empty) returns (JsonResponse);
+  rpc GetAssuranceSummary(Empty) returns (JsonResponse);
+  rpc GetDiagnosisSummary(Empty) returns (JsonResponse);
+  rpc GetExecutiveScorecard(Empty) returns (JsonResponse);
+  rpc QueryDigitalThread(QueryRequest) returns (JsonResponse);
+  rpc GetOtaStatus(Empty) returns (JsonResponse);
+  rpc GetOtlpMetrics(Empty) returns (JsonResponse);
   rpc DetectDrift(DriftRequest) returns (JsonResponse);
 }

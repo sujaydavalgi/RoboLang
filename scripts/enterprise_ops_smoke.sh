@@ -221,6 +221,9 @@ curl -sf -H "Authorization: Bearer ${SPANDA_API_KEY}" \
 echo "== OTLP GET /v1/observability/otlp/traces =="
 fetch /v1/observability/otlp/traces | grep -q resourceSpans
 
+echo "== OTLP GET /v1/observability/otlp/metrics =="
+fetch /v1/observability/otlp/metrics | grep -q resourceMetrics
+
 echo "== OTLP POST /v1/observability/otlp/export (mock Jaeger collector) =="
 MOCK_OTLP_PORT=$(python3 -c 'import socket; s=socket.socket(); s.bind(("127.0.0.1", 0)); print(s.getsockname()[1]); s.close()')
 python3 "${ROOT}/scripts/mock_otlp_traces_collector.py" "${MOCK_OTLP_PORT}" &

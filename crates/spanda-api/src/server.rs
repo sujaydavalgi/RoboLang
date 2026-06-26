@@ -66,6 +66,8 @@ pub fn run_control_center_server(options: &ControlCenterOptions) -> Result<(), S
     eprintln!("  GET  /v1/digital-thread/query  capability-to-device trace");
     eprintln!("  GET  /v1/compliance/export     accreditation bundle");
     eprintln!("  WS   /v1/stream/telemetry        live telemetry + traces");
+    eprintln!("  GET  /v1/observability/otlp/metrics  OTLP metrics preview");
+    eprintln!("  POST /v1/observability/otlp/export-metrics  push metrics to collector");
     eprintln!("  POST /v1/observability/otlp/export  push traces to Jaeger");
     if let Some(grpc_bind) = &options.grpc_bind {
         crate::grpc::spawn_grpc_server(grpc_bind.clone(), Arc::clone(&state));

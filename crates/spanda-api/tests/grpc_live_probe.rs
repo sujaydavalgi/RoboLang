@@ -1,7 +1,7 @@
 //! Live gRPC probe against a running Control Center (`SPANDA_GRPC_BIND`).
 use spanda_api::grpc::spanda_v1::control_center_client::ControlCenterClient;
 use spanda_api::grpc::spanda_v1::{
-    DriftRequest, Empty, ReadinessRequest, TrustPackageRequest,
+    DriftRequest, Empty, QueryRequest, ReadinessRequest, TrustPackageRequest,
 };
 use tonic::transport::Channel;
 
@@ -72,6 +72,36 @@ async fn grpc_live_control_center_endpoints() {
         .expect("openapi")
         .into_inner();
     assert!(openapi.json.contains("Spanda"));
+
+    let health_summary = client
+        .get_health_summary(Empty {})
+        .await
+        .expect("health summary")
+        .into_inner();
+    assert!(health_summary.json.contains("overall_status"));
+
+    let metrics = client
+        .get_otlp_metrics(Empty {})
+        .await
+        .expect("otlp metrics")
+        .into_inner();
+    assert!(metrics.json.contains("resourceMetrics"));
+
+    let scorecard = client
+        .get_executive_scorecard(Empty {})
+        .await
+        .expect("scorecard")
+        .into_inner();
+    assert!(scorecard.json.contains("scorecard"));
+
+    let thread = client
+        .query_digital_thread(QueryRequest {
+            query: String::new(),
+        })
+        .await
+        .expect("digital thread")
+        .into_inner();
+    assert!(thread.json.contains("digital_thread"));
 
     if let Ok(baseline_id) = std::env::var("SPANDA_GRPC_BASELINE_ID") {
         let drift = client

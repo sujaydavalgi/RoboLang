@@ -165,8 +165,12 @@ pub fn handle_request(
         ("/v1/sre/summary", "GET") => e3::sre_summary(state),
         ("/v1/observability/traces", "GET") => e3::observability_traces(state),
         ("/v1/observability/otlp/traces", "GET") => observability::otlp_traces_preview(state),
+        ("/v1/observability/otlp/metrics", "GET") => observability::otlp_metrics_preview(state),
         ("/v1/observability/otlp/export", "POST") => {
             observability::otlp_traces_export(state, query, ctx.as_ref())
+        }
+        ("/v1/observability/otlp/export-metrics", "POST") => {
+            observability::otlp_metrics_export(state, query, ctx.as_ref())
         }
         ("/v1/operator/quarantine", "POST") => {
             e3::operator_quarantine(state, &request.body, ctx.as_ref())
@@ -875,6 +879,41 @@ pub fn trust_package_json(query: &str) -> String {
 /// JSON body for gRPC `GetOpenApi` (parity with `GET /v1/openapi.json`).
 pub fn openapi_json() -> String {
     e3::openapi_spec().body
+}
+
+/// JSON body for gRPC `GetHealthSummary` (parity with `GET /v1/health/summary`).
+pub fn health_summary_json(state: &ControlCenterState) -> String {
+    health_summary(state).body
+}
+
+/// JSON body for gRPC `GetAssuranceSummary` (parity with `GET /v1/assurance/summary`).
+pub fn assurance_summary_json(state: &ControlCenterState) -> String {
+    assurance_summary(state).body
+}
+
+/// JSON body for gRPC `GetDiagnosisSummary` (parity with `GET /v1/diagnosis/summary`).
+pub fn diagnosis_summary_json(state: &ControlCenterState) -> String {
+    diagnosis_summary(state).body
+}
+
+/// JSON body for gRPC `GetExecutiveScorecard` (parity with `GET /v1/executive/scorecard`).
+pub fn executive_scorecard_json(state: &ControlCenterState) -> String {
+    e4::executive_scorecard(state).body
+}
+
+/// JSON body for gRPC `QueryDigitalThread` (parity with `GET /v1/digital-thread/query`).
+pub fn digital_thread_query_json(state: &ControlCenterState, query: &str) -> String {
+    e4::digital_thread_query(state, query).body
+}
+
+/// JSON body for gRPC `GetOtaStatus` (parity with `GET /v1/ota/status`).
+pub fn ota_status_json() -> String {
+    e3::ota_status().body
+}
+
+/// JSON body for gRPC `GetOtlpMetrics` (parity with `GET /v1/observability/otlp/metrics`).
+pub fn otlp_metrics_json(state: &ControlCenterState) -> String {
+    crate::observability::otlp_metrics_preview(state).body
 }
 
 #[cfg(test)]
