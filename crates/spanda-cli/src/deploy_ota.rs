@@ -888,6 +888,19 @@ fn cmd_gate(args: &[String]) {
             trust_report.score, trust_report.tier, trust_report.integrity_status
         ),
     });
+    let secure_boot = spanda_tamper::evaluate_secure_boot_coverage(&program, Some(&file));
+    if !secure_boot.contracts.is_empty() {
+        report.gates.push(spanda_readiness::DeploymentGate {
+            name: "secure_boot".into(),
+            passed: secure_boot.passed,
+            message: format!(
+                "secure boot {}/100 contracts={} live_attested={}",
+                secure_boot.score,
+                secure_boot.contracts.len(),
+                secure_boot.live_attested
+            ),
+        });
+    }
     report.passed = report.gates.iter().all(|gate| gate.passed);
     if json {
         println!("{}", serde_json::to_string_pretty(&report).unwrap());

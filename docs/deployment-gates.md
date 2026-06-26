@@ -19,6 +19,7 @@ Prevent unsafe deployment when operational gates fail.
 | Capability | Capability traceability matrix PASS |
 | Package trust | Configured packages meet trust threshold (with `--config`) |
 | Composite trust | Program composite trust score ≥ 60 (`spanda-trust`) |
+| Secure boot | Secure-boot contract trust passes when `trust.jetson` / `trust.pi` imported |
 | Health | No high-severity health readiness issues |
 
 ## CLI
