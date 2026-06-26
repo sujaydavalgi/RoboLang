@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **gRPC operator/provision parity:** `DiscoverDevices`, `RunDiscovery`, `ProvisionDevice`, `PlanOta`, `OperatorQuarantine`, `OperatorMissionApprove`, `ExportCompliance` RPCs (23 total).
+- **Registry discovery runtime:** `discovery_registry` wraps installed `spanda-discovery-mdns` transport; `installed_packages` on discovery API responses.
+
 - **gRPC E2/E4 expansion:** `GetHealthSummary`, `GetAssuranceSummary`, `GetDiagnosisSummary`, `GetExecutiveScorecard`, `QueryDigitalThread`, `GetOtaStatus`, `GetOtlpMetrics` RPCs (16 total).
 - **OTLP metrics (Control Center):** `spanda-ops::otlp_metrics`, `GET /v1/observability/otlp/metrics`, `POST /v1/observability/otlp/export-metrics`; enterprise ops smoke probe.
 

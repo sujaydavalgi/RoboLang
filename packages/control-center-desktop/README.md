@@ -2,6 +2,10 @@
 
 Tauri v2 desktop shell for the Spanda Control Center. The UI reuses `ControlCenterPanel` from `@spanda/web`; the API backend is expected to run separately via `spanda control-center serve` (or any compatible `spanda-api` deployment).
 
+## Security note
+
+The desktop `src-tauri/Cargo.lock` may report [RUSTSEC-2024-0429](https://rustsec.org/advisories/RUSTSEC-2024-0429.html) (`glib` &lt; 0.20) via the GTK/Tauri stack on Linux builds. Upstream fix requires gtk-rs 0.20+ when Tauri adopts it; the Control Center web/API path does not depend on `glib`.
+
 ## Prerequisites
 
 - [Rust](https://rustup.rs/) (stable)

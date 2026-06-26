@@ -45,6 +45,13 @@ Open `http://127.0.0.1:8080/` for the Control Center UI, or use the **Control Ce
 | `GetExecutiveScorecard` | Executive scorecard |
 | `QueryDigitalThread` | Digital thread query (`query` = URL query string) |
 | `GetOtaStatus` | OTA rollout status |
+| `DiscoverDevices` | Single-transport discovery (`query` = URL query string) |
+| `RunDiscovery` | Multi-transport pool ingest (`POST /v1/devices/discover` parity) |
+| `ProvisionDevice` | Provisioning workflow (`POST /v1/provision` parity) |
+| `PlanOta` | OTA rollout plan (`POST /v1/ota/plan` parity) |
+| `OperatorQuarantine` | Operator quarantine workflow |
+| `OperatorMissionApprove` | Mission approval workflow |
+| `ExportCompliance` | Compliance export (`query` = `profile=defense`, …) |
 | `DetectDrift` | Operational drift report (`baseline_id` in request) |
 
 Proto: `crates/spanda-api/proto/spanda/v1/control_center.proto`
@@ -99,7 +106,7 @@ grpcurl -plaintext -d '{}' 127.0.0.1:50051 spanda.v1.ControlCenter/Health
 | `/v1/operator/quarantine` | POST | Bearer | Quarantine a device |
 | `/v1/operator/mission/approve` | POST | Bearer | Approve or reject a mission |
 | `/v1/rpc` | POST | — | gRPC-compatible JSON gateway |
-| **gRPC (tonic)** | — | — | Native `ControlCenter` service on `--grpc-bind` (16 RPCs; REST parity through E4 summaries + OTLP metrics) |
+| **gRPC (tonic)** | — | — | Native `ControlCenter` service on `--grpc-bind` (23 RPCs; provision, discovery, OTA, operator, compliance) |
 | `/v1/compliance/export` | GET/POST | Bearer | Accreditation bundle (`?profile=defense`) |
 | `/v1/digital-thread/query` | GET | — | Trace chain (`?capability=`, `?device_id=`) |
 | `/v1/executive/scorecard` | GET | — | Mission scorecard rollup |

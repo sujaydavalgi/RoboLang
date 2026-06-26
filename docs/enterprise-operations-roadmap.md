@@ -421,7 +421,7 @@ Core host-backed probes (`discovery_live`) with optional registry packages; disc
 |-----------|----------------|--------|
 | IP subnet | core (`network scan`) | **Experimental** |
 | Manual | core (`[[devices]]`) | **Experimental** |
-| mDNS | core (`dns-sd` / `avahi-browse`) + `spanda-discovery-mdns` registry | **Experimental** (host probe) / **Planned** (runtime package load) |
+| mDNS | core (`dns-sd` / `avahi-browse`) + `spanda-discovery-mdns` registry | **Experimental** (host probe + runtime package wrap when `packages/registry/spanda-discovery-mdns` present) |
 | DNS-SD | core (same probe path as mDNS) + `spanda-discovery-mdns` | **Experimental** |
 | USB | core (`lsusb` probe) + `spanda-discovery-usb` | **Experimental** (host probe) / **Planned** (package) |
 | Bluetooth / BLE | core (`bluetoothctl` probe) + `spanda-discovery-ble` | **Experimental** (host probe) / **Planned** (package) |

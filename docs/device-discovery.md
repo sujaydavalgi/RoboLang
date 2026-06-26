@@ -34,7 +34,11 @@ curl -X POST http://127.0.0.1:8080/v1/devices/discover \
   -d '{"subnet":"192.168.1.0/24","transports":["subnet","mdns"],"timeout_ms":2000}'
 ```
 
-Discovered matches are registered into the device pool (`registered` array in the response).
+Discovered matches are registered into the device pool (`registered` array in the response). Responses include `installed_packages` when registry discovery packages (for example `spanda-discovery-mdns`) are present under `packages/registry/` — matches are tagged `mdns:spanda-discovery-mdns` instead of bare `mdns`.
+
+## Registry packages (runtime)
+
+When `packages/registry/spanda-discovery-mdns/` is on disk, the mDNS transport is wrapped with registry package metadata at runtime (`list_installed_discovery_packages()`). Additional transports (`spanda-discovery-ble`, `spanda-discovery-usb`, …) follow the same pattern as they land in the registry.
 
 Environment overrides for CI and headless hosts:
 
