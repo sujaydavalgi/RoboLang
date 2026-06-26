@@ -40,7 +40,7 @@ Phases **E1–E4** are shipped at **Experimental** tier with CI smoke (`scripts/
 | Lifecycle | discover → active → quarantine → retire | Fleet-scale (1000+ devices) perf benchmark |
 | Discovery | mDNS/BLE/USB/wifi/cellular/serial registry | Production transport certs per vendor |
 | Provisioning | `POST /v1/provision`, per-device workflows | Idempotent reprovision + conflict policy doc |
-| Failover | Chain enrichment in recovery | Automated failover drill smoke |
+| Failover | Chain enrichment in recovery | **Shipped:** automated failover drill smoke (`scripts/failover_drill_smoke.sh`) |
 
 ### Configuration Management
 

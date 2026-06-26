@@ -22,6 +22,7 @@
 | OpenAPI REST parity | `GET /v1/openapi.json` documents all `/v1/*` routes | `crates/spanda-api/tests/openapi_parity_tests.rs` |
 | Live OTA execute | `POST /v1/ota/execute` against deploy agent | `crates/spanda-api/tests/ota_execute_live.rs`, `scripts/ota_fleet_execute_smoke.sh` |
 | OTA fleet soak | Multi-agent version bumps + canary progression | `crates/spanda-ota/tests/fleet_soak.rs`, `scripts/ota_fleet_soak.sh` |
+| Failover drill | Redundant chain selection + recovery actions | `crates/spanda-config/tests/failover_drill.rs`, `scripts/failover_drill_smoke.sh` |
 | Remote CLI parity | `spanda control-center` routes vs OpenAPI registry | `crates/spanda-cli/tests/control_center_openapi_parity.rs` |
 | Discovery registry runtime | `spanda-discovery-mdns` package wrap | `crates/spanda-config/src/discovery_registry.rs` |
 | OTLP metrics (Control Center) | `GET /v1/observability/otlp/metrics`, `POST /v1/observability/otlp/export-metrics` | `crates/spanda-ops/src/otlp_metrics.rs`, `scripts/enterprise_ops_smoke.sh` |
