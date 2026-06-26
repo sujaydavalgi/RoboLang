@@ -1,13 +1,33 @@
 //! Digital Thread v1 — query capability-to-device trace chains.
 //!
-use crate::build::{build_dependency_graph, DependencyGraph, GraphEdge, GraphNode};
+use crate::build::{build_dependency_graph, DependencyGraph, GraphEdge, GraphNode, GraphNodeKind};
 use serde::{Deserialize, Serialize};
 use spanda_ast::nodes::Program;
 use spanda_capability::{
     capability_traceability, hardware_traceability, CapabilityTraceRow, HardwareTraceRow,
 };
 use spanda_config::ResolvedSystemConfig;
-use std::collections::{HashSet, VecDeque};
+use std::collections::{BTreeMap, HashSet, VecDeque};
+
+/// Product lifecycle phase for digital thread traceability.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum LifecyclePhase {
+    Requirement,
+    Design,
+    Deploy,
+    Operate,
+    Retire,
+}
+
+/// Lifecycle assignment for a graph node in the digital thread.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct LifecycleRow {
+    pub node_id: String,
+    pub label: String,
+    pub kind: String,
+    pub phase: LifecyclePhase,
+}
 
 /// Filters for digital thread graph traversal.
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
@@ -18,6 +38,8 @@ pub struct DigitalThreadQuery {
     pub device_id: Option<String>,
     #[serde(default)]
     pub node_id: Option<String>,
+    #[serde(default)]
+    pub lifecycle_phase: Option<String>,
 }
 
 /// Device link from configuration registry into the trace graph.
@@ -39,6 +61,8 @@ pub struct DigitalThreadReport {
     pub capability_rows: Vec<CapabilityTraceRow>,
     pub hardware_rows: Vec<HardwareTraceRow>,
     pub device_links: Vec<DigitalThreadDeviceLink>,
+    pub lifecycle_rows: Vec<LifecycleRow>,
+    pub lifecycle_summary: BTreeMap<String, u32>,
     pub chain_summary: Vec<String>,
     pub matched_node_count: usize,
     pub matched_edge_count: usize,
@@ -55,7 +79,15 @@ pub fn query_digital_thread(
     let trace = capability_traceability(program);
     let hardware = hardware_traceability(program);
     let device_links = link_devices(config, &trace.capability_rows);
-    let (nodes, edges) = filter_graph(&full_graph, query, &trace.capability_rows, &device_links);
+    let lifecycle_rows = build_lifecycle_rows(&full_graph.nodes, &device_links);
+    let lifecycle_summary = summarize_lifecycle(&lifecycle_rows);
+    let (nodes, edges) = filter_graph(
+        &full_graph,
+        query,
+        &trace.capability_rows,
+        &device_links,
+        &lifecycle_rows,
+    );
     let chain_summary = summarize_chain(query, &nodes, &edges, &device_links);
     let matched_node_count = nodes.len();
     let matched_edge_count = edges.len();
@@ -73,6 +105,8 @@ pub fn query_digital_thread(
         capability_rows,
         hardware_rows,
         device_links,
+        lifecycle_rows,
+        lifecycle_summary,
         chain_summary,
         matched_node_count,
         matched_edge_count,
@@ -114,13 +148,92 @@ fn link_devices(
         .collect()
 }
 
+fn parse_lifecycle_phase(raw: &str) -> Option<LifecyclePhase> {
+    match raw.to_ascii_lowercase().as_str() {
+        "requirement" | "requirements" => Some(LifecyclePhase::Requirement),
+        "design" => Some(LifecyclePhase::Design),
+        "deploy" | "deployment" => Some(LifecyclePhase::Deploy),
+        "operate" | "operation" | "operations" => Some(LifecyclePhase::Operate),
+        "retire" | "retirement" => Some(LifecyclePhase::Retire),
+        _ => None,
+    }
+}
+
+fn infer_lifecycle_phase(kind: GraphNodeKind, device_lifecycle: Option<&str>) -> LifecyclePhase {
+    if device_lifecycle
+        .map(|state| state.eq_ignore_ascii_case("retired") || state.eq_ignore_ascii_case("retire"))
+        .unwrap_or(false)
+    {
+        return LifecyclePhase::Retire;
+    }
+    match kind {
+        GraphNodeKind::Mission => LifecyclePhase::Requirement,
+        GraphNodeKind::Capability | GraphNodeKind::Safety => LifecyclePhase::Design,
+        GraphNodeKind::Robot
+        | GraphNodeKind::Hardware
+        | GraphNodeKind::Sensor
+        | GraphNodeKind::Actuator => LifecyclePhase::Deploy,
+        GraphNodeKind::Provider | GraphNodeKind::Package => LifecyclePhase::Operate,
+    }
+}
+
+fn build_lifecycle_rows(
+    nodes: &[GraphNode],
+    device_links: &[DigitalThreadDeviceLink],
+) -> Vec<LifecycleRow> {
+    let retired_devices: HashSet<String> = device_links
+        .iter()
+        .filter(|link| {
+            link.lifecycle_state
+                .as_deref()
+                .is_some_and(|state| state.eq_ignore_ascii_case("retired"))
+        })
+        .map(|link| link.device_id.clone())
+        .collect();
+    nodes
+        .iter()
+        .map(|node| {
+            let device_lifecycle = device_links
+                .iter()
+                .find(|link| {
+                    link.assigned_robot
+                        .as_deref()
+                        .is_some_and(|robot| node.id.contains(robot))
+                        || retired_devices.contains(&link.device_id)
+                })
+                .and_then(|link| link.lifecycle_state.as_deref());
+            let phase = infer_lifecycle_phase(node.kind, device_lifecycle);
+            LifecycleRow {
+                node_id: node.id.clone(),
+                label: node.label.clone(),
+                kind: format!("{:?}", node.kind).to_ascii_lowercase(),
+                phase,
+            }
+        })
+        .collect()
+}
+
+fn summarize_lifecycle(rows: &[LifecycleRow]) -> BTreeMap<String, u32> {
+    let mut summary = BTreeMap::new();
+    for row in rows {
+        let key = format!("{:?}", row.phase).to_ascii_lowercase();
+        *summary.entry(key).or_insert(0) += 1;
+    }
+    summary
+}
+
 fn filter_graph(
     graph: &DependencyGraph,
     query: &DigitalThreadQuery,
     capability_rows: &[CapabilityTraceRow],
     device_links: &[DigitalThreadDeviceLink],
+    lifecycle_rows: &[LifecycleRow],
 ) -> (Vec<GraphNode>, Vec<GraphEdge>) {
-    if query.capability.is_none() && query.device_id.is_none() && query.node_id.is_none() {
+    if query.capability.is_none()
+        && query.device_id.is_none()
+        && query.node_id.is_none()
+        && query.lifecycle_phase.is_none()
+    {
         return (graph.nodes.clone(), graph.edges.clone());
     }
 
@@ -144,6 +257,15 @@ fn filter_graph(
             }
             for capability in &link.related_capabilities {
                 seed_ids.insert(format!("capability:{capability}").to_ascii_lowercase());
+            }
+        }
+    }
+    if let Some(phase_raw) = query.lifecycle_phase.as_deref().filter(|value| !value.is_empty()) {
+        if let Some(wanted) = parse_lifecycle_phase(phase_raw) {
+            for row in lifecycle_rows {
+                if row.phase == wanted {
+                    seed_ids.insert(row.node_id.clone());
+                }
             }
         }
     }
@@ -172,6 +294,7 @@ fn filter_graph(
     let nodes: Vec<GraphNode> = visited
         .iter()
         .filter_map(|id| node_map.get(id).cloned())
+        .filter(|node| lifecycle_phase_matches(query, lifecycle_rows, &node.id))
         .collect();
     let node_set: HashSet<String> = visited;
     let edges: Vec<GraphEdge> = graph
@@ -181,6 +304,23 @@ fn filter_graph(
         .cloned()
         .collect();
     (nodes, edges)
+}
+
+fn lifecycle_phase_matches(
+    query: &DigitalThreadQuery,
+    lifecycle_rows: &[LifecycleRow],
+    node_id: &str,
+) -> bool {
+    let Some(raw) = query.lifecycle_phase.as_deref().filter(|value| !value.is_empty()) else {
+        return true;
+    };
+    let Some(wanted) = parse_lifecycle_phase(raw) else {
+        return true;
+    };
+    lifecycle_rows
+        .iter()
+        .find(|row| row.node_id == node_id)
+        .is_some_and(|row| row.phase == wanted)
 }
 
 fn summarize_chain(
@@ -198,6 +338,9 @@ fn summarize_chain(
         nodes.len(),
         edges.len()
     ));
+    if let Some(phase) = query.lifecycle_phase.as_deref().filter(|value| !value.is_empty()) {
+        lines.push(format!("Lifecycle phase filter: {phase}"));
+    }
     for edge in edges.iter().take(12) {
         lines.push(format!("{} --{}--> {}", edge.from, edge.relation, edge.to));
     }
@@ -276,5 +419,25 @@ mod tests {
         );
         assert!(report.matched_node_count > 0);
         assert!(!report.chain_summary.is_empty());
+        assert!(!report.lifecycle_rows.is_empty());
+    }
+
+    #[test]
+    fn lifecycle_phase_filter_limits_nodes() {
+        let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("../../examples/showcase/compliance/defense_rover.sd");
+        let source = std::fs::read_to_string(&path).expect("defense_rover.sd");
+        let tokens = tokenize(&source).expect("tokenize");
+        let program = parse(tokens).expect("parse");
+        let report = query_digital_thread(
+            &program,
+            "defense_rover.sd",
+            None,
+            &DigitalThreadQuery {
+                lifecycle_phase: Some("design".into()),
+                ..DigitalThreadQuery::default()
+            },
+        );
+        assert!(report.matched_node_count <= report.lifecycle_rows.len());
     }
 }

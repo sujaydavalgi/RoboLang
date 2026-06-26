@@ -131,6 +131,7 @@ export function ControlCenterPanel({ apiBase }: Props) {
   const [digitalThread, setDigitalThread] = useState<Record<string, unknown> | null>(null);
   const [threadCapabilityFilter, setThreadCapabilityFilter] = useState("");
   const [threadDeviceFilter, setThreadDeviceFilter] = useState("");
+  const [threadLifecycleFilter, setThreadLifecycleFilter] = useState("");
   const [selectedThreadNode, setSelectedThreadNode] = useState<string | null>(null);
   const [configApprovals, setConfigApprovals] = useState<Record<string, unknown>[]>([]);
   const [evidenceRecords, setEvidenceRecords] = useState<Record<string, unknown>[]>([]);
@@ -606,6 +607,9 @@ export function ControlCenterPanel({ apiBase }: Props) {
       if (threadDeviceFilter.trim()) {
         params.set("device_id", threadDeviceFilter.trim());
       }
+      if (threadLifecycleFilter.trim()) {
+        params.set("lifecycle_phase", threadLifecycleFilter.trim());
+      }
       const query = params.toString();
       const res = await fetch(
         `${base}/v1/digital-thread/query${query ? `?${query}` : ""}`,
@@ -645,6 +649,8 @@ export function ControlCenterPanel({ apiBase }: Props) {
 
   const pool = dashboard?.device_pool;
 
+  const threadLifecycleRows =
+    (digitalThread?.lifecycle_rows as { node_id: string; phase: string }[] | undefined) ?? [];
   const threadGraphNodes = (digitalThread?.graph as { nodes?: DigitalThreadGraphNode[] })
     ?.nodes ?? [];
   const threadGraphEdges = (digitalThread?.graph as { edges?: DigitalThreadGraphEdge[] })
@@ -1118,14 +1124,33 @@ export function ControlCenterPanel({ apiBase }: Props) {
                 placeholder="e.g. gps-001"
               />
             </label>
+            <label>
+              Lifecycle phase
+              <select
+                value={threadLifecycleFilter}
+                onChange={(event) => setThreadLifecycleFilter(event.target.value)}
+              >
+                <option value="">All phases</option>
+                <option value="requirement">Requirement</option>
+                <option value="design">Design</option>
+                <option value="deploy">Deploy</option>
+                <option value="operate">Operate</option>
+                <option value="retire">Retire</option>
+              </select>
+            </label>
             <button type="button" onClick={() => void loadDigitalThread()} disabled={busy}>
               Query
             </button>
           </div>
           <p className="demo-hint">
             {String(digitalThread.matched_node_count ?? 0)} nodes,{" "}
-            {String(digitalThread.matched_edge_count ?? 0)} edges — click a node to highlight
-            neighbors
+            {String(digitalThread.matched_edge_count ?? 0)} edges
+            {threadLifecycleRows.length > 0
+              ? ` — lifecycle phases tracked: ${Object.keys(
+                  (digitalThread.lifecycle_summary as Record<string, number>) ?? {},
+                ).join(", ")}`
+              : ""}{" "}
+            — click a node to highlight neighbors
           </p>
           <div className="digital-thread-legend">
             <span className="legend-mission">Mission</span>
@@ -1140,6 +1165,7 @@ export function ControlCenterPanel({ apiBase }: Props) {
             nodes={threadGraphNodes}
             edges={threadGraphEdges}
             deviceLinks={threadDeviceLinks}
+            lifecycleRows={threadLifecycleRows}
             selectedId={selectedThreadNode}
             onSelectNode={setSelectedThreadNode}
           />

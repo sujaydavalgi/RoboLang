@@ -398,9 +398,11 @@
         errEl.hidden = true;
         const cap = document.getElementById("dt-capability")?.value?.trim() || "";
         const dev = document.getElementById("dt-device")?.value?.trim() || "";
+        const phase = document.getElementById("dt-lifecycle")?.value?.trim() || "";
         const params = new URLSearchParams();
         if (cap) params.set("capability", cap);
         if (dev) params.set("device_id", dev);
+        if (phase) params.set("lifecycle_phase", phase);
         const qs = params.toString();
         const data = await api("/v1/digital-thread/query" + (qs ? "?" + qs : ""));
         const thread = data.digital_thread;
@@ -410,6 +412,14 @@
           <div class="dt-filters">
             <label>Capability<input id="dt-capability" value="${cap}" placeholder="navigate" /></label>
             <label>Device id<input id="dt-device" value="${dev}" placeholder="gps-001" /></label>
+            <label>Lifecycle<select id="dt-lifecycle">
+              <option value="">All phases</option>
+              <option value="requirement"${phase==="requirement"?" selected":""}>Requirement</option>
+              <option value="design"${phase==="design"?" selected":""}>Design</option>
+              <option value="deploy"${phase==="deploy"?" selected":""}>Deploy</option>
+              <option value="operate"${phase==="operate"?" selected":""}>Operate</option>
+              <option value="retire"${phase==="retire"?" selected":""}>Retire</option>
+            </select></label>
             <button type="button" id="dt-query">Query</button>
           </div>
           <p>${thread.matched_node_count} nodes, ${thread.matched_edge_count} edges — click nodes to highlight neighbors</p>
