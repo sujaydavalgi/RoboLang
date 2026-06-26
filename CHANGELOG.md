@@ -19,6 +19,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Encrypted config snapshots:** AES-256-GCM at rest via `encrypt` on `POST /v1/config/snapshots` or `SPANDA_CONFIG_SNAPSHOT_ENCRYPT=1` + `SPANDA_CONFIG_SNAPSHOT_KEY`.
 - **Failover drill smoke:** `scripts/failover_drill_smoke.sh` validates redundant chain selection and recovery actions.
 - **SLO burn-rate rollup:** `burn_rate` object on `GET /v1/sre/summary` with `fast_burn` when fault alert rate exceeds budget (`SPANDA_SRE_BURN_RATE_FAST`, `SPANDA_SRE_BURN_WINDOW_HOURS`).
+- **SLO burn-rate monitor:** background fast-burn alert dispatch (`SPANDA_SRE_BURN_SCAN_INTERVAL_SECS`) with deduplicated `HealthCritical` alerts.
+- **PagerDuty bi-directional sync:** inbound `POST /v1/integrations/pagerduty/webhook` (ack/resolve → incidents); outbound ack/resolve events on incident workflow; `incident_id` in PD custom details.
+- **Digital thread lifecycle graph:** requirement → design → deploy → operate → retire phases on `GET /v1/digital-thread/query` (`lifecycle_phase` filter, `lifecycle_rows` / `lifecycle_summary`); lifecycle layout in graph UI.
+- **Grafana dashboard templates:** registry package `spanda-grafana-dashboards` (SRE + OTA JSON dashboards).
+- **Python SDK publish scaffold:** `packages/sdk-python/VERSIONING.md`, `sdk-python-v*` tag workflow, version `0.4.0`.
+- **npm `@spanda/web` publish scaffold:** `PUBLISHING.md`, `npm-web-v*` tag workflow with PR dry-run.
+- **30-day field soak gate:** `scripts/field_soak_gate.sh` + [docs/field-soak-gate.md](docs/field-soak-gate.md).
 - **Digital thread graph UI:** interactive SVG graph in `ControlCenterPanel` and embedded Control Center HTML — filter by capability/device, click-to-highlight neighbors.
 - **Stable hardening checklist:** [docs/stable-hardening-enterprise-ops.md](docs/stable-hardening-enterprise-ops.md) — Experimental → Stable promotion gates per pillar.
 - **Python SDK expansion:** executive scorecard, digital thread, reports export, OTA execute/status, config snapshots, audit mutations.

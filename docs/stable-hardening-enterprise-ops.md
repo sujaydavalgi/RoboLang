@@ -16,7 +16,7 @@ Phases **E1–E4** are shipped at **Experimental** tier with CI smoke (`scripts/
 | RBAC | Mutations gated; matrix documented | **Shipped** |
 | HA persistence | Alerts, traces, incidents survive restart | **Shipped** (`SPANDA_CONTROL_CENTER_STATE_DIR`) |
 | Multi-tenant | `SPANDA_TENANT_ID` + key `tenant_id` mismatch → 403 | **Shipped** |
-| Soak | 30-day field pilot without data-loss regressions | **Planned** |
+| Soak | 30-day field pilot without data-loss regressions | **Shipped:** `scripts/field_soak_gate.sh` + [field-soak-gate.md](./field-soak-gate.md) |
 | Security audit | Third-party review of auth + secret handling | **Planned** |
 
 ---
@@ -64,10 +64,10 @@ Phases **E1–E4** are shipped at **Experimental** tier with CI smoke (`scripts/
 | Item | Experimental (today) | Stable requires |
 |------|---------------------|-----------------|
 | Traces | API log + OTLP export to Jaeger | Managed collector HA deployment guide |
-| Metrics | OTLP metrics preview + export | Dashboard templates (Grafana package) |
+| Metrics | OTLP metrics preview + export | **Shipped:** Grafana dashboard templates (`spanda-grafana-dashboards`) |
 | WebSocket | `/v1/stream/telemetry` | Backpressure + reconnect contract |
-| SRE | SLO, MTTR/MTBF hints, incidents, auto-open from critical alerts | **Shipped:** SLO burn-rate rollup on `/v1/sre/summary` (`burn_rate.fast_burn`) |
-| Incidents | ack/resolve workflow | PagerDuty bi-directional sync |
+| SRE | SLO, MTTR/MTBF hints, incidents, auto-open from critical alerts | **Shipped:** SLO burn-rate rollup + background fast-burn alert dispatch (`SPANDA_SRE_BURN_SCAN_INTERVAL_SECS`) |
+| Incidents | ack/resolve workflow | **Shipped:** PagerDuty bi-directional sync (`POST /v1/integrations/pagerduty/webhook`) |
 
 ### Compliance + Digital Thread
 
@@ -75,14 +75,14 @@ Phases **E1–E4** are shipped at **Experimental** tier with CI smoke (`scripts/
 |------|---------------------|-----------------|
 | Export | `GET /v1/compliance/export` + evidence log | Profile catalog (defense, medical, ISO) signed templates |
 | Reports | markdown / JSON / PDF | Scheduled report delivery |
-| Digital thread | query API + **interactive graph UI** | Full lifecycle graph (requirement → retirement) |
+| Digital thread | query API + **interactive graph UI** | **Shipped:** full lifecycle graph (requirement → retirement) with `lifecycle_phase` filter |
 
 ### SDKs
 
 | Item | Experimental (today) | Stable requires |
 |------|---------------------|-----------------|
-| Python | REST client + stream extra | PyPI publish + semver policy |
-| TypeScript | `ControlCenterPanel` in `@spanda/web` | npm publish + visual regression CI |
+| Python | REST client + stream extra | **Shipped:** PyPI publish scaffold + semver policy (`VERSIONING.md`, `sdk-python-v*` tags) |
+| TypeScript | `ControlCenterPanel` in `@spanda/web` | **Shipped:** npm publish scaffold (`PUBLISHING.md`, `npm-web-v*` tags) |
 | Remote CLI | `spanda control-center` client | Documented in `getting-started.md` |
 
 ### Desktop (Tauri)
