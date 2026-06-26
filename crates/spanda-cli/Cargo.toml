@@ -30,6 +30,8 @@ license = false
 eula = false
 
 [dependencies]
+spanda-api = { path = "../spanda-api" }
+spanda-ops = { path = "../spanda-ops" }
 spanda-ast = { path = "../spanda-ast" }
 spanda-certify = { path = "../spanda-certify" }
 spanda-codegen = { path = "../spanda-codegen" }

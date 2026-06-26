@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Spanda Control Center</title>
+  <style>
+    :root { font-family: system-ui, sans-serif; color: #e8e8e8; background: #0f1419; }
+    body { margin: 0; padding: 1rem 1.5rem; }
+    h1 { margin: 0 0 0.25rem; font-size: 1.5rem; }
+    .subtitle { color: #8b9bb4; margin: 0 0 1rem; }
+    nav { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; }
+    nav button { background: #1a2332; color: #c8d6e5; border: 1px solid #2d3a4f; padding: 0.4rem 0.8rem; border-radius: 6px; cursor: pointer; }
+    nav button.active { background: #2563eb; border-color: #2563eb; color: #fff; }
+    .panel { background: #1a2332; border: 1px solid #2d3a4f; border-radius: 8px; padding: 1rem; margin-bottom: 1rem; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 0.75rem; }
+    .stat { background: #0f1419; padding: 0.75rem; border-radius: 6px; }
+    .stat dt { font-size: 0.75rem; color: #8b9bb4; margin: 0; }
+    .stat dd { font-size: 1.25rem; margin: 0.25rem 0 0; font-weight: 600; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    th, td { text-align: left; padding: 0.4rem 0.5rem; border-bottom: 1px solid #2d3a4f; }
+    .error { color: #f87171; }
+    .ok { color: #4ade80; }
+    pre { overflow: auto; font-size: 0.8rem; }
+  </style>
+</head>
+<body>
+  <h1>Spanda Control Center</h1>
+  <p class="subtitle">Enterprise operations — Dashboard · Fleet · Readiness · Device Pool</p>
+  <nav>
+    <button type="button" class="active" data-tab="dashboard">Dashboard</button>
+    <button type="button" data-tab="fleet">Fleet</button>
+    <button type="button" data-tab="readiness">Readiness</button>
+    <button type="button" data-tab="devices">Device Pool</button>
+    <button type="button" data-tab="alerts">Alerts</button>
+  </nav>
+  <div id="error" class="error" hidden></div>
+  <section id="tab-dashboard" class="panel"></section>
+  <section id="tab-fleet" class="panel" hidden></section>
+  <section id="tab-readiness" class="panel" hidden></section>
+  <section id="tab-devices" class="panel" hidden></section>
+  <section id="tab-alerts" class="panel" hidden></section>
+  <script>
+    const tabs = ["dashboard", "fleet", "readiness", "devices", "alerts"];
+    const errEl = document.getElementById("error");
+
+    document.querySelectorAll("nav button").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll("nav button").forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        const tab = btn.dataset.tab;
+        tabs.forEach((t) => {
+          document.getElementById("tab-" + t).hidden = t !== tab;
+        });
+        if (tab === "dashboard") loadDashboard();
+        if (tab === "fleet") loadFleet();
+        if (tab === "readiness") loadReadiness();
+        if (tab === "devices") loadDevices();
+        if (tab === "alerts") loadAlerts();
+      });
+    });
+
+    async function api(path) {
+      const res = await fetch(path);
+      if (!res.ok) throw new Error(path + " returned " + res.status);
+      return res.json();
+    }
+
+    function showError(msg) {
+      errEl.hidden = false;
+      errEl.textContent = msg;
+    }
+
+    async function loadDashboard() {
+      try {
+        errEl.hidden = true;
+        const data = await api("/v1/dashboard");
+        const p = data.device_pool;
+        document.getElementById("tab-dashboard").innerHTML = `
+          <h2>Dashboard</h2>
+          <div class="grid">
+            <div class="stat"><dt>Devices</dt><dd>${p.total}</dd></div>
+            <div class="stat"><dt>Healthy</dt><dd class="ok">${p.healthy}</dd></div>
+            <div class="stat"><dt>Degraded</dt><dd>${p.degraded}</dd></div>
+            <div class="stat"><dt>Fleet agents</dt><dd>${data.fleet_agent_count}</dd></div>
+            <div class="stat"><dt>Alerts</dt><dd>${data.alert_count}</dd></div>
+            <div class="stat"><dt>API keys</dt><dd>${data.rbac_roles}</dd></div>
+          </div>`;
+      } catch (e) { showError(String(e)); }
+    }
+
+    async function loadFleet() {
+      try {
+        errEl.hidden = true;
+        const data = await api("/v1/fleet/agents");
+        const rows = (data.agents || []).map((a) =>
+          `<tr><td>${a.robot_name}</td><td>${a.url}</td><td>${a.token ? "yes" : "—"}</td></tr>`
+        ).join("") || "<tr><td colspan='3'>No fleet agents registered</td></tr>";
+        document.getElementById("tab-fleet").innerHTML = `
+          <h2>Fleet View</h2>
+          <p>Register agents with <code>spanda fleet agent register</code></p>
+          <table><thead><tr><th>Robot</th><th>URL</th><th>Token</th></tr></thead><tbody>${rows}</tbody></table>`;
+      } catch (e) { showError(String(e)); }
+    }
+
+    async function loadReadiness() {
+      try {
+        errEl.hidden = true;
+        const data = await api("/v1/dashboard");
+        const p = data.device_pool;
+        const ready = p.healthy + p.assigned + p.verified;
+        const notReady = p.failed + p.quarantined + p.offline;
+        document.getElementById("tab-readiness").innerHTML = `
+          <h2>Readiness</h2>
+          <div class="grid">
+            <div class="stat"><dt>Mission-capable devices</dt><dd class="ok">${ready}</dd></div>
+            <div class="stat"><dt>Blocked / offline</dt><dd>${notReady}</dd></div>
+            <div class="stat"><dt>Discovered (unprovisioned)</dt><dd>${p.discovered}</dd></div>
+          </div>
+          <p>Run <code>spanda readiness &lt;file.sd&gt; --config spanda.toml</code> for full scoring.</p>`;
+      } catch (e) { showError(String(e)); }
+    }
+
+    async function loadDevices() {
+      try {
+        errEl.hidden = true;
+        const data = await api("/v1/devices");
+        const rows = (data.devices || []).map((d) =>
+          `<tr><td>${d.id}</td><td>${d.device_type}</td><td>${d.lifecycle_state}</td><td>${d.assigned_robot || "—"}</td></tr>`
+        ).join("") || "<tr><td colspan='4'>No devices in pool — configure [[devices]] in spanda.toml</td></tr>";
+        document.getElementById("tab-devices").innerHTML = `
+          <h2>Device Pool</h2>
+          <table><thead><tr><th>ID</th><th>Type</th><th>Lifecycle</th><th>Assigned robot</th></tr></thead><tbody>${rows}</tbody></table>`;
+      } catch (e) { showError(String(e)); }
+    }
+
+    async function loadAlerts() {
+      try {
+        errEl.hidden = true;
+        const data = await api("/v1/alerts");
+        const rows = (data.alerts || []).map((a) =>
+          `<tr><td>${a.severity}</td><td>${a.alert_type}</td><td>${a.source}</td><td>${a.message}</td></tr>`
+        ).join("") || "<tr><td colspan='4'>No alerts</td></tr>";
+        document.getElementById("tab-alerts").innerHTML = `
+          <h2>Alerts</h2>
+          <table><thead><tr><th>Severity</th><th>Type</th><th>Source</th><th>Message</th></tr></thead><tbody>${rows}</tbody></table>`;
+      } catch (e) { showError(String(e)); }
+    }
+
+    loadDashboard();
+  </script>
+</body>
+</html>

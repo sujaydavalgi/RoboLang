@@ -1,0 +1,11 @@
+[package]
+name = "spanda-ops"
+version.workspace = true
+edition = "2021"
+description = "Enterprise operations — alerting and incident routing for Spanda Control Center"
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"
+spanda-audit = { path = "../spanda-audit" }

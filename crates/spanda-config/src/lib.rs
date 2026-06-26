@@ -5,6 +5,7 @@
 //! TOML or JSON files.
 //!
 pub mod device_identity;
+pub mod device_pool;
 pub mod device_tree;
 pub mod drift;
 pub mod error;
@@ -24,6 +25,9 @@ pub use device_identity::{
     discover_matches, identity_from_device_node, scan_subnet, traceability_rows,
     DeviceIdentityRecord, DeviceRegistry, DiscoveryMatch, Ipv4Subnet, NetworkHostProbe,
     TraceabilityRow, TrustLevel,
+};
+pub use device_pool::{
+    DeviceLifecycleState, DevicePoolEntry, DevicePoolSummary,
 };
 pub use device_tree::{ComputeNode, DeviceNode, DeviceTree, FleetNode, RobotNode};
 pub use error::{ConfigError, ConfigResult};

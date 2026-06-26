@@ -71,6 +71,8 @@ members = [
     "crates/spanda-spoofing",
     "crates/spanda-telemetry-store",
     "crates/spanda-transport",
+    "crates/spanda-ops",
+    "crates/spanda-api",
 ]
 exclude = ["crates/spanda-ros2-rclrs-native"]
 resolver = "2"

@@ -97,6 +97,14 @@ pub struct DeviceIdentityRecord {
     pub failover_priority: Option<u32>,
     #[serde(default)]
     pub mount: Option<String>,
+    #[serde(default)]
+    pub lifecycle_state: Option<String>,
+    #[serde(default)]
+    pub assigned_robot: Option<String>,
+    #[serde(default)]
+    pub last_seen_ms: Option<f64>,
+    #[serde(default)]
+    pub provisioning_id: Option<String>,
 }
 
 impl DeviceIdentityRecord {
@@ -227,6 +235,10 @@ fn merge_identity(target: &mut DeviceIdentityRecord, overlay: &DeviceIdentityRec
     fill!(redundant_group);
     fill!(failover_priority);
     fill!(mount);
+    fill!(lifecycle_state);
+    fill!(assigned_robot);
+    fill!(last_seen_ms);
+    fill!(provisioning_id);
     if target.capabilities.is_empty() {
         target.capabilities = overlay.capabilities.clone();
     }
@@ -288,6 +300,10 @@ pub fn identity_from_device_node(robot_id: &str, device: &DeviceNode) -> DeviceI
         redundant_group: device.redundant_group.clone(),
         failover_priority: device.failover_priority,
         mount: device.mount.clone(),
+        lifecycle_state: None,
+        assigned_robot: None,
+        last_seen_ms: None,
+        provisioning_id: None,
     }
 }
 

@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
 import { DEFAULT_SOURCE, EXAMPLES } from "./examples";
 import { checkSource, runSource, type CheckResponse, type RunResponse } from "./spanda-wasm";
+import { ControlCenterPanel } from "./ControlCenterPanel";
 import { OperationsPanel } from "./OperationsPanel";
 import { TelemetryPanel } from "./TelemetryPanel";
 
 type Backend = "wasm" | "unavailable";
-type View = "playground" | "operations";
+type View = "playground" | "operations" | "control-center";
 
 export default function App() {
   const [source, setSource] = useState(DEFAULT_SOURCE);
@@ -14,6 +15,9 @@ export default function App() {
   const [diagnostics, setDiagnostics] = useState<CheckResponse["diagnostics"]>([]);
   const [runResult, setRunResult] = useState<RunResponse["result"] | null>(null);
   const [telemetryRefresh, setTelemetryRefresh] = useState(0);
+  const [apiBase, setApiBase] = useState(
+    () => import.meta.env.VITE_CONTROL_CENTER_URL ?? "http://127.0.0.1:8080"
+  );
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -77,7 +81,17 @@ export default function App() {
         >
           <option value="playground">Playground</option>
           <option value="operations">Operations</option>
+          <option value="control-center">Control Center</option>
         </select>
+        {view === "control-center" && (
+          <input
+            type="url"
+            value={apiBase}
+            onChange={(e) => setApiBase(e.target.value)}
+            aria-label="Control Center API URL"
+            style={{ minWidth: "16rem" }}
+          />
+        )}
         <select
           onChange={(e) => {
             const ex = EXAMPLES.find((x) => x.name === e.target.value);
@@ -92,7 +106,11 @@ export default function App() {
           ))}
         </select>
         <span className="demo-hint">
-          {view === "playground" ? "Check → Run sim (verify needs native CLI)" : "Readiness scoring + live agent"}
+          {view === "playground"
+            ? "Check → Run sim (verify needs native CLI)"
+            : view === "control-center"
+              ? "Dashboard · Fleet · Readiness via spanda control-center serve"
+              : "Readiness scoring + live agent"}
         </span>
         {view === "playground" && (
           <>
@@ -123,7 +141,9 @@ export default function App() {
         </section>
 
         <section className="output-pane">
-          {view === "operations" ? (
+          {view === "control-center" ? (
+            <ControlCenterPanel apiBase={apiBase} />
+          ) : view === "operations" ? (
             <>
               <OperationsPanel source={source} />
               <TelemetryPanel refreshKey={telemetryRefresh} />

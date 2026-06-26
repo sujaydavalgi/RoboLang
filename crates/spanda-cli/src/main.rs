@@ -5,6 +5,7 @@ mod certify_cli;
 mod config_cli;
 mod config_load;
 mod continuity_cli;
+mod control_center_cli;
 mod contract_cli;
 mod decision_cli;
 mod demo_cli;
@@ -1552,6 +1553,12 @@ fn main() {
 
     if command == "config" {
         config_cli::config_dispatch(&args[2..]);
+        let _ = io::stdout().flush();
+        return;
+    }
+
+    if command == "control-center" {
+        control_center_cli::control_center_dispatch(&args[2..]);
         let _ = io::stdout().flush();
         return;
     }

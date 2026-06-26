@@ -1358,6 +1358,7 @@ dependencies = [
  "serde",
  "serde_json",
  "spanda-adr",
+ "spanda-api",
  "spanda-assurance",
  "spanda-ast",
  "spanda-capability",
@@ -1385,6 +1386,7 @@ dependencies = [
  "spanda-lint",
  "spanda-llvm",
  "spanda-modules",
+ "spanda-ops",
  "spanda-ota",
  "spanda-package",
  "spanda-parser",
@@ -1423,6 +1425,22 @@ dependencies = [
  "spanda-ast",
  "spanda-error",
  "spanda-runtime",
+]
+
+[[package]]
+name = "spanda-api"
+version = "0.4.0"
+dependencies = [
+ "serde",
+ "serde_json",
+ "spanda-audit",
+ "spanda-config",
+ "spanda-deploy-http",
+ "spanda-fleet",
+ "spanda-ops",
+ "spanda-readiness",
+ "spanda-security",
+ "tempfile",
 ]
 
 [[package]]
@@ -1990,6 +2008,16 @@ dependencies = [
  "spanda-error",
  "spanda-format",
  "spanda-hardware",
+]
+
+[[package]]
+name = "spanda-ops"
+version = "0.4.0"
+dependencies = [
+ "serde",
+ "serde_json",
+ "spanda-audit",
+ "thiserror 2.0.18",
 ]
 
 [[package]]
