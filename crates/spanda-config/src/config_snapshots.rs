@@ -92,6 +92,44 @@ pub fn load_config_snapshot(dir: &Path, id: &str) -> ConfigResult<ConfigSnapshot
     serde_json::from_str(&text).map_err(|e| ConfigError::JsonParse { path, source: e })
 }
 
+/// Result of publishing an approved configuration snapshot.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct ConfigPublishResult {
+    pub snapshot_id: String,
+    pub devices_persisted: usize,
+    pub devices_failed: Vec<String>,
+    pub reloaded_from_disk: bool,
+}
+
+/// Apply an approved snapshot to runtime and optionally persist device pool fields.
+pub fn publish_config_snapshot(
+    snapshot_id: &str,
+    snapshots_dir: &Path,
+    project_root: Option<&Path>,
+) -> ConfigResult<(ResolvedSystemConfig, ConfigPublishResult)> {
+    let snapshot = load_config_snapshot(snapshots_dir, snapshot_id)?;
+    let resolved = snapshot.resolved;
+    let mut devices_persisted = 0usize;
+    let mut devices_failed = Vec::new();
+    if let Some(root) = project_root {
+        for device in &resolved.device_registry.devices {
+            match crate::persist_device_record(root, &resolved.manifest, device) {
+                Ok(_) => devices_persisted += 1,
+                Err(error) => devices_failed.push(format!("{}: {error}", device.id)),
+            }
+        }
+    }
+    Ok((
+        resolved,
+        ConfigPublishResult {
+            snapshot_id: snapshot_id.to_string(),
+            devices_persisted,
+            devices_failed,
+            reloaded_from_disk: project_root.is_some_and(|_| devices_persisted > 0),
+        },
+    ))
+}
+
 fn now_ms() -> f64 {
     std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)

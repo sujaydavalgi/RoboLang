@@ -605,6 +605,7 @@ fn config_approvals_submit(body: &str, ctx: Option<&RbacContext>) -> HttpRespons
 }
 
 fn config_approvals_resolve(
+    state: &mut ControlCenterState,
     request_id: &str,
     approve: bool,
     body: &str,
@@ -629,10 +630,30 @@ fn config_approvals_resolve(
     match result {
         Ok(request) => {
             let _ = spanda_config::save_approval_queue(&path, &queue);
+            let mut publish = None;
+            if approve {
+                match spanda_config::publish_config_snapshot(
+                    &request.snapshot_id,
+                    &spanda_config::default_snapshots_dir(),
+                    state.project_root().as_deref(),
+                ) {
+                    Ok((resolved, publish_result)) => {
+                        if let Err(error) = state.apply_published_config(
+                            resolved,
+                            publish_result.reloaded_from_disk,
+                        ) {
+                            return bad_request(&error);
+                        }
+                        publish = Some(publish_result);
+                    }
+                    Err(error) => return bad_request(&error.to_string()),
+                }
+            }
             json_ok(&serde_json::json!({
                 "version": API_VERSION,
                 "ok": true,
                 "approval": request,
+                "publish": publish,
             }))
         }
         Err(error) => bad_request(&error.to_string()),
@@ -673,7 +694,6 @@ fn route_config_approval(
     body: &str,
     ctx: Option<&RbacContext>,
 ) -> Option<HttpResponse> {
-    let _ = state;
     if path == "/v1/config/approvals" && method == "GET" {
         return Some(config_approvals_list());
     }
@@ -683,8 +703,8 @@ fn route_config_approval(
     let rest = path.strip_prefix("/v1/config/approvals/")?;
     let (request_id, action) = rest.split_once('/').unwrap_or((rest, ""));
     match (action, method) {
-        ("approve", "POST") => Some(config_approvals_resolve(request_id, true, body, ctx)),
-        ("reject", "POST") => Some(config_approvals_resolve(request_id, false, body, ctx)),
+        ("approve", "POST") => Some(config_approvals_resolve(state, request_id, true, body, ctx)),
+        ("reject", "POST") => Some(config_approvals_resolve(state, request_id, false, body, ctx)),
         _ => None,
     }
 }
@@ -1376,6 +1396,36 @@ pub fn config_snapshots_save_json(
     config_snapshots_save(state, body, ctx).body
 }
 
+/// JSON body for gRPC `ListConfigApprovals` (parity with `GET /v1/config/approvals`).
+pub fn config_approvals_list_json() -> String {
+    config_approvals_list().body
+}
+
+/// JSON body for gRPC `SubmitConfigApproval` (parity with `POST /v1/config/approvals`).
+pub fn config_approvals_submit_json(body: &str, ctx: Option<&RbacContext>) -> String {
+    config_approvals_submit(body, ctx).body
+}
+
+/// JSON body for gRPC `ApproveConfigApproval` (parity with `POST /v1/config/approvals/{id}/approve`).
+pub fn config_approvals_approve_json(
+    state: &mut ControlCenterState,
+    approval_id: &str,
+    body: &str,
+    ctx: Option<&RbacContext>,
+) -> String {
+    config_approvals_resolve(state, approval_id, true, body, ctx).body
+}
+
+/// JSON body for gRPC `RejectConfigApproval` (parity with `POST /v1/config/approvals/{id}/reject`).
+pub fn config_approvals_reject_json(
+    state: &mut ControlCenterState,
+    approval_id: &str,
+    body: &str,
+    ctx: Option<&RbacContext>,
+) -> String {
+    config_approvals_resolve(state, approval_id, false, body, ctx).body
+}
+
 /// JSON body for gRPC `TestAlert` (parity with `POST /v1/alerts/test`).
 pub fn alerts_test_json(state: &mut ControlCenterState, ctx: Option<&RbacContext>) -> String {
     alerts_test(state, ctx).body
@@ -1469,6 +1519,11 @@ pub fn compliance_export_json(
     ctx: Option<&RbacContext>,
 ) -> String {
     e4::compliance_export(state, query, None, ctx).body
+}
+
+/// JSON body for gRPC `ListComplianceEvidence` (parity with `GET /v1/compliance/evidence`).
+pub fn compliance_evidence_list_json(ctx: Option<&RbacContext>) -> String {
+    e4::compliance_evidence_list(ctx).body
 }
 
 #[cfg(test)]

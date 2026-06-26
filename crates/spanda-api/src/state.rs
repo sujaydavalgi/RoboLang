@@ -74,6 +74,21 @@ impl ControlCenterState {
         Ok(())
     }
 
+    /// Apply a published snapshot to runtime, reloading from disk when fragments changed.
+    pub fn apply_published_config(
+        &mut self,
+        resolved: ResolvedSystemConfig,
+        reload_from_disk: bool,
+    ) -> Result<(), String> {
+        if reload_from_disk && self.config_path.is_some() {
+            self.resolved = Some(resolved);
+            self.reload_config()?;
+            return Ok(());
+        }
+        self.resolved = Some(resolved);
+        Ok(())
+    }
+
     pub fn project_root(&self) -> Option<PathBuf> {
         let path = self.config_path.as_ref()?;
         Some(if path.is_dir() {

@@ -41,8 +41,8 @@ pub use config_approval::{
     ConfigApprovalStatus,
 };
 pub use config_snapshots::{
-    default_snapshots_dir, list_config_snapshots, load_config_snapshot, save_config_snapshot,
-    ConfigSnapshot, ConfigSnapshotMeta,
+    default_snapshots_dir, list_config_snapshots, load_config_snapshot, publish_config_snapshot,
+    save_config_snapshot, ConfigPublishResult, ConfigSnapshot, ConfigSnapshotMeta,
 };
 pub use device_config_persist::{
     device_fragment_paths, persist_device_record, DevicePersistResult,
