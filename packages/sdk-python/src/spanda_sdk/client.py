@@ -238,10 +238,14 @@ class ControlCenterClient:
     def list_config_snapshots(self) -> Any:
         return self._request("GET", "/v1/config/snapshots")
 
-    def save_config_snapshot(self, *, label: Optional[str] = None) -> Any:
+    def save_config_snapshot(
+        self, *, label: Optional[str] = None, encrypt: Optional[bool] = None
+    ) -> Any:
         body: dict[str, Any] = {}
         if label:
             body["label"] = label
+        if encrypt is not None:
+            body["encrypt"] = encrypt
         return self._request("POST", "/v1/config/snapshots", body, auth=True)
 
     def ota_execute(

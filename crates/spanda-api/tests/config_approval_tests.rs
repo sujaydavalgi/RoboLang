@@ -33,7 +33,7 @@ fn approved_snapshot_publishes_to_runtime() {
     let resolved = state.resolved.as_ref().expect("resolved config").clone();
     let snapshot_dir = default_snapshots_dir();
     let _ = std::fs::remove_dir_all(&snapshot_dir);
-    let meta = save_config_snapshot(&resolved, &snapshot_dir, Some("baseline".into()))
+    let meta = save_config_snapshot(&resolved, &snapshot_dir, Some("baseline".into()), None)
         .expect("save snapshot");
 
     let (submit, _) = handle_request(
@@ -106,7 +106,7 @@ fn two_approver_quorum_publishes_after_second_vote() {
     let resolved = state.resolved.as_ref().expect("resolved config").clone();
     let snapshot_dir = default_snapshots_dir();
     let _ = std::fs::remove_dir_all(&snapshot_dir);
-    let meta = save_config_snapshot(&resolved, &snapshot_dir, Some("baseline".into()))
+    let meta = save_config_snapshot(&resolved, &snapshot_dir, Some("baseline".into()), None)
         .expect("save snapshot");
 
     let (submit, _) = handle_request(

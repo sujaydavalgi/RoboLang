@@ -31,7 +31,7 @@ fn setup_state() -> (ControlCenterState, String) {
     let resolved = state.resolved.as_ref().expect("resolved config").clone();
     let snapshot_dir = default_snapshots_dir();
     let _ = std::fs::remove_dir_all(&snapshot_dir);
-    let meta = save_config_snapshot(&resolved, &snapshot_dir, Some("baseline".into()))
+    let meta = save_config_snapshot(&resolved, &snapshot_dir, Some("baseline".into()), None)
         .expect("save snapshot");
     (state, meta.id)
 }

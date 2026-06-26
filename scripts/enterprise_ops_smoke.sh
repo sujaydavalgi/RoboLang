@@ -156,6 +156,14 @@ curl -sf -X POST \
   -d '{"label":"smoke-baseline"}' \
   "http://${BIND}/v1/config/snapshots" | grep -q '"ok":true'
 
+echo "== E2 POST /v1/config/snapshots (encrypted at rest) =="
+export SPANDA_CONFIG_SNAPSHOT_KEY="${SPANDA_CONFIG_SNAPSHOT_KEY:-smoke-snapshot-key}"
+curl -sf -X POST \
+  -H "Authorization: Bearer ${SPANDA_API_KEY}" \
+  -H "Content-Type: application/json" \
+  -d '{"label":"smoke-encrypted","encrypt":true}' \
+  "http://${BIND}/v1/config/snapshots" | grep -q '"encrypted":true'
+
 echo "== E2 GET /v1/config/snapshots =="
 SNAPSHOT_JSON=$(fetch /v1/config/snapshots)
 echo "$SNAPSHOT_JSON" | grep -q smoke-baseline

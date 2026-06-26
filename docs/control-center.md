@@ -127,7 +127,7 @@ grpcurl -plaintext -import-path crates/spanda-api/proto -proto spanda/v1/control
 | `/v1/rbac/matrix` | GET | — | Role permission matrix |
 | `/v1/provision` | POST | Bearer | Run discover → ready workflow |
 | `/v1/discovery` | GET | — | Package-backed discovery (`?transport=mdns` or `subnet`) |
-| `/v1/config/snapshots` | GET/POST | POST: Bearer | List or save configuration snapshots |
+| `/v1/config/snapshots` | GET/POST | POST: Bearer | List or save configuration snapshots (`encrypt: true` + `SPANDA_CONFIG_SNAPSHOT_KEY` for AES-256-GCM at rest) |
 | `/v1/config/approvals` | GET | — | List config publish approval requests |
 | `/v1/config/approvals` | POST | Bearer (Deploy) | Submit approval request for a snapshot (`required_approvals` or `SPANDA_CONFIG_APPROVALS_REQUIRED`) |
 | `/v1/config/approvals/{id}/approve` | POST | Bearer (Approve) | Record approver vote; publish when quorum met (`quorum.received` / `quorum.required`) |

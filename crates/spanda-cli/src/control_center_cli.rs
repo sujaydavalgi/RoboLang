@@ -59,7 +59,7 @@ fn print_usage() {
          spanda control-center readiness run [--url <base>]\n  \
          spanda control-center compliance export [--profile <name>] [--url <base>]\n  \
          spanda control-center alerts list|test [--url <base>]\n  \
-         spanda control-center snapshots list|save [--label <name>] [--url <base>]\n  \
+         spanda control-center snapshots list|save [--label <name>] [--encrypt] [--url <base>]\n  \
          spanda control-center trust package --name <pkg> [--version <ver>] [--url <base>]\n  \
          spanda control-center scorecard [--url <base>]\n  \
          spanda control-center digital-thread query [--capability <name>] [--device-id <id>] [--url <base>]\n  \
@@ -546,12 +546,15 @@ fn cmd_snapshots(args: &[String]) {
         "list" => remote_get(&client, "/v1/config/snapshots", false),
         "save" => {
             let label = flag_value(args, "--label");
-            let body = if let Some(label) = label {
-                serde_json::json!({ "label": label }).to_string()
-            } else {
-                "{}".into()
-            };
-            remote_post(&client, "/v1/config/snapshots", &body, true);
+            let encrypt = args.iter().any(|arg| arg == "--encrypt");
+            let mut body = serde_json::json!({});
+            if let Some(label) = label {
+                body["label"] = serde_json::Value::String(label);
+            }
+            if encrypt {
+                body["encrypt"] = serde_json::Value::Bool(true);
+            }
+            remote_post(&client, "/v1/config/snapshots", &body.to_string(), true);
         }
         other => {
             eprintln!("Unknown snapshots subcommand: {other}");

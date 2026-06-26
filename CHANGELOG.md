@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Multi-approver config approvals:** `required_approvals` on submit + `SPANDA_CONFIG_APPROVALS_REQUIRED`; distinct approver votes with `quorum` metadata; publish-on-approve when quorum met.
 - **OTA fleet soak:** `scripts/ota_fleet_soak.sh` — multi-agent version bumps and canary→full progression tests.
 - **Remote CLI OpenAPI parity:** `control_center_openapi_parity.rs` verifies CLI routes exist in `REST_V1_ROUTES`.
+- **Encrypted config snapshots:** AES-256-GCM at rest via `encrypt` on `POST /v1/config/snapshots` or `SPANDA_CONFIG_SNAPSHOT_ENCRYPT=1` + `SPANDA_CONFIG_SNAPSHOT_KEY`.
 - **Digital thread graph UI:** interactive SVG graph in `ControlCenterPanel` and embedded Control Center HTML — filter by capability/device, click-to-highlight neighbors.
 - **Stable hardening checklist:** [docs/stable-hardening-enterprise-ops.md](docs/stable-hardening-enterprise-ops.md) — Experimental → Stable promotion gates per pillar.
 - **Python SDK expansion:** executive scorecard, digital thread, reports export, OTA execute/status, config snapshots, audit mutations.
