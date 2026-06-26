@@ -4,6 +4,7 @@
 //! Downstream consumers should use [`ResolvedSystemConfig`] rather than raw
 //! TOML or JSON files.
 //!
+pub mod config_approval;
 pub mod config_snapshots;
 pub mod device_config_persist;
 pub mod device_failover;
@@ -33,6 +34,12 @@ pub mod resolver;
 pub mod system_context;
 pub mod validation;
 
+pub use config_approval::{
+    append_evidence_record, approve_config_request, default_approvals_path,
+    default_evidence_log_path, list_evidence_records, load_approval_queue, reject_config_request,
+    save_approval_queue, submit_config_approval, ConfigApprovalQueue, ConfigApprovalRequest,
+    ConfigApprovalStatus,
+};
 pub use config_snapshots::{
     default_snapshots_dir, list_config_snapshots, load_config_snapshot, save_config_snapshot,
     ConfigSnapshot, ConfigSnapshotMeta,

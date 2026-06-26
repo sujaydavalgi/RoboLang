@@ -42,6 +42,9 @@ pub enum ConfigError {
     #[error("invalid manifest: {detail}")]
     InvalidManifest { detail: String },
 
+    #[error("config approval error: {detail}")]
+    Approval { detail: String },
+
     #[error("package manifest error: {0}")]
     Package(#[from] spanda_package::PackageError),
 }
