@@ -571,7 +571,7 @@ Builds on `spanda-capability` traceability matrices + `spanda-audit` + mission c
 | Operator Workflows UI | mission approve, takeover, quarantine |
 | SRE dashboard | MTTR/MTBF, incident reports |
 
-**Exit criteria:** SDK integration test; canary deploy demo; OTLP trace in Jaeger.
+**Exit criteria:** SDK integration test; canary deploy demo; correlation trace API — **shipped** (`scripts/enterprise_ops_smoke.sh`, `packages/sdk-python`). Full OTLP export to Jaeger remains a follow-up.
 
 ### Phase E4 — Govern and trace (v1.0, 2027)
 

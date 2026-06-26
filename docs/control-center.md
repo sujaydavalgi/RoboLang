@@ -40,8 +40,32 @@ Open `http://127.0.0.1:8080/` for the Control Center UI, or use the **Control Ce
 | `/v1/health/summary` | GET | — | Device pool health rollup |
 | `/v1/assurance/summary` | GET | — | Assurance policy from resolved config |
 | `/v1/diagnosis/summary` | GET | — | Diagnosis policy from resolved config |
+| `/v1/openapi.json` | GET | — | OpenAPI 3.1 specification |
+| `/v1/drift` | GET | — | Operational drift vs baseline snapshot (`?baseline_id=`) |
+| `/v1/ota/plan` | POST | Bearer | Plan canary / staged / blue_green rollout |
+| `/v1/ota/status` | GET | — | OTA deploy state (`.spanda/deploy-state.json`) |
+| `/v1/trust/package` | GET | — | Package trust evaluation (`?name=&version=`) |
+| `/v1/sre/summary` | GET | — | Availability and alert rollup |
+| `/v1/observability/traces` | GET | — | Recent API trace records |
+| `/v1/operator/quarantine` | POST | Bearer | Quarantine a device |
+| `/v1/operator/mission/approve` | POST | Bearer | Approve or reject a mission |
+| `/v1/rpc` | POST | — | gRPC-compatible JSON gateway |
 
 Authenticate mutations with `Authorization: Bearer <SPANDA_API_KEY>`.
+
+Pass optional `X-Correlation-ID` on any request; the server echoes it on the response and records traces for `/v1/observability/traces`.
+
+---
+
+## Python SDK
+
+```bash
+pip install -e packages/sdk-python
+export SPANDA_API_KEY=your-key
+python -c "from spanda_sdk import ControlCenterClient; print(ControlCenterClient().health())"
+```
+
+Integration tests: `SPANDA_SDK_INTEGRATION=1 SPANDA_CONTROL_CENTER_URL=http://127.0.0.1:8080 pytest packages/sdk-python/tests`
 
 ---
 
@@ -94,4 +118,4 @@ Default: log to stderr.
 
 ## Status
 
-**Experimental** (Phase E1–E2). Phase E2 adds provisioning, config snapshots, discovery transports, and Health/Assurance/Diagnosis API modules. gRPC and full CLI parity ship in Phase E3.
+**Experimental** (Phase E1–E3). Phase E3 adds operational drift, OTA rollout planning, package trust API, SRE/observability traces, operator workflows, JSON-RPC gateway, OpenAPI spec, and the Python SDK. Native gRPC (tonic) and full CLI parity remain Phase E4 scope.

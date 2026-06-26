@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Phase E1+E2 smoke — Control Center API, provisioning, snapshots, discovery.
+# Phase E1+E2+E3 smoke — Control Center API, provisioning, drift, OTA, SDK paths.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -96,6 +96,42 @@ curl -sf -X POST \
   "http://${BIND}/v1/config/snapshots" | grep -q '"ok":true'
 
 echo "== E2 GET /v1/config/snapshots =="
-fetch /v1/config/snapshots | grep -q smoke-baseline
+SNAPSHOT_JSON=$(fetch /v1/config/snapshots)
+echo "$SNAPSHOT_JSON" | grep -q smoke-baseline
+BASELINE_ID=$(echo "$SNAPSHOT_JSON" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d["snapshots"][0]["id"])')
+
+echo "== E3 GET /v1/openapi.json =="
+fetch /v1/openapi.json | grep -q Spanda
+
+echo "== E3 GET /v1/drift?baseline_id =="
+fetch "/v1/drift?baseline_id=${BASELINE_ID}" | grep -q dimensions_checked
+
+echo "== E3 POST /v1/ota/plan (canary dry-run) =="
+curl -sf -X POST \
+  -H "Authorization: Bearer ${SPANDA_API_KEY}" \
+  -H "Content-Type: application/json" \
+  -d '{"strategy":"canary","version":"1.2.3","canary_percent":20,"dry_run":true,"assignments":[{"robot_name":"rover-001","hardware":"jetson"}]}' \
+  "http://${BIND}/v1/ota/plan" | grep -q '"strategy":"canary"'
+
+echo "== E3 GET /v1/trust/package?name=spanda-mqtt =="
+fetch "/v1/trust/package?name=spanda-mqtt" | grep -q trust
+
+echo "== E3 GET /v1/sre/summary =="
+fetch /v1/sre/summary | grep -q availability_percent
+
+echo "== E3 GET /v1/observability/traces (correlation IDs) =="
+curl -sf -H "X-Correlation-ID: smoke-trace-1" "http://${BIND}/v1/health" >/dev/null
+fetch /v1/observability/traces | grep -q smoke-trace-1
+
+echo "== E3 POST /v1/rpc (gRPC gateway) =="
+curl -sf -X POST \
+  -H "Content-Type: application/json" \
+  -d '{"method":"spanda.v1.SpandaService/GetHealth"}' \
+  "http://${BIND}/v1/rpc" | grep -q spanda-control-center
+
+echo "== E3 Python SDK health =="
+PYTHONPATH="${ROOT}/packages/sdk-python/src:${PYTHONPATH:-}" \
+  SPANDA_CONTROL_CENTER_URL="http://${BIND}" SPANDA_API_KEY="${SPANDA_API_KEY}" \
+  python3 -c "from spanda_sdk import ControlCenterClient; c=ControlCenterClient(); assert c.health()['service']=='spanda-control-center'"
 
 echo "Enterprise operations smoke OK"
