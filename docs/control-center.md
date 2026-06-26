@@ -106,7 +106,7 @@ grpcurl -plaintext -d '{}' 127.0.0.1:50051 spanda.v1.ControlCenter/Health
 | `/v1/operator/quarantine` | POST | Bearer | Quarantine a device |
 | `/v1/operator/mission/approve` | POST | Bearer | Approve or reject a mission |
 | `/v1/rpc` | POST | — | gRPC-compatible JSON gateway |
-| **gRPC (tonic)** | — | — | Native `ControlCenter` service on `--grpc-bind` (39 RPCs; full GET parity + mutations with Bearer auth) |
+| **gRPC (tonic)** | — | — | Native `ControlCenter` service on `--grpc-bind` (47 RPCs; full REST parity except JSON-RPC gateway) |
 | `/v1/compliance/export` | GET/POST | Bearer | Accreditation bundle (`?profile=defense`) |
 | `/v1/digital-thread/query` | GET | — | Trace chain (`?capability=`, `?device_id=`) |
 | `/v1/executive/scorecard` | GET | — | Mission scorecard rollup |
