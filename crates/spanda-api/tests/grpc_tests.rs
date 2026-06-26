@@ -165,3 +165,47 @@ async fn connect(bind: &str) -> ControlCenterClient<Channel> {
         .expect("grpc connect");
     ControlCenterClient::new(channel)
 }
+
+#[tokio::test]
+async fn grpc_mutation_rbac_from_metadata() {
+    std::env::set_var("SPANDA_API_KEY", "grpc-rbac-test-key");
+    let http_port = pick_port();
+    let grpc_port = pick_port();
+    let http_bind = format!("127.0.0.1:{http_port}");
+    let grpc_bind = format!("127.0.0.1:{grpc_port}");
+    let options = ControlCenterOptions {
+        bind: http_bind,
+        grpc_bind: Some(grpc_bind.clone()),
+        once: true,
+        timeout_ms: 500,
+        ..Default::default()
+    };
+    thread::spawn(move || {
+        let _ = run_control_center_server(&options);
+    });
+    thread::sleep(Duration::from_millis(400));
+    let mut client = connect(&grpc_bind).await;
+
+    let denied = client
+        .plan_ota(tonic::Request::new(spanda_api::grpc::spanda_v1::JsonBodyRequest {
+            body_json: r#"{"strategy":"canary","version":"1.0.0","dry_run":true}"#.into(),
+        }))
+        .await
+        .expect("plan ota without auth")
+        .into_inner();
+    assert!(denied.json.contains("unauthorized") || denied.json.contains("Unauthorized"));
+
+    let mut authed = tonic::Request::new(spanda_api::grpc::spanda_v1::JsonBodyRequest {
+        body_json: r#"{"strategy":"canary","version":"1.0.0","dry_run":true}"#.into(),
+    });
+    authed.metadata_mut().insert(
+        "authorization",
+        tonic::metadata::MetadataValue::try_from("Bearer grpc-rbac-test-key").unwrap(),
+    );
+    let allowed = client
+        .plan_ota(authed)
+        .await
+        .expect("plan ota with bearer")
+        .into_inner();
+    assert!(allowed.json.contains("rollout"));
+}

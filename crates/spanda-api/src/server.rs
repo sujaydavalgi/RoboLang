@@ -62,6 +62,7 @@ pub fn run_control_center_server(options: &ControlCenterOptions) -> Result<(), S
     eprintln!("  GET  /v1/openapi.json   OpenAPI 3.1 spec");
     eprintln!("  GET  /v1/drift          operational drift (?baseline_id=)");
     eprintln!("  POST /v1/ota/plan       canary / phased / blue-green rollout");
+    eprintln!("  POST /v1/ota/execute    remote fleet rollout (dry-run supported)");
     eprintln!("  POST /v1/rpc            gRPC-compatible JSON gateway");
     eprintln!("  GET  /v1/digital-thread/query  capability-to-device trace");
     eprintln!("  GET  /v1/compliance/export     accreditation bundle");

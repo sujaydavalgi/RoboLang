@@ -161,6 +161,7 @@ pub fn handle_request(
         ("/v1/drift", "GET") => e3::drift_report(state, query),
         ("/v1/ota/status", "GET") => e3::ota_status(),
         ("/v1/ota/plan", "POST") => e3::ota_plan(&request.body, ctx.as_ref()),
+        ("/v1/ota/execute", "POST") => e3::ota_execute(&request.body, ctx.as_ref()),
         ("/v1/trust/package", "GET") => e3::trust_package(query),
         ("/v1/sre/summary", "GET") => e3::sre_summary(state),
         ("/v1/observability/traces", "GET") => e3::observability_traces(state),
@@ -944,6 +945,31 @@ pub fn provision_run_json(
 /// JSON body for gRPC `PlanOta` (parity with `POST /v1/ota/plan`).
 pub fn ota_plan_json(body: &str, ctx: Option<&RbacContext>) -> String {
     e3::ota_plan(body, ctx).body
+}
+
+/// JSON body for gRPC `ExecuteOta` (parity with `POST /v1/ota/execute`).
+pub fn ota_execute_json(body: &str, ctx: Option<&RbacContext>) -> String {
+    e3::ota_execute(body, ctx).body
+}
+
+/// JSON body for gRPC `ListRobots` (parity with `GET /v1/robots`).
+pub fn robots_list_json(state: &ControlCenterState) -> String {
+    robots_list(state).body
+}
+
+/// JSON body for gRPC `ListFleets` (parity with `GET /v1/fleets`).
+pub fn fleets_list_json(state: &ControlCenterState) -> String {
+    fleets_list(state).body
+}
+
+/// JSON body for gRPC `ListAlerts` (parity with `GET /v1/alerts`).
+pub fn alerts_list_json(state: &ControlCenterState) -> String {
+    alerts_list(state).body
+}
+
+/// JSON body for gRPC `ListConfigSnapshots` (parity with `GET /v1/config/snapshots`).
+pub fn config_snapshots_list_json() -> String {
+    config_snapshots_list().body
 }
 
 /// JSON body for gRPC `OperatorQuarantine` (parity with `POST /v1/operator/quarantine`).

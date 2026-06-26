@@ -11,8 +11,9 @@ use spanda_config::{
 };
 use spanda_deploy_http::HttpResponse;
 use spanda_ota::{
-    default_state_path, load_deploy_state, plan_rollout, DeployAssignment, DeployPlan,
-    RolloutOptions, RolloutStrategy,
+    apply_rollout, build_deploy_bundle, default_state_path, execute_remote_rollout,
+    load_agent_registry, load_deploy_state, plan_rollout, save_deploy_state, DeployAssignment,
+    DeployPlan, RolloutOptions, RolloutStrategy,
 };
 use spanda_package::evaluate_package_trust;
 use spanda_security::{ApiKeyStore, RbacAction, RbacContext};
@@ -102,13 +103,10 @@ pub fn ota_status() -> HttpResponse {
     }))
 }
 
-pub fn ota_plan(body: &str, ctx: Option<&RbacContext>) -> HttpResponse {
-    if !ApiKeyStore::check(ctx, RbacAction::Deploy) {
-        return unauthorized();
-    }
+fn parse_ota_plan_request(body: &str) -> Result<(DeployPlan, RolloutOptions), HttpResponse> {
     let req: OtaPlanRequest = match serde_json::from_str(body) {
         Ok(v) => v,
-        Err(e) => return bad_request(&e.to_string()),
+        Err(e) => return Err(bad_request(&e.to_string())),
     };
     let strategy = match req.strategy.to_ascii_lowercase().as_str() {
         "canary" => RolloutStrategy::Canary,
@@ -131,9 +129,54 @@ pub fn ota_plan(body: &str, ctx: Option<&RbacContext>) -> HttpResponse {
         dry_run: req.dry_run,
         ..RolloutOptions::default()
     };
+    Ok((plan, options))
+}
+
+pub fn ota_plan(body: &str, ctx: Option<&RbacContext>) -> HttpResponse {
+    if !ApiKeyStore::check(ctx, RbacAction::Deploy) {
+        return unauthorized();
+    }
+    let (plan, options) = match parse_ota_plan_request(body) {
+        Ok(v) => v,
+        Err(response) => return response,
+    };
     let result = plan_rollout(&plan, &options);
     json_ok(&serde_json::json!({
         "version": "v1",
+        "rollout": result,
+    }))
+}
+
+pub fn ota_execute(body: &str, ctx: Option<&RbacContext>) -> HttpResponse {
+    if !ApiKeyStore::check(ctx, RbacAction::Deploy) {
+        return unauthorized();
+    }
+    let (plan, options) = match parse_ota_plan_request(body) {
+        Ok(v) => v,
+        Err(response) => return response,
+    };
+    if options.dry_run {
+        let result = plan_rollout(&plan, &options);
+        return json_ok(&serde_json::json!({
+            "version": "v1",
+            "dry_run": true,
+            "rollout": result,
+        }));
+    }
+    let registry = load_agent_registry(&spanda_ota::default_agents_path());
+    let bundle = build_deploy_bundle(&plan);
+    let result = execute_remote_rollout(&plan, &options, &registry, &bundle);
+    if result.success {
+        let path = default_state_path();
+        let mut deploy_state = load_deploy_state(&path);
+        apply_rollout(&mut deploy_state, &result);
+        if let Err(error) = save_deploy_state(&path, &deploy_state) {
+            return bad_request(&error);
+        }
+    }
+    json_ok(&serde_json::json!({
+        "version": "v1",
+        "executed": true,
         "rollout": result,
     }))
 }

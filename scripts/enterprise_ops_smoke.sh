@@ -179,6 +179,19 @@ curl -sf -X POST \
   -d '{"strategy":"canary","version":"1.2.3","canary_percent":20,"dry_run":true,"assignments":[{"robot_name":"rover-001","hardware":"jetson"}]}' \
   "http://${BIND}/v1/ota/plan" | grep -q '"strategy":"canary"'
 
+echo "== E3 POST /v1/ota/execute (dry-run fleet rollout) =="
+curl -sf -X POST \
+  -H "Authorization: Bearer ${SPANDA_API_KEY}" \
+  -H "Content-Type: application/json" \
+  -d '{"strategy":"all","version":"1.2.3","dry_run":true,"assignments":[{"robot_name":"rover-001","hardware":"jetson"}]}' \
+  "http://${BIND}/v1/ota/execute" | grep -q '"dry_run":true'
+
+echo "== E2 GET /v1/discovery?transport=ble (registry package) =="
+fetch "/v1/discovery?transport=ble" | grep -q spanda-discovery-ble
+
+echo "== E2 GET /v1/discovery?transport=usb (registry package) =="
+fetch "/v1/discovery?transport=usb" | grep -q spanda-discovery-usb
+
 echo "== E3 GET /v1/trust/package?name=spanda-mqtt =="
 fetch "/v1/trust/package?name=spanda-mqtt" | grep -q trust
 

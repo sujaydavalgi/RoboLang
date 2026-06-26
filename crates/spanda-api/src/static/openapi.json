@@ -193,6 +193,31 @@
         "responses": { "200": { "description": "Rollout plan" } }
       }
     },
+    "/v1/ota/execute": {
+      "post": {
+        "summary": "Execute OTA rollout against deploy agents (dry_run supported)",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "strategy": { "type": "string", "enum": ["all", "canary", "staged", "blue_green"] },
+                  "version": { "type": "string" },
+                  "canary_percent": { "type": "integer" },
+                  "dry_run": { "type": "boolean" },
+                  "assignments": { "type": "array", "items": { "type": "object" } }
+                },
+                "required": ["strategy", "version"]
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Rollout result" } }
+      }
+    },
     "/v1/ota/status": {
       "get": {
         "summary": "Deploy state from .spanda/deploy-state.json",

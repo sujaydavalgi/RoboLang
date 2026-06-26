@@ -1,8 +1,9 @@
 //! Live gRPC probe against a running Control Center (`SPANDA_GRPC_BIND`).
 use spanda_api::grpc::spanda_v1::control_center_client::ControlCenterClient;
 use spanda_api::grpc::spanda_v1::{
-    DriftRequest, Empty, QueryRequest, ReadinessRequest, TrustPackageRequest,
+    DriftRequest, Empty, JsonBodyRequest, QueryRequest, ReadinessRequest, TrustPackageRequest,
 };
+use tonic::metadata::MetadataValue;
 use tonic::transport::Channel;
 
 async fn connect(bind: &str) -> ControlCenterClient<Channel> {
@@ -119,5 +120,42 @@ async fn grpc_live_control_center_endpoints() {
             .expect("drift")
             .into_inner();
         assert!(drift.json.contains("dimensions_checked"));
+    }
+
+    let robots = client
+        .list_robots(Empty {})
+        .await
+        .expect("list robots")
+        .into_inner();
+    assert!(robots.json.contains("robots"));
+
+    if let Ok(api_key) = std::env::var("SPANDA_API_KEY") {
+        let mut ota_req = tonic::Request::new(JsonBodyRequest {
+            body_json: r#"{"strategy":"canary","version":"smoke-1.0","dry_run":true}"#.into(),
+        });
+        ota_req.metadata_mut().insert(
+            "authorization",
+            MetadataValue::try_from(format!("Bearer {api_key}")).expect("metadata"),
+        );
+        let plan = client
+            .plan_ota(ota_req)
+            .await
+            .expect("plan ota")
+            .into_inner();
+        assert!(plan.json.contains("rollout"));
+
+        let mut exec_req = tonic::Request::new(JsonBodyRequest {
+            body_json: r#"{"strategy":"all","version":"smoke-1.0","dry_run":true}"#.into(),
+        });
+        exec_req.metadata_mut().insert(
+            "authorization",
+            MetadataValue::try_from(format!("Bearer {api_key}")).expect("metadata"),
+        );
+        let execute = client
+            .execute_ota(exec_req)
+            .await
+            .expect("execute ota")
+            .into_inner();
+        assert!(execute.json.contains("rollout"));
     }
 }

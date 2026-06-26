@@ -1,6 +1,7 @@
 //! Native gRPC server (tonic) for Control Center CLI parity.
 //!
 use crate::state::SharedState;
+use spanda_security::RbacContext;
 use tonic::{transport::Server, Request, Response, Status};
 
 pub mod spanda_v1 {
@@ -18,6 +19,28 @@ struct GrpcControlCenter {
 }
 
 impl GrpcControlCenter {
+    fn bearer_token<T>(request: &Request<T>) -> Option<String> {
+        request
+            .metadata()
+            .get("authorization")
+            .or_else(|| request.metadata().get("x-api-key"))
+            .and_then(|value| value.to_str().ok())
+            .map(|raw| {
+                let trimmed = raw.trim();
+                trimmed
+                    .strip_prefix("Bearer ")
+                    .unwrap_or(trimmed)
+                    .trim()
+                    .to_string()
+            })
+    }
+
+    fn rbac_from_request<T>(&self, request: &Request<T>) -> Option<RbacContext> {
+        let token = Self::bearer_token(request);
+        let guard = self.state.lock().ok()?;
+        guard.api_keys.authenticate(token.as_deref())
+    }
+
     fn with_state<F>(&self, f: F) -> Result<JsonResponse, Status>
     where
         F: FnOnce(&crate::state::ControlCenterState) -> String,
@@ -193,8 +216,9 @@ impl ControlCenter for GrpcControlCenter {
         &self,
         request: Request<JsonBodyRequest>,
     ) -> Result<Response<JsonResponse>, Status> {
+        let ctx = self.rbac_from_request(&request);
         let body = request.into_inner().body_json;
-        self.with_state_mut(|state| crate::handlers::discovery_post_json(state, &body, None))
+        self.with_state_mut(|state| crate::handlers::discovery_post_json(state, &body, ctx.as_ref()))
             .map(Response::new)
     }
 
@@ -202,8 +226,9 @@ impl ControlCenter for GrpcControlCenter {
         &self,
         request: Request<JsonBodyRequest>,
     ) -> Result<Response<JsonResponse>, Status> {
+        let ctx = self.rbac_from_request(&request);
         let body = request.into_inner().body_json;
-        self.with_state_mut(|state| crate::handlers::provision_run_json(state, &body, None))
+        self.with_state_mut(|state| crate::handlers::provision_run_json(state, &body, ctx.as_ref()))
             .map(Response::new)
     }
 
@@ -211,9 +236,21 @@ impl ControlCenter for GrpcControlCenter {
         &self,
         request: Request<JsonBodyRequest>,
     ) -> Result<Response<JsonResponse>, Status> {
+        let ctx = self.rbac_from_request(&request);
         let body = request.into_inner().body_json;
         Ok(Response::new(JsonResponse {
-            json: crate::handlers::ota_plan_json(&body, None),
+            json: crate::handlers::ota_plan_json(&body, ctx.as_ref()),
+        }))
+    }
+
+    async fn execute_ota(
+        &self,
+        request: Request<JsonBodyRequest>,
+    ) -> Result<Response<JsonResponse>, Status> {
+        let ctx = self.rbac_from_request(&request);
+        let body = request.into_inner().body_json;
+        Ok(Response::new(JsonResponse {
+            json: crate::handlers::ota_execute_json(&body, ctx.as_ref()),
         }))
     }
 
@@ -221,18 +258,22 @@ impl ControlCenter for GrpcControlCenter {
         &self,
         request: Request<JsonBodyRequest>,
     ) -> Result<Response<JsonResponse>, Status> {
+        let ctx = self.rbac_from_request(&request);
         let body = request.into_inner().body_json;
-        self.with_state_mut(|state| crate::handlers::operator_quarantine_json(state, &body, None))
-            .map(Response::new)
+        self.with_state_mut(|state| {
+            crate::handlers::operator_quarantine_json(state, &body, ctx.as_ref())
+        })
+        .map(Response::new)
     }
 
     async fn operator_mission_approve(
         &self,
         request: Request<JsonBodyRequest>,
     ) -> Result<Response<JsonResponse>, Status> {
+        let ctx = self.rbac_from_request(&request);
         let body = request.into_inner().body_json;
         Ok(Response::new(JsonResponse {
-            json: crate::handlers::operator_mission_approve_json(&body, None),
+            json: crate::handlers::operator_mission_approve_json(&body, ctx.as_ref()),
         }))
     }
 
@@ -240,9 +281,43 @@ impl ControlCenter for GrpcControlCenter {
         &self,
         request: Request<QueryRequest>,
     ) -> Result<Response<JsonResponse>, Status> {
+        let ctx = self.rbac_from_request(&request);
         let query = request.into_inner().query;
-        self.with_state(|state| crate::handlers::compliance_export_json(state, &query, None))
+        self.with_state(|state| crate::handlers::compliance_export_json(state, &query, ctx.as_ref()))
             .map(Response::new)
+    }
+
+    async fn list_robots(
+        &self,
+        _request: Request<Empty>,
+    ) -> Result<Response<JsonResponse>, Status> {
+        self.with_state(|state| crate::handlers::robots_list_json(state))
+            .map(Response::new)
+    }
+
+    async fn list_fleets(
+        &self,
+        _request: Request<Empty>,
+    ) -> Result<Response<JsonResponse>, Status> {
+        self.with_state(|state| crate::handlers::fleets_list_json(state))
+            .map(Response::new)
+    }
+
+    async fn list_alerts(
+        &self,
+        _request: Request<Empty>,
+    ) -> Result<Response<JsonResponse>, Status> {
+        self.with_state(|state| crate::handlers::alerts_list_json(state))
+            .map(Response::new)
+    }
+
+    async fn list_config_snapshots(
+        &self,
+        _request: Request<Empty>,
+    ) -> Result<Response<JsonResponse>, Status> {
+        Ok(Response::new(JsonResponse {
+            json: crate::handlers::config_snapshots_list_json(),
+        }))
     }
 
     async fn detect_drift(

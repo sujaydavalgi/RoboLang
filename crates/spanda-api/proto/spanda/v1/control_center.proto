@@ -51,6 +51,11 @@ service ControlCenter {
   rpc RunDiscovery(JsonBodyRequest) returns (JsonResponse);
   rpc ProvisionDevice(JsonBodyRequest) returns (JsonResponse);
   rpc PlanOta(JsonBodyRequest) returns (JsonResponse);
+  rpc ExecuteOta(JsonBodyRequest) returns (JsonResponse);
+  rpc ListRobots(Empty) returns (JsonResponse);
+  rpc ListFleets(Empty) returns (JsonResponse);
+  rpc ListAlerts(Empty) returns (JsonResponse);
+  rpc ListConfigSnapshots(Empty) returns (JsonResponse);
   rpc OperatorQuarantine(JsonBodyRequest) returns (JsonResponse);
   rpc OperatorMissionApprove(JsonBodyRequest) returns (JsonResponse);
   rpc ExportCompliance(QueryRequest) returns (JsonResponse);
