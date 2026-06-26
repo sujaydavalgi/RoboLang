@@ -1,7 +1,7 @@
 //! Fleet-scale device pool performance gate (1000+ devices).
 
-use spanda_config::{DeviceIdentityRecord, DeviceRegistry};
 use serde_json::json;
+use spanda_config::{DeviceIdentityRecord, DeviceRegistry};
 use std::time::Instant;
 
 fn synthetic_registry(count: usize) -> DeviceRegistry {

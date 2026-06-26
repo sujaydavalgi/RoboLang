@@ -3,7 +3,7 @@
 use spanda_api::integrations::pagerduty_webhook;
 use spanda_api::ControlCenterState;
 use spanda_ops::IncidentSeverity;
-use spanda_security::{default_tenant_id, Role, RbacContext};
+use spanda_security::{default_tenant_id, RbacContext, Role};
 
 #[test]
 fn pagerduty_webhook_acknowledges_by_incident_id() {

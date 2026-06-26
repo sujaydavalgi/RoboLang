@@ -188,13 +188,9 @@ pub fn handle_request(
         );
         return (response, correlation_id);
     }
-    if let Some(response) = route_config_approval(
-        state,
-        path,
-        &request.method,
-        &request.body,
-        ctx.as_ref(),
-    ) {
+    if let Some(response) =
+        route_config_approval(state, path, &request.method, &request.body, ctx.as_ref())
+    {
         e3::record_trace(
             state,
             &correlation_id,
@@ -206,13 +202,9 @@ pub fn handle_request(
         );
         return (response, correlation_id);
     }
-    if let Some(response) = route_sre_incident(
-        state,
-        path,
-        &request.method,
-        &request.body,
-        ctx.as_ref(),
-    ) {
+    if let Some(response) =
+        route_sre_incident(state, path, &request.method, &request.body, ctx.as_ref())
+    {
         e3::record_trace(
             state,
             &correlation_id,
@@ -227,9 +219,7 @@ pub fn handle_request(
     let response = match (path, request.method.as_str()) {
         ("/v1/tenant", "GET") => tenant_info(state),
         ("/v1/audit/mutations", "GET") => mutation_audit_list(state, ctx.as_ref()),
-        ("/v1/audit/mutations/export", "GET") => {
-            mutation_audit_export(state, query, ctx.as_ref())
-        }
+        ("/v1/audit/mutations/export", "GET") => mutation_audit_export(state, query, ctx.as_ref()),
         ("/v1/dashboard", "GET") => dashboard(state),
         ("/v1/version", "GET") => api_version_info(),
         ("/v1/robots", "GET") => robots_list(state),
@@ -263,14 +253,12 @@ pub fn handle_request(
         ("/v1/ota/execute", "POST") => e3::ota_execute(state, &request.body, ctx.as_ref()),
         ("/v1/trust/package", "GET") => e3::trust_package(query),
         ("/v1/sre/summary", "GET") => e3::sre_summary(state),
-        ("/v1/integrations/pagerduty/webhook", "POST") => {
-            crate::integrations::pagerduty_webhook(
-                state,
-                &request.body,
-                &parse_header_pairs(raw_headers),
-                ctx.as_ref(),
-            )
-        }
+        ("/v1/integrations/pagerduty/webhook", "POST") => crate::integrations::pagerduty_webhook(
+            state,
+            &request.body,
+            &parse_header_pairs(raw_headers),
+            ctx.as_ref(),
+        ),
         ("/v1/observability/traces", "GET") => e3::observability_traces(state),
         ("/v1/observability/otlp/traces", "GET") => observability::otlp_traces_preview(state),
         ("/v1/observability/otlp/metrics", "GET") => observability::otlp_metrics_preview(state),
@@ -430,10 +418,7 @@ fn alerts_list(state: &ControlCenterState) -> HttpResponse {
 pub(crate) fn record_alert(state: &mut ControlCenterState, mut alert: Alert) {
     let now = now_ms();
     let window = spanda_ops::alert_dedup_window_ms(alert.severity);
-    if state
-        .alert_store
-        .is_duplicate_within(&alert, now, window)
-    {
+    if state.alert_store.is_duplicate_within(&alert, now, window) {
         return;
     }
     let incident = state.incident_store.maybe_open_from_alert(&alert);
@@ -509,10 +494,7 @@ fn mutation_audit_export(
         return unauthorized();
     }
     let params = parse_query(query);
-    let format = params
-        .get("format")
-        .map(String::as_str)
-        .unwrap_or("jsonl");
+    let format = params.get("format").map(String::as_str).unwrap_or("jsonl");
     let path = crate::audit_log::default_mutation_audit_path();
     let body = match format {
         "cef" => crate::audit_log::export_mutation_audit_cef(&path),
@@ -698,7 +680,12 @@ fn config_approvals_resolve(
         .unwrap_or_else(|| "anonymous".into());
     let note = serde_json::from_str::<serde_json::Value>(body)
         .ok()
-        .and_then(|value| value.get("note").and_then(|v| v.as_str()).map(str::to_string));
+        .and_then(|value| {
+            value
+                .get("note")
+                .and_then(|v| v.as_str())
+                .map(str::to_string)
+        });
     let path = spanda_config::default_approvals_path();
     let mut queue = spanda_config::load_approval_queue(&path).unwrap_or_default();
     let result = if approve {
@@ -722,10 +709,9 @@ fn config_approvals_resolve(
                     state.project_root().as_deref(),
                 ) {
                     Ok((resolved, publish_result)) => {
-                        if let Err(error) = state.apply_published_config(
-                            resolved,
-                            publish_result.reloaded_from_disk,
-                        ) {
+                        if let Err(error) = state
+                            .apply_published_config(resolved, publish_result.reloaded_from_disk)
+                        {
                             return bad_request(&error);
                         }
                         publish = Some(publish_result);
@@ -790,7 +776,9 @@ fn route_config_approval(
     let (request_id, action) = rest.split_once('/').unwrap_or((rest, ""));
     match (action, method) {
         ("approve", "POST") => Some(config_approvals_resolve(state, request_id, true, body, ctx)),
-        ("reject", "POST") => Some(config_approvals_resolve(state, request_id, false, body, ctx)),
+        ("reject", "POST") => Some(config_approvals_resolve(
+            state, request_id, false, body, ctx,
+        )),
         _ => None,
     }
 }
@@ -1244,7 +1232,10 @@ pub fn encode_response(
     let retry_header = if response.status == 429 {
         serde_json::from_str::<serde_json::Value>(&response.body)
             .ok()
-            .and_then(|body| body.get("retry_after_secs").and_then(|value| value.as_u64()))
+            .and_then(|body| {
+                body.get("retry_after_secs")
+                    .and_then(|value| value.as_u64())
+            })
             .map(|seconds| format!("Retry-After: {seconds}\r\n"))
             .unwrap_or_default()
     } else {
@@ -1459,7 +1450,11 @@ pub fn ota_plan_json(state: &ControlCenterState, body: &str, ctx: Option<&RbacCo
 }
 
 /// JSON body for gRPC `ExecuteOta` (parity with `POST /v1/ota/execute`).
-pub fn ota_execute_json(state: &ControlCenterState, body: &str, ctx: Option<&RbacContext>) -> String {
+pub fn ota_execute_json(
+    state: &ControlCenterState,
+    body: &str,
+    ctx: Option<&RbacContext>,
+) -> String {
     e3::ota_execute(state, body, ctx).body
 }
 

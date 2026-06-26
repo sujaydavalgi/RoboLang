@@ -2,7 +2,7 @@
 
 use spanda_lexer::tokenize;
 use spanda_parser::parse;
-use spanda_policy::{evaluate_policy, list_policies, evaluate_readiness_with_policy};
+use spanda_policy::{evaluate_policy, evaluate_readiness_with_policy, list_policies};
 use spanda_readiness::{evaluate_readiness, ReadinessOptions};
 use std::path::PathBuf;
 

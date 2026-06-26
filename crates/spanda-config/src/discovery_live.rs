@@ -86,7 +86,8 @@ pub fn probe_mdns(timeout_ms: u64) -> Vec<DiscoveryMatch> {
 
     if Command::new("dns-sd").arg("-V").output().is_ok() {
         for service in services {
-            if let Some(output) = run_command_output("dns-sd", &["-B", service, "local"], timeout_ms)
+            if let Some(output) =
+                run_command_output("dns-sd", &["-B", service, "local"], timeout_ms)
             {
                 for (index, line) in output.lines().enumerate() {
                     if !line.contains("Add") {
@@ -108,10 +109,14 @@ pub fn probe_mdns(timeout_ms: u64) -> Vec<DiscoveryMatch> {
         }
     }
 
-    if matches.is_empty() && Command::new("avahi-browse").arg("--version").output().is_ok() {
+    if matches.is_empty()
+        && Command::new("avahi-browse")
+            .arg("--version")
+            .output()
+            .is_ok()
+    {
         for service in services {
-            if let Some(output) =
-                run_command_output("avahi-browse", &["-rt", service], timeout_ms)
+            if let Some(output) = run_command_output("avahi-browse", &["-rt", service], timeout_ms)
             {
                 for (index, line) in output.lines().enumerate() {
                     if !line.contains(';') {
@@ -139,14 +144,7 @@ pub fn probe_ble() -> Vec<DiscoveryMatch> {
             .split(',')
             .filter(|entry| !entry.trim().is_empty())
             .enumerate()
-            .map(|(index, mac)| {
-                discovery_match(
-                    &format!("ble-{index}"),
-                    None,
-                    mac.trim(),
-                    "ble",
-                )
-            })
+            .map(|(index, mac)| discovery_match(&format!("ble-{index}"), None, mac.trim(), "ble"))
             .collect();
     }
 
@@ -157,7 +155,11 @@ pub fn probe_ble() -> Vec<DiscoveryMatch> {
             .enumerate()
             .map(|(index, line)| {
                 let mac = line.split_whitespace().nth(1).unwrap_or("ble");
-                let name = line.split_whitespace().skip(2).collect::<Vec<_>>().join("-");
+                let name = line
+                    .split_whitespace()
+                    .skip(2)
+                    .collect::<Vec<_>>()
+                    .join("-");
                 discovery_match(
                     &format!("ble-{}", if name.is_empty() { index } else { index }),
                     Some(&name),
@@ -177,7 +179,12 @@ pub fn probe_ble() -> Vec<DiscoveryMatch> {
             .filter(|line| line.contains("Address:"))
             .enumerate()
             .map(|(index, line)| {
-                let mac = line.split(':').skip(1).collect::<String>().trim().to_string();
+                let mac = line
+                    .split(':')
+                    .skip(1)
+                    .collect::<String>()
+                    .trim()
+                    .to_string();
                 discovery_match(&format!("ble-{index}"), None, &mac, "ble")
             })
             .collect();
@@ -224,7 +231,12 @@ pub fn probe_usb() -> Vec<DiscoveryMatch> {
             .filter(|line| line.contains("Serial Number:"))
             .enumerate()
             .map(|(index, line)| {
-                let serial = line.split(':').skip(1).collect::<String>().trim().to_string();
+                let serial = line
+                    .split(':')
+                    .skip(1)
+                    .collect::<String>()
+                    .trim()
+                    .to_string();
                 discovery_match(&format!("usb-{serial}-{index}"), None, "usb", "usb")
             })
             .collect();
@@ -252,12 +264,7 @@ pub fn probe_can() -> Vec<DiscoveryMatch> {
     if let Ok(entries) = std::fs::read_dir("/sys/class/net") {
         let matches: Vec<_> = entries
             .filter_map(Result::ok)
-            .filter(|entry| {
-                entry
-                    .file_name()
-                    .to_string_lossy()
-                    .starts_with("can")
-            })
+            .filter(|entry| entry.file_name().to_string_lossy().starts_with("can"))
             .enumerate()
             .map(|(index, entry)| {
                 let iface = entry.file_name().to_string_lossy().into_owned();
@@ -271,7 +278,10 @@ pub fn probe_can() -> Vec<DiscoveryMatch> {
 
     if let Some(output) = run_command_output("ip", &["-json", "link", "show", "type", "can"], 500) {
         if output.contains("\"ifname\"") {
-            for (index, line) in output.lines().filter(|line| line.contains("\"ifname\"")).enumerate()
+            for (index, line) in output
+                .lines()
+                .filter(|line| line.contains("\"ifname\""))
+                .enumerate()
             {
                 if let Some(name) = line.split('"').nth(3) {
                     return vec![discovery_match(
@@ -296,12 +306,7 @@ pub fn probe_mqtt(timeout_ms: u64) -> Vec<DiscoveryMatch> {
         return Vec::new();
     };
     if TcpStream::connect_timeout(&addr, Duration::from_millis(timeout_ms)).is_ok() {
-        return vec![discovery_match(
-            "mqtt-broker",
-            Some("mqtt"),
-            &host,
-            "mqtt",
-        )];
+        return vec![discovery_match("mqtt-broker", Some("mqtt"), &host, "mqtt")];
     }
     Vec::new()
 }
@@ -317,7 +322,10 @@ pub fn probe_ros2(timeout_ms: u64) -> Vec<DiscoveryMatch> {
     let domain = std::env::var("ROS_DOMAIN_ID").unwrap_or_else(|_| "0".into());
     if let Some(output) = run_command_output("ros2", &["topic", "list", "--no-daemon"], timeout_ms)
     {
-        let topics: Vec<_> = output.lines().filter(|line| line.starts_with('/')).collect();
+        let topics: Vec<_> = output
+            .lines()
+            .filter(|line| line.starts_with('/'))
+            .collect();
         if !topics.is_empty() {
             return vec![discovery_match(
                 &format!("ros2-domain-{domain}"),
@@ -395,11 +403,7 @@ pub fn probe_wifi(timeout_ms: u64) -> Vec<DiscoveryMatch> {
 
 /// Probe cellular modems via env override, `mmcli`, or ModemManager D-Bus listing.
 pub fn probe_cellular() -> Vec<DiscoveryMatch> {
-    let env_matches = env_match_list(
-        "SPANDA_DISCOVERY_CELLULAR_MATCHES",
-        "cellular",
-        "cellular",
-    );
+    let env_matches = env_match_list("SPANDA_DISCOVERY_CELLULAR_MATCHES", "cellular", "cellular");
     if !env_matches.is_empty() {
         return env_matches;
     }
@@ -410,11 +414,7 @@ pub fn probe_cellular() -> Vec<DiscoveryMatch> {
             .filter(|line| line.contains("/Modem/"))
             .enumerate()
             .map(|(index, line)| {
-                let modem_id = line
-                    .split('/')
-                    .next_back()
-                    .unwrap_or("0")
-                    .trim();
+                let modem_id = line.split('/').next_back().unwrap_or("0").trim();
                 discovery_match(
                     &format!("cellular-modem-{modem_id}-{index}"),
                     Some("lte"),

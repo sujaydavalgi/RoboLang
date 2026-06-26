@@ -5,12 +5,12 @@ use crate::handlers::{bad_request, json_ok, now_ms, parse_query, unauthorized};
 use crate::observability::maybe_auto_push_latest_span;
 use crate::state::ControlCenterState;
 use serde::Deserialize;
+use spanda_certify::build_certification_proof_summary;
 use spanda_config::{
     default_snapshots_dir, detect_operational_drift_full, load_config_snapshot,
     DeviceLifecycleState,
 };
 use spanda_deploy_http::HttpResponse;
-use spanda_certify::build_certification_proof_summary;
 use spanda_ota::{
     apply_rollout, build_deploy_bundle, build_deploy_plan_from_program, default_state_path,
     execute_remote_rollout, load_agent_registry, load_deploy_state, plan_rollout,
@@ -81,19 +81,18 @@ pub fn drift_report(state: &ControlCenterState, query: &str) -> HttpResponse {
                 .as_ref()
                 .and_then(|path| crate::program::parse_program_file(path).ok())
                 .map(|(program, _, _)| program);
-            let agent_findings = program.as_ref().map(|program| {
-                crate::drift_collect::collect_agent_drift_findings(
-                    program,
-                    current,
-                    state.program_path.as_deref(),
-                )
-            }).unwrap_or_default();
-            let report = detect_operational_drift_full(
-                &base,
-                current,
-                program.as_ref(),
-                &agent_findings,
-            );
+            let agent_findings = program
+                .as_ref()
+                .map(|program| {
+                    crate::drift_collect::collect_agent_drift_findings(
+                        program,
+                        current,
+                        state.program_path.as_deref(),
+                    )
+                })
+                .unwrap_or_default();
+            let report =
+                detect_operational_drift_full(&base, current, program.as_ref(), &agent_findings);
             json_ok(&serde_json::json!({
                 "version": "v1",
                 "report": report,
@@ -118,7 +117,9 @@ fn production_require_certify(request_flag: bool) -> bool {
         || std::env::var("SPANDA_OTA_REQUIRE_CERTIFY")
             .ok()
             .is_some_and(|value| {
-                value == "1" || value.eq_ignore_ascii_case("true") || value.eq_ignore_ascii_case("yes")
+                value == "1"
+                    || value.eq_ignore_ascii_case("true")
+                    || value.eq_ignore_ascii_case("yes")
             })
         || std::env::var("SPANDA_PRODUCTION_POLICY")
             .ok()
@@ -180,7 +181,9 @@ fn parse_ota_plan_request(
         || std::env::var("SPANDA_OTA_ROLLBACK_ON_READINESS_FAIL")
             .ok()
             .map(|value| {
-                value == "1" || value.eq_ignore_ascii_case("true") || value.eq_ignore_ascii_case("yes")
+                value == "1"
+                    || value.eq_ignore_ascii_case("true")
+                    || value.eq_ignore_ascii_case("yes")
             })
             .unwrap_or(false);
     let options = RolloutOptions {
@@ -216,7 +219,11 @@ pub fn ota_plan(state: &ControlCenterState, body: &str, ctx: Option<&RbacContext
     }))
 }
 
-pub fn ota_execute(state: &ControlCenterState, body: &str, ctx: Option<&RbacContext>) -> HttpResponse {
+pub fn ota_execute(
+    state: &ControlCenterState,
+    body: &str,
+    ctx: Option<&RbacContext>,
+) -> HttpResponse {
     if !ApiKeyStore::check(ctx, RbacAction::Deploy) {
         return unauthorized();
     }
@@ -291,8 +298,9 @@ pub fn sre_summary(state: &ControlCenterState) -> HttpResponse {
         pool.total as usize,
     );
     let readiness_trends = state.program_path.as_ref().and_then(|path| {
-        let history =
-            spanda_readiness::load_readiness_history(&spanda_readiness::default_readiness_history_path());
+        let history = spanda_readiness::load_readiness_history(
+            &spanda_readiness::default_readiness_history_path(),
+        );
         let label = path
             .file_name()
             .and_then(|name| name.to_str())
@@ -384,11 +392,17 @@ pub fn sre_incident_ack(
     }
     let assignee = serde_json::from_str::<serde_json::Value>(body)
         .ok()
-        .and_then(|value| value.get("assignee").and_then(|v| v.as_str()).map(str::to_string));
+        .and_then(|value| {
+            value
+                .get("assignee")
+                .and_then(|v| v.as_str())
+                .map(str::to_string)
+        });
     let Some(incident) = state.incident_store.acknowledge(incident_id, assignee) else {
         return bad_request("incident not found or already resolved");
     };
-    let pagerduty_sync = spanda_ops::pagerduty::sync_incident_status_to_pagerduty(&incident, "acknowledge");
+    let pagerduty_sync =
+        spanda_ops::pagerduty::sync_incident_status_to_pagerduty(&incident, "acknowledge");
     let _ = crate::persistence::persist_runtime_state(state);
     json_ok(&serde_json::json!({
         "ok": true,
@@ -408,7 +422,8 @@ pub fn sre_incident_resolve(
     let Some(incident) = state.incident_store.resolve(incident_id) else {
         return bad_request("incident not found");
     };
-    let pagerduty_sync = spanda_ops::pagerduty::sync_incident_status_to_pagerduty(&incident, "resolve");
+    let pagerduty_sync =
+        spanda_ops::pagerduty::sync_incident_status_to_pagerduty(&incident, "resolve");
     let _ = crate::persistence::persist_runtime_state(state);
     json_ok(&serde_json::json!({
         "ok": true,

@@ -16,10 +16,8 @@ fn ota_execute_live_rollout_updates_agent() {
     let (port, _handle) = spawn_test_agent(&target, None).expect("spawn test agent");
     thread::sleep(Duration::from_millis(100));
 
-    let agents_path = std::env::temp_dir().join(format!(
-        "spanda-ota-exec-test-{}.json",
-        std::process::id()
-    ));
+    let agents_path =
+        std::env::temp_dir().join(format!("spanda-ota-exec-test-{}.json", std::process::id()));
     let mut registry = DeployAgentRegistry::default();
     let entry = agent_entry_for_port(&target, port, None);
     register_agent(&mut registry, target.clone(), entry.url, None).expect("register agent");
@@ -45,7 +43,11 @@ fn ota_execute_live_rollout_updates_agent() {
     });
     let state = ControlCenterState::new();
     let response = ota_execute(&state, &body.to_string(), Some(&ctx));
-    assert_eq!(response.status, 200, "ota execute failed: {}", response.body);
+    assert_eq!(
+        response.status, 200,
+        "ota execute failed: {}",
+        response.body
+    );
     assert!(response.body.contains("\"executed\":true"));
     assert!(response.body.contains("\"success\":true"));
     let _ = std::fs::remove_file(agents_path);

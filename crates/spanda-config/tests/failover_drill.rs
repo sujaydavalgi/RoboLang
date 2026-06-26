@@ -68,8 +68,12 @@ fn failover_drill_skips_quarantined_backup() {
 fn failover_drill_recovery_actions_include_remap() {
     let registry = drill_registry();
     let actions = recovery_failover_actions(&registry, "lidar-primary");
-    assert!(actions.iter().any(|action| action.contains("switch_redundant_hardware")));
-    assert!(actions.iter().any(|action| action.contains("remap logical")));
+    assert!(actions
+        .iter()
+        .any(|action| action.contains("switch_redundant_hardware")));
+    assert!(actions
+        .iter()
+        .any(|action| action.contains("remap logical")));
     assert!(actions.iter().any(|action| action.contains("lidar-backup")));
 }
 

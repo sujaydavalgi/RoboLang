@@ -26,11 +26,15 @@ fn fast_burn_dispatches_critical_alert_once() {
     std::env::set_var("SPANDA_SRE_BURN_WINDOW_HOURS", "1");
     let mut state = ControlCenterState::new();
     for index in 0..3 {
-        state.alert_store.push(fault_alert(&format!("fault-{index}"), 100.0));
+        state
+            .alert_store
+            .push(fault_alert(&format!("fault-{index}"), 100.0));
     }
     assert!(check_and_alert_fast_burn(&mut state));
     let alerts = state.alert_store.list_owned();
-    assert!(alerts.iter().any(|alert| alert.source == "slo-burn-monitor"));
+    assert!(alerts
+        .iter()
+        .any(|alert| alert.source == "slo-burn-monitor"));
     assert!(!check_and_alert_fast_burn(&mut state));
     std::env::remove_var("SPANDA_CONTROL_CENTER_STATE_DIR");
     std::env::remove_var("SPANDA_SRE_SLO_PERCENT");

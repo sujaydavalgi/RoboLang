@@ -10,12 +10,13 @@ static ENV_TEST_LOCK: Mutex<()> = Mutex::new(());
 #[test]
 fn incident_lifecycle_via_rest() {
     let _guard = ENV_TEST_LOCK.lock().unwrap();
-    let state_dir = std::env::temp_dir().join(format!(
-        "spanda-incident-test-{}",
-        std::process::id()
-    ));
+    let state_dir =
+        std::env::temp_dir().join(format!("spanda-incident-test-{}", std::process::id()));
     let _ = std::fs::remove_dir_all(&state_dir);
-    std::env::set_var("SPANDA_CONTROL_CENTER_STATE_DIR", state_dir.to_string_lossy().to_string());
+    std::env::set_var(
+        "SPANDA_CONTROL_CENTER_STATE_DIR",
+        state_dir.to_string_lossy().to_string(),
+    );
     std::env::set_var("SPANDA_API_KEY", "incident-test-key");
     let mut state = ControlCenterState::new();
     state.api_keys = spanda_security::ApiKeyStore::from_env();
@@ -80,7 +81,8 @@ fn incident_lifecycle_via_rest() {
     assert_eq!(summary.status, 200);
     assert!(summary.body.contains("mttr_hint_ms"));
     assert!(summary.body.contains("incidents_total"));
-    let summary_json: serde_json::Value = serde_json::from_str(&summary.body).expect("summary json");
+    let summary_json: serde_json::Value =
+        serde_json::from_str(&summary.body).expect("summary json");
     assert_eq!(
         summary_json.get("incidents_total").and_then(|v| v.as_u64()),
         Some(1),

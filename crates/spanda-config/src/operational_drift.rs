@@ -214,16 +214,14 @@ mod tests {
             .expect("warehouse fixture");
         let mut baseline = resolved.clone();
         let mut current = resolved.clone();
-        baseline
-            .raw
-            .as_table_mut()
-            .expect("table")
-            .insert("assurance".into(), toml::toml! { minimum_score = 80 }.into());
-        current
-            .raw
-            .as_table_mut()
-            .expect("table")
-            .insert("assurance".into(), toml::toml! { minimum_score = 60 }.into());
+        baseline.raw.as_table_mut().expect("table").insert(
+            "assurance".into(),
+            toml::toml! { minimum_score = 80 }.into(),
+        );
+        current.raw.as_table_mut().expect("table").insert(
+            "assurance".into(),
+            toml::toml! { minimum_score = 60 }.into(),
+        );
         let report = detect_operational_drift(&baseline, &current);
         assert!(!report.passed);
         assert!(report.by_dimension.get("policy").copied().unwrap_or(0) >= 1);

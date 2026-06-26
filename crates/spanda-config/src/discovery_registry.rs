@@ -1,6 +1,8 @@
 //! Registry-backed discovery package resolution at runtime.
 //!
-use crate::discovery_transport::{DeviceDiscoveryTransport, DiscoveryOptions, DiscoveryTransportResult};
+use crate::discovery_transport::{
+    DeviceDiscoveryTransport, DiscoveryOptions, DiscoveryTransportResult,
+};
 use spanda_package::registry_package_dir;
 
 /// Official discovery transport packages shipped in the registry.

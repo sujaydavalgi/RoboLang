@@ -10,10 +10,7 @@ use std::sync::Mutex;
 static ENV_TEST_LOCK: Mutex<()> = Mutex::new(());
 
 fn setup_state() -> (ControlCenterState, String) {
-    let state_dir = std::env::temp_dir().join(format!(
-        "spanda-drift-scan-{}",
-        std::process::id()
-    ));
+    let state_dir = std::env::temp_dir().join(format!("spanda-drift-scan-{}", std::process::id()));
     let _ = std::fs::remove_dir_all(&state_dir);
     std::fs::create_dir_all(&state_dir).unwrap();
     std::env::set_var(
@@ -22,8 +19,8 @@ fn setup_state() -> (ControlCenterState, String) {
     );
     std::env::set_var("SPANDA_API_KEY", "drift-scan-test-key");
 
-    let example =
-        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../examples/packages/basic_project/spanda.toml");
+    let example = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("../../examples/packages/basic_project/spanda.toml");
     let mut state = ControlCenterState::new().with_config_path(example);
     state.api_keys = spanda_security::ApiKeyStore::from_env();
     state.reload_config().expect("reload example config");

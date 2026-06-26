@@ -167,10 +167,7 @@ pub fn run_due_report_deliveries(state: &mut ControlCenterState) -> usize {
     let due_count = due.len();
     let mut delivered = 0usize;
     for schedule in due {
-        let query = format!(
-            "profile={}&format={}",
-            schedule.profile, schedule.format
-        );
+        let query = format!("profile={}&format={}", schedule.profile, schedule.format);
         let response = reports_export_internal(state, &query);
         let status = if response.status == 200 {
             if deliver_report(&schedule.destination_url, &response.body).is_ok() {
@@ -209,12 +206,10 @@ pub fn spawn_report_scheduler(state: Arc<Mutex<ControlCenterState>>) {
     if interval_secs == 0 {
         return;
     }
-    thread::spawn(move || {
-        loop {
-            thread::sleep(Duration::from_secs(interval_secs));
-            if let Ok(mut guard) = state.lock() {
-                let _ = run_due_report_deliveries(&mut guard);
-            }
+    thread::spawn(move || loop {
+        thread::sleep(Duration::from_secs(interval_secs));
+        if let Ok(mut guard) = state.lock() {
+            let _ = run_due_report_deliveries(&mut guard);
         }
     });
 }

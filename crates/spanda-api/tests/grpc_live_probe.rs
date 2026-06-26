@@ -22,11 +22,7 @@ async fn grpc_live_control_center_endpoints() {
         return;
     };
     let mut client = connect(&bind).await;
-    let health = client
-        .health(Empty {})
-        .await
-        .expect("health")
-        .into_inner();
+    let health = client.health(Empty {}).await.expect("health").into_inner();
     assert!(health.status.starts_with("ok"));
 
     let tenant = client

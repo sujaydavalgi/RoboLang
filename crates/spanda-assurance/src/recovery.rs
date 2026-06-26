@@ -533,13 +533,12 @@ pub fn program_has_recovery_for_issue(program: &Program, issue: &str) -> bool {
     // let covered = program_has_recovery_for_issue(&program, "gps.failed");
 
     let lower = issue.to_ascii_lowercase();
-    extract_recovery_policies(program)
-        .iter()
-        .any(|policy| {
-            policy.triggers.iter().any(|(condition, _)| {
-                condition_matches(&lower, &condition.to_ascii_lowercase())
-            })
-        })
+    extract_recovery_policies(program).iter().any(|policy| {
+        policy
+            .triggers
+            .iter()
+            .any(|(condition, _)| condition_matches(&lower, &condition.to_ascii_lowercase()))
+    })
 }
 
 /// Validate recovery actions through safety, hardware, capability, and readiness gates.

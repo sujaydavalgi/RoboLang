@@ -56,9 +56,10 @@ fn parse_snapshot_text(path: &Path, text: &str) -> ConfigResult<ConfigSnapshot> 
     if let Ok(envelope) = serde_json::from_str::<EncryptedSnapshotEnvelope>(text) {
         if envelope.format == "spanda-config-snapshot-v1" {
             let bytes = decrypt_snapshot_envelope(&envelope)?;
-            let body = String::from_utf8(bytes).map_err(|error| ConfigError::SnapshotEncryption {
-                detail: error.to_string(),
-            })?;
+            let body =
+                String::from_utf8(bytes).map_err(|error| ConfigError::SnapshotEncryption {
+                    detail: error.to_string(),
+                })?;
             return serde_json::from_str(&body).map_err(|source| ConfigError::JsonParse {
                 path: path.to_path_buf(),
                 source,
@@ -100,12 +101,11 @@ pub fn save_config_snapshot(
     if encrypted {
         let envelope = encrypt_snapshot_bytes(text.as_bytes())?;
         let path = encrypted_snapshot_path(dir, &id);
-        let encoded = serde_json::to_string_pretty(&envelope).map_err(|source| {
-            ConfigError::JsonParse {
+        let encoded =
+            serde_json::to_string_pretty(&envelope).map_err(|source| ConfigError::JsonParse {
                 path: path.clone(),
                 source,
-            }
-        })?;
+            })?;
         fs::write(&path, encoded).map_err(|e| io_error(&path, e))?;
     } else {
         let path = plaintext_snapshot_path(dir, &id);
@@ -227,16 +227,14 @@ mod tests {
         let resolved = resolver
             .resolve_from_dir(example.parent().unwrap())
             .expect("resolve example");
-        let meta = save_config_snapshot(&resolved, dir.path(), Some("encrypted".into()), Some(true))
-            .expect("save encrypted snapshot");
+        let meta =
+            save_config_snapshot(&resolved, dir.path(), Some("encrypted".into()), Some(true))
+                .expect("save encrypted snapshot");
         assert!(meta.encrypted);
         assert!(!plaintext_snapshot_path(dir.path(), &meta.id).exists());
         assert!(encrypted_snapshot_path(dir.path(), &meta.id).exists());
         let loaded = load_config_snapshot(dir.path(), &meta.id).expect("load encrypted snapshot");
         assert_eq!(loaded.meta.id, meta.id);
-        assert_eq!(
-            loaded.resolved.project_name(),
-            resolved.project_name()
-        );
+        assert_eq!(loaded.resolved.project_name(), resolved.project_name());
     }
 }

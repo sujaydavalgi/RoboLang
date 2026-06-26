@@ -2,7 +2,7 @@
 //!
 use crate::handlers::{now_ms, record_alert};
 use crate::state::ControlCenterState;
-use spanda_ops::{Alert, AlertSeverity, AlertType, slo_burn_rate_summary};
+use spanda_ops::{slo_burn_rate_summary, Alert, AlertSeverity, AlertType};
 use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::Duration;
@@ -65,12 +65,10 @@ pub fn spawn_slo_burn_monitor(state: Arc<Mutex<ControlCenterState>>) {
     if interval_secs == 0 {
         return;
     }
-    thread::spawn(move || {
-        loop {
-            thread::sleep(Duration::from_secs(interval_secs));
-            if let Ok(mut guard) = state.lock() {
-                let _ = check_and_alert_fast_burn(&mut guard);
-            }
+    thread::spawn(move || loop {
+        thread::sleep(Duration::from_secs(interval_secs));
+        if let Ok(mut guard) = state.lock() {
+            let _ = check_and_alert_fast_burn(&mut guard);
         }
     });
 }

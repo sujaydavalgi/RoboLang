@@ -137,7 +137,9 @@ fn failure_arg(args: &[String]) -> Option<String> {
         .and_then(|i| args.get(i + 1).cloned())
 }
 
-fn device_registry_from_args(args: &[String]) -> Option<std::sync::Arc<spanda_config::ResolvedSystemConfig>> {
+fn device_registry_from_args(
+    args: &[String],
+) -> Option<std::sync::Arc<spanda_config::ResolvedSystemConfig>> {
     load_system_config_from_cli_args(args)
 }
 

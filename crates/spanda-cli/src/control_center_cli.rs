@@ -212,10 +212,12 @@ fn cmd_drift(args: &[String]) {
             print_response(response);
         }
         "scans" => {
-            let response = client.get("/v1/drift/scans", false).unwrap_or_else(|error| {
-                eprintln!("{error}");
-                process::exit(1);
-            });
+            let response = client
+                .get("/v1/drift/scans", false)
+                .unwrap_or_else(|error| {
+                    eprintln!("{error}");
+                    process::exit(1);
+                });
             print_response(response);
         }
         _ => {
@@ -241,10 +243,12 @@ fn cmd_incidents(args: &[String]) {
     let client = client_from_args(args);
     match args[0].as_str() {
         "list" => {
-            let response = client.get("/v1/sre/incidents", false).unwrap_or_else(|error| {
-                eprintln!("{error}");
-                process::exit(1);
-            });
+            let response = client
+                .get("/v1/sre/incidents", false)
+                .unwrap_or_else(|error| {
+                    eprintln!("{error}");
+                    process::exit(1);
+                });
             print_response(response);
         }
         "create" => {
@@ -312,10 +316,12 @@ fn cmd_approvals(args: &[String]) {
     let client = client_from_args(args);
     match args[0].as_str() {
         "list" => {
-            let response = client.get("/v1/config/approvals", false).unwrap_or_else(|error| {
-                eprintln!("{error}");
-                process::exit(1);
-            });
+            let response = client
+                .get("/v1/config/approvals", false)
+                .unwrap_or_else(|error| {
+                    eprintln!("{error}");
+                    process::exit(1);
+                });
             print_response(response);
         }
         "submit" => {
@@ -511,7 +517,9 @@ fn cmd_readiness(args: &[String]) {
 
 fn cmd_compliance(args: &[String]) {
     if args.first().map(String::as_str) != Some("export") {
-        eprintln!("Usage: spanda control-center compliance export [--profile <name>] [--url <base>]");
+        eprintln!(
+            "Usage: spanda control-center compliance export [--profile <name>] [--url <base>]"
+        );
         process::exit(1);
     }
     let profile = flag_value(args, "--profile").unwrap_or_else(|| "defense".into());
@@ -538,7 +546,9 @@ fn cmd_alerts(args: &[String]) {
 
 fn cmd_snapshots(args: &[String]) {
     if args.is_empty() {
-        eprintln!("Usage: spanda control-center snapshots list|save [--label <name>] [--url <base>]");
+        eprintln!(
+            "Usage: spanda control-center snapshots list|save [--label <name>] [--url <base>]"
+        );
         process::exit(1);
     }
     let client = client_from_args(args);
@@ -677,7 +687,10 @@ fn print_response(response: HttpResponse) {
         process::exit(1);
     }
     if let Ok(value) = serde_json::from_str::<serde_json::Value>(&response.body) {
-        println!("{}", serde_json::to_string_pretty(&value).unwrap_or(response.body));
+        println!(
+            "{}",
+            serde_json::to_string_pretty(&value).unwrap_or(response.body)
+        );
     } else {
         println!("{}", response.body);
     }

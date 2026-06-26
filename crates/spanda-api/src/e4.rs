@@ -4,9 +4,7 @@ use crate::program::parse_program_file;
 use crate::state::ControlCenterState;
 use serde::Deserialize;
 use spanda_compliance::{format_accreditation_report, generate_accreditation_report};
-use spanda_config::{
-    append_evidence_record, default_evidence_log_path, list_evidence_records,
-};
+use spanda_config::{append_evidence_record, default_evidence_log_path, list_evidence_records};
 use spanda_deploy_http::HttpResponse;
 use spanda_graph::{query_digital_thread, DigitalThreadQuery};
 use spanda_ops::render_text_pdf;

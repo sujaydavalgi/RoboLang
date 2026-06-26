@@ -13,8 +13,8 @@ pub use evaluate::{
     evaluate_compliance_profile, format_compliance_report, list_compliance_profiles,
     ComplianceEvaluationReport, ComplianceSeverity, ComplianceViolation,
 };
-pub use profiles::ComplianceProfile;
 pub use profile_catalog::{
     load_signed_profile_catalog, signed_profile_by_name, ProfileCatalogManifest,
     SignedProfileEntry, SignedProfileTemplate,
 };
+pub use profiles::ComplianceProfile;

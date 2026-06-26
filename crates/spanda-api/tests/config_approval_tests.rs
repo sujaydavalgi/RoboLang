@@ -12,10 +12,8 @@ static ENV_TEST_LOCK: Mutex<()> = Mutex::new(());
 #[test]
 fn approved_snapshot_publishes_to_runtime() {
     let _guard = ENV_TEST_LOCK.lock().unwrap();
-    let state_dir = std::env::temp_dir().join(format!(
-        "spanda-approval-publish-{}",
-        std::process::id()
-    ));
+    let state_dir =
+        std::env::temp_dir().join(format!("spanda-approval-publish-{}", std::process::id()));
     let _ = std::fs::remove_dir_all(&state_dir);
     std::fs::create_dir_all(&state_dir).unwrap();
     std::env::set_var(
@@ -24,8 +22,8 @@ fn approved_snapshot_publishes_to_runtime() {
     );
     std::env::set_var("SPANDA_API_KEY", "approval-publish-key");
 
-    let example =
-        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../examples/packages/basic_project/spanda.toml");
+    let example = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("../../examples/packages/basic_project/spanda.toml");
     let mut state = ControlCenterState::new().with_config_path(example.clone());
     state.api_keys = spanda_security::ApiKeyStore::from_env();
     state.reload_config().expect("reload example config");
@@ -73,10 +71,8 @@ fn approved_snapshot_publishes_to_runtime() {
 #[test]
 fn two_approver_quorum_publishes_after_second_vote() {
     let _guard = ENV_TEST_LOCK.lock().unwrap();
-    let state_dir = std::env::temp_dir().join(format!(
-        "spanda-approval-quorum-{}",
-        std::process::id()
-    ));
+    let state_dir =
+        std::env::temp_dir().join(format!("spanda-approval-quorum-{}", std::process::id()));
     let _ = std::fs::remove_dir_all(&state_dir);
     std::fs::create_dir_all(&state_dir).unwrap();
     std::env::set_var(
@@ -94,11 +90,14 @@ fn two_approver_quorum_publishes_after_second_vote() {
         ]"#,
     )
     .unwrap();
-    std::env::set_var("SPANDA_API_KEYS_FILE", keys_path.to_string_lossy().to_string());
+    std::env::set_var(
+        "SPANDA_API_KEYS_FILE",
+        keys_path.to_string_lossy().to_string(),
+    );
     std::env::remove_var("SPANDA_API_KEY");
 
-    let example =
-        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../examples/packages/basic_project/spanda.toml");
+    let example = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("../../examples/packages/basic_project/spanda.toml");
     let mut state = ControlCenterState::new().with_config_path(example);
     state.api_keys = spanda_security::ApiKeyStore::from_env_and_file();
     state.reload_config().expect("reload example config");
@@ -114,10 +113,7 @@ fn two_approver_quorum_publishes_after_second_vote() {
         &HttpRequest {
             method: "POST".into(),
             path: "/v1/config/approvals".into(),
-            body: format!(
-                r#"{{"snapshot_id":"{}","required_approvals":2}}"#,
-                meta.id
-            ),
+            body: format!(r#"{{"snapshot_id":"{}","required_approvals":2}}"#, meta.id),
             authorization: Some("submit-key".into()),
         },
         "",

@@ -46,7 +46,10 @@ impl GrpcControlCenter {
     where
         F: FnOnce(&crate::state::ControlCenterState) -> String,
     {
-        let guard = self.state.lock().map_err(|e| Status::internal(e.to_string()))?;
+        let guard = self
+            .state
+            .lock()
+            .map_err(|e| Status::internal(e.to_string()))?;
         let json = f(&guard);
         Ok(JsonResponse { json })
     }
@@ -125,10 +128,7 @@ impl ControlCenter for GrpcControlCenter {
         }))
     }
 
-    async fn get_tenant(
-        &self,
-        request: Request<Empty>,
-    ) -> Result<Response<JsonResponse>, Status> {
+    async fn get_tenant(&self, request: Request<Empty>) -> Result<Response<JsonResponse>, Status> {
         self.guard_request(&request)?;
         self.with_state(|state| crate::handlers::tenant_info_json(state))
             .map(Response::new)
@@ -169,10 +169,8 @@ impl ControlCenter for GrpcControlCenter {
     ) -> Result<Response<JsonResponse>, Status> {
         self.guard_request(&request)?;
         let ctx = self.rbac_from_request(&request);
-        self.with_state(|state| {
-            crate::handlers::mutation_audit_list_json(state, ctx.as_ref())
-        })
-        .map(Response::new)
+        self.with_state(|state| crate::handlers::mutation_audit_list_json(state, ctx.as_ref()))
+            .map(Response::new)
     }
 
     async fn get_device(
@@ -193,7 +191,10 @@ impl ControlCenter for GrpcControlCenter {
         let ctx = self.rbac_from_request(&request);
         let inner = request.into_inner();
         let json = {
-            let mut guard = self.state.lock().map_err(|e| Status::internal(e.to_string()))?;
+            let mut guard = self
+                .state
+                .lock()
+                .map_err(|e| Status::internal(e.to_string()))?;
             crate::handlers::device_patch_json(
                 &mut guard,
                 &inner.device_id,
@@ -478,8 +479,10 @@ impl ControlCenter for GrpcControlCenter {
         self.guard_request(&request)?;
         let ctx = self.rbac_from_request(&request);
         let body = request.into_inner().body_json;
-        self.with_state_mut(|state| crate::handlers::discovery_post_json(state, &body, ctx.as_ref()))
-            .map(Response::new)
+        self.with_state_mut(|state| {
+            crate::handlers::discovery_post_json(state, &body, ctx.as_ref())
+        })
+        .map(Response::new)
     }
 
     async fn provision_device(
@@ -550,32 +553,25 @@ impl ControlCenter for GrpcControlCenter {
         self.guard_request(&request)?;
         let ctx = self.rbac_from_request(&request);
         let query = request.into_inner().query;
-        self.with_state(|state| crate::handlers::compliance_export_json(state, &query, ctx.as_ref()))
-            .map(Response::new)
+        self.with_state(|state| {
+            crate::handlers::compliance_export_json(state, &query, ctx.as_ref())
+        })
+        .map(Response::new)
     }
 
-    async fn list_robots(
-        &self,
-        request: Request<Empty>,
-    ) -> Result<Response<JsonResponse>, Status> {
+    async fn list_robots(&self, request: Request<Empty>) -> Result<Response<JsonResponse>, Status> {
         self.guard_request(&request)?;
         self.with_state(|state| crate::handlers::robots_list_json(state))
             .map(Response::new)
     }
 
-    async fn list_fleets(
-        &self,
-        request: Request<Empty>,
-    ) -> Result<Response<JsonResponse>, Status> {
+    async fn list_fleets(&self, request: Request<Empty>) -> Result<Response<JsonResponse>, Status> {
         self.guard_request(&request)?;
         self.with_state(|state| crate::handlers::fleets_list_json(state))
             .map(Response::new)
     }
 
-    async fn list_alerts(
-        &self,
-        request: Request<Empty>,
-    ) -> Result<Response<JsonResponse>, Status> {
+    async fn list_alerts(&self, request: Request<Empty>) -> Result<Response<JsonResponse>, Status> {
         self.guard_request(&request)?;
         self.with_state(|state| crate::handlers::alerts_list_json(state))
             .map(Response::new)
@@ -598,18 +594,20 @@ impl ControlCenter for GrpcControlCenter {
         self.guard_request(&request)?;
         let ctx = self.rbac_from_request(&request);
         let body = request.into_inner().body_json;
-        self.with_state(|state| crate::handlers::config_snapshots_save_json(state, &body, ctx.as_ref()))
-            .map(Response::new)
+        self.with_state(|state| {
+            crate::handlers::config_snapshots_save_json(state, &body, ctx.as_ref())
+        })
+        .map(Response::new)
     }
 
-    async fn test_alert(
-        &self,
-        request: Request<Empty>,
-    ) -> Result<Response<JsonResponse>, Status> {
+    async fn test_alert(&self, request: Request<Empty>) -> Result<Response<JsonResponse>, Status> {
         self.guard_request(&request)?;
         let ctx = self.rbac_from_request(&request);
         let json = {
-            let mut guard = self.state.lock().map_err(|e| Status::internal(e.to_string()))?;
+            let mut guard = self
+                .state
+                .lock()
+                .map_err(|e| Status::internal(e.to_string()))?;
             crate::handlers::alerts_test_json(&mut guard, ctx.as_ref())
         };
         self.respond_mutation("TestAlert", json, ctx)
@@ -833,7 +831,10 @@ pub async fn serve_grpc(bind: String, state: SharedState) -> Result<(), String> 
     let service = GrpcControlCenter { state };
     Server::builder()
         .add_service(ControlCenterServer::new(service))
-        .serve(bind.parse().map_err(|e: std::net::AddrParseError| e.to_string())?)
+        .serve(
+            bind.parse()
+                .map_err(|e: std::net::AddrParseError| e.to_string())?,
+        )
         .await
         .map_err(|e| e.to_string())
 }

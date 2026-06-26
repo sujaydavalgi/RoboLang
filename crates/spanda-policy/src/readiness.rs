@@ -125,7 +125,9 @@ pub fn apply_policy_to_readiness(
 }
 
 /// Build a deployment gate entry from an operational policy report.
-pub fn operational_policy_gate(policy_report: &PolicyEvaluationReport) -> spanda_readiness::DeploymentGate {
+pub fn operational_policy_gate(
+    policy_report: &PolicyEvaluationReport,
+) -> spanda_readiness::DeploymentGate {
     // Convert a policy evaluation into a named deployment gate.
     //
     // Parameters:

@@ -72,14 +72,14 @@ pub fn sync_incident_status_to_pagerduty(incident: &Incident, event_hint: &str) 
             return json!({ "skipped": true, "reason": "SPANDA_ALERT_PAGERDUTY_URL unset" });
         }
     };
-    let routing_key = std::env::var("SPANDA_ALERT_PAGERDUTY_ROUTING_KEY")
-        .unwrap_or_else(|_| "spanda".into());
-    let event_action = if event_hint.contains("resolve") || incident.status == IncidentStatus::Resolved
-    {
-        "resolve"
-    } else {
-        "acknowledge"
-    };
+    let routing_key =
+        std::env::var("SPANDA_ALERT_PAGERDUTY_ROUTING_KEY").unwrap_or_else(|_| "spanda".into());
+    let event_action =
+        if event_hint.contains("resolve") || incident.status == IncidentStatus::Resolved {
+            "resolve"
+        } else {
+            "acknowledge"
+        };
     let Some(body) = pagerduty_incident_event_payload(incident, &routing_key, event_action) else {
         return json!({ "skipped": true, "reason": "no pagerduty dedup key on incident" });
     };

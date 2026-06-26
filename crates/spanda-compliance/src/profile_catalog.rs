@@ -61,13 +61,13 @@ pub fn load_signed_profile_catalog() -> Result<Vec<SignedProfileTemplate>, Strin
         };
         let hash = sha256(raw);
         if hash.0 != entry.content_sha256 {
-            return Err(format!(
-                "catalog hash mismatch for profile {}",
-                entry.name
-            ));
+            return Err(format!("catalog hash mismatch for profile {}", entry.name));
         }
-        let verified =
-            verify_signature(&entry.content_sha256, &entry.signature, &manifest.publisher_pubkey);
+        let verified = verify_signature(
+            &entry.content_sha256,
+            &entry.signature,
+            &manifest.publisher_pubkey,
+        );
         let mut profile: ComplianceProfile =
             serde_json::from_str(raw).map_err(|error| error.to_string())?;
         profile.template_notice = crate::profiles::template_notice();
@@ -99,9 +99,15 @@ mod tests {
     #[test]
     fn catalog_entries_verify() {
         let templates = load_signed_profile_catalog().expect("catalog");
-        assert!(templates.iter().any(|entry| entry.name == "defense" && entry.verified));
-        assert!(templates.iter().any(|entry| entry.name == "medical" && entry.verified));
-        assert!(templates.iter().any(|entry| entry.name == "iso26262" && entry.verified));
+        assert!(templates
+            .iter()
+            .any(|entry| entry.name == "defense" && entry.verified));
+        assert!(templates
+            .iter()
+            .any(|entry| entry.name == "medical" && entry.verified));
+        assert!(templates
+            .iter()
+            .any(|entry| entry.name == "iso26262" && entry.verified));
     }
 
     #[test]

@@ -20,7 +20,9 @@ pub fn snapshot_encryption_requested(explicit: Option<bool>) -> bool {
         std::env::var("SPANDA_CONFIG_SNAPSHOT_ENCRYPT")
             .ok()
             .map(|value| {
-                value == "1" || value.eq_ignore_ascii_case("true") || value.eq_ignore_ascii_case("yes")
+                value == "1"
+                    || value.eq_ignore_ascii_case("true")
+                    || value.eq_ignore_ascii_case("yes")
             })
             .unwrap_or(false)
     })
@@ -62,11 +64,10 @@ pub fn decrypt_snapshot_envelope(envelope: &EncryptedSnapshotEnvelope) -> Config
     }
     let key = encryption_key_or_error()?;
     let session = WireCryptoSession::from_material(&key);
-    let ciphertext = hex::decode(&envelope.ciphertext).map_err(|error| {
-        ConfigError::SnapshotEncryption {
+    let ciphertext =
+        hex::decode(&envelope.ciphertext).map_err(|error| ConfigError::SnapshotEncryption {
             detail: error.to_string(),
-        }
-    })?;
+        })?;
     session
         .decrypt(&ciphertext)
         .map_err(|error| ConfigError::SnapshotEncryption { detail: error })

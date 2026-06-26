@@ -260,7 +260,11 @@ fn filter_graph(
             }
         }
     }
-    if let Some(phase_raw) = query.lifecycle_phase.as_deref().filter(|value| !value.is_empty()) {
+    if let Some(phase_raw) = query
+        .lifecycle_phase
+        .as_deref()
+        .filter(|value| !value.is_empty())
+    {
         if let Some(wanted) = parse_lifecycle_phase(phase_raw) {
             for row in lifecycle_rows {
                 if row.phase == wanted {
@@ -311,7 +315,11 @@ fn lifecycle_phase_matches(
     lifecycle_rows: &[LifecycleRow],
     node_id: &str,
 ) -> bool {
-    let Some(raw) = query.lifecycle_phase.as_deref().filter(|value| !value.is_empty()) else {
+    let Some(raw) = query
+        .lifecycle_phase
+        .as_deref()
+        .filter(|value| !value.is_empty())
+    else {
         return true;
     };
     let Some(wanted) = parse_lifecycle_phase(raw) else {
@@ -338,7 +346,11 @@ fn summarize_chain(
         nodes.len(),
         edges.len()
     ));
-    if let Some(phase) = query.lifecycle_phase.as_deref().filter(|value| !value.is_empty()) {
+    if let Some(phase) = query
+        .lifecycle_phase
+        .as_deref()
+        .filter(|value| !value.is_empty())
+    {
         lines.push(format!("Lifecycle phase filter: {phase}"));
     }
     for edge in edges.iter().take(12) {

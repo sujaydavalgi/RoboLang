@@ -97,8 +97,8 @@ pub fn resolve_baseline_id(explicit: Option<&str>) -> Result<String, String> {
             return Ok(id);
         }
     }
-    let snapshots = list_config_snapshots(&default_snapshots_dir())
-        .map_err(|error| error.to_string())?;
+    let snapshots =
+        list_config_snapshots(&default_snapshots_dir()).map_err(|error| error.to_string())?;
     snapshots
         .into_iter()
         .max_by(|left, right| {
@@ -220,9 +220,7 @@ pub fn drift_scan_run(
         return unauthorized();
     }
     let request: DriftScanRequest = if body.trim().is_empty() {
-        DriftScanRequest {
-            baseline_id: None,
-        }
+        DriftScanRequest { baseline_id: None }
     } else {
         match serde_json::from_str(body) {
             Ok(value) => value,
@@ -249,12 +247,10 @@ pub fn spawn_drift_scheduler(state: Arc<Mutex<ControlCenterState>>) {
     if interval_secs == 0 {
         return;
     }
-    thread::spawn(move || {
-        loop {
-            thread::sleep(Duration::from_secs(interval_secs));
-            if let Ok(mut guard) = state.lock() {
-                let _ = run_and_record_scan(&mut guard, None, "scheduled", true);
-            }
+    thread::spawn(move || loop {
+        thread::sleep(Duration::from_secs(interval_secs));
+        if let Ok(mut guard) = state.lock() {
+            let _ = run_and_record_scan(&mut guard, None, "scheduled", true);
         }
     });
 }

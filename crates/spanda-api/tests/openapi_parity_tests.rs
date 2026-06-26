@@ -5,9 +5,7 @@ use spanda_api::openapi_routes::REST_V1_ROUTES;
 fn openapi_documents_all_rest_v1_routes() {
     let spec: serde_json::Value =
         serde_json::from_str(include_str!("../src/static/openapi.json")).expect("parse openapi");
-    let paths = spec["paths"]
-        .as_object()
-        .expect("openapi paths object");
+    let paths = spec["paths"].as_object().expect("openapi paths object");
 
     for route in REST_V1_ROUTES {
         let path_entry = paths
@@ -26,9 +24,7 @@ fn openapi_documents_all_rest_v1_routes() {
 fn openapi_has_no_stale_rest_paths() {
     let spec: serde_json::Value =
         serde_json::from_str(include_str!("../src/static/openapi.json")).expect("parse openapi");
-    let paths = spec["paths"]
-        .as_object()
-        .expect("openapi paths object");
+    let paths = spec["paths"].as_object().expect("openapi paths object");
 
     let documented: std::collections::HashSet<(&str, &str)> = paths
         .iter()

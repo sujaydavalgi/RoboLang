@@ -451,7 +451,11 @@ impl<B: RobotBackend> Interpreter<B> {
                 self.request_operator_approval(&safe.action.description);
                 failed.push(format!("{} (approval required)", safe.action.description));
                 operator_approval = Some("Operator".into());
-                if !self.deferred_recovery_issues.iter().any(|pending| pending == issue) {
+                if !self
+                    .deferred_recovery_issues
+                    .iter()
+                    .any(|pending| pending == issue)
+                {
                     self.deferred_recovery_issues.push(issue.to_string());
                 }
                 continue;
@@ -541,10 +545,7 @@ impl<B: RobotBackend> Interpreter<B> {
     }
 
     /// Attempt recovery dispatch for a hardware or health event during run/sim.
-    pub(super) fn try_invoke_recovery_for_event(
-        &mut self,
-        event: &str,
-    ) -> Result<(), SpandaError> {
+    pub(super) fn try_invoke_recovery_for_event(&mut self, event: &str) -> Result<(), SpandaError> {
         let issue = issue_to_recovery_issue(event).unwrap_or_else(|| event.to_string());
         match self.execute_recovery_auto(&issue) {
             Ok(Some(_)) => Ok(()),

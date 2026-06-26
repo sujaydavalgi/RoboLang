@@ -157,7 +157,11 @@ pub fn approve_config_request(
             detail: format!("approval request '{request_id}' is not pending"),
         });
     }
-    if request.approvals.iter().any(|vote| vote.approver == resolver) {
+    if request
+        .approvals
+        .iter()
+        .any(|vote| vote.approver == resolver)
+    {
         return Err(ConfigError::Approval {
             detail: format!("approver '{resolver}' already voted on '{request_id}'"),
         });
@@ -283,8 +287,7 @@ mod tests {
             resolver: None,
             note: None,
         });
-        let approved =
-            approve_config_request(&mut queue, "approval-1", "officer", None).unwrap();
+        let approved = approve_config_request(&mut queue, "approval-1", "officer", None).unwrap();
         assert_eq!(approved.status, ConfigApprovalStatus::Approved);
         assert_eq!(approved.approvals.len(), 1);
     }

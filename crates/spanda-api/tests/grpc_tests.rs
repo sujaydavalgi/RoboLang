@@ -1,7 +1,7 @@
 //! gRPC server smoke tests for Control Center.
 use spanda_api::grpc::spanda_v1::control_center_client::ControlCenterClient;
+use spanda_api::grpc::spanda_v1::{DeviceBodyRequest, DeviceIdRequest};
 use spanda_api::grpc::spanda_v1::{Empty, QueryRequest, ReadinessRequest, TrustPackageRequest};
-use spanda_api::grpc::spanda_v1::{DeviceIdRequest, DeviceBodyRequest};
 use spanda_api::{run_control_center_server, ControlCenterOptions};
 use std::net::TcpListener;
 use std::path::PathBuf;
@@ -233,9 +233,11 @@ async fn grpc_mutation_rbac_from_metadata() {
     let mut client = connect(&grpc_bind).await;
 
     let denied = client
-        .plan_ota(tonic::Request::new(spanda_api::grpc::spanda_v1::JsonBodyRequest {
-            body_json: r#"{"strategy":"canary","version":"1.0.0","dry_run":true}"#.into(),
-        }))
+        .plan_ota(tonic::Request::new(
+            spanda_api::grpc::spanda_v1::JsonBodyRequest {
+                body_json: r#"{"strategy":"canary","version":"1.0.0","dry_run":true}"#.into(),
+            },
+        ))
         .await
         .expect("plan ota without auth")
         .into_inner();

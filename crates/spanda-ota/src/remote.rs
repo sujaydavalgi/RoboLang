@@ -498,7 +498,9 @@ fn rollout_step_after_readiness_gate(
             ..step.clone()
         };
     }
-    let rolled_back = agent_rollback(agent).map(|response| response.ok).unwrap_or(false);
+    let rolled_back = agent_rollback(agent)
+        .map(|response| response.ok)
+        .unwrap_or(false);
     RolloutStep {
         status: if rolled_back {
             RolloutStepStatus::RolledBack

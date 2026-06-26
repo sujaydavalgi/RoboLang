@@ -70,7 +70,10 @@ pub fn otlp_metrics_export(
         return unauthorized();
     }
     let params = parse_query(query);
-    let endpoint = params.get("endpoint").cloned().or_else(env_metrics_endpoint);
+    let endpoint = params
+        .get("endpoint")
+        .cloned()
+        .or_else(env_metrics_endpoint);
     let Some(endpoint) = endpoint else {
         return bad_request(
             "missing metrics endpoint; set SPANDA_OTLP_METRICS_ENDPOINT or pass ?endpoint=",

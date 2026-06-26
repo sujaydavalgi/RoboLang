@@ -18,7 +18,9 @@ fn spawn_fleet_agent(robot: &str, hardware: &str) -> spanda_ota::DeployAgentEntr
 
 fn build_fleet_plan(version: &str) -> spanda_ota::DeployPlan {
     let source = include_str!("../../../examples/robotics/ota_deployment.sd");
-    let program = compile(source).expect("compile ota deployment program").program;
+    let program = compile(source)
+        .expect("compile ota deployment program")
+        .program;
     let program_path = concat!(
         env!("CARGO_MANIFEST_DIR"),
         "/../../examples/robotics/ota_deployment.sd"
@@ -154,9 +156,8 @@ fn fleet_soak_staged_canary_progression() {
         &bundle,
     );
     assert!(full.success);
-    assert!(
-        full.steps
-            .iter()
-            .all(|step| step.status == spanda_ota::RolloutStepStatus::Deployed)
-    );
+    assert!(full
+        .steps
+        .iter()
+        .all(|step| step.status == spanda_ota::RolloutStepStatus::Deployed));
 }

@@ -49,7 +49,9 @@ fn webhook_secret_ok(headers: &[(String, String)]) -> bool {
     provided == Some(expected.as_str())
 }
 
-fn normalize_event(body: &PagerDutyWebhookEnvelope) -> (Option<String>, Option<String>, Option<String>) {
+fn normalize_event(
+    body: &PagerDutyWebhookEnvelope,
+) -> (Option<String>, Option<String>, Option<String>) {
     if let Some(event) = body.event.as_deref() {
         return (
             Some(event.to_string()),

@@ -83,10 +83,7 @@ fn runtime_state_persists_alerts_and_traces() {
     let reloaded = ControlCenterState::new();
     assert_eq!(reloaded.alert_store.list_owned().len(), 1);
     assert_eq!(reloaded.trace_log.list_owned().len(), 1);
-    assert_eq!(
-        reloaded.alert_store.list_owned()[0].id,
-        "persist-alert-1"
-    );
+    assert_eq!(reloaded.alert_store.list_owned()[0].id, "persist-alert-1");
 }
 
 #[test]
@@ -106,7 +103,10 @@ fn api_keys_file_merges_with_env_key() {
         .expect("serialize"),
     )
     .expect("write keys");
-    std::env::set_var("SPANDA_API_KEYS_FILE", keys_path.to_string_lossy().to_string());
+    std::env::set_var(
+        "SPANDA_API_KEYS_FILE",
+        keys_path.to_string_lossy().to_string(),
+    );
     std::env::set_var("SPANDA_API_KEY", "env-token");
     let store = ApiKeyStore::from_env_and_file();
     assert_eq!(store.keys.len(), 2);

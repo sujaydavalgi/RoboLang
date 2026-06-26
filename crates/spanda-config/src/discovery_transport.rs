@@ -1,11 +1,11 @@
 //! Package-backed device discovery transport contract.
 //!
-use crate::discovery_registry::wrap_with_registry_package;
-use crate::device_identity::{DiscoveryMatch, DeviceIdentityRecord, NetworkHostProbe};
+use crate::device_identity::{DeviceIdentityRecord, DiscoveryMatch, NetworkHostProbe};
 use crate::discovery_live::{
     default_discovery_subnet, probe_ble, probe_can, probe_cellular, probe_mdns, probe_mqtt,
     probe_ros2, probe_serial, probe_usb, probe_wifi,
 };
+use crate::discovery_registry::wrap_with_registry_package;
 use serde::{Deserialize, Serialize};
 
 /// Options passed to discovery transports (mDNS, BLE, subnet scan, …).
@@ -42,10 +42,7 @@ impl DeviceDiscoveryTransport for SubnetDiscoveryTransport {
 
     fn discover(&self, options: &DiscoveryOptions) -> Result<DiscoveryTransportResult, String> {
         let default_subnet = default_discovery_subnet();
-        let subnet = options
-            .subnet
-            .as_deref()
-            .or(default_subnet.as_deref());
+        let subnet = options.subnet.as_deref().or(default_subnet.as_deref());
         let Some(subnet) = subnet else {
             return Ok(DiscoveryTransportResult {
                 transport: self.transport_name().into(),
@@ -194,12 +191,42 @@ fn probe_serial_options(_options: &DiscoveryOptions) -> Vec<DiscoveryMatch> {
     probe_serial()
 }
 
-live_transport!(MockBleDiscoveryTransport, "ble", probe_ble_options, "ble-stub-device");
-live_transport!(MockUsbDiscoveryTransport, "usb", probe_usb_options, "usb-stub-device");
-live_transport!(MockCanDiscoveryTransport, "can", probe_can_options, "can-stub-device");
-live_transport!(MockMqttDiscoveryTransport, "mqtt", probe_mqtt_options, "mqtt-stub-device");
-live_transport!(MockRos2DiscoveryTransport, "ros2", probe_ros2_options, "ros2-stub-device");
-live_transport!(MockWifiDiscoveryTransport, "wifi", probe_wifi_options, "wifi-stub-device");
+live_transport!(
+    MockBleDiscoveryTransport,
+    "ble",
+    probe_ble_options,
+    "ble-stub-device"
+);
+live_transport!(
+    MockUsbDiscoveryTransport,
+    "usb",
+    probe_usb_options,
+    "usb-stub-device"
+);
+live_transport!(
+    MockCanDiscoveryTransport,
+    "can",
+    probe_can_options,
+    "can-stub-device"
+);
+live_transport!(
+    MockMqttDiscoveryTransport,
+    "mqtt",
+    probe_mqtt_options,
+    "mqtt-stub-device"
+);
+live_transport!(
+    MockRos2DiscoveryTransport,
+    "ros2",
+    probe_ros2_options,
+    "ros2-stub-device"
+);
+live_transport!(
+    MockWifiDiscoveryTransport,
+    "wifi",
+    probe_wifi_options,
+    "wifi-stub-device"
+);
 live_transport!(
     MockCellularDiscoveryTransport,
     "cellular",

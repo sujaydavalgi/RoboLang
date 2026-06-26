@@ -178,12 +178,7 @@ impl AlertStore {
     }
 
     /// Return true when a matching alert was recorded inside the dedup window.
-    pub fn is_duplicate_within(
-        &self,
-        alert: &Alert,
-        now_ms: f64,
-        window_ms: f64,
-    ) -> bool {
+    pub fn is_duplicate_within(&self, alert: &Alert, now_ms: f64, window_ms: f64) -> bool {
         if window_ms <= 0.0 {
             return false;
         }

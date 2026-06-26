@@ -6,10 +6,7 @@ use std::io::Write;
 
 #[test]
 fn mutation_audit_exports_cef_and_jsonl() {
-    let path = std::env::temp_dir().join(format!(
-        "spanda-audit-export-{}",
-        std::process::id()
-    ));
+    let path = std::env::temp_dir().join(format!("spanda-audit-export-{}", std::process::id()));
     let _ = std::fs::remove_file(&path);
     let line = serde_json::json!({
         "id": "rec-1",
