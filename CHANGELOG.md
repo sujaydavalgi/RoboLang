@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **SRE SLO rollup:** `SPANDA_SRE_SLO_PERCENT` and `slo` object on `GET /v1/sre/summary`.
+- **Incident workflow UI:** SRE tab in embedded Control Center and `@spanda/web` `ControlCenterPanel`.
+- **Python SDK incidents:** `list_incidents`, `create_incident`, `ack_incident`, `resolve_incident`.
+- **macOS codesign scaffold:** `scripts/sign_tauri_macos.sh` with optional CI secrets.
 - **Operational drift policy/safety rollup:** `DriftDimension::Policy` and `Safety` route firmware, attestation, and assurance findings into all seven `by_dimension` buckets.
 - **SRE incident workflow:** `IncidentStore` in `spanda-ops`; `GET/POST /v1/sre/incidents`, ack/resolve subpaths; HA persistence; gRPC `ListSreIncidents`/`CreateSreIncident`/`AckSreIncident`/`ResolveSreIncident`; MTTR hint on `/v1/sre/summary`.
 - **Discovery registry expansion:** `spanda-discovery-wifi`, `spanda-discovery-cellular`, `spanda-discovery-serial` packages; BLE/USB registry wrap; host probes via env overrides.

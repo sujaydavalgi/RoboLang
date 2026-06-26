@@ -592,7 +592,7 @@ Official SDK surfaces for external systems to interact with Readiness, Assurance
 
 | Metric | Source | Status |
 |--------|--------|--------|
-| SLO / SLA | readiness history + telemetry | Planned |
+| SLO / SLA | readiness history + telemetry | **Experimental** (`slo` on `GET /v1/sre/summary`, `SPANDA_SRE_SLO_PERCENT`) |
 | Availability / Uptime | health_check + agent heartbeat | **Experimental** (`GET /v1/sre/summary`) |
 | MTTR | resolved incidents | **Experimental** (`mttr_hint_ms` on summary) |
 | MTBF | fault timeline | Planned |

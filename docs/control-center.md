@@ -103,7 +103,7 @@ grpcurl -plaintext -d '{}' 127.0.0.1:50051 spanda.v1.ControlCenter/Health
 | `/v1/ota/plan` | POST | Bearer | Plan canary / staged / blue_green rollout |
 | `/v1/ota/status` | GET | — | OTA deploy state (`.spanda/deploy-state.json`) |
 | `/v1/trust/package` | GET | — | Package trust evaluation (`?name=&version=`) |
-| `/v1/sre/summary` | GET | — | Availability, incidents, and MTTR rollup |
+| `/v1/sre/summary` | GET | — | Availability, incidents, MTTR rollup, and `slo` (`SPANDA_SRE_SLO_PERCENT`, default 99.0) |
 | `/v1/sre/incidents` | GET | — | Incident list |
 | `/v1/sre/incidents` | POST | Bearer | Open incident |
 | `/v1/sre/incidents/{id}/ack` | POST | Bearer | Acknowledge incident |
