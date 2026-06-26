@@ -10,6 +10,7 @@ pub mod observability;
 pub mod program;
 pub mod server;
 pub mod state;
+pub mod versioning;
 pub mod ws;
 
 pub use server::{run_control_center_server, ControlCenterOptions};

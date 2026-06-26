@@ -61,6 +61,32 @@ impl GrpcControlCenter {
         let json = f(&mut guard);
         Ok(JsonResponse { json })
     }
+
+    fn guard_request<T>(&self, request: &Request<T>) -> Result<(), Status> {
+        if let Some(version) = request.metadata().get("x-spanda-api-version") {
+            let value = version
+                .to_str()
+                .map_err(|_| Status::invalid_argument("invalid x-spanda-api-version metadata"))?;
+            if !value.trim().is_empty() && value.trim() != crate::versioning::SUPPORTED_API_VERSION
+            {
+                return Err(Status::invalid_argument(format!(
+                    "unsupported api version '{value}'; supported: {}",
+                    crate::versioning::SUPPORTED_API_VERSION
+                )));
+            }
+        }
+        let rate_key = self
+            .rbac_from_request(request)
+            .map(|context| context.key_id)
+            .unwrap_or_else(|| "anonymous".to_string());
+        let guard = self
+            .state
+            .lock()
+            .map_err(|e| Status::internal(e.to_string()))?;
+        guard.rate_limiter.check(&rate_key).map_err(|retry| {
+            Status::resource_exhausted(format!("rate limit exceeded; retry after {retry}s"))
+        })
+    }
 }
 
 #[tonic::async_trait]
@@ -73,8 +99,9 @@ impl ControlCenter for GrpcControlCenter {
 
     async fn get_dashboard(
         &self,
-        _request: Request<Empty>,
+        request: Request<Empty>,
     ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
         self.with_state(|state| {
             let registry = state.device_registry();
             let fleet =
@@ -92,8 +119,9 @@ impl ControlCenter for GrpcControlCenter {
 
     async fn list_devices(
         &self,
-        _request: Request<Empty>,
+        request: Request<Empty>,
     ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
         self.with_state(|state| crate::handlers::devices_list_json(state))
             .map(Response::new)
     }
@@ -102,6 +130,7 @@ impl ControlCenter for GrpcControlCenter {
         &self,
         request: Request<DeviceIdRequest>,
     ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
         let device_id = request.into_inner().device_id;
         self.with_state(|state| crate::handlers::device_get_json(state, &device_id))
             .map(Response::new)
@@ -111,6 +140,7 @@ impl ControlCenter for GrpcControlCenter {
         &self,
         request: Request<DeviceBodyRequest>,
     ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
         let ctx = self.rbac_from_request(&request);
         let inner = request.into_inner();
         self.with_state_mut(|state| {
@@ -123,6 +153,7 @@ impl ControlCenter for GrpcControlCenter {
         &self,
         request: Request<DeviceBodyRequest>,
     ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
         let ctx = self.rbac_from_request(&request);
         let inner = request.into_inner();
         self.with_state_mut(|state| {
@@ -140,6 +171,7 @@ impl ControlCenter for GrpcControlCenter {
         &self,
         request: Request<DeviceBodyRequest>,
     ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
         let ctx = self.rbac_from_request(&request);
         let inner = request.into_inner();
         self.with_state_mut(|state| {
@@ -157,6 +189,7 @@ impl ControlCenter for GrpcControlCenter {
         &self,
         request: Request<DeviceIdRequest>,
     ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
         let ctx = self.rbac_from_request(&request);
         let device_id = request.into_inner().device_id;
         self.with_state_mut(|state| {
@@ -169,6 +202,7 @@ impl ControlCenter for GrpcControlCenter {
         &self,
         request: Request<DeviceIdRequest>,
     ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
         let ctx = self.rbac_from_request(&request);
         let device_id = request.into_inner().device_id;
         self.with_state_mut(|state| {
@@ -179,8 +213,9 @@ impl ControlCenter for GrpcControlCenter {
 
     async fn list_fleet_agents(
         &self,
-        _request: Request<Empty>,
+        request: Request<Empty>,
     ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
         Ok(Response::new(JsonResponse {
             json: crate::handlers::fleet_agents_json(),
         }))
@@ -190,6 +225,7 @@ impl ControlCenter for GrpcControlCenter {
         &self,
         request: Request<ReadinessRequest>,
     ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
         let body = request.into_inner().body_json;
         self.with_state(|state| crate::handlers::readiness_run_json(state, &body))
             .map(Response::new)
@@ -197,8 +233,9 @@ impl ControlCenter for GrpcControlCenter {
 
     async fn get_sre_summary(
         &self,
-        _request: Request<Empty>,
+        request: Request<Empty>,
     ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
         self.with_state(|state| crate::handlers::sre_summary_json(state))
             .map(Response::new)
     }
@@ -207,6 +244,7 @@ impl ControlCenter for GrpcControlCenter {
         &self,
         request: Request<TrustPackageRequest>,
     ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
         let package_name = request.into_inner().package_name;
         let query = format!("name={package_name}");
         Ok(Response::new(JsonResponse {
@@ -216,8 +254,9 @@ impl ControlCenter for GrpcControlCenter {
 
     async fn get_open_api(
         &self,
-        _request: Request<Empty>,
+        request: Request<Empty>,
     ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
         Ok(Response::new(JsonResponse {
             json: crate::handlers::openapi_json(),
         }))
@@ -225,32 +264,36 @@ impl ControlCenter for GrpcControlCenter {
 
     async fn get_health_summary(
         &self,
-        _request: Request<Empty>,
+        request: Request<Empty>,
     ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
         self.with_state(|state| crate::handlers::health_summary_json(state))
             .map(Response::new)
     }
 
     async fn get_assurance_summary(
         &self,
-        _request: Request<Empty>,
+        request: Request<Empty>,
     ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
         self.with_state(|state| crate::handlers::assurance_summary_json(state))
             .map(Response::new)
     }
 
     async fn get_diagnosis_summary(
         &self,
-        _request: Request<Empty>,
+        request: Request<Empty>,
     ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
         self.with_state(|state| crate::handlers::diagnosis_summary_json(state))
             .map(Response::new)
     }
 
     async fn get_executive_scorecard(
         &self,
-        _request: Request<Empty>,
+        request: Request<Empty>,
     ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
         self.with_state(|state| crate::handlers::executive_scorecard_json(state))
             .map(Response::new)
     }
@@ -259,6 +302,7 @@ impl ControlCenter for GrpcControlCenter {
         &self,
         request: Request<QueryRequest>,
     ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
         let query = request.into_inner().query;
         self.with_state(|state| crate::handlers::digital_thread_query_json(state, &query))
             .map(Response::new)
@@ -266,8 +310,9 @@ impl ControlCenter for GrpcControlCenter {
 
     async fn get_ota_status(
         &self,
-        _request: Request<Empty>,
+        request: Request<Empty>,
     ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
         Ok(Response::new(JsonResponse {
             json: crate::handlers::ota_status_json(),
         }))
@@ -275,8 +320,9 @@ impl ControlCenter for GrpcControlCenter {
 
     async fn get_otlp_metrics(
         &self,
-        _request: Request<Empty>,
+        request: Request<Empty>,
     ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
         self.with_state(|state| crate::handlers::otlp_metrics_json(state))
             .map(Response::new)
     }
@@ -285,6 +331,7 @@ impl ControlCenter for GrpcControlCenter {
         &self,
         request: Request<QueryRequest>,
     ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
         let query = request.into_inner().query;
         Ok(Response::new(JsonResponse {
             json: crate::handlers::discovery_run_json(&query),
@@ -295,6 +342,7 @@ impl ControlCenter for GrpcControlCenter {
         &self,
         request: Request<JsonBodyRequest>,
     ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
         let ctx = self.rbac_from_request(&request);
         let body = request.into_inner().body_json;
         self.with_state_mut(|state| crate::handlers::discovery_post_json(state, &body, ctx.as_ref()))
@@ -305,6 +353,7 @@ impl ControlCenter for GrpcControlCenter {
         &self,
         request: Request<JsonBodyRequest>,
     ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
         let ctx = self.rbac_from_request(&request);
         let body = request.into_inner().body_json;
         self.with_state_mut(|state| crate::handlers::provision_run_json(state, &body, ctx.as_ref()))
@@ -315,6 +364,7 @@ impl ControlCenter for GrpcControlCenter {
         &self,
         request: Request<JsonBodyRequest>,
     ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
         let ctx = self.rbac_from_request(&request);
         let body = request.into_inner().body_json;
         Ok(Response::new(JsonResponse {
@@ -326,6 +376,7 @@ impl ControlCenter for GrpcControlCenter {
         &self,
         request: Request<JsonBodyRequest>,
     ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
         let ctx = self.rbac_from_request(&request);
         let body = request.into_inner().body_json;
         Ok(Response::new(JsonResponse {
@@ -337,6 +388,7 @@ impl ControlCenter for GrpcControlCenter {
         &self,
         request: Request<JsonBodyRequest>,
     ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
         let ctx = self.rbac_from_request(&request);
         let body = request.into_inner().body_json;
         self.with_state_mut(|state| {
@@ -349,6 +401,7 @@ impl ControlCenter for GrpcControlCenter {
         &self,
         request: Request<JsonBodyRequest>,
     ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
         let ctx = self.rbac_from_request(&request);
         let body = request.into_inner().body_json;
         Ok(Response::new(JsonResponse {
@@ -360,6 +413,7 @@ impl ControlCenter for GrpcControlCenter {
         &self,
         request: Request<QueryRequest>,
     ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
         let ctx = self.rbac_from_request(&request);
         let query = request.into_inner().query;
         self.with_state(|state| crate::handlers::compliance_export_json(state, &query, ctx.as_ref()))
@@ -368,32 +422,36 @@ impl ControlCenter for GrpcControlCenter {
 
     async fn list_robots(
         &self,
-        _request: Request<Empty>,
+        request: Request<Empty>,
     ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
         self.with_state(|state| crate::handlers::robots_list_json(state))
             .map(Response::new)
     }
 
     async fn list_fleets(
         &self,
-        _request: Request<Empty>,
+        request: Request<Empty>,
     ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
         self.with_state(|state| crate::handlers::fleets_list_json(state))
             .map(Response::new)
     }
 
     async fn list_alerts(
         &self,
-        _request: Request<Empty>,
+        request: Request<Empty>,
     ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
         self.with_state(|state| crate::handlers::alerts_list_json(state))
             .map(Response::new)
     }
 
     async fn list_config_snapshots(
         &self,
-        _request: Request<Empty>,
+        request: Request<Empty>,
     ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
         Ok(Response::new(JsonResponse {
             json: crate::handlers::config_snapshots_list_json(),
         }))
@@ -403,6 +461,7 @@ impl ControlCenter for GrpcControlCenter {
         &self,
         request: Request<JsonBodyRequest>,
     ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
         let ctx = self.rbac_from_request(&request);
         let body = request.into_inner().body_json;
         self.with_state(|state| crate::handlers::config_snapshots_save_json(state, &body, ctx.as_ref()))
@@ -413,6 +472,7 @@ impl ControlCenter for GrpcControlCenter {
         &self,
         request: Request<Empty>,
     ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
         let ctx = self.rbac_from_request(&request);
         self.with_state_mut(|state| crate::handlers::alerts_test_json(state, ctx.as_ref()))
             .map(Response::new)
@@ -420,24 +480,27 @@ impl ControlCenter for GrpcControlCenter {
 
     async fn get_device_tree(
         &self,
-        _request: Request<Empty>,
+        request: Request<Empty>,
     ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
         self.with_state(|state| crate::handlers::device_tree_json(state))
             .map(Response::new)
     }
 
     async fn get_device_reports(
         &self,
-        _request: Request<Empty>,
+        request: Request<Empty>,
     ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
         self.with_state(|state| crate::handlers::device_reports_json(state))
             .map(Response::new)
     }
 
     async fn get_failover_chains(
         &self,
-        _request: Request<Empty>,
+        request: Request<Empty>,
     ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
         self.with_state(|state| crate::handlers::failover_chains_json(state))
             .map(Response::new)
     }
@@ -446,6 +509,7 @@ impl ControlCenter for GrpcControlCenter {
         &self,
         request: Request<Empty>,
     ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
         let ctx = self.rbac_from_request(&request);
         self.with_state(|state| crate::handlers::secrets_list_json(state, ctx.as_ref()))
             .map(Response::new)
@@ -453,8 +517,9 @@ impl ControlCenter for GrpcControlCenter {
 
     async fn get_rbac_matrix(
         &self,
-        _request: Request<Empty>,
+        request: Request<Empty>,
     ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
         Ok(Response::new(JsonResponse {
             json: crate::handlers::rbac_matrix_json(),
         }))
@@ -464,6 +529,7 @@ impl ControlCenter for GrpcControlCenter {
         &self,
         request: Request<QueryRequest>,
     ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
         let query = request.into_inner().query;
         self.with_state(|state| crate::handlers::analytics_readiness_json(state, &query))
             .map(Response::new)
@@ -473,6 +539,7 @@ impl ControlCenter for GrpcControlCenter {
         &self,
         request: Request<QueryRequest>,
     ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
         let ctx = self.rbac_from_request(&request);
         let query = request.into_inner().query;
         self.with_state(|state| crate::handlers::reports_export_json(state, &query, ctx.as_ref()))
@@ -481,16 +548,18 @@ impl ControlCenter for GrpcControlCenter {
 
     async fn get_observability_traces(
         &self,
-        _request: Request<Empty>,
+        request: Request<Empty>,
     ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
         self.with_state(|state| crate::handlers::observability_traces_json(state))
             .map(Response::new)
     }
 
     async fn get_otlp_traces(
         &self,
-        _request: Request<Empty>,
+        request: Request<Empty>,
     ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
         self.with_state(|state| crate::handlers::otlp_traces_json(state))
             .map(Response::new)
     }
@@ -499,6 +568,7 @@ impl ControlCenter for GrpcControlCenter {
         &self,
         request: Request<QueryRequest>,
     ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
         let ctx = self.rbac_from_request(&request);
         let query = request.into_inner().query;
         self.with_state(|state| {
@@ -511,6 +581,7 @@ impl ControlCenter for GrpcControlCenter {
         &self,
         request: Request<QueryRequest>,
     ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
         let ctx = self.rbac_from_request(&request);
         let query = request.into_inner().query;
         self.with_state(|state| {
@@ -523,6 +594,7 @@ impl ControlCenter for GrpcControlCenter {
         &self,
         request: Request<DriftRequest>,
     ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
         let baseline_id = request.into_inner().baseline_id;
         self.with_state(|state| {
             let query = format!("baseline_id={baseline_id}");

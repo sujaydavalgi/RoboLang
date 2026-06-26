@@ -104,6 +104,38 @@ pub fn handle_request(
     let ctx = state
         .api_keys
         .authenticate(request.authorization.as_deref());
+    if let Some(response) = crate::versioning::enforce_api_version(
+        crate::versioning::api_version_from_headers(raw_headers).as_deref(),
+    ) {
+        e3::record_trace(
+            state,
+            &correlation_id,
+            &request.method,
+            path,
+            response.status,
+            started_ms,
+        );
+        return (response, correlation_id);
+    }
+    let skip_rate_limit = path == "/v1/health" || path == "/v1/version";
+    if !skip_rate_limit {
+        let rate_key = ctx
+            .as_ref()
+            .map(|context| context.key_id.clone())
+            .unwrap_or_else(|| "anonymous".to_string());
+        if let Err(retry_after) = state.rate_limiter.check(&rate_key) {
+            let response = rate_limited(retry_after);
+            e3::record_trace(
+                state,
+                &correlation_id,
+                &request.method,
+                path,
+                response.status,
+                started_ms,
+            );
+            return (response, correlation_id);
+        }
+    }
     if path.starts_with("/v1/devices/") && request.method == "PATCH" {
         let id = path.trim_start_matches("/v1/devices/");
         let response = device_patch(state, id, &request.body, ctx.as_ref());
@@ -137,6 +169,7 @@ pub fn handle_request(
     }
     let response = match (path, request.method.as_str()) {
         ("/v1/dashboard", "GET") => dashboard(state),
+        ("/v1/version", "GET") => api_version_info(),
         ("/v1/robots", "GET") => robots_list(state),
         ("/v1/fleets", "GET") => fleets_list(state),
         ("/v1/device-tree", "GET") => device_tree_get(state),
@@ -199,6 +232,31 @@ pub fn handle_request(
         started_ms,
     );
     (response, correlation_id)
+}
+
+fn api_version_info() -> HttpResponse {
+    json_ok(&serde_json::json!({
+        "version": API_VERSION,
+        "api_version": crate::versioning::SUPPORTED_API_VERSION,
+        "supported_versions": [crate::versioning::SUPPORTED_API_VERSION],
+        "rate_limit_per_minute": std::env::var("SPANDA_API_RATE_LIMIT_PER_MINUTE")
+            .ok()
+            .and_then(|value| value.parse::<u32>().ok())
+            .unwrap_or(0),
+        "policy": "Breaking changes require a new /v2/ path prefix. Send X-Spanda-Api-Version: v1 or omit the header.",
+    }))
+}
+
+pub(crate) fn rate_limited(retry_after_secs: u64) -> HttpResponse {
+    HttpResponse {
+        status: 429,
+        body: serde_json::json!({
+            "ok": false,
+            "error": "rate limit exceeded",
+            "retry_after_secs": retry_after_secs,
+        })
+        .to_string(),
+    }
 }
 
 fn dashboard(state: &ControlCenterState) -> HttpResponse {
@@ -838,18 +896,28 @@ pub fn encode_response(
         400 => "Bad Request",
         401 => "Unauthorized",
         404 => "Not Found",
+        429 => "Too Many Requests",
         _ => "Error",
+    };
+    let retry_header = if response.status == 429 {
+        serde_json::from_str::<serde_json::Value>(&response.body)
+            .ok()
+            .and_then(|body| body.get("retry_after_secs").and_then(|value| value.as_u64()))
+            .map(|seconds| format!("Retry-After: {seconds}\r\n"))
+            .unwrap_or_default()
+    } else {
+        String::new()
     };
     let correlation_header = correlation_id
         .map(|id| format!("X-Correlation-ID: {id}\r\n"))
         .unwrap_or_default();
     format!(
-        "HTTP/1.1 {} {}\r\nContent-Type: {}\r\nContent-Length: {}\r\nConnection: close\r\nAccess-Control-Allow-Origin: *\r\nAccess-Control-Allow-Headers: Authorization, Content-Type, X-Correlation-ID\r\n{}Access-Control-Expose-Headers: X-Correlation-ID\r\n\r\n{}",
+        "HTTP/1.1 {} {}\r\nContent-Type: {}\r\nContent-Length: {}\r\nConnection: close\r\nAccess-Control-Allow-Origin: *\r\nAccess-Control-Allow-Headers: Authorization, Content-Type, X-Correlation-ID, X-Spanda-Api-Version\r\n{}Access-Control-Expose-Headers: X-Correlation-ID\r\n\r\n{}",
         response.status,
         status_text,
         content_type,
         response.body.len(),
-        correlation_header,
+        format!("{correlation_header}{retry_header}"),
         response.body
     )
 }

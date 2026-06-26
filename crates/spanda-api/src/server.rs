@@ -54,6 +54,7 @@ pub fn run_control_center_server(options: &ControlCenterOptions) -> Result<(), S
     eprintln!("Spanda Control Center listening on http://{}", options.bind);
     eprintln!("  GET  /                  Control Center UI");
     eprintln!("  GET  /v1/health         liveness");
+    eprintln!("  GET  /v1/version        API version policy");
     eprintln!("  GET  /v1/dashboard      operations summary");
     eprintln!("  GET  /v1/devices        device pool");
     eprintln!("  GET  /v1/fleet/agents   registered fleet agents");
