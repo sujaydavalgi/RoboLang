@@ -18,4 +18,7 @@ fn control_center_help_lists_remote_subcommands() {
     assert!(help.contains("control-center approvals"));
     assert!(help.contains("control-center incidents"));
     assert!(help.contains("control-center evidence"));
+    assert!(help.contains("control-center devices"));
+    assert!(help.contains("control-center ota"));
+    assert!(help.contains("control-center sre summary"));
 }

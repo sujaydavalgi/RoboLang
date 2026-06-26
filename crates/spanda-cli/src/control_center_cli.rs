@@ -19,6 +19,14 @@ pub fn control_center_dispatch(args: &[String]) {
         "incidents" => cmd_incidents(&args[1..]),
         "approvals" => cmd_approvals(&args[1..]),
         "evidence" => cmd_evidence(&args[1..]),
+        "sre" => cmd_sre(&args[1..]),
+        "devices" => cmd_devices(&args[1..]),
+        "ota" => cmd_ota(&args[1..]),
+        "readiness" => cmd_readiness(&args[1..]),
+        "compliance" => cmd_compliance(&args[1..]),
+        "alerts" => cmd_alerts(&args[1..]),
+        "snapshots" => cmd_snapshots(&args[1..]),
+        "trust" => cmd_trust(&args[1..]),
         _ => {
             eprintln!("Unknown control-center subcommand: {}", args[0]);
             print_usage();
@@ -36,7 +44,15 @@ fn print_usage() {
          spanda control-center drift --baseline-id <id> [--url <base>]\n  \
          spanda control-center incidents list|create|ack|resolve ... [--url <base>]\n  \
          spanda control-center approvals list|submit|approve|reject ... [--url <base>]\n  \
-         spanda control-center evidence list [--url <base>]\n\n\
+         spanda control-center evidence list [--url <base>]\n  \
+         spanda control-center sre summary [--url <base>]\n  \
+         spanda control-center devices list|get|assign|quarantine|trust|provision|patch ... [--url <base>]\n  \
+         spanda control-center ota plan|execute|status ... [--url <base>]\n  \
+         spanda control-center readiness run [--url <base>]\n  \
+         spanda control-center compliance export [--profile <name>] [--url <base>]\n  \
+         spanda control-center alerts list|test [--url <base>]\n  \
+         spanda control-center snapshots list|save [--label <name>] [--url <base>]\n  \
+         spanda control-center trust package --name <pkg> [--version <ver>] [--url <base>]\n\n\
          Remote calls use SPANDA_CONTROL_CENTER_URL (default http://127.0.0.1:8080) and SPANDA_API_KEY for mutations.\n\
          serve: set SPANDA_API_KEY for authenticated mutations (PATCH devices, POST alerts/test).\n\
          serve: set SPANDA_ALERT_WEBHOOK_URL or SPANDA_ALERT_EMAIL_TO for alert delivery."
@@ -291,12 +307,231 @@ fn cmd_evidence(args: &[String]) {
         process::exit(1);
     }
     let client = client_from_args(args);
-    let response = client
-        .get("/v1/compliance/evidence", true)
-        .unwrap_or_else(|error| {
-            eprintln!("{error}");
+    remote_get(&client, "/v1/compliance/evidence", true);
+}
+
+fn cmd_sre(args: &[String]) {
+    if args.first().map(String::as_str) != Some("summary") {
+        eprintln!("Usage: spanda control-center sre summary [--url <base>]");
+        process::exit(1);
+    }
+    let client = client_from_args(args);
+    remote_get(&client, "/v1/sre/summary", false);
+}
+
+fn cmd_devices(args: &[String]) {
+    if args.is_empty() {
+        eprintln!("Usage: spanda control-center devices list|get|assign|quarantine|trust|provision|patch ...");
+        process::exit(1);
+    }
+    let client = client_from_args(args);
+    match args[0].as_str() {
+        "list" => remote_get(&client, "/v1/devices", false),
+        "get" => {
+            let device_id = positional_arg(args, 1).unwrap_or_else(|| {
+                eprintln!("Missing device id");
+                process::exit(1);
+            });
+            let path = format!("/v1/devices/{device_id}");
+            remote_get(&client, &path, false);
+        }
+        "assign" => {
+            let device_id = positional_arg(args, 1).unwrap_or_else(|| {
+                eprintln!("Missing device id");
+                process::exit(1);
+            });
+            let robot_id = flag_value(args, "--robot-id").unwrap_or_else(|| {
+                eprintln!("Missing --robot-id");
+                process::exit(1);
+            });
+            let mut body = serde_json::Map::new();
+            body.insert("robot_id".into(), serde_json::json!(robot_id));
+            if let Some(logical_name) = flag_value(args, "--logical-name") {
+                body.insert("logical_name".into(), serde_json::json!(logical_name));
+            }
+            if let Some(group) = flag_value(args, "--redundant-group") {
+                body.insert("redundant_group".into(), serde_json::json!(group));
+            }
+            let path = format!("/v1/devices/{device_id}/assign");
+            remote_post(
+                &client,
+                &path,
+                &serde_json::Value::Object(body).to_string(),
+                true,
+            );
+        }
+        "quarantine" | "trust" | "provision" => {
+            let device_id = positional_arg(args, 1).unwrap_or_else(|| {
+                eprintln!("Missing device id");
+                process::exit(1);
+            });
+            let path = format!("/v1/devices/{device_id}/{}", args[0]);
+            let body = flag_value(args, "--body").unwrap_or_else(|| "{}".into());
+            remote_post(&client, &path, &body, true);
+        }
+        "patch" => {
+            let device_id = positional_arg(args, 1).unwrap_or_else(|| {
+                eprintln!("Missing device id");
+                process::exit(1);
+            });
+            let lifecycle = flag_value(args, "--lifecycle-state").unwrap_or_else(|| {
+                eprintln!("Missing --lifecycle-state");
+                process::exit(1);
+            });
+            let body = serde_json::json!({ "lifecycle_state": lifecycle }).to_string();
+            let path = format!("/v1/devices/{device_id}");
+            remote_patch(&client, &path, &body, true);
+        }
+        other => {
+            eprintln!("Unknown devices subcommand: {other}");
             process::exit(1);
-        });
+        }
+    }
+}
+
+fn cmd_ota(args: &[String]) {
+    if args.is_empty() {
+        eprintln!("Usage: spanda control-center ota plan|execute|status ...");
+        process::exit(1);
+    }
+    let client = client_from_args(args);
+    match args[0].as_str() {
+        "status" => remote_get(&client, "/v1/ota/status", false),
+        "plan" | "execute" => {
+            let body = ota_body_from_args(args);
+            let path = format!("/v1/ota/{}", args[0]);
+            remote_post(&client, &path, &body, true);
+        }
+        other => {
+            eprintln!("Unknown ota subcommand: {other}");
+            process::exit(1);
+        }
+    }
+}
+
+fn ota_body_from_args(args: &[String]) -> String {
+    if let Some(body) = flag_value(args, "--body") {
+        return body;
+    }
+    let strategy = flag_value(args, "--strategy").unwrap_or_else(|| "canary".into());
+    let version = flag_value(args, "--version").unwrap_or_else(|| {
+        eprintln!("Missing --version (or pass --body <json>)");
+        process::exit(1);
+    });
+    let dry_run = args.iter().any(|arg| arg == "--dry-run");
+    let canary_percent = flag_value(args, "--canary-percent")
+        .and_then(|value| value.parse::<u64>().ok())
+        .unwrap_or(10);
+    serde_json::json!({
+        "strategy": strategy,
+        "version": version,
+        "dry_run": dry_run,
+        "canary_percent": canary_percent,
+        "assignments": [],
+    })
+    .to_string()
+}
+
+fn cmd_readiness(args: &[String]) {
+    if args.first().map(String::as_str) != Some("run") {
+        eprintln!("Usage: spanda control-center readiness run [--url <base>]");
+        process::exit(1);
+    }
+    let client = client_from_args(args);
+    let body = flag_value(args, "--body").unwrap_or_else(|| "{}".into());
+    remote_post(&client, "/v1/readiness/run", &body, false);
+}
+
+fn cmd_compliance(args: &[String]) {
+    if args.first().map(String::as_str) != Some("export") {
+        eprintln!("Usage: spanda control-center compliance export [--profile <name>] [--url <base>]");
+        process::exit(1);
+    }
+    let profile = flag_value(args, "--profile").unwrap_or_else(|| "defense".into());
+    let client = client_from_args(args);
+    let path = format!("/v1/compliance/export?profile={profile}");
+    remote_get(&client, &path, true);
+}
+
+fn cmd_alerts(args: &[String]) {
+    if args.is_empty() {
+        eprintln!("Usage: spanda control-center alerts list|test [--url <base>]");
+        process::exit(1);
+    }
+    let client = client_from_args(args);
+    match args[0].as_str() {
+        "list" => remote_get(&client, "/v1/alerts", false),
+        "test" => remote_post(&client, "/v1/alerts/test", "{}", true),
+        other => {
+            eprintln!("Unknown alerts subcommand: {other}");
+            process::exit(1);
+        }
+    }
+}
+
+fn cmd_snapshots(args: &[String]) {
+    if args.is_empty() {
+        eprintln!("Usage: spanda control-center snapshots list|save [--label <name>] [--url <base>]");
+        process::exit(1);
+    }
+    let client = client_from_args(args);
+    match args[0].as_str() {
+        "list" => remote_get(&client, "/v1/config/snapshots", false),
+        "save" => {
+            let label = flag_value(args, "--label");
+            let body = if let Some(label) = label {
+                serde_json::json!({ "label": label }).to_string()
+            } else {
+                "{}".into()
+            };
+            remote_post(&client, "/v1/config/snapshots", &body, true);
+        }
+        other => {
+            eprintln!("Unknown snapshots subcommand: {other}");
+            process::exit(1);
+        }
+    }
+}
+
+fn cmd_trust(args: &[String]) {
+    if args.first().map(String::as_str) != Some("package") {
+        eprintln!("Usage: spanda control-center trust package --name <pkg> [--version <ver>] [--url <base>]");
+        process::exit(1);
+    }
+    let name = flag_value(args, "--name").unwrap_or_else(|| {
+        eprintln!("Missing --name");
+        process::exit(1);
+    });
+    let client = client_from_args(args);
+    let path = if let Some(version) = flag_value(args, "--version") {
+        format!("/v1/trust/package?name={name}&version={version}")
+    } else {
+        format!("/v1/trust/package?name={name}")
+    };
+    remote_get(&client, &path, false);
+}
+
+fn remote_get(client: &ControlCenterClient, path: &str, auth: bool) {
+    let response = client.get(path, auth).unwrap_or_else(|error| {
+        eprintln!("{error}");
+        process::exit(1);
+    });
+    print_response(response);
+}
+
+fn remote_post(client: &ControlCenterClient, path: &str, body: &str, auth: bool) {
+    let response = client.post(path, body, auth).unwrap_or_else(|error| {
+        eprintln!("{error}");
+        process::exit(1);
+    });
+    print_response(response);
+}
+
+fn remote_patch(client: &ControlCenterClient, path: &str, body: &str, auth: bool) {
+    let response = client.patch(path, body, auth).unwrap_or_else(|error| {
+        eprintln!("{error}");
+        process::exit(1);
+    });
     print_response(response);
 }
 

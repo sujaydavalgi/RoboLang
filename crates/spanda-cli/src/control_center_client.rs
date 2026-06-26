@@ -91,4 +91,8 @@ impl ControlCenterClient {
     pub fn post(&self, path: &str, body: &str, auth: bool) -> Result<HttpResponse, String> {
         self.request("POST", path, Some(body), auth)
     }
+
+    pub fn patch(&self, path: &str, body: &str, auth: bool) -> Result<HttpResponse, String> {
+        self.request("PATCH", path, Some(body), auth)
+    }
 }
