@@ -175,8 +175,8 @@ Phases E1–E4 are **shipped at experimental tier** (CI smoke + docs). The table
 |------|-------------------|-----------------|
 | Discovery | Host-backed core probes + stubs | Registry packages loaded at runtime; vendor-specific hardening |
 | Device Pool | Full lifecycle + trust + failover | Multi-tenant isolation, audit on every mutation, HA persistence |
-| APIs | REST v1 + OpenAPI | tonic gRPC (9 RPCs); rate limits, versioning policy, full CLI parity |
-| Observability | Trace log + OTLP push | Metrics export, distributed trace backend integration |
+| APIs | REST v1 + OpenAPI | tonic gRPC (16 RPCs); rate limits, versioning policy, full CLI parity |
+| Observability | Trace log + OTLP push | OTLP metrics preview/export on Control Center; distributed trace backend integration |
 | Desktop | Tauri dev scaffold | Signed installers (`TAURI_BUILD=1` CI on macOS), auto-update |
 | Drift / OTA | Full operational drift API (7 dimensions); plan dry-run | Production fleet rollout automation |
 

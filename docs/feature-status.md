@@ -221,8 +221,8 @@ See [tier-3-experimental.md](./tier-3-experimental.md) and [tier-3-golden-paths.
 | **SRE** | **Experimental** | `/v1/sre/summary`; incident workflow UI **Planned** |
 | **Reporting** | **Experimental** | HTML, Markdown, JSON, PDF, CSV exports |
 | **Compliance** | **Experimental** | Evidence packs, `GET /v1/compliance/export` |
-| **APIs** | **Experimental** | REST v1 + OpenAPI; JSON-RPC gateway; native gRPC (tonic) **Experimental** — 9 RPCs on `--grpc-bind` |
-| **Observability** | **Experimental** | OTLP trace export, correlation IDs, WebSocket telemetry |
+| **APIs** | **Experimental** | REST v1 + OpenAPI; JSON-RPC gateway; native gRPC (tonic) **Experimental** — 16 RPCs on `--grpc-bind` |
+| **Observability** | **Experimental** | OTLP trace export, correlation IDs, WebSocket telemetry; Control Center OTLP metrics preview/export |
 | **Digital Thread** | **Experimental** | `GET /v1/digital-thread/query`; full graph UI **Planned** |
 
 See [enterprise-operations-roadmap.md](./enterprise-operations-roadmap.md) · [control-center.md](./control-center.md) · [device-pool.md](./device-pool.md)

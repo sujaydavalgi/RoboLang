@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **gRPC E2/E4 expansion:** `GetHealthSummary`, `GetAssuranceSummary`, `GetDiagnosisSummary`, `GetExecutiveScorecard`, `QueryDigitalThread`, `GetOtaStatus`, `GetOtlpMetrics` RPCs (16 total).
+- **OTLP metrics (Control Center):** `spanda-ops::otlp_metrics`, `GET /v1/observability/otlp/metrics`, `POST /v1/observability/otlp/export-metrics`; enterprise ops smoke probe.
+
 - **gRPC expansion:** `ListDevices`, `ListFleetAgents`, `EvaluateReadiness`, `GetSreSummary`, `GetTrustPackage`, `GetOpenApi` RPCs on tonic `ControlCenter`; REST parity helpers in `handlers`; live probe `grpc_live_probe.rs`; `scripts/enterprise_ops_smoke.sh` gRPC section.
 - **Tauri CI:** `control-center-desktop` job (Linux compile check); `control-center-desktop-bundle` job (`TAURI_BUILD=1` on macOS main pushes).
 - **Fleet agent interpreter recovery (Stable):** `scripts/fleet_agent_recovery_smoke.sh`; wired into `scripts/fleet_field_validation.sh`; mesh integration test coverage.

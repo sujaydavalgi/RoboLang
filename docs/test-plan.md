@@ -17,7 +17,8 @@
 | Swarm continuity | member-lost handoff + mesh relay | `crates/spanda-fleet/src/swarm_continuity.rs`, `crates/spanda-fleet/tests/mesh_integration.rs` |
 | Self-healing runtime | auto-trigger, approval retry, mesh relay | `crates/spanda-interpreter/tests/recovery_runtime.rs`, `scripts/self_healing_smoke.sh` |
 | Fleet field validation | multi-process agents + mesh orchestrate | `scripts/fleet_field_validation.sh` |
-| gRPC Control Center | tonic Health, GetDashboard, ListDevices, ListFleetAgents, EvaluateReadiness, GetSreSummary, GetTrustPackage, GetOpenApi, DetectDrift | `crates/spanda-api/tests/grpc_tests.rs`, `grpc_live_probe.rs`, `scripts/enterprise_ops_smoke.sh` |
+| gRPC Control Center | tonic (16 RPCs incl. E2/E4 summaries + OTLP metrics) | `crates/spanda-api/tests/grpc_tests.rs`, `grpc_live_probe.rs`, `scripts/enterprise_ops_smoke.sh` |
+| OTLP metrics (Control Center) | `GET /v1/observability/otlp/metrics`, `POST /v1/observability/otlp/export-metrics` | `crates/spanda-ops/src/otlp_metrics.rs`, `scripts/enterprise_ops_smoke.sh` |
 | Fleet agent interpreter recovery | HTTP deploy + `/v1/recovery/execute` | `scripts/fleet_agent_recovery_smoke.sh`, `crates/spanda-fleet/tests/mesh_integration.rs` |
 | Operational drift (full) | program + agent dimensions | `crates/spanda-config/src/operational_drift.rs` |
 | Platform maturity | graph, drift, gates, trust, tamper, compliance | crate tests under `spanda-graph`, `spanda-config`, `spanda-readiness`, `spanda-trust`, `spanda-tamper`, `spanda-compliance` |
