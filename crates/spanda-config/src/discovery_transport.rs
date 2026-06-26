@@ -1,6 +1,9 @@
 //! Package-backed device discovery transport contract.
 //!
-use crate::device_identity::{DiscoveryMatch, NetworkHostProbe};
+use crate::device_identity::{DiscoveryMatch, DeviceIdentityRecord, NetworkHostProbe};
+use crate::discovery_live::{
+    default_discovery_subnet, probe_ble, probe_can, probe_mdns, probe_mqtt, probe_ros2, probe_usb,
+};
 use serde::{Deserialize, Serialize};
 
 /// Options passed to discovery transports (mDNS, BLE, subnet scan, …).
@@ -36,7 +39,12 @@ impl DeviceDiscoveryTransport for SubnetDiscoveryTransport {
     }
 
     fn discover(&self, options: &DiscoveryOptions) -> Result<DiscoveryTransportResult, String> {
-        let Some(subnet) = options.subnet.as_deref() else {
+        let default_subnet = default_discovery_subnet();
+        let subnet = options
+            .subnet
+            .as_deref()
+            .or(default_subnet.as_deref());
+        let Some(subnet) = subnet else {
             return Ok(DiscoveryTransportResult {
                 transport: self.transport_name().into(),
                 matches: Vec::new(),
@@ -61,7 +69,7 @@ impl DeviceDiscoveryTransport for SubnetDiscoveryTransport {
     }
 }
 
-/// Mock mDNS transport for package contract tests (live backend in `spanda-discovery-mdns`).
+/// Mock mDNS transport with host-backed probe fallback.
 pub struct MockMdnsDiscoveryTransport;
 
 impl DeviceDiscoveryTransport for MockMdnsDiscoveryTransport {
@@ -69,7 +77,15 @@ impl DeviceDiscoveryTransport for MockMdnsDiscoveryTransport {
         "mdns"
     }
 
-    fn discover(&self, _options: &DiscoveryOptions) -> Result<DiscoveryTransportResult, String> {
+    fn discover(&self, options: &DiscoveryOptions) -> Result<DiscoveryTransportResult, String> {
+        let timeout = options.timeout_ms.unwrap_or(2000);
+        let live = probe_mdns(timeout);
+        if !live.is_empty() {
+            return Ok(DiscoveryTransportResult {
+                transport: self.transport_name().into(),
+                matches: live,
+            });
+        }
         Ok(DiscoveryTransportResult {
             transport: self.transport_name().into(),
             matches: vec![DiscoveryMatch {
@@ -88,8 +104,8 @@ impl DeviceDiscoveryTransport for MockMdnsDiscoveryTransport {
     }
 }
 
-macro_rules! stub_transport {
-    ($name:ident, $transport:expr, $device_id:expr) => {
+macro_rules! live_transport {
+    ($name:ident, $transport:expr, $probe:expr, $stub_id:expr) => {
         pub struct $name;
         impl DeviceDiscoveryTransport for $name {
             fn transport_name(&self) -> &'static str {
@@ -97,12 +113,19 @@ macro_rules! stub_transport {
             }
             fn discover(
                 &self,
-                _options: &DiscoveryOptions,
+                options: &DiscoveryOptions,
             ) -> Result<DiscoveryTransportResult, String> {
+                let live = $probe(options);
+                if !live.is_empty() {
+                    return Ok(DiscoveryTransportResult {
+                        transport: self.transport_name().into(),
+                        matches: live,
+                    });
+                }
                 Ok(DiscoveryTransportResult {
                     transport: self.transport_name().into(),
                     matches: vec![DiscoveryMatch {
-                        device_id: $device_id.into(),
+                        device_id: $stub_id.into(),
                         logical_name: None,
                         configured_ip: "stub".into(),
                         probe: NetworkHostProbe {
@@ -119,11 +142,31 @@ macro_rules! stub_transport {
     };
 }
 
-stub_transport!(MockBleDiscoveryTransport, "ble", "ble-stub-device");
-stub_transport!(MockUsbDiscoveryTransport, "usb", "usb-stub-device");
-stub_transport!(MockCanDiscoveryTransport, "can", "can-stub-device");
-stub_transport!(MockMqttDiscoveryTransport, "mqtt", "mqtt-stub-device");
-stub_transport!(MockRos2DiscoveryTransport, "ros2", "ros2-stub-device");
+fn probe_ble_options(_options: &DiscoveryOptions) -> Vec<DiscoveryMatch> {
+    probe_ble()
+}
+
+fn probe_usb_options(_options: &DiscoveryOptions) -> Vec<DiscoveryMatch> {
+    probe_usb()
+}
+
+fn probe_can_options(_options: &DiscoveryOptions) -> Vec<DiscoveryMatch> {
+    probe_can()
+}
+
+fn probe_mqtt_options(options: &DiscoveryOptions) -> Vec<DiscoveryMatch> {
+    probe_mqtt(options.timeout_ms.unwrap_or(500))
+}
+
+fn probe_ros2_options(options: &DiscoveryOptions) -> Vec<DiscoveryMatch> {
+    probe_ros2(options.timeout_ms.unwrap_or(2000))
+}
+
+live_transport!(MockBleDiscoveryTransport, "ble", probe_ble_options, "ble-stub-device");
+live_transport!(MockUsbDiscoveryTransport, "usb", probe_usb_options, "usb-stub-device");
+live_transport!(MockCanDiscoveryTransport, "can", probe_can_options, "can-stub-device");
+live_transport!(MockMqttDiscoveryTransport, "mqtt", probe_mqtt_options, "mqtt-stub-device");
+live_transport!(MockRos2DiscoveryTransport, "ros2", probe_ros2_options, "ros2-stub-device");
 
 /// Resolve a discovery transport by name (built-in stubs; packages extend via registry).
 pub fn discovery_transport_by_name(name: &str) -> Option<Box<dyn DeviceDiscoveryTransport>> {
@@ -156,6 +199,41 @@ pub fn run_discovery_transports(
                 .and_then(|t| t.discover(options))
         })
         .collect()
+}
+
+/// Build a registry record from a discovery match for pool ingestion.
+pub fn discovery_match_to_record(match_entry: &DiscoveryMatch) -> DeviceIdentityRecord {
+    let mut record = DeviceIdentityRecord {
+        id: match_entry.device_id.clone(),
+        device_type: match_entry.matched_by.clone(),
+        logical_name: match_entry.logical_name.clone(),
+        ip_address: Some(match_entry.configured_ip.clone()),
+        ..Default::default()
+    };
+    if record.device_type == "usb" {
+        record.usb_path = Some(match_entry.configured_ip.clone());
+    }
+    if record.device_type == "ble" {
+        record.bluetooth_address = Some(match_entry.configured_ip.clone());
+    }
+    if record.device_type == "can" {
+        record.bus = match_entry.logical_name.clone();
+    }
+    record
+}
+
+/// Register all discovery matches into a device registry.
+pub fn ingest_discovery_matches(
+    registry: &mut crate::device_identity::DeviceRegistry,
+    results: &[DiscoveryTransportResult],
+) -> Vec<crate::device_operations::DeviceOperationResult> {
+    let mut registered = Vec::new();
+    for result in results {
+        for match_entry in &result.matches {
+            registered.push(registry.register_discovered(discovery_match_to_record(match_entry)));
+        }
+    }
+    registered
 }
 
 #[cfg(test)]

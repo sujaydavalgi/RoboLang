@@ -14,6 +14,7 @@ pub mod device_pool;
 pub mod device_quarantine;
 pub mod device_reports;
 pub mod device_tree;
+pub mod discovery_live;
 pub mod discovery_transport;
 pub mod drift;
 pub mod error;
@@ -64,11 +65,13 @@ pub use device_reports::{
 };
 pub use device_tree::{ComputeNode, DeviceNode, DeviceTree, FleetNode, RobotNode};
 pub use discovery_transport::{
-    discovery_transport_by_name, run_discovery_transports, DeviceDiscoveryTransport,
-    DiscoveryOptions, DiscoveryTransportResult, MockBleDiscoveryTransport,
-    MockCanDiscoveryTransport, MockMdnsDiscoveryTransport, MockMqttDiscoveryTransport,
-    MockRos2DiscoveryTransport, MockUsbDiscoveryTransport, SubnetDiscoveryTransport,
+    discovery_match_to_record, discovery_transport_by_name, ingest_discovery_matches,
+    run_discovery_transports, DeviceDiscoveryTransport, DiscoveryOptions, DiscoveryTransportResult,
+    MockBleDiscoveryTransport, MockCanDiscoveryTransport, MockMdnsDiscoveryTransport,
+    MockMqttDiscoveryTransport, MockRos2DiscoveryTransport, MockUsbDiscoveryTransport,
+    SubnetDiscoveryTransport,
 };
+pub use discovery_live::default_discovery_subnet;
 pub use drift::{
     append_agent_drift, append_program_drift, detect_agent_drift, detect_config_drift,
     expected_agent_states, format_drift_lines, AgentDriftSnapshot, ConfigDriftReport,

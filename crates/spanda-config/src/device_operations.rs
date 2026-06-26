@@ -128,11 +128,29 @@ impl DeviceRegistry {
             .find(|d| d.id == device_id)
             .ok_or_else(|| format!("device '{device_id}' not found"))?;
         device.trust_level = Some("verified".into());
-        self.set_lifecycle(device_id, DeviceLifecycleState::Verified)?;
+        let current = device
+            .lifecycle_state
+            .as_deref()
+            .map(DeviceLifecycleState::parse)
+            .unwrap_or(DeviceLifecycleState::Discovered);
+        let target = DeviceLifecycleState::Verified;
+        if current != target {
+            if let Err(error) = self.set_lifecycle(device_id, target) {
+                if !matches!(
+                    current,
+                    DeviceLifecycleState::Assigned | DeviceLifecycleState::Active
+                ) {
+                    return Err(error);
+                }
+            }
+        }
         Ok(DeviceOperationResult {
             ok: true,
             device_id: device_id.to_string(),
-            lifecycle_state: DeviceLifecycleState::Verified.as_str().to_string(),
+            lifecycle_state: self
+                .get(device_id)
+                .and_then(|d| d.lifecycle_state.clone())
+                .unwrap_or_else(|| target.as_str().to_string()),
             message: "device trusted by operator".into(),
         })
     }
