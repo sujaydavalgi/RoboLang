@@ -197,6 +197,7 @@ The `@spanda/web` Control Center panel includes:
 | Mapping | Logical ↔ physical mapping export |
 | Health | Pool health rollup |
 | Readiness | Readiness impact check |
+| Digital Thread | Interactive capability→device graph with filters |
 | Traceability | Trust and identity trace view |
 
 ---
@@ -301,4 +302,4 @@ The desktop shell reuses `ControlCenterPanel` from `@spanda/web`; it does not em
 
 ## Status
 
-**Experimental** (Phase E1–E4). Includes device pool provisioning, multi-transport discovery, WebSocket telemetry streaming, OTLP trace export to Jaeger, compliance export, digital thread query, executive scorecard, report composer (including PDF), and Tauri desktop scaffold.
+**Experimental** (Phase E1–E4). Includes device pool provisioning, multi-transport discovery, WebSocket telemetry streaming, OTLP trace export to Jaeger, compliance export, digital thread query with **interactive graph UI**, executive scorecard, report composer (including PDF), and Tauri desktop scaffold.

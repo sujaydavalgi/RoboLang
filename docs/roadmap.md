@@ -171,14 +171,18 @@ Phases E1–E4 are **shipped at experimental tier** (CI smoke + docs). The table
 
 ### Remaining for Stable
 
+See **[stable-hardening-enterprise-ops.md](./stable-hardening-enterprise-ops.md)** for the full per-pillar checklist and promotion gates.
+
 | Area | Experimental today | Stable requires |
 |------|-------------------|-----------------|
-| Discovery | Host-backed core probes + registry package wrap | **Experimental** — wifi/cellular/serial registry stubs; BLE/USB registry wrap |
-| Device Pool | Full lifecycle + trust + failover | **Experimental** — multi-tenant isolation; HA persistence for alerts/traces/incidents |
-| APIs | REST v1 + OpenAPI | **Experimental** — rate limits + versioning + tenant gate; HA persistence (`SPANDA_CONTROL_CENTER_STATE_DIR`) |
-| Observability | Trace log + OTLP push | **Experimental** — `spanda-otel-collector` package + `SPANDA_OTEL_COLLECTOR_URL`; `GET /v1/observability/backend` |
-| Desktop | Tauri dev scaffold | **Experimental** — `tauri-plugin-updater` + `TAURI_UPDATER_PUBKEY` build injection; macOS CI artifact upload |
-| Drift / OTA | Full operational drift API (7 dimensions); plan dry-run | **Experimental** — policy/safety dimension rollup; live fleet rollout via `POST /v1/ota/execute` |
+| Discovery | Host-backed probes + registry packages (wifi/cellular/serial) | Production transport certs; fleet-scale soak |
+| Device Pool | Full lifecycle + HA persistence + multi-tenant | 1000+ device perf benchmark |
+| APIs | REST v1 + 60 gRPC RPCs + remote CLI + rate limits | Complete OpenAPI; gRPC semver policy |
+| Observability | OTLP traces/metrics + WebSocket + `spanda-otel-collector` | Managed collector HA guide |
+| Desktop | Tauri scaffold + glib patch + updater scaffold | Signed/notarized installers + active auto-update |
+| Drift / OTA | 7-dimension drift; plan + live execute | Mandatory certify gate in production policy |
+| Digital Thread | Interactive graph UI + query API | Full lifecycle graph (requirement → retirement) |
+| Compliance | Export + immutable evidence log | Multi-approver + scheduled delivery |
 
 **Exit criteria (E1):** `spanda control-center serve` + `scripts/enterprise_ops_smoke.sh` — **shipped**
 

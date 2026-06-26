@@ -730,7 +730,7 @@ Builds on `spanda-capability` traceability matrices + `spanda-audit` + mission c
 |-------------|-----------|
 | Compliance evidence packs (UI) | `spanda-compliance` + Control Center Audit |
 | Executive dashboards | scorecard + reporting templates |
-| Digital Thread v1 | capability traceability graph |
+| Digital Thread v1 | capability traceability graph + interactive UI |
 | Predictive analytics | readiness forecasting + anomaly trends |
 | Reporting exports (PDF) | report composer |
 | Tauri desktop packaging | `@spanda/control-center-desktop` |
@@ -803,4 +803,4 @@ Spanda becomes a **complete Autonomous Systems Platform** covering:
 - [telemetry-store.md](./telemetry-store.md) · [drift-detection.md](./drift-detection.md) · [deployment-gates.md](./deployment-gates.md)
 - [package-trust.md](./package-trust.md) · [trust-framework.md](./trust-framework.md) · [compliance-profiles.md](./compliance-profiles.md)
 - [platform-maturity-roadmap.md](./platform-maturity-roadmap.md) · [differentiation-roadmap.md](./differentiation-roadmap.md)
-- [security-architecture.md](./security-architecture.md) · [readiness.md](./readiness.md) · [self-healing.md](./self-healing.md)
+- [stable-hardening-enterprise-ops.md](./stable-hardening-enterprise-ops.md) · [security-architecture.md](./security-architecture.md) · [readiness.md](./readiness.md) · [self-healing.md](./self-healing.md)

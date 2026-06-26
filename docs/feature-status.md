@@ -223,7 +223,7 @@ See [tier-3-experimental.md](./tier-3-experimental.md) and [tier-3-golden-paths.
 | **Compliance** | **Experimental** | Evidence packs, `GET /v1/compliance/export` |
 | **APIs** | **Experimental** | REST v1 + OpenAPI; JSON-RPC gateway; native gRPC (tonic) **Experimental** — 60 RPCs; rate limits (`SPANDA_API_RATE_LIMIT_PER_MINUTE`); versioning policy (`GET /v1/version`, `X-Spanda-Api-Version`) |
 | **Observability** | **Experimental** | OTLP trace/metrics export, correlation IDs, WebSocket telemetry; `spanda-otel-collector` + `SPANDA_OTEL_COLLECTOR_URL`; HA trace log persistence |
-| **Digital Thread** | **Experimental** | `GET /v1/digital-thread/query`; full graph UI **Planned** |
+| **Digital Thread** | **Experimental** | `GET /v1/digital-thread/query`; interactive graph UI in Control Center (React + embedded HTML) |
 
 See [enterprise-operations-roadmap.md](./enterprise-operations-roadmap.md) · [control-center.md](./control-center.md) · [device-pool.md](./device-pool.md)
 

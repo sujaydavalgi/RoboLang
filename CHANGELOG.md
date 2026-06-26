@@ -9,7 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **glib RUSTSEC patch:** Tauri desktop patches `glib` from gtk-rs `0.18` git branch; `tauri-build` 2.6 uses `TAURI_CONFIG` merge for updater pubkey injection.
+- **Digital thread graph UI:** interactive SVG graph in `ControlCenterPanel` and embedded Control Center HTML — filter by capability/device, click-to-highlight neighbors.
+- **Stable hardening checklist:** [docs/stable-hardening-enterprise-ops.md](docs/stable-hardening-enterprise-ops.md) — Experimental → Stable promotion gates per pillar.
 - **Python SDK expansion:** executive scorecard, digital thread, reports export, OTA execute/status, config snapshots, audit mutations.
 - **Enterprise ops doc sync:** roadmap/feature-status/product-strategy updated for 60 RPCs, remote CLI, and publish-on-approve.
 - **Config publish-on-approve:** approving a config request applies the snapshot to runtime and persists device pool fields when `--config` is set.
