@@ -83,6 +83,7 @@ pub fn run_control_center_server(options: &ControlCenterOptions) -> Result<(), S
         eprintln!("  gRPC tonic server on {grpc_bind} (60 RPCs — Control Center service)");
     }
     crate::drift_scheduler::spawn_drift_scheduler(Arc::clone(&state));
+    crate::report_scheduler::spawn_report_scheduler(Arc::clone(&state));
     crate::slo_burn_scheduler::spawn_slo_burn_monitor(Arc::clone(&state));
     if std::env::var("SPANDA_DRIFT_SCAN_INTERVAL_SECS")
         .ok()

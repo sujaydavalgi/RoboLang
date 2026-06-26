@@ -14,6 +14,7 @@ pub mod openapi_routes;
 pub mod persistence;
 pub mod program;
 pub mod integrations;
+pub mod report_scheduler;
 pub mod server;
 pub mod slo_burn_scheduler;
 pub mod state;

@@ -259,8 +259,8 @@ pub fn handle_request(
             crate::drift_scheduler::drift_scan_run(state, &request.body, ctx.as_ref())
         }
         ("/v1/ota/status", "GET") => e3::ota_status(),
-        ("/v1/ota/plan", "POST") => e3::ota_plan(&request.body, ctx.as_ref()),
-        ("/v1/ota/execute", "POST") => e3::ota_execute(&request.body, ctx.as_ref()),
+        ("/v1/ota/plan", "POST") => e3::ota_plan(state, &request.body, ctx.as_ref()),
+        ("/v1/ota/execute", "POST") => e3::ota_execute(state, &request.body, ctx.as_ref()),
         ("/v1/trust/package", "GET") => e3::trust_package(query),
         ("/v1/sre/summary", "GET") => e3::sre_summary(state),
         ("/v1/integrations/pagerduty/webhook", "POST") => {
@@ -297,6 +297,11 @@ pub fn handle_request(
         ("/v1/executive/scorecard", "GET") => e4::executive_scorecard(state),
         ("/v1/analytics/readiness", "GET") => e4::analytics_readiness(state, query),
         ("/v1/reports/export", "GET") => e4::reports_export(state, query, ctx.as_ref()),
+        ("/v1/reports/schedules", "GET") => crate::report_scheduler::report_schedules_list(state),
+        ("/v1/reports/schedules", "POST") => {
+            crate::report_scheduler::report_schedules_create(state, &request.body, ctx.as_ref())
+        }
+        ("/v1/compliance/profiles", "GET") => e4::compliance_profiles_catalog(),
         _ => not_found(),
     };
     e3::record_trace(
@@ -762,6 +767,7 @@ fn discovery_run(query: &str) -> HttpResponse {
             "version": API_VERSION,
             "discovery": discovery,
             "installed_packages": spanda_config::list_installed_discovery_packages(),
+            "tls": spanda_config::discovery_tls_summary(),
         })),
         None => bad_request("discovery failed"),
     }
@@ -1448,13 +1454,13 @@ pub fn provision_run_json(
 }
 
 /// JSON body for gRPC `PlanOta` (parity with `POST /v1/ota/plan`).
-pub fn ota_plan_json(body: &str, ctx: Option<&RbacContext>) -> String {
-    e3::ota_plan(body, ctx).body
+pub fn ota_plan_json(state: &ControlCenterState, body: &str, ctx: Option<&RbacContext>) -> String {
+    e3::ota_plan(state, body, ctx).body
 }
 
 /// JSON body for gRPC `ExecuteOta` (parity with `POST /v1/ota/execute`).
-pub fn ota_execute_json(body: &str, ctx: Option<&RbacContext>) -> String {
-    e3::ota_execute(body, ctx).body
+pub fn ota_execute_json(state: &ControlCenterState, body: &str, ctx: Option<&RbacContext>) -> String {
+    e3::ota_execute(state, body, ctx).body
 }
 
 /// JSON body for gRPC `ListRobots` (parity with `GET /v1/robots`).

@@ -264,6 +264,18 @@ pub const REST_V1_ROUTES: &[ApiRoute] = &[
     },
     ApiRoute {
         method: "GET",
+        path: "/v1/compliance/profiles",
+    },
+    ApiRoute {
+        method: "GET",
+        path: "/v1/reports/schedules",
+    },
+    ApiRoute {
+        method: "POST",
+        path: "/v1/reports/schedules",
+    },
+    ApiRoute {
+        method: "GET",
         path: "/v1/reports/export",
     },
     ApiRoute {

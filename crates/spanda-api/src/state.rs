@@ -2,6 +2,7 @@
 //!
 use crate::correlation::TraceLog;
 use crate::drift_scheduler::DriftScanStore;
+use crate::report_scheduler::ReportScheduleStore;
 use spanda_audit::AuditRuntime;
 use spanda_config::{DeviceRegistry, ResolvedSystemConfig};
 use spanda_ops::{AlertDispatcher, AlertStore, IncidentStore};
@@ -25,6 +26,7 @@ pub struct ControlCenterState {
     pub mutation_audit: AuditRuntime,
     pub tenant_id: String,
     pub drift_scan_store: DriftScanStore,
+    pub report_schedule_store: ReportScheduleStore,
 }
 
 impl ControlCenterState {
@@ -43,6 +45,7 @@ impl ControlCenterState {
             mutation_audit: AuditRuntime::new("control-center", vec![]),
             tenant_id: default_tenant_id(),
             drift_scan_store: DriftScanStore::new(200),
+            report_schedule_store: ReportScheduleStore::new(100),
         };
         crate::persistence::hydrate_runtime_state(&mut state);
         state

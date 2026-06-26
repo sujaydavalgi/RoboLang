@@ -496,6 +496,12 @@
         "responses": { "200": { "description": "Compliance bundle" } }
       }
     },
+    "/v1/compliance/profiles": {
+      "get": {
+        "summary": "Signed compliance profile catalog",
+        "responses": { "200": { "description": "Verified profile templates" } }
+      }
+    },
     "/v1/digital-thread/query": {
       "get": {
         "summary": "Capability-to-device digital thread query",
@@ -531,6 +537,18 @@
           { "name": "profile", "in": "query", "schema": { "type": "string" } }
         ],
         "responses": { "200": { "description": "Report payload" } }
+      }
+    },
+    "/v1/reports/schedules": {
+      "get": {
+        "summary": "List scheduled report deliveries",
+        "security": [{ "bearerAuth": [] }],
+        "responses": { "200": { "description": "Report schedule list" } }
+      },
+      "post": {
+        "summary": "Create scheduled report delivery",
+        "security": [{ "bearerAuth": [] }],
+        "responses": { "200": { "description": "Created schedule" } }
       }
     },
     "/v1/audit/mutations": {

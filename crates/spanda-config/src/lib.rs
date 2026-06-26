@@ -17,6 +17,7 @@ pub mod device_reports;
 pub mod device_tree;
 pub mod discovery_live;
 pub mod discovery_registry;
+pub mod discovery_tls;
 pub mod discovery_transport;
 pub mod drift;
 pub mod error;
@@ -86,6 +87,7 @@ pub use discovery_transport::{
     SubnetDiscoveryTransport,
 };
 pub use discovery_live::default_discovery_subnet;
+pub use discovery_tls::{discovery_tls_policy, discovery_tls_summary, validate_discovery_endpoint};
 pub use drift::{
     append_agent_drift, append_program_drift, detect_agent_drift, detect_config_drift,
     expected_agent_states, format_drift_lines, AgentDriftSnapshot, ConfigDriftReport,
