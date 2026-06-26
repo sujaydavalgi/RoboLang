@@ -79,7 +79,7 @@ Enterprise operations pillars compose existing engines — they do **not** repla
 | 15 | **SRE** | Operate, Observe | Experimental | SLO/SLA, MTTR/MTBF, incident reporting |
 | 16 | **Reporting** | Govern, Audit | Experimental | Fleet, mission, compliance, executive exports (incl. PDF) |
 | 17 | **Compliance** | Verify, Govern, Audit | Experimental | Evidence packs, immutable audit trails |
-| 18 | **APIs** | All | Experimental | REST v1 + OpenAPI; JSON-RPC gateway; native gRPC (tonic) **Experimental** — `--grpc-bind`, Health/GetDashboard/DetectDrift |
+| 18 | **APIs** | All | Experimental | REST v1 + OpenAPI; JSON-RPC gateway; native gRPC (tonic) **Experimental** — `--grpc-bind`, 50 RPCs (full REST parity except `/v1/rpc`) |
 | 19 | **Observability** | Operate, Observe | Experimental | Metrics, logs, traces, events; OTLP export; correlation IDs |
 | 20 | **Digital Thread** | Build → Retire | Experimental | End-to-end traceability chain (v1 query) |
 
@@ -637,19 +637,19 @@ REST and gRPC APIs with **CLI parity** — every `spanda` command maps to an end
 | REST `/v1/*` | **Experimental** |
 | OpenAPI 3.1 | **Experimental** |
 | JSON-RPC gateway | **Experimental** (`POST /v1/rpc`) |
-| Native gRPC (tonic) | **Planned** |
+| Native gRPC (tonic) | **Experimental** | 50 RPCs; `--grpc-bind` |
 | API versioning | `/v1/` prefix; breaking changes require `/v2/` |
 
 ### 6.19 Observability
 
 | Signal | Status | Integration |
 |--------|--------|-------------|
-| Metrics | **Planned** | OTLP metrics export |
+| Metrics | **Experimental** | OTLP metrics preview/export (`GET/POST /v1/observability/otlp/metrics`) |
 | Logs | **Experimental** | trace log + structured audit |
-| Traces | **Experimental** | OTLP export to Jaeger; correlation IDs (`X-Correlation-ID`) |
+| Traces | **Experimental** | OTLP export to Jaeger; correlation IDs (`X-Correlation-ID`); HA trace log persistence |
 | Events | **Experimental** | telemetry store + alerting |
 | Health / Readiness | **Experimental** | Control Center + SRE rollup |
-| Distributed tracing | **Planned** | backend package (`spanda-otel-collector`) |
+| Distributed tracing | **Experimental** | `spanda-otel-collector` package + `SPANDA_OTEL_COLLECTOR_URL`; `GET /v1/observability/backend` |
 | OpenTelemetry | **Experimental** | `POST /v1/observability/otlp/export` |
 
 ### 6.20 Digital Thread

@@ -139,7 +139,7 @@ Full analysis: [enterprise-operations-roadmap.md](./enterprise-operations-roadma
 | 16 | Reporting (fleet, mission, compliance exports) | LATER | **Experimental** — markdown/PDF/JSON exports via `/v1/reports/export` / **Planned** (scheduled reports) |
 | 17 | Compliance (evidence packs) | LATER | **Experimental** — `GET /v1/compliance/export` |
 | 18 | APIs (REST + gRPC CLI parity) | NEXT | **Experimental** — REST v1 + OpenAPI; tonic gRPC expanding (9 RPCs; full CLI parity **Planned**) |
-| 19 | Observability (OTel, traces, correlation) | NEXT | **Experimental** — trace log, OTLP export, correlation IDs / **Planned** (distributed tracing backend) |
+| 19 | Observability (OTel, traces, correlation) | NEXT | **Experimental** — trace log, OTLP export, correlation IDs, `spanda-otel-collector` backend wiring |
 | 20 | Digital Thread (requirement → retirement) | LATER | **Experimental** — `GET /v1/digital-thread/query` v1 / **Future** (full lifecycle graph UI) |
 
 ### Priority horizons
