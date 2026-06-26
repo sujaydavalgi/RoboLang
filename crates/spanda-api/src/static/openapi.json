@@ -430,6 +430,13 @@
         "responses": { "200": { "description": "Incident resolved" } }
       }
     },
+    "/v1/integrations/pagerduty/webhook": {
+      "post": {
+        "summary": "PagerDuty inbound incident sync (acknowledge/resolve)",
+        "security": [{ "bearerAuth": [] }],
+        "responses": { "200": { "description": "Incident synced" } }
+      }
+    },
     "/v1/observability/traces": {
       "get": {
         "summary": "Recent API trace records (OTLP-compatible export path)",
@@ -494,7 +501,8 @@
         "summary": "Capability-to-device digital thread query",
         "parameters": [
           { "name": "capability", "in": "query", "schema": { "type": "string" } },
-          { "name": "device_id", "in": "query", "schema": { "type": "string" } }
+          { "name": "device_id", "in": "query", "schema": { "type": "string" } },
+          { "name": "lifecycle_phase", "in": "query", "schema": { "type": "string", "enum": ["requirement", "design", "deploy", "operate", "retire"] } }
         ],
         "responses": { "200": { "description": "Digital thread report with graph" } }
       }

@@ -85,6 +85,14 @@ impl AlertDispatcher {
     }
 
     pub fn dispatch(&self, alert: &mut Alert) -> Vec<String> {
+        self.dispatch_with_incident(alert, None)
+    }
+
+    pub fn dispatch_with_incident(
+        &self,
+        alert: &mut Alert,
+        incident_id: Option<&str>,
+    ) -> Vec<String> {
         let mut delivered = Vec::new();
         for channel in &self.channels {
             match channel {
@@ -99,7 +107,8 @@ impl AlertDispatcher {
                     }
                 }
                 AlertChannel::PagerDuty { url, routing_key } => {
-                    let body = crate::pagerduty::pagerduty_events_payload(alert, routing_key);
+                    let body =
+                        crate::pagerduty::pagerduty_events_payload(alert, routing_key, incident_id);
                     if send_webhook_body(url, &body).is_ok() {
                         delivered.push(format!("pagerduty:{url}"));
                     }

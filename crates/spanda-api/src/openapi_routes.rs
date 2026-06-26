@@ -262,4 +262,8 @@ pub const REST_V1_ROUTES: &[ApiRoute] = &[
         method: "GET",
         path: "/v1/reports/export",
     },
+    ApiRoute {
+        method: "POST",
+        path: "/v1/integrations/pagerduty/webhook",
+    },
 ];

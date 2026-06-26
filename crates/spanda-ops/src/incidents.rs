@@ -39,6 +39,8 @@ pub struct Incident {
     pub resolved_at_ms: Option<f64>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub assignee: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub pagerduty_dedup_key: Option<String>,
 }
 
 /// Ring buffer of incidents for Control Center SRE workflow.
@@ -99,6 +101,7 @@ impl IncidentStore {
             acknowledged_at_ms: None,
             resolved_at_ms: None,
             assignee: None,
+            pagerduty_dedup_key: None,
         };
         self.push(incident.clone());
         incident
@@ -120,6 +123,34 @@ impl IncidentStore {
         incident.status = IncidentStatus::Resolved;
         incident.resolved_at_ms = Some(now_ms());
         Some(incident.clone())
+    }
+
+    fn find_mut_by_ref(&mut self, incident_ref: &str) -> Option<&mut Incident> {
+        self.incidents.iter_mut().find(|incident| {
+            incident.id == incident_ref
+                || incident
+                    .pagerduty_dedup_key
+                    .as_deref()
+                    .is_some_and(|key| key == incident_ref)
+                || incident
+                    .source_alert_id
+                    .as_deref()
+                    .is_some_and(|key| key == incident_ref)
+        })
+    }
+
+    pub fn acknowledge_by_ref(
+        &mut self,
+        incident_ref: &str,
+        assignee: Option<String>,
+    ) -> Option<Incident> {
+        let incident_id = self.find_mut_by_ref(incident_ref)?.id.clone();
+        self.acknowledge(&incident_id, assignee)
+    }
+
+    pub fn resolve_by_ref(&mut self, incident_ref: &str) -> Option<Incident> {
+        let incident_id = self.find_mut_by_ref(incident_ref)?.id.clone();
+        self.resolve(&incident_id)
     }
 
     pub fn open_count(&self) -> usize {
@@ -169,12 +200,17 @@ impl IncidentStore {
             crate::alerting::AlertSeverity::Warning => IncidentSeverity::Warning,
             crate::alerting::AlertSeverity::Info => IncidentSeverity::Info,
         };
-        Some(self.create(
+        let incident = self.create(
             format!("Alert: {:?}", alert.alert_type),
             alert.message.clone(),
             severity,
             Some(alert.id.clone()),
-        ))
+        );
+        if let Some(stored) = self.get_mut(&incident.id) {
+            stored.pagerduty_dedup_key = Some(alert.id.clone());
+            return Some(stored.clone());
+        }
+        Some(incident)
     }
 }
 

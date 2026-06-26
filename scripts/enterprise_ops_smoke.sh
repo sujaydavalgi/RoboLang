@@ -291,6 +291,12 @@ INCIDENT_RESPONSE=$(curl -sf -X POST \
   "http://${BIND}/v1/sre/incidents")
 echo "$INCIDENT_RESPONSE" | grep -q '"ok":true'
 INCIDENT_ID=$(echo "$INCIDENT_RESPONSE" | python3 -c 'import json,sys; print(json.load(sys.stdin)["incident"]["id"])')
+echo "== E3 POST /v1/integrations/pagerduty/webhook =="
+curl -sf -X POST \
+  -H "Authorization: Bearer ${SPANDA_API_KEY}" \
+  -H "Content-Type: application/json" \
+  -d "{\"event\":\"incident.acknowledged\",\"incident_id\":\"${INCIDENT_ID}\",\"assignee\":\"pagerduty\"}" \
+  "http://${BIND}/v1/integrations/pagerduty/webhook" | grep -q '"ok":true'
 curl -sf -X POST \
   -H "Authorization: Bearer ${SPANDA_API_KEY}" \
   -H "Content-Type: application/json" \
@@ -348,6 +354,7 @@ curl -sf -H "Authorization: Bearer ${SPANDA_API_KEY}" \
 
 echo "== E4 GET /v1/digital-thread/query =="
 fetch "/v1/digital-thread/query" | grep -q matched_node_count
+fetch "/v1/digital-thread/query?lifecycle_phase=design" | grep -q lifecycle_rows
 
 echo "== E4 GET /v1/executive/scorecard =="
 fetch /v1/executive/scorecard | grep -q overall_score

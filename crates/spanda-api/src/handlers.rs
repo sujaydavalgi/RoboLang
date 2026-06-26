@@ -260,6 +260,14 @@ pub fn handle_request(
         ("/v1/ota/execute", "POST") => e3::ota_execute(&request.body, ctx.as_ref()),
         ("/v1/trust/package", "GET") => e3::trust_package(query),
         ("/v1/sre/summary", "GET") => e3::sre_summary(state),
+        ("/v1/integrations/pagerduty/webhook", "POST") => {
+            crate::integrations::pagerduty_webhook(
+                state,
+                &request.body,
+                &parse_header_pairs(raw_headers),
+                ctx.as_ref(),
+            )
+        }
         ("/v1/observability/traces", "GET") => e3::observability_traces(state),
         ("/v1/observability/otlp/traces", "GET") => observability::otlp_traces_preview(state),
         ("/v1/observability/otlp/metrics", "GET") => observability::otlp_metrics_preview(state),
@@ -412,9 +420,12 @@ fn alerts_list(state: &ControlCenterState) -> HttpResponse {
 }
 
 pub(crate) fn record_alert(state: &mut ControlCenterState, mut alert: Alert) {
-    state.alert_dispatcher.dispatch(&mut alert);
+    let incident = state.incident_store.maybe_open_from_alert(&alert);
+    let incident_id = incident.as_ref().map(|value| value.id.as_str());
+    state
+        .alert_dispatcher
+        .dispatch_with_incident(&mut alert, incident_id);
     state.alert_store.push(alert.clone());
-    let _ = state.incident_store.maybe_open_from_alert(&alert);
     let _ = crate::persistence::persist_runtime_state(state);
 }
 
@@ -1103,6 +1114,16 @@ pub(crate) fn parse_query(query: &str) -> std::collections::HashMap<String, Stri
         }
     }
     map
+}
+
+pub(crate) fn parse_header_pairs(raw_headers: &str) -> Vec<(String, String)> {
+    raw_headers
+        .lines()
+        .filter_map(|line| {
+            let (name, value) = line.split_once(':')?;
+            Some((name.trim().to_string(), value.trim().to_string()))
+        })
+        .collect()
 }
 
 pub(crate) fn json_ok<T: Serialize>(value: &T) -> HttpResponse {

@@ -332,10 +332,12 @@ pub fn sre_incident_ack(
     let Some(incident) = state.incident_store.acknowledge(incident_id, assignee) else {
         return bad_request("incident not found or already resolved");
     };
+    let pagerduty_sync = spanda_ops::pagerduty::sync_incident_status_to_pagerduty(&incident, "acknowledge");
     let _ = crate::persistence::persist_runtime_state(state);
     json_ok(&serde_json::json!({
         "ok": true,
         "incident": incident,
+        "pagerduty_sync": pagerduty_sync,
     }))
 }
 
@@ -350,10 +352,12 @@ pub fn sre_incident_resolve(
     let Some(incident) = state.incident_store.resolve(incident_id) else {
         return bad_request("incident not found");
     };
+    let pagerduty_sync = spanda_ops::pagerduty::sync_incident_status_to_pagerduty(&incident, "resolve");
     let _ = crate::persistence::persist_runtime_state(state);
     json_ok(&serde_json::json!({
         "ok": true,
         "incident": incident,
+        "pagerduty_sync": pagerduty_sync,
     }))
 }
 
