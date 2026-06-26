@@ -1,0 +1,44 @@
+[
+  {
+    "name": "spanda-trust-jetson",
+    "description": "Jetson secure boot and attestation contract stubs",
+    "versions": [
+      "0.1.0"
+    ],
+    "category": "hardware",
+    "license": "Apache-2.0",
+    "import_paths": [
+      "trust.jetson"
+    ],
+    "version_checksums": {
+      "0.1.0": "6a646fceaf273140c5d66aa6b7b55a978fff18ea5f1888c8f3ca5a68a17d91f9"
+    },
+    "version_signatures": {
+      "0.1.0": {
+        "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
+        "signature": "f2a14fa36a7dba9c9bb510bc04fb94fae686cf331e31a0f79f56e423f4e18cd06b7f64597eeec170491091104e9ea493f4418e2e2adcab024e4ffc9892839606"
+      }
+    }
+  },
+  {
+    "name": "spanda-trust-pi",
+    "description": "Raspberry Pi secure boot and attestation contract stubs",
+    "versions": [
+      "0.1.0"
+    ],
+    "category": "hardware",
+    "license": "Apache-2.0",
+    "import_paths": [
+      "trust.pi"
+    ],
+    "version_checksums": {
+      "0.1.0": "7fbc4429225452353cc9ed0ef3a7d64b57b5a18cbd27551501d16e7d77461a20"
+    },
+    "version_signatures": {
+      "0.1.0": {
+        "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
+        "signature": "113f9b7525b99d90acc6683305aa27317f3392cc91bdf38308228b0ea88a95839ce59a6b57732a2b9344d966d8a26632deb6c7b1e89b1f57fc3d323eca658105"
+      }
+    }
+  }
+]

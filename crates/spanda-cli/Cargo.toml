@@ -4,6 +4,7 @@ version.workspace = true
 include = [
     "src/**/*",
     "bundled-examples/**/*",
+    "bundled-registry/**/*",
     "Cargo.toml",
     "README.md",
 ]
