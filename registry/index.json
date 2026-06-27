@@ -1,22 +1,85 @@
 [
   {
-    "name": "spanda-anthropic",
-    "description": "Anthropic Claude live AI provider (stub + bridge)",
+    "name": "spanda-alert-escalation",
+    "description": "On-call rotation and alert escalation policy templates for Spanda Control Center",
     "versions": [
       "0.1.0"
     ],
-    "category": "ai",
+    "category": "robotics",
     "license": "Apache-2.0",
     "import_paths": [
-      "ai.anthropic"
+      "alerting.escalation"
     ],
     "version_checksums": {
-      "0.1.0": "cf45e60e8deb36195f8e35d39d28d6ee2a19550ffe40c1b5d99444dd39c97f73"
+      "0.1.0": "bac90f5231826454cf423fc8c29a0c5e94c2c90dc4e2ce08369149d3bb3d192a"
     },
     "version_signatures": {
       "0.1.0": {
         "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
-        "signature": "c667908f05ff34f337571ec14a3a8447dbec30f16d0eb3449f06263e9d123cee6aed1f3ac715c49bf9e01d7ef22ee0863ea9e05f63bdcd52440984419b9a9d0c"
+        "signature": "5109f7c8aaab72cb0dd1b8290d38945331426f9c77abcc1dbc8cf2af987ae750e63f140811d5efd720fa9932c841502d2a65ed415b9589b6700178c85aac150a"
+      }
+    }
+  },
+  {
+    "name": "spanda-alert-pagerduty",
+    "description": "PagerDuty Events API v2 alert channel for Spanda Control Center",
+    "versions": [
+      "0.1.0"
+    ],
+    "category": "robotics",
+    "license": "Apache-2.0",
+    "import_paths": [
+      "alerting.pagerduty"
+    ],
+    "version_checksums": {
+      "0.1.0": "84f3611ef89c7143234b849f8d20738c709b5b3bda40acea85c4867baa17d0e5"
+    },
+    "version_signatures": {
+      "0.1.0": {
+        "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
+        "signature": "a58789650f8966323af89814fd01e066eddede22b76b8936c0addf39028fb3aed3962327720c730d5243f9ce4f77fdd85ec57c831788a7a0abba7cc5cd48d80b"
+      }
+    }
+  },
+  {
+    "name": "spanda-alert-slack",
+    "description": "Slack incoming-webhook alert channel for Spanda Control Center",
+    "versions": [
+      "0.1.0"
+    ],
+    "category": "robotics",
+    "license": "Apache-2.0",
+    "import_paths": [
+      "alerting.slack"
+    ],
+    "version_checksums": {
+      "0.1.0": "dd0f6bfbb96981bfcc04e3bbc1d0d26c5746481ca18acd53310efb140212ba83"
+    },
+    "version_signatures": {
+      "0.1.0": {
+        "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
+        "signature": "90212cf006e278f7aa1961f87e9c84576c76bd6072c15ceddf07b050f120133459e1cba1de96f1bf1438c711134d064dc4916e901ad1f947814f6664e6c0fa07"
+      }
+    }
+  },
+  {
+    "name": "spanda-alert-teams",
+    "description": "Microsoft Teams incoming-webhook alert channel for Spanda Control Center",
+    "versions": [
+      "0.1.0"
+    ],
+    "category": "robotics",
+    "license": "Apache-2.0",
+    "import_paths": [
+      "alerting.teams"
+    ],
+    "version_checksums": {
+      "0.1.0": "1b90a98a6f3043b76546c8423342ea9d869df55e142fac584ea09afe8b9917ef"
+    },
+    "version_signatures": {
+      "0.1.0": {
+        "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
+        "signature": "c00546819ab65155f6dd53ce42f607b4dbd679ada2cf659e767e7f7bc4f1de141d42db6b6377fb9eb0e04da0fdec1eb468f270aa4d5b35b50e219ce784f31a02"
       }
     }
   },
@@ -32,12 +95,33 @@
       "assurance.anomaly"
     ],
     "version_checksums": {
-      "0.1.0": "89b07168e5736ef012db2878ea03ecd626b00b02e46eb177d5f68c3300fa577c"
+      "0.1.0": "c1df4157958aed541ef485a98d195b539aab96a7c73e96113097fa1e9115262b"
     },
     "version_signatures": {
       "0.1.0": {
         "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
-        "signature": "27049b3bf263a094541a37d45c92248a67900a0bd7029cbbc08572f075d80d54789a7026167c52749608ae0651ffe4c223491b1f8c781b0f4ed7a2c45cf7e702"
+        "signature": "93fdab4aeb7f18328dfb1464166b0dc38c8d1428a0103c169f400ffe15473ab4dc6ab42b5c0fb6ce6f87e513b6819c1b32ef788cb9b4839d5c1b4b5703a1dc00"
+      }
+    }
+  },
+  {
+    "name": "spanda-anthropic",
+    "description": "Anthropic Claude live AI provider (stub + bridge)",
+    "versions": [
+      "0.1.0"
+    ],
+    "category": "ai",
+    "license": "Apache-2.0",
+    "import_paths": [
+      "ai.anthropic"
+    ],
+    "version_checksums": {
+      "0.1.0": "9eefdf94684e6f92dcc07a7d05aa7ca61dabbf408691d9d904f41dcdc8f2bc42"
+    },
+    "version_signatures": {
+      "0.1.0": {
+        "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
+        "signature": "be78abc70ff3a4261578d0433d388e528b937e6856b8f447817ebb34dd7bc7e1f42c0a26f047ab66d6a277f10612f49e87bdfd0e867d43ace4af5e0f4efb950d"
       }
     }
   },
@@ -53,12 +137,33 @@
       "assurance.evidence"
     ],
     "version_checksums": {
-      "0.1.0": "7785a25e7fb39a0e555eaf543cf8e2b26288877b20ce5b534aee3ceb0847370c"
+      "0.1.0": "10dd47c354feb1d59e5ae9f1e0482c3f69ad8f10f0d3c8a88b3e9b317507902b"
     },
     "version_signatures": {
       "0.1.0": {
         "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
-        "signature": "aed2573567ab457f9dbae24d22fe97bfb41d5b9e3f147e8381f243093612668a3a8aa2e58f9d85f89c4c382c03b8ad6e7932a1e10d37f7807ec3f67d33ad9803"
+        "signature": "4f779ef60c45fa3dcf6775afc82f2b1b30519505e3cc31565a0dd88f4150a1a63d119409ee06dc3620ecc017d4695a12376dab9cdb7f3bc57d1b0e823b17810c"
+      }
+    }
+  },
+  {
+    "name": "spanda-audit-siem",
+    "description": "SIEM export adapter for Spanda Control Center mutation audit trail",
+    "versions": [
+      "0.1.0"
+    ],
+    "category": "observability",
+    "license": "Apache-2.0",
+    "import_paths": [
+      "audit.siem"
+    ],
+    "version_checksums": {
+      "0.1.0": "6e4ebd9869a104ceabdea1df3ff0df4251121a4b760a8f5e6f5c7f7f2a4df27f"
+    },
+    "version_signatures": {
+      "0.1.0": {
+        "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
+        "signature": "c1d68d87e9fce2f42ba65593c4a1d7682ff7c367e0d55e0b04d3308176d35a3b0b57c72041301cae8be50532ef1ac4de0e2a5d3ca5325c972ad5f37fd7d29f06"
       }
     }
   },
@@ -74,12 +179,12 @@
       "connectivity.ble"
     ],
     "version_checksums": {
-      "0.1.0": "2f9ee13403154b0faaf5157a3ee84b689379cf3bee0487e0768ed57357efde3b"
+      "0.1.0": "8bc230c40d0e960663dcc088e2b48e2638251758818f172291bc8c408f224bf1"
     },
     "version_signatures": {
       "0.1.0": {
         "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
-        "signature": "10248dcee17d3a501177f70b39bb57a6648761f38d91f3fa456564daf5ef4b18daaa832f2a747e55202f5acee7de4314248c70f6474b3f0ca86f2b0ea84c4709"
+        "signature": "dee65eb14c72c6e4d033a07dbe765d2c4162f3af990de87a9c764f75114f826388b41f7d8e3b23bc79cd2e7ba388591a86a068cabb359fa0b1d5f5e37952ef0f"
       }
     }
   },
@@ -95,12 +200,12 @@
       "iot.canbus"
     ],
     "version_checksums": {
-      "0.1.0": "cc636efbc3c22bb3fc49a51d42517c363f9cce1a087975a2c6aeb6a14eb89479"
+      "0.1.0": "6c86ab2991a75ac1a6f5fa07ee28127ef696cd6b2e4c4f6ceb47c51ce5e12a5b"
     },
     "version_signatures": {
       "0.1.0": {
         "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
-        "signature": "dc9a9d51e90efbed9ebd27c2c895e3672b3f6088ef80d934254a82eb98bb02af3e679dfccf475035aab74540a1f725fad2098ea872b0007d4d7367d0b25a7c02"
+        "signature": "434058bbfd4009bab55b89afd45227a2be64d3df17fae01486796003b05b1b0570f90400cba0b4a3697f362e25809f31a84a6d9ceb8df127dd9d1ec5d6d1de05"
       }
     }
   },
@@ -116,12 +221,12 @@
       "connectivity.cellular"
     ],
     "version_checksums": {
-      "0.1.0": "32bb9c7e1145931a5ca40b6c1d84c2f1259794184d452db29a1a82a396cb25d4"
+      "0.1.0": "32bea2adefddc6f1424e971ef98b5aa3aa2bde6fe938e923b2ed1cb595cf86c4"
     },
     "version_signatures": {
       "0.1.0": {
         "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
-        "signature": "0a357606fd0186143a31bfde7ae87ae4d4b9ab2c697227eb5fa859ab2a727e768d39891c4babce0b26edebdb2820b0462288a2117933d2a6af4dad075e31e909"
+        "signature": "6306a618ec086a04f8ec9aeb1781ca761b8bbf877913302476a3bc863b50e89e96328c722f2b83e192a28db5e566d7fdd28aa31a8eb964de7ee1846fb4943805"
       }
     }
   },
@@ -137,12 +242,12 @@
       "cloud.remote"
     ],
     "version_checksums": {
-      "0.1.0": "0b356b0ff51eca67ec47429f6c3f0b2a59dde5fa495a325aec13befbbe376cc5"
+      "0.1.0": "8cfbdda09836de35ccbe830d01711d9c763445aabda45af8fd8440a0d78ab046"
     },
     "version_signatures": {
       "0.1.0": {
         "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
-        "signature": "0cea516e133eedad49f133877497d0b75b9d08edf1cd2574596ffb504e0002ba6fd1152da739b0f716f36e0e36c466a7208b7313ccdefae7b8f3ed1ca4d65a08"
+        "signature": "1d7cf106fd00412b0b01203cc4aeda98eb75f1f7fda280b41539b7f0b8df8121a66fee1e98d62989a461bb7bba693ace2076cecd92c3776c9ce8cb25049d5d09"
       }
     }
   },
@@ -158,12 +263,12 @@
       "communication.dds"
     ],
     "version_checksums": {
-      "0.1.0": "56fa3dc13beeb2dfbc3e92c18d756301443ed2e9f07f250aa280f5880769b15e"
+      "0.1.0": "e41ced094d6c61478325e278977161f27bdaf25e68df12dc060905f47a8f9633"
     },
     "version_signatures": {
       "0.1.0": {
         "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
-        "signature": "849cb6d090b2e3b1d0ae7f11883fab156dfac29c443ae4d460cb3e3b5a7d72858a3b78f6b4f4248d47a2cefcc679b644afd5a173123ee5fd6267fcc6d50eae03"
+        "signature": "ec1df4a128c91d3532b2b50d97d37bf9b5307f5ad2067c18328609e63ee9bab48424b4687f2ae57c29ed893ec805e2ebde7797e82dd48fa572c4dc86b49d7403"
       }
     }
   },
@@ -179,12 +284,54 @@
       "assurance.diagnosis"
     ],
     "version_checksums": {
-      "0.1.0": "d07ac6516e21ba60f517fa73026f80e60c29ee59a9e8e140657c8dee6296e0b0"
+      "0.1.0": "9f8c3d22473d5acfdd94aa8cfa8931450146406f1394af5d544159dbbd87c9df"
     },
     "version_signatures": {
       "0.1.0": {
         "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
-        "signature": "5df950e10e05920fa7b6e8f560defe954187f34298d9dd8a52ffd213f4c6ed62054ebdf220915f4e959f74a476b76db961df22fb052d4ce3f26f1bacc573000d"
+        "signature": "e3f7c1810ad46b7fc1ac352272e0515c11d0ad493b72c786fe63e529cf1d50166edb8ef5aca92570b8476ed4b07a3dd240caeaedd7749ab22fbec5409830050a"
+      }
+    }
+  },
+  {
+    "name": "spanda-discovery-ble",
+    "description": "Bluetooth LE device discovery transport for Spanda Control Center",
+    "versions": [
+      "0.1.0"
+    ],
+    "category": "hardware",
+    "license": "Apache-2.0",
+    "import_paths": [
+      "discovery.ble"
+    ],
+    "version_checksums": {
+      "0.1.0": "103176f2bca05d2fcfe7876cc8c64660cedf3ad5e4b5497555a09a8af352451a"
+    },
+    "version_signatures": {
+      "0.1.0": {
+        "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
+        "signature": "5c325798215996b5e255e6e8b9d11e722af5003cded3f0268a8b8b41b0e6410f21e51f43c97d5ceb3d1b7a133ff1731ce6ac8996a693c21e34a486792cabc803"
+      }
+    }
+  },
+  {
+    "name": "spanda-discovery-cellular",
+    "description": "LTE/5G modem discovery transport for Spanda Control Center",
+    "versions": [
+      "0.1.0"
+    ],
+    "category": "hardware",
+    "license": "Apache-2.0",
+    "import_paths": [
+      "discovery.cellular"
+    ],
+    "version_checksums": {
+      "0.1.0": "c1a98bfbb53a62664303ea854e34b6d2f76769a6394c5e277bc1edf10683c748"
+    },
+    "version_signatures": {
+      "0.1.0": {
+        "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
+        "signature": "7850b402dd0e75cb935e47832e7a46f96d09823b0043a71b289b3e50f1557527640843b2c154df45c43741692c9c2b8cf8ff42e4ac7f570b6566fc328dd3fd00"
       }
     }
   },
@@ -200,12 +347,96 @@
       "discovery.mdns"
     ],
     "version_checksums": {
-      "0.1.0": "3aedac721a4edafb4b4ed9a15c0fcdc0c9ed864052c99cfc6991d17e55a0c735"
+      "0.1.0": "e8176ae5c44d7feaac0bd241d2aeec20a46ace07b31f2b6ebc7a597f584c0e7e"
     },
     "version_signatures": {
       "0.1.0": {
         "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
-        "signature": "0de53a4a7476c803a319628d107e5356b8261aa1ee18bce1bb63af3c82c2a736c9e66ab1c8dba2df8537ea28f7ceaa4eddc64b5a9eea54ec27e43456c17bda06"
+        "signature": "b7001bf639abeaab9cc2a811ac0361ddbb7143522f77fa27052f9c6c582fe0ed0892e8368a840db6d7557775a6db9e6db1977d0baff5579fcf5ba86c1d307604"
+      }
+    }
+  },
+  {
+    "name": "spanda-discovery-serial",
+    "description": "Serial port discovery transport for Spanda Control Center",
+    "versions": [
+      "0.1.0"
+    ],
+    "category": "hardware",
+    "license": "Apache-2.0",
+    "import_paths": [
+      "discovery.serial"
+    ],
+    "version_checksums": {
+      "0.1.0": "cbb7cb4ec3c1b6853f6467b8f4910a5a723c0e4e49919be2b5166bdfacd7cfbc"
+    },
+    "version_signatures": {
+      "0.1.0": {
+        "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
+        "signature": "e1be1a10dd0f20fe930400393a1571f05317a3ffa9c3dbc1980ea30a45504da3bf902fe12cc5c7939bc3387cdbef93405e5b687b43d89607e490661dff30380d"
+      }
+    }
+  },
+  {
+    "name": "spanda-discovery-tls",
+    "description": "Production TLS certificate policy for Spanda discovery transports",
+    "versions": [
+      "0.1.0"
+    ],
+    "category": "hardware",
+    "license": "Apache-2.0",
+    "import_paths": [
+      "discovery.tls"
+    ],
+    "version_checksums": {
+      "0.1.0": "a4f1ae9780f21f8a6850c713a18e4e26d15915e617a9933809c0320215c918fd"
+    },
+    "version_signatures": {
+      "0.1.0": {
+        "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
+        "signature": "bfda6bd96ebd9ad3b52181e77b77c2cc4ee7ee42cc36c922046d054cdeb9856f0dd6f8b514ce72f9ba87bb0357780a06042414c6e1bb84b1374dcc7aded74107"
+      }
+    }
+  },
+  {
+    "name": "spanda-discovery-usb",
+    "description": "USB device discovery transport for Spanda Control Center",
+    "versions": [
+      "0.1.0"
+    ],
+    "category": "hardware",
+    "license": "Apache-2.0",
+    "import_paths": [
+      "discovery.usb"
+    ],
+    "version_checksums": {
+      "0.1.0": "bcdfa3c503b28da749b1d82b5c8712bac5ba4d52bbfe60bcbe3946a23b1fcadf"
+    },
+    "version_signatures": {
+      "0.1.0": {
+        "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
+        "signature": "824f14fb6c2ed6901b9d73c4f33c51d1d47d1257dc256e8e579dfecaae96081751dc67079807644bbe369a12b4c6f0ff1e0a14b38b8a3529c15cb1f7ed0cf50f"
+      }
+    }
+  },
+  {
+    "name": "spanda-discovery-wifi",
+    "description": "WiFi subnet discovery transport for Spanda Control Center",
+    "versions": [
+      "0.1.0"
+    ],
+    "category": "hardware",
+    "license": "Apache-2.0",
+    "import_paths": [
+      "discovery.wifi"
+    ],
+    "version_checksums": {
+      "0.1.0": "76b18123e4323db060865f296e5e4367f001cee9e4bf4d852a9215c7960ada55"
+    },
+    "version_signatures": {
+      "0.1.0": {
+        "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
+        "signature": "dfde581a50cb78729c7d9120ae639a45e4ff2fbd2aa7d66c10e81ee1becb3f23bddf0de8e6cce6be055a41cc684cb1c0afe8bb292c70df299931b883a8998601"
       }
     }
   },
@@ -221,12 +452,12 @@
       "robotics.fleet"
     ],
     "version_checksums": {
-      "0.1.0": "f35e45a5c30ed83986c1fe2ee2d7b936b16833bad82fd1be2e78c1040ba39f72"
+      "0.1.0": "6062d32420c16580f431571073ae3c56875274548c2fdea3fc5685dd18d0c3ee"
     },
     "version_signatures": {
       "0.1.0": {
         "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
-        "signature": "a1e1b74234015542ddcb4f82db1f8b3b2ab2a63ed413160ae63bb387b1de8878c890b6532f57243ef876b28a4ecf0abd7ef165dbe7696b0d7780d5bb01075303"
+        "signature": "681bfc105cf65eb2b3f9d8a779484ad92e20b8e8f64df309f1c023ab6ba7970622d05739f82b1a87ed261dc869ecb3869cca0999e50c4f07a2ca6f5e8bccfe0f"
       }
     }
   },
@@ -242,12 +473,12 @@
       "assurance.fusion"
     ],
     "version_checksums": {
-      "0.1.0": "605a2359ff23381706c63c44536de6062f157c9b4957dd9dc28be364ff4e651b"
+      "0.1.0": "eaf0f01fea93750268301fbe8ad297c6ec451a307bcea58988ba9ad79b1d9105"
     },
     "version_signatures": {
       "0.1.0": {
         "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
-        "signature": "7c1d4fd439b7254c42d95998e6def31ffb09d00d32bd04a70ebb7b6c42a847dbc0a1f7cbe92c3b7ea8a8289d748448b19485198baf265661ea2dd8ed804b640d"
+        "signature": "a91aa31de452a66e745c720cde470c46ba812450bd44afde0124af73fe2677a17fb7484cff5c60f685e62d25e78fa55af0830a1c725783e7b4756f0ac2c27401"
       }
     }
   },
@@ -263,12 +494,12 @@
       "sim.gazebo"
     ],
     "version_checksums": {
-      "0.1.0": "cbdfe2984664d61e9eb98c4443cc53559ac603bbb66ce9d2c593275db20c3e28"
+      "0.1.0": "64bdd3ac0787a3a18e1c92afd7c09651ba82d740cea2131453d40394dc5d3769"
     },
     "version_signatures": {
       "0.1.0": {
         "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
-        "signature": "d7521b80fa811ecd4b892a1867b8515c9f34ae23e0bd6e9d16822d57b711f23dfa7b157e3c5c825d6b95182be356647fc5253a28073eedd2ab286361aab45602"
+        "signature": "dbb6eacb23fc7fe515930f8eb1952969bad3796a86e715df3fa172e8acee30452c7822a551931b28482217d9e39daf7687ae715c3205ca171948e102d1165300"
       }
     }
   },
@@ -284,12 +515,33 @@
       "positioning.gps"
     ],
     "version_checksums": {
-      "0.1.0": "e3104835e5c386f7dd129e06b985b987b309f0c58f5a04516548d08572feab8c"
+      "0.1.0": "6e63d96ce65a5d14ea0719707f8008153dfbdeecc9d2cd4241466a580f08b670"
     },
     "version_signatures": {
       "0.1.0": {
         "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
-        "signature": "ebd89443c8b18d2d245a6c09e106c10d90c1b7e501922b15eea721757abfa7fb6f4b161c83b547ab165fbfc22a3a438c5de74d9872be5f621159d544cf786e0a"
+        "signature": "018d05a5cee8908bb97392595e383e485d7c4b01bc4b7732706513f9fb1fc3209021a7cd27be8721c2e60f0ceb14b7dcd02b2574f937390d3f7d0cbbd54a8b0b"
+      }
+    }
+  },
+  {
+    "name": "spanda-grafana-dashboards",
+    "description": "Grafana dashboard templates for Spanda Control Center SRE and OTA metrics",
+    "versions": [
+      "0.1.0"
+    ],
+    "category": "observability",
+    "license": "Apache-2.0",
+    "import_paths": [
+      "observability.grafana"
+    ],
+    "version_checksums": {
+      "0.1.0": "ebbb0ad4335b39536b94ae25eb04760db1bae18ddcc7dabdc99965ec81ce5100"
+    },
+    "version_signatures": {
+      "0.1.0": {
+        "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
+        "signature": "0635de2411ee71985d28119f8e94a62330082d3d5853d0698feef9a9d3a004bc00eba8a6b873fdf5f923eea3d61cf63be46f753ab06fbaf00b5ba0129b71ba07"
       }
     }
   },
@@ -308,12 +560,12 @@
       "iot.shadow"
     ],
     "version_checksums": {
-      "0.1.0": "87b2bfc1acabd3c3341434c8175661db344f4d9942925cd060e80082f3d91db1"
+      "0.1.0": "fa849b5dbf3b513a7773245726c5edd5179d6eaa9ede893bfc30dd87863747cf"
     },
     "version_signatures": {
       "0.1.0": {
         "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
-        "signature": "22861e27fb3303e243fdaf9f8ba3f6b89855521963a2a30ee8a0448468f57861ee1b2cb86e3fb8e2bf6a14af5c89d0abf5cad67e244c5570b8c60702334a5a08"
+        "signature": "b0db59611283217af06dfbc740313691b0ae681d9a32bcebe5f0c76cbbc2e38f4a34f051dec9dd143819478518fb770ac2359dc4e4177f7946d1ba158a73b005"
       }
     }
   },
@@ -329,12 +581,12 @@
       "assurance.knowledge"
     ],
     "version_checksums": {
-      "0.1.0": "c1bc3f4c0fa7c2744f2f35a94af3e98d3adffceea5a6d817026f48d021597e78"
+      "0.1.0": "18620c60248eb0f23151b9059a0ef62ecbf363abb72c555606d82250e5c31a0d"
     },
     "version_signatures": {
       "0.1.0": {
         "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
-        "signature": "8bb6d0a7c36638399bdc9b803b53e84a340fe7d88a0e7da575cdb35da71f26b2717bf953bc161d74b19d4e588a5e0ff44af38e86faee27745fa28e48755b2602"
+        "signature": "78391cb6316eca53b2e0a74649704125ef87e494aca129dc00991710446bcadf8702851d2a6bf52cb7cc5c633429f9a14919438a3762ecf419e6171a027ab80e"
       }
     }
   },
@@ -350,12 +602,12 @@
       "provenance.ledger"
     ],
     "version_checksums": {
-      "0.1.0": "b86744fa9f8ab500123905ca96de9219ceda2c6e6e79507395edb0068077d5be"
+      "0.1.0": "3a014a94fc25ec1ce60eb6c98216c03252953c4739bdb2cab42f30a55ca8f4c2"
     },
     "version_signatures": {
       "0.1.0": {
         "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
-        "signature": "881d0bc9f5c572c505a085325589f50806525b5c7b76ae3a9db82bfa40fa0482bc67d7990da924f698c9ed9838284186b8437dc1834f6af2a3f724d3a76ed602"
+        "signature": "073faf958852c7dda3c1c9c9df107292e7f0a941c383ef358c43104d706facd71f3a2340c70c26044a9ae0e15a4cde3750311e96e855c67a9a0122926ed2d70f"
       }
     }
   },
@@ -371,12 +623,12 @@
       "iot.lora"
     ],
     "version_checksums": {
-      "0.1.0": "96d3394eebd0c1de872f4e3cdbed0ac84f67939649890a56499a582321d670a8"
+      "0.1.0": "59ce6700a0ccd2f3de00b2aa8820467b6100a79d10784a8fb457970fd5609821"
     },
     "version_signatures": {
       "0.1.0": {
         "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
-        "signature": "84049c214bcdc1b73b8b2709e8116d84be56c7d6d1a8d54d6273ca12117d76c70fb556b2b26e47f319fff27a2159458cb04f312a925dcc77cb156a22860a7001"
+        "signature": "2e5d6a30ffaceef25a31b042893258573d6b15ef52eb816d18b13ad677ab11855c6cea1fed6afc532e85ed5615cb9637a7c62d2c2344b7b7c0ce23936d21160b"
       }
     }
   },
@@ -392,12 +644,12 @@
       "maintenance.health"
     ],
     "version_checksums": {
-      "0.1.0": "6bf00bfee590e620726ccbfa44c8ebd75b0a8f9fee8141370c9a818c10ce89ba"
+      "0.1.0": "015a743cfe011c267a851d533b6fa201cb5eeda0b93b4b0393e9e9f25bbf6c20"
     },
     "version_signatures": {
       "0.1.0": {
         "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
-        "signature": "000c18281a5f91a60b75dc2bcbe145f7abc1cb7c0fbc3907e5a568d00b995e96f3cf2d02a32f072a199a6c1b7f218dff76d8fecdbca9bbe3ec8ba19402b86401"
+        "signature": "99e5c349c7ea7bdd1eb1af251971ce6e5fcf8ec89ae312971cdb82a47c55a35c363b3e0b8e5a94aa278bc9d0dbc076f7c80013fe14d11d8731cc07e65d23dd02"
       }
     }
   },
@@ -413,33 +665,12 @@
       "iot.matter"
     ],
     "version_checksums": {
-      "0.1.0": "b6eb623e6fa3322b3d15d67acb51c912e138a68397019088aa4ed724df9f9807"
+      "0.1.0": "38c0f422556c8dbd82861214127263309c4b0aeaf90f2664a0d786baa86f8564"
     },
     "version_signatures": {
       "0.1.0": {
         "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
-        "signature": "783aa19ead30b65c6bcfc60b743304bcff04798e64ba73850dcd6d627bb81bffeb6e8127f75eba87e7d43875ef19caf57ed4ecaff21779992ea57201e5144608"
-      }
-    }
-  },
-  {
-    "name": "spanda-mission-planning",
-    "description": "Mission planning and execution assurance",
-    "versions": [
-      "0.1.0"
-    ],
-    "category": "robotics",
-    "license": "Apache-2.0",
-    "import_paths": [
-      "assurance.mission"
-    ],
-    "version_checksums": {
-      "0.1.0": "617c47e5f31cc71670b963dfe09fdd51dcbbd85ae02d5816930954a6cdcf7aad"
-    },
-    "version_signatures": {
-      "0.1.0": {
-        "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
-        "signature": "a55ae886560e990c5185c1eb34f15c12f164d61cc6586bba0ba6e810858933a3dacc71fbd5cfd50cc6fd0f32f346a89da7b422e19ce5797836cf470cc5b8e10e"
+        "signature": "be4e26e09608831c15e417df1d9c669b533b84625b726514a0adfc432f1f60882030d9350d9e650dd875e6d245759d555789559eb4ad3ac8ce2db9e08adbf301"
       }
     }
   },
@@ -455,12 +686,33 @@
       "assurance.continuity"
     ],
     "version_checksums": {
-      "0.1.0": "2ac6a7abd554e57397c63f27591163c846fe4db6f18ad693470f86ec11ec3f1f"
+      "0.1.0": "1b168d98c439746080a93c7a94fcbacf4832f6fc5dcc63826e7ace0283bf9e17"
     },
     "version_signatures": {
       "0.1.0": {
         "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
-        "signature": "9160eb788cf42376b94f8a57dd8f7e8ca9dd78d9415135b8cd81e464b9bd37521b620e877fc76c4e90f9287faf646ab3329d9d1fb43d80ea1c29ac2ebecb680d"
+        "signature": "64e3628f108172cd6668b57873f0f4372080324b08d329be76c274c4e8172c718563ce0dbf24904d3006827c660f77ad4791ad295403f1958d0deb1fce212f07"
+      }
+    }
+  },
+  {
+    "name": "spanda-mission-planning",
+    "description": "Mission planning and execution assurance",
+    "versions": [
+      "0.1.0"
+    ],
+    "category": "robotics",
+    "license": "Apache-2.0",
+    "import_paths": [
+      "assurance.mission"
+    ],
+    "version_checksums": {
+      "0.1.0": "a93869289bb45687aa7d39675622ca24966dd25896c17efd61fabc1e6815d7e3"
+    },
+    "version_signatures": {
+      "0.1.0": {
+        "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
+        "signature": "fe60c2e1add02ab5f7152e9e83ecde1cc35318b4358f6383f08d7118e8709434bd0948266e28d4b0d6fdf46f63ec8e7b33b1dc876f4eedcc9768c6f729ec7200"
       }
     }
   },
@@ -476,12 +728,12 @@
       "iot.modbus"
     ],
     "version_checksums": {
-      "0.1.0": "6c8a2b7f953177df8f68562a1defa99043fdea7ef59bad31cc7491befe3afa25"
+      "0.1.0": "e0d6cb0f0d8cc091dd94084e236c212bc900ae493c41125e30fcf0f73cabffdd"
     },
     "version_signatures": {
       "0.1.0": {
         "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
-        "signature": "644be5e21685453ac54550d87b72e13b1f31b15675e1a22364a971b34abec08c21a38f8b9088c47abe23f6751637f4ab3c015f65b10c4fab42310be86353160c"
+        "signature": "5ca4c63bc3048325f738a7e2dc711439c98821dae6da6a32107e5fd24863ff3cdcf13e7b8c1c385ae394f2b89fdfb3ffd6cd3553b9970bab7e6783b0a231c60e"
       }
     }
   },
@@ -497,12 +749,12 @@
       "manipulation.moveit"
     ],
     "version_checksums": {
-      "0.1.0": "5fbaff3bb6f027cea9721ed705d655b7f6e6009e4d21f6c1dbc0896e541e9368"
+      "0.1.0": "d868948542f1bc95b2c54248ffefd70a4a2d51d63b98f1bb2e7bd07f51fe86a7"
     },
     "version_signatures": {
       "0.1.0": {
         "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
-        "signature": "b84fa8f4a6f2400a523e81ce987d8c599b513ff8059a9e189f417a1a0a665b4fd668ee977d88af3f6ce7a0a58b7fc7293d83197a1f704dbd10c8047f9e885a05"
+        "signature": "fcab037c0dbe76b171113332f26b61abebd90d04077ea577a236c24b15957d54c237e0a8af12c9651736cabe1d869f6632c64bf6a7c9cbe8c7f34070f379fa09"
       }
     }
   },
@@ -518,12 +770,12 @@
       "communication.mqtt"
     ],
     "version_checksums": {
-      "0.1.0": "ee80c5374656c454b8ebad2becdaec780befb0409ff9d519c149bee9789cda1c"
+      "0.1.0": "c5c7979b626042bd3b2d4e81aef2fd1711f982294057120d275a45e4569d4849"
     },
     "version_signatures": {
       "0.1.0": {
         "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
-        "signature": "7936c6e1c9489c06fb47db79b4b0ba4af3a768ce69263fe7895471ab75f6d0d477ac789783bfcd6f2914018b7281e5881bee69710db8d7d95ce8da995973130c"
+        "signature": "0fdca60c86a7e0700ae7d95cff52d534ed9fb9a03c50b3f123c33c9eea3a10e0d18c248c5806f106755a10cae33756edfc0c537c73e6888114a6337787fe8608"
       }
     }
   },
@@ -539,12 +791,12 @@
       "navigation.path_planning"
     ],
     "version_checksums": {
-      "0.1.0": "f51ca7b1d421bb24c396a552257d64fdc248162418b4865b0d560f65ed285920"
+      "0.1.0": "d4bce74935c4806fc741f62f5d392e490f9b06cafabebb9788f310d85d529018"
     },
     "version_signatures": {
       "0.1.0": {
         "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
-        "signature": "71cf36d5aa51766ac7c7d7e18d35824bf45895b549cb8458fd9b6f28295d7cefa0e7663945dfabfb0c882903899a06498c7da8e8e5eac321041927c06fd15a06"
+        "signature": "6472e029668b07924dc3ff242deeb7a1f57c01ee763e19fd41123757c3fb959d5df8e194474c2863ee1383462c3e56083ecb1c76e06d0282f1a391ff0e544c0b"
       }
     }
   },
@@ -560,12 +812,12 @@
       "ai.onnx"
     ],
     "version_checksums": {
-      "0.1.0": "a182a1ee7488d59c7a3f8ee7ee7a9d67e3f59cc6b45a470a99c4461ffd7bb58e"
+      "0.1.0": "6fbc08fa18577b9b28ee8d6edb52bfa475e9bdf57d61c01c237a08eea11c545b"
     },
     "version_signatures": {
       "0.1.0": {
         "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
-        "signature": "3a31666ae63b0994588cf9ed517626a24171e079fc1df86701e7ca05e4e5e94f09b33b83226e0034cb81ff4c96a88f556c835280698f9076f98eb856e0fa6b0c"
+        "signature": "853d983534611dbaa1d58cad3d46f00759dab2f2f7169e89dc58ecf11d19fd6124b60be7a635ed0a79069234f259a2ea7f2cc7f6278b2a5ff4f3e0f5fe915806"
       }
     }
   },
@@ -581,12 +833,12 @@
       "iot.opcua"
     ],
     "version_checksums": {
-      "0.1.0": "33dade3dab78265d86cc41023592b3dc67a42ff9ba8601a0e211f26af02541e2"
+      "0.1.0": "7c766e0267afd1a71d3608b91e41a8d43f64570bfd407b14288bfb760ed61975"
     },
     "version_signatures": {
       "0.1.0": {
         "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
-        "signature": "2d361423309929cbe301020c9ef8723fcf633479ae6c9a19b46155479c8f5f1169718424d5743d88e19a41a0987304bdc947b2d7876bd9236b5f99806269fb01"
+        "signature": "f4625fef6c506eac64907a9b72fd0d254d75427eda91a9a44a4a746ec3775a04a3461ae39430de7af97a19113e9756d9974b26e0a28a3d7dee19a449b62a1505"
       }
     }
   },
@@ -602,12 +854,12 @@
       "ai.openai"
     ],
     "version_checksums": {
-      "0.1.0": "932bb539855489fb7cb219f6dc7bb1d6e786fbfc5be69b1f5e6e66c604f2d4a8"
+      "0.1.0": "149c2d794bcb0c7e140793cb6d1deb56375da8940867415b400147165a998500"
     },
     "version_signatures": {
       "0.1.0": {
         "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
-        "signature": "2496b33e8b3f430e4a044b40f737555eec8cbf70a1551f323fb46fdda331de2a03fdb9a719ee5a652e3d30ab11174797e59136bfefd5263c59dc936a017cf403"
+        "signature": "92c6276d03440ccc9b6524e3faf416d6fdc7fbc6399b6ed8b04ea9dffad550ff7bff9801abba2d80af800ebbb514f89d12fac2a1c419d20cd9950e830225e808"
       }
     }
   },
@@ -623,12 +875,12 @@
       "vision.opencv"
     ],
     "version_checksums": {
-      "0.1.0": "474236df7ff0a2c14b78bb2ee63bfd7311b94a6d9d1a78a4309ef58b060fa77e"
+      "0.1.0": "dd391579137edfe6b10a42c290fedcc71e729efda788d5f7bdc307e266653504"
     },
     "version_signatures": {
       "0.1.0": {
         "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
-        "signature": "494b274e7b17b4a49a95c410aff1db53ba6e5931a5025e0303283d356d46e74a8db34763dc2b9d1284d3367f110128b678747a5a79c7d1084ebeef504739ae05"
+        "signature": "d9ede0542fe79e76d9b0e30a84f732df2b4730c55ace266223646c29de3dd1681a077d1d1dc91e8aa647610322f128a10aaaf0b42c8f9e63900914bd6d416002"
       }
     }
   },
@@ -644,12 +896,33 @@
       "deploy.ota"
     ],
     "version_checksums": {
-      "0.1.0": "be1a98903fd86004cb2ab3957952ab1e3a35e0f3c6161fcf77b2527a2c3800fa"
+      "0.1.0": "0b7eb9d34a377231367b057e504be7ee6d6e8cfd655c339e399a6cce72456c74"
     },
     "version_signatures": {
       "0.1.0": {
         "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
-        "signature": "821bfa1cd833c2023705b64777c72c3cb0102de6b39a41277f7b950d557f587575b3f44f8453928dd2192066f85711da1e997247367e3c88183cfced40196c04"
+        "signature": "73eaa0ad544037d20452f458c273963cd27cea515d80002f0325fd0cfac0e5cbffc67f1366016a0515ef8640236327d66f68b0c53fb12b4f99bf5746dcc66707"
+      }
+    }
+  },
+  {
+    "name": "spanda-otel-collector",
+    "description": "OpenTelemetry collector integration for Spanda Control Center distributed traces",
+    "versions": [
+      "0.1.0"
+    ],
+    "category": "observability",
+    "license": "Apache-2.0",
+    "import_paths": [
+      "observability.otel"
+    ],
+    "version_checksums": {
+      "0.1.0": "d072e5d7e5982474729e837e3f47a32229be885dbff2beffbeac1c8ef6f90aaa"
+    },
+    "version_signatures": {
+      "0.1.0": {
+        "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
+        "signature": "ac12cecd13a34c7cc2a03b302a37dfccd4f5898c9e8fe74d22c742517f12a4ed01260be5c9ae5f6c1cbe665231fe8e845ad88564e8f90a8b6f80fefc81465e02"
       }
     }
   },
@@ -665,12 +938,12 @@
       "assurance.prognostics"
     ],
     "version_checksums": {
-      "0.1.0": "ef9d1654f7b999b5b13319c9a4f2b784dd507d4c77b329329f3aba379c193ad6"
+      "0.1.0": "04a6fc9bbb31031d4f3b381f373481255dde438c4c2dac5fe9721c7cbffc9015"
     },
     "version_signatures": {
       "0.1.0": {
         "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
-        "signature": "2fd6b0825d1180319950b4a5dd7be8f9a4838b3c2892bb7efb0ab0aaea61b6412c372c88d9db3d27d54ac7ae7a95d6357902c5fd5622e167f722ff00ff55ff01"
+        "signature": "f86aab59298080d4f34fcf6621940eaa3efcd305a1001f0e0a0c9b131b3e5381ab1d804adebfa81fddf760c8f8ee9f15c6f0ea25b42664b7cea89851c3df6502"
       }
     }
   },
@@ -686,12 +959,12 @@
       "assurance.resilience"
     ],
     "version_checksums": {
-      "0.1.0": "62a4f4534c4edf99ced232a5ddeccf3d564d60709128af634bf9e8df54ebcdc5"
+      "0.1.0": "75d9296e606981bbd2a073d3ece0591b66f37f24601e8abe102338a2f0e71f22"
     },
     "version_signatures": {
       "0.1.0": {
         "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
-        "signature": "24169c1e27ccfde0f5e5dc8455595f74d7777f70edc24792281795d8715b81639ae8203c8c7908eadcb0d483e577b58f8fe0c3b17d36564101fa9ca10c13ba05"
+        "signature": "87682094886b30576dbea96d49a9cc21ba1ead63e1d83c27ad4535f37f57e37e0c417ebf30d609517c7ce152520cf757fe57de508ff85362afc6f2091953180d"
       }
     }
   },
@@ -707,12 +980,33 @@
       "robotics.ros2"
     ],
     "version_checksums": {
-      "0.1.0": "b51e8786b35b78cabd9d12a2978462553957f0065417ef89b321d5f7fa5100fd"
+      "0.1.0": "7af127d382e0e6b249b575fb500399eafd0f55118a2a7224749d81da39cbc570"
     },
     "version_signatures": {
       "0.1.0": {
         "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
-        "signature": "1040139ab84ff281677f85528908798aaeef9e13fee7f7baf4fb15172283a5618d0ebb76a2fd81c0b490ffa59ffd405fbbfd10ddf85d668903916ef1c962b905"
+        "signature": "0335a81e151fb5f5ecfb80212cfded230f811a456b84e465ff9b8843482128fbb14d74604e5804fa6eba4434df9754d21eaab66e586e3cabceaef74371a29704"
+      }
+    }
+  },
+  {
+    "name": "spanda-security-audit",
+    "description": "Third-party security audit checklist for Spanda Control Center",
+    "versions": [
+      "0.1.0"
+    ],
+    "category": "observability",
+    "license": "Apache-2.0",
+    "import_paths": [
+      "security.audit"
+    ],
+    "version_checksums": {
+      "0.1.0": "af7dc59000d9208dad18fbc573c04d608b72f3fa66a7c639cb0be3c121c77034"
+    },
+    "version_signatures": {
+      "0.1.0": {
+        "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
+        "signature": "469b68081e9bbb106f6dfe0f151a7b7f1b53d10a29ef044b5434a6f967c76f9fae45e351421b6977dbe8a7645de285a59deb40b675a5db5b9fff52deb0143f09"
       }
     }
   },
@@ -728,96 +1022,12 @@
       "navigation.slam"
     ],
     "version_checksums": {
-      "0.1.0": "5a9e119602ae36ebcb61872499b10ac9c9ea2ee6141da7abbac4350c982b8fb2"
+      "0.1.0": "2183ea4e2e37e5e9f980bcabaeda27d2e435b42cc90339586989309b1c03af40"
     },
     "version_signatures": {
       "0.1.0": {
         "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
-        "signature": "336e65329b25865a80e8be44eaace7a91155d6ef89a80824f80986e78c8c219b16792193fa03231d1f046e838d808d2ab5f9d380be9df21d6caced805c0d770f"
-      }
-    }
-  },
-  {
-    "name": "spanda-webots",
-    "description": "Webots simulation backend",
-    "versions": [
-      "0.1.0"
-    ],
-    "category": "simulation",
-    "license": "Apache-2.0",
-    "import_paths": [
-      "sim.webots"
-    ],
-    "version_checksums": {
-      "0.1.0": "e530e10c78bffe74cf8e906111fed4dc06efad80e3b90250553e35fe74cc57d2"
-    },
-    "version_signatures": {
-      "0.1.0": {
-        "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
-        "signature": "c1cf641cae138e557e05a4e1564d2e159ee3704df3f5d9c63f297499af51e00eb703eb4c0a18785958fa888c452876803854fdb6b0899e25bba550c2b09f1407"
-      }
-    }
-  },
-  {
-    "name": "spanda-wifi",
-    "description": "Wi-Fi connectivity adapters",
-    "versions": [
-      "0.1.0"
-    ],
-    "category": "connectivity",
-    "license": "Apache-2.0",
-    "import_paths": [
-      "connectivity.wifi"
-    ],
-    "version_checksums": {
-      "0.1.0": "1c0632a7fade70f2e848b58d381c57dfb154792b69406fdacee26b616b9a9400"
-    },
-    "version_signatures": {
-      "0.1.0": {
-        "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
-        "signature": "affc5bf388320dc4903b8b33c1978b63dbbfaa83d6133e46c2826aae0998cb3e64cbae8e79a681e77ec30562862cc5b48434ce906d941c8509afae31a3614802"
-      }
-    }
-  },
-  {
-    "name": "spanda-yolo",
-    "description": "YOLO object detection",
-    "versions": [
-      "0.1.0"
-    ],
-    "category": "vision",
-    "license": "Apache-2.0",
-    "import_paths": [
-      "vision.yolo"
-    ],
-    "version_checksums": {
-      "0.1.0": "e0a9a3fc7b2493b996d7fdce8c048c4c794c63a6b1eb1a9bbc16271596709c66"
-    },
-    "version_signatures": {
-      "0.1.0": {
-        "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
-        "signature": "1fd32945e9e335f27c983e62c75a9fb28ecb61631cac91ed811321088bcddb1f30f7ffdddf92a1bd5f04866d72fa05ced2f069644f7bed7cd176649e1cce3d00"
-      }
-    }
-  },
-  {
-    "name": "spanda-zigbee",
-    "description": "Zigbee IoT mesh adapter (stub)",
-    "versions": [
-      "0.1.0"
-    ],
-    "category": "iot",
-    "license": "Apache-2.0",
-    "import_paths": [
-      "iot.zigbee"
-    ],
-    "version_checksums": {
-      "0.1.0": "8943bbe6e8a45df03c347906d92f93b34674c383452d46aa9eb77c91a42bda51"
-    },
-    "version_signatures": {
-      "0.1.0": {
-        "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
-        "signature": "8fd04bed71572c74f4640a54ba367a9efe843f9597e29472fc64a2b33ce90364f8743515a12bb3254c07efac2f62ab97fdc991ef4764df1b479a2e588e22850f"
+        "signature": "c32f630d13d9d6c6799fea84aa322cdd39cd013dd7fbac08a7874417d1bfe4770f2fe6d9dddaf8bb037b5a6b20bd397d4f3f877095fc77cfed8330c99447af03"
       }
     }
   },
@@ -833,12 +1043,12 @@
       "trust.jetson"
     ],
     "version_checksums": {
-      "0.1.0": "04875d052c78def9128b8f44d748ebc4d24358e3d7806cbdbd91328d4b763e59"
+      "0.1.0": "08675ad058b2040c21b0fbd610d53298fd116dd006ea45e4c1478b7db0dd314e"
     },
     "version_signatures": {
       "0.1.0": {
         "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
-        "signature": "f6130de457587cdedafb50eb2a5a8f3f4b00b74758fe0931bfaadc7926051314278e4516f11cac9e4f0f2712f8e2ff9cd01cf485a0fa8dc97b3687af63bd9308"
+        "signature": "ab8f682bd994f7f52caa777ee9a536ced647d3775bfdaf905a023f302b2310476718462429916565016a9a1c7e6f5790fdd4ae78729fb0a68ddeb29a1d196900"
       }
     }
   },
@@ -854,12 +1064,96 @@
       "trust.pi"
     ],
     "version_checksums": {
-      "0.1.0": "2865ac36f76208e6db2ff10362421da38dfe8b2804e1c3983991ca81a5e9cea0"
+      "0.1.0": "70559546d3514c273a71e263320d018ccc35ea331c3dde90116b0fa5a3dfd560"
     },
     "version_signatures": {
       "0.1.0": {
         "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
-        "signature": "08edd758770dd51f3620ecf0d9b4ae77517c4a2691c531e0f95b13511d0935c82e7a123476ed927fe354aac9f6d111b3fc54a66f4507a9151446f415770c5a09"
+        "signature": "b48262e2f7a9e1936dec1a28822406d849a9624c4c71b890aa1fb1fea3b7ef79df47a3141b6ab4ea18ba8bb875aad67e3d32f5fa7737a3c5eed08a32b069140d"
+      }
+    }
+  },
+  {
+    "name": "spanda-webots",
+    "description": "Webots simulation backend",
+    "versions": [
+      "0.1.0"
+    ],
+    "category": "simulation",
+    "license": "Apache-2.0",
+    "import_paths": [
+      "sim.webots"
+    ],
+    "version_checksums": {
+      "0.1.0": "9a766324366d05bd4126f33264a597aad409ee4573a0bce06bb986163eb19c8b"
+    },
+    "version_signatures": {
+      "0.1.0": {
+        "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
+        "signature": "994787511ebba5b4e41c531ce6c4ab6d216fa56eb6c3b8ea004f7b124845e4b7cb20a8d3ed98840ecf4094ab3a9e12784200f055bb602777ca81021fe16d9c0c"
+      }
+    }
+  },
+  {
+    "name": "spanda-wifi",
+    "description": "Wi-Fi connectivity adapters",
+    "versions": [
+      "0.1.0"
+    ],
+    "category": "connectivity",
+    "license": "Apache-2.0",
+    "import_paths": [
+      "connectivity.wifi"
+    ],
+    "version_checksums": {
+      "0.1.0": "04344ad53e5c788a1078781e6bb46c88323c8baf0765826dcb1fcdd9661eff2a"
+    },
+    "version_signatures": {
+      "0.1.0": {
+        "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
+        "signature": "6b7f54564d6cf429c6bcaae9a0c740b25c5b6698d06220a83c9a135423431ae4966c61ae28140cfa8f92e7f4008f88e3a857aa2a338a43a359a2a3d9ad413e0d"
+      }
+    }
+  },
+  {
+    "name": "spanda-yolo",
+    "description": "YOLO object detection",
+    "versions": [
+      "0.1.0"
+    ],
+    "category": "vision",
+    "license": "Apache-2.0",
+    "import_paths": [
+      "vision.yolo"
+    ],
+    "version_checksums": {
+      "0.1.0": "01c3ff2ec9632e2b73a3ae0173dd1524714bb775f7177d89972d1106e9af8a28"
+    },
+    "version_signatures": {
+      "0.1.0": {
+        "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
+        "signature": "1d02da38cdc1e27108c02613570dfc1ba98c1a47fbff3c45864e0f3c86f652a88f3b26f99502ea2395242b63ca18440ad04bc828b1831e9d35c5463787257d08"
+      }
+    }
+  },
+  {
+    "name": "spanda-zigbee",
+    "description": "Zigbee IoT mesh adapter (stub)",
+    "versions": [
+      "0.1.0"
+    ],
+    "category": "iot",
+    "license": "Apache-2.0",
+    "import_paths": [
+      "iot.zigbee"
+    ],
+    "version_checksums": {
+      "0.1.0": "168680354f0dce4ca274be1c9e023d15a6182954f735331e3569c2cbd702ce26"
+    },
+    "version_signatures": {
+      "0.1.0": {
+        "public_key": "7698681726dc94b389b7db096d358a750accde90979a4d92c4a2b46dec2f7b83",
+        "signature": "d3334dbe0a14735384f0c46d9e04bf5993185c6af2b96fbe8ae5ef2d839413e001a4a19f9cdb5bbbd05af287ed2746e416671e57c885305ddfac5153e25ff30b"
       }
     }
   }
