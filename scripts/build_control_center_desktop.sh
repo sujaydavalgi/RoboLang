@@ -19,12 +19,11 @@ if command -v npm >/dev/null 2>&1; then
     if [[ -n "${TAURI_UPDATER_PUBKEY:-}" ]]; then
       echo "[control-center-desktop] updater signing pubkey provided (TAURI_UPDATER_ACTIVE=${TAURI_UPDATER_ACTIVE:-true})"
     fi
-    npm run build --workspace=@spanda/control-center-desktop
     tauri_args=()
     if [[ -z "${TAURI_SIGNING_PRIVATE_KEY:-}" ]]; then
       tauri_args+=(--no-sign)
     fi
-    npm run tauri build --workspace=@spanda/control-center-desktop -- "${tauri_args[@]}"
+    npm run build --workspace=@spanda/control-center-desktop -- "${tauri_args[@]}"
     echo "[control-center-desktop] bundle artifacts under src-tauri/target/release/bundle/"
   else
     echo "[control-center-desktop] skip tauri build (set TAURI_BUILD=1 for full installer build)"
