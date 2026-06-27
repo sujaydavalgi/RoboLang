@@ -28,6 +28,9 @@ BIND="127.0.0.1:${PORT}"
 GRPC_BIND="127.0.0.1:${GRPC_PORT}"
 export SPANDA_API_KEY="enterprise-ops-smoke-key"
 export SPANDA_CONFIG_SNAPSHOT_KEY="${SPANDA_CONFIG_SNAPSHOT_KEY:-smoke-snapshot-key}"
+if [[ -z "${SPANDA_REGISTRY_URL:-}" && -f "${ROOT}/registry/index.json" ]]; then
+  export SPANDA_REGISTRY_URL="file://${ROOT}/registry"
+fi
 
 export SPANDA_WS_STREAM_SECONDS=3
 echo "== start control-center on ${BIND} + gRPC ${GRPC_BIND} (warehouse config + program) =="
@@ -199,18 +202,31 @@ curl -sf -X POST \
 
 echo "== E2 CLI control-center remote API =="
 export SPANDA_CONTROL_CENTER_URL="http://${BIND}"
+echo "  dashboard"
 run_spanda control-center dashboard | grep -q '"devices"'
+echo "  drift report"
 run_spanda control-center drift report --baseline-id "${BASELINE_ID}" | grep -q dimensions_checked
+echo "  drift scan"
 run_spanda control-center drift scan --baseline-id "${BASELINE_ID}" | grep -q '"scan"'
+echo "  drift scans"
 run_spanda control-center drift scans | grep -q '"scans"'
+echo "  approvals list"
 run_spanda control-center approvals list | grep -q approvals
+echo "  evidence list"
 run_spanda control-center evidence list | grep -q evidence
+echo "  incidents list"
 run_spanda control-center incidents list | grep -q incidents
+echo "  sre summary"
 run_spanda control-center sre summary | grep -q availability_percent
+echo "  devices list"
 run_spanda control-center devices list | grep -q '"devices"'
+echo "  readiness run"
 run_spanda control-center readiness run | grep -q mission_ready
-run_spanda control-center ota plan --strategy canary --version smoke-cli-1.0 --dry-run | grep -q '"strategy":"canary"'
+echo "  ota plan"
+run_spanda control-center ota plan --strategy canary --version smoke-cli-1.0 --dry-run | grep -Eq '"strategy"[[:space:]]*:[[:space:]]*"canary"'
+echo "  trust package"
 run_spanda control-center trust package --name spanda-mqtt | grep -q trust
+echo "  alerts list"
 run_spanda control-center alerts list | grep -q alerts
 
 echo "== E3 GET /v1/openapi.json =="
