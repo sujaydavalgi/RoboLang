@@ -37,13 +37,14 @@ spanda-capability = { path = "../spanda-capability" }
 spanda-runtime-faults = { path = "../spanda-runtime-faults" }
 spanda-config = { path = "../spanda-config" }
 spanda-assurance = { path = "../spanda-assurance" }
-spanda-tamper = { path = "../spanda-tamper" }
+spanda-tamper = { path = "../spanda-tamper", default-features = false }
 spanda-policy = { path = "../spanda-policy" }
 spanda-deploy-http = { path = "../spanda-deploy-http", optional = true }
 
 [features]
-default = ["transport-tls"]
+default = ["transport-tls", "tamper-http"]
 transport-tls = ["spanda-transport/tls", "spanda-transport-routing/transport-tls"]
+tamper-http = ["spanda-tamper/http"]
 telemetry-sqlite = ["spanda-telemetry-store/sqlite"]
 fleet-http = ["dep:spanda-deploy-http"]
 live-iot = ["spanda-providers/live-iot"]

@@ -42,16 +42,25 @@ pub fn fetch_ml_spoofing_alerts(trace: &MissionTrace) -> Vec<SpoofingAlert> {
 }
 
 fn query_http_ml_alerts(trace: &MissionTrace) -> Option<Vec<SpoofingAlert>> {
-    let endpoint = std::env::var("SPANDA_SPOOFING_ML_ENDPOINT")
-        .ok()
-        .filter(|value| !value.trim().is_empty())?;
-    let body = serde_json::to_string(trace).ok()?;
-    let response = spanda_deploy_http::http_request("POST", &endpoint, Some(&body), None).ok()?;
-    if !(200..300).contains(&response.status) {
+    #[cfg(not(feature = "http"))]
+    {
+        let _ = trace;
         return None;
     }
-    let payload = serde_json::from_str::<MlSpoofingResponse>(&response.body).ok()?;
-    Some(payload.alerts)
+    #[cfg(feature = "http")]
+    {
+        let endpoint = std::env::var("SPANDA_SPOOFING_ML_ENDPOINT")
+            .ok()
+            .filter(|value| !value.trim().is_empty())?;
+        let body = serde_json::to_string(trace).ok()?;
+        let response =
+            spanda_deploy_http::http_request("POST", &endpoint, Some(&body), None).ok()?;
+        if !(200..300).contains(&response.status) {
+            return None;
+        }
+        let payload = serde_json::from_str::<MlSpoofingResponse>(&response.body).ok()?;
+        Some(payload.alerts)
+    }
 }
 
 fn query_stub_ml_alerts(trace: &MissionTrace) -> Option<Vec<SpoofingAlert>> {

@@ -104,13 +104,22 @@ fn query_http_attestation(
         "package": package,
         "program": program_label,
     });
-    let response =
-        spanda_deploy_http::http_request("POST", &endpoint, Some(&body.to_string()), None).ok()?;
-    if !(200..300).contains(&response.status) {
+    #[cfg(not(feature = "http"))]
+    {
+        let _ = body;
         return None;
     }
-    let payload: AttestationResponse = serde_json::from_str(&response.body).ok()?;
-    Some(parse_attestation_response(payload))
+    #[cfg(feature = "http")]
+    {
+        let response =
+            spanda_deploy_http::http_request("POST", &endpoint, Some(&body.to_string()), None)
+                .ok()?;
+        if !(200..300).contains(&response.status) {
+            return None;
+        }
+        let payload: AttestationResponse = serde_json::from_str(&response.body).ok()?;
+        Some(parse_attestation_response(payload))
+    }
 }
 
 fn parse_attestation_response(payload: AttestationResponse) -> LiveAttestationResult {
