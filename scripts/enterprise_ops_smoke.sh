@@ -402,7 +402,10 @@ fetch "/v1/discovery?transport=mdns&timeout_ms=50" | grep -q require_tls
 
 echo "== security audit prep =="
 chmod +x "${ROOT}/scripts/security_audit_prep.sh"
-"${ROOT}/scripts/security_audit_prep.sh" | grep -q security-audit-prep
+SECURITY_AUDIT_LOG="$(mktemp "${TMPDIR:-/tmp}/spanda-security-audit.XXXXXX")"
+"${ROOT}/scripts/security_audit_prep.sh" >"${SECURITY_AUDIT_LOG}" 2>&1
+grep -q 'security-audit-prep ok' "${SECURITY_AUDIT_LOG}"
+rm -f "${SECURITY_AUDIT_LOG}"
 
 echo "== E4 GET /v1/digital-thread/query =="
 fetch "/v1/digital-thread/query" | grep -q matched_node_count
