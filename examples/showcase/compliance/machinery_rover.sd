@@ -1,0 +1,50 @@
+// ISO 13849 machinery safety compliance profile showcase
+//
+//   spanda verify examples/showcase/compliance/machinery_rover.sd --profile iso13849
+//   spanda compliance report examples/showcase/compliance/machinery_rover.sd --profile iso13849
+//
+// Satisfies iso13849 template: kill switch, dual health checks, assurance_case,
+// and obstacle_avoidance capability without secure-boot requirements.
+
+hardware FactoryAmr {
+  sensors [ Lidar ];
+  actuators [ DifferentialDrive ];
+  connectivity [ WiFi ];
+}
+
+kill_switch EmergencyStop {
+  priority: critical;
+  action { emergency_stop; }
+}
+
+health_check BatteryHealth for robot Rover {
+  check battery.level >= 15%;
+}
+
+health_check LidarHealth for robot Rover {
+  check lidar.range_min <= 4 m;
+}
+
+assurance_case MachineryDeployCase {
+  evidence hardware_verification;
+  evidence capability_traceability;
+  evidence health_checks;
+}
+
+robot Rover {
+  uses hardware FactoryAmr;
+  sensor lidar: Lidar;
+  actuator wheels: DifferentialDrive;
+
+  exposes capabilities [ obstacle_avoidance, telemetry_streaming ];
+
+  safety {
+    max_speed = 1.5 m/s;
+  }
+
+  behavior patrol() {
+    wheels.drive(0.1 m/s);
+  }
+}
+
+deploy Rover to FactoryAmr;

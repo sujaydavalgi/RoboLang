@@ -36,7 +36,7 @@ Set `SPANDA_ROOT` to the repository root if examples are not found.
 | [`runtime_intrusion/`](./runtime_intrusion/) | Unexpected capability usage in traces |
 | [`tamper_policy/`](./tamper_policy/) | Declarative tamper response at runtime |
 | [`secure_boot/`](./secure_boot/) | `trust.jetson` / `trust.pi` contracts + attestation |
-| [`compliance/`](./compliance/) | Defense and medical compliance profile showcases |
+| [`compliance/`](./compliance/) | Defense, medical, ISO 26262, ISO 13849, and IEC 61508 profile showcases |
 | [`fleet_tamper/`](./fleet_tamper/) | Fleet-wide tamper correlation manifest |
 
 One command: `spanda demo trust` · smoke: `./scripts/showcase_smoke.sh`, `./scripts/bundled_trust_smoke.sh`

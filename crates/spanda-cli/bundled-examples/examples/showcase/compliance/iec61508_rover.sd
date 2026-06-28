@@ -1,0 +1,64 @@
+// IEC 61508 functional safety compliance profile showcase
+//
+//   spanda verify examples/showcase/compliance/iec61508_rover.sd --profile iec61508
+//   spanda compliance report examples/showcase/compliance/iec61508_rover.sd --profile iec61508
+//
+// Satisfies iec61508 template: secure_comm, tamper_policy, assurance_case, and dual health
+// checks without mandating secure-boot contract imports.
+
+hardware SilController {
+  sensors [ GPS ];
+  actuators [ DifferentialDrive ];
+  connectivity [ WiFi, Ethernet ];
+}
+
+kill_switch EmergencyStop {
+  priority: critical;
+  action { emergency_stop; }
+}
+
+health_check BatteryHealth for robot Rover {
+  check battery.level >= 20%;
+}
+
+health_check GpsHealth for robot Rover {
+  check gps.fix_quality >= 0.5;
+}
+
+assurance_case SilDeployCase {
+  evidence hardware_verification;
+  evidence health_checks;
+  evidence simulation_replay;
+}
+
+tamper_policy SilTamperResponse {
+  on tamper severity Critical {
+    enter degraded_mode;
+    audit.record("iec61508_tamper_detected");
+  }
+}
+
+robot Rover {
+  uses hardware SilController;
+  sensor gps: GPS;
+  actuator wheels: DifferentialDrive;
+
+  exposes capabilities [ gps_navigation, telemetry_streaming ];
+
+  secure_comm {
+    encryption: required;
+    authentication: signed;
+  }
+
+  mode degraded { }
+
+  safety {
+    max_speed = 1.0 m/s;
+  }
+
+  behavior patrol() {
+    wheels.drive(0.1 m/s);
+  }
+}
+
+deploy Rover to SilController;

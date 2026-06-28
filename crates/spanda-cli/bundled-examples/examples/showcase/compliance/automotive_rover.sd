@@ -1,0 +1,68 @@
+// ISO 26262 automotive compliance profile showcase
+//
+//   spanda verify examples/showcase/compliance/automotive_rover.sd --profile iso26262
+//   spanda compliance report examples/showcase/compliance/automotive_rover.sd --profile iso26262
+//
+// Satisfies iso26262 template: secure boot, tamper_policy, secure_comm, assurance_case,
+// dual health checks, and obstacle_avoidance capability.
+
+import trust.jetson;
+
+hardware JetsonAutomotive {
+  sensors [ GPS, Lidar ];
+  actuators [ DifferentialDrive ];
+  connectivity [ WiFi, LTE ];
+}
+
+kill_switch EmergencyStop {
+  priority: critical;
+  action { emergency_stop; }
+}
+
+health_check BatteryHealth for robot Rover {
+  check battery.level >= 20%;
+}
+
+health_check LidarHealth for robot Rover {
+  check lidar.range_min <= 5 m;
+}
+
+assurance_case AutomotiveDeployCase {
+  evidence hardware_verification;
+  evidence capability_traceability;
+  evidence health_checks;
+  evidence simulation_replay;
+}
+
+tamper_policy AutomotiveTamperResponse {
+  on tamper severity Critical {
+    enter degraded_mode;
+    audit.record("automotive_tamper_detected");
+  }
+}
+
+robot Rover {
+  uses hardware JetsonAutomotive;
+  sensor gps: GPS;
+  sensor lidar: Lidar;
+  actuator wheels: DifferentialDrive;
+
+  exposes capabilities [ gps_navigation, obstacle_avoidance, telemetry_streaming ];
+
+  secure_comm {
+    encryption: required;
+    authentication: signed;
+  }
+
+  mode degraded { }
+
+  safety {
+    max_speed = 1.0 m/s;
+  }
+
+  behavior patrol() {
+    wheels.drive(0.1 m/s);
+  }
+}
+
+deploy Rover to JetsonAutomotive;

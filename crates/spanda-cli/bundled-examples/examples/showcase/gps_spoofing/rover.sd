@@ -41,6 +41,10 @@ robot Rover {
     max_speed = 1.0 m/s;
   }
 
+  audit GpsAudit {
+    record gps.spoofed;
+  }
+
   on gps.spoofed {
     audit.record("gps_spoof_detected");
   }
