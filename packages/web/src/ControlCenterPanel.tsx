@@ -151,6 +151,11 @@ export function ControlCenterPanel({ apiBase }: Props) {
   const [humanHealthPolicy, setHumanHealthPolicy] = useState<Record<string, unknown> | null>(
     null,
   );
+  const [teamReadiness, setTeamReadiness] = useState<Record<string, unknown> | null>(null);
+  const [collaborationGraph, setCollaborationGraph] = useState<Record<string, unknown> | null>(
+    null,
+  );
+  const [hriContext, setHriContext] = useState<Record<string, unknown> | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -468,17 +473,24 @@ export function ControlCenterPanel({ apiBase }: Props) {
   const loadHumans = async () => {
     setBusy(true);
     try {
-      const [humansRes, wearablesRes, sessionsRes, healthRes] = await Promise.all([
+      const [humansRes, wearablesRes, sessionsRes, healthRes, readinessRes, collabRes, contextRes] =
+        await Promise.all([
         fetch(`${base}/v1/humans`),
         fetch(`${base}/v1/wearables`),
         fetch(`${base}/v1/hri/sessions`),
         fetch(`${base}/v1/human-health/policy`),
+        fetch(`${base}/v1/humans/readiness`),
+        fetch(`${base}/v1/hri/collaboration`),
+        fetch(`${base}/v1/hri/context`),
       ]);
       if (!humansRes.ok) throw new Error(`humans ${humansRes.status}`);
       const humansBody = await humansRes.json();
       const wearablesBody = wearablesRes.ok ? await wearablesRes.json() : null;
       const sessionsBody = sessionsRes.ok ? await sessionsRes.json() : null;
       const healthBody = healthRes.ok ? await healthRes.json() : null;
+      const readinessBody = readinessRes.ok ? await readinessRes.json() : null;
+      const collabBody = collabRes.ok ? await collabRes.json() : null;
+      const contextBody = contextRes.ok ? await contextRes.json() : null;
       setHumansList((humansBody.humans as Record<string, unknown>[]) ?? []);
       setWearablesList((wearablesBody?.wearables as Record<string, unknown>[]) ?? []);
       setHriSessions((sessionsBody?.sessions as Record<string, unknown>[]) ?? []);
@@ -487,6 +499,9 @@ export function ControlCenterPanel({ apiBase }: Props) {
           (wearablesBody?.human_health as Record<string, unknown>) ??
           null,
       );
+      setTeamReadiness(readinessBody);
+      setCollaborationGraph(collabBody);
+      setHriContext(contextBody);
     } catch (e) {
       setError(String(e));
     } finally {
@@ -1393,6 +1408,24 @@ export function ControlCenterPanel({ apiBase }: Props) {
               ))}
             </tbody>
           </table>
+          <h3>Team readiness</h3>
+          {teamReadiness?.team_readiness ? (
+            <pre>{JSON.stringify(teamReadiness.team_readiness, null, 2)}</pre>
+          ) : (
+            <p>Load with spatial-computing program for mission-scored rollup.</p>
+          )}
+          <h3>Live collaboration graph</h3>
+          {collaborationGraph ? (
+            <pre>{JSON.stringify(collaborationGraph, null, 2)}</pre>
+          ) : (
+            <p>Collaboration graph unavailable.</p>
+          )}
+          <h3>Context awareness (hazard zones)</h3>
+          {hriContext ? (
+            <pre>{JSON.stringify(hriContext, null, 2)}</pre>
+          ) : (
+            <p>Context snapshot unavailable.</p>
+          )}
           <h3>VR training</h3>
           <p>
             Record: <code>spanda sim vr-training/training_mission.sd --record</code> · Replay:{" "}
