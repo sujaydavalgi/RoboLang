@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Unified Entity Model (foundational pillar):** `EntityRecord`, `EntityRegistry`, `EntityGraph`, and `EntityQuery` in `spanda-config`; expanded `/v1/entities/*` API (graph, relationships, readiness, query); Control Center **Entities** tab; SDK entity helpers; docs in [docs/entity-model.md](docs/entity-model.md) (+ registry, graph, relationships, query language guides) and [ROADMAP.md](ROADMAP.md) Pillar 0.
 - **@davalgi-spanda/web npm package:** rename from `@spanda/web` for npm org parity; publish via `npm-web-v*` with `ControlCenterPanel` exports.
 - **spanda-sdk v0.4.1:** crates.io README manifest; tag `crates-sdk-v0.4.1`.
 - **SDK registry publication complete:** `spanda-sdk` on crates.io (v0.4.0), PyPI (v0.4.0), and `@davalgi-spanda/sdk` on npm (v0.4.1); README and docs updated with install commands and token rotation table.

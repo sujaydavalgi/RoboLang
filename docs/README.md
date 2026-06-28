@@ -48,6 +48,11 @@
 | [official-packages.md](./official-packages.md) | **Official package catalog** |
 | [how-packages-work.md](./how-packages-work.md) | **Package loading pipeline, provenance, and CLI workflow** |
 | [configuration.md](./configuration.md) | **Cascading TOML configuration and ResolvedSystemConfig** |
+| [entity-model.md](./entity-model.md) | **Unified Entity Model — foundational platform abstraction** |
+| [entity-registry.md](./entity-registry.md) | **Entity registry — inventory, lookup, filtering** |
+| [entity-graph.md](./entity-graph.md) | **Entity graph — traversal, impact, visualization** |
+| [entity-relationships.md](./entity-relationships.md) | **Entity relationship taxonomy** |
+| [entity-query-language.md](./entity-query-language.md) | **Entity query language — REST and JSON filters** |
 | [cascading-config.md](./cascading-config.md) | **Layered config overrides (base → environment → deployment → robot)** |
 | [device-tree.md](./device-tree.md) | **Fleet/device hierarchy and device identity in TOML** |
 | [config-validation.md](./config-validation.md) | **Configuration validation rules and CLI** |

@@ -1,0 +1,192 @@
+# Unified Entity Model
+
+The **Unified Entity Model** is a foundational platform pillar in Spanda. Every object managed by the platform — robots, fleets, humans, wearables, devices, providers, packages, missions, facilities, and control centers — is represented as an **Entity** with shared properties, relationships, health, readiness, trust, security, and lifecycle semantics.
+
+## Why a unified model?
+
+As Spanda expands across industries (ADAS, healthcare, search & rescue, industrial automation, spatial computing), dedicated top-level models for each object type become inconsistent. The entity model provides:
+
+- One **registry** and **graph** for traversal, dependency analysis, and impact analysis
+- One **query language** for operational questions (“which robots use firmware X?”)
+- One **Control Center** browse path for health, readiness, trust, and relationships
+- **Backward-compatible** APIs — existing `/v1/devices`, `/v1/robots`, `/v1/humans` routes remain unchanged
+
+## Architecture
+
+```text
+TOML / runtime sources                Unified projection
+─────────────────────                 ──────────────────
+DeviceTree ──────────┐
+DeviceRegistry ──────┼──► build_entity_registry() ──► EntityRegistry
+HumanRegistry ───────┤                                      │
+LogicalPhysicalMap ──┤                                      ├── EntityGraph
+Packages / Providers ┘                                      └── EntityQuery
+```
+
+**Canonical implementation:** `crates/spanda-config/src/entity.rs`
+
+**API surface:** `GET /v1/entities/*` in `crates/spanda-api/src/sdk_ops.rs`
+
+**SDK:** `SpandaClient::list_entities`, `entity_graph`, `query_entities` in `crates/spanda-sdk`
+
+## Entity hierarchy
+
+The type taxonomy is **extensible**. Built-in kinds include:
+
+| Category | Entity kinds |
+|----------|----------------|
+| People & teams | `human`, `team` |
+| Autonomous systems | `robot`, `drone`, `vehicle`, `fleet`, `swarm`, `ai_agent` |
+| Devices | `device`, `sensor`, `actuator`, `camera`, `gps`, `plc`, `gateway`, `controller`, `wearable`, `medical_device` |
+| Spatial | `ar_device`, `vr_device`, `iot_device` |
+| Software | `provider`, `package`, `edge_service`, `cloud_service` |
+| Operations | `mission`, `incident`, `digital_twin` |
+| Places | `facility`, `building`, `zone`, `hazard`, `organization` |
+| Control | `command_center`, `control_center` |
+| Custom | `custom` string via `EntityKind::Custom` |
+
+Domain-specific TOML types (`HumanEntity`, `RobotNode`, `DeviceIdentityRecord`, …) remain the **source of truth**. They project into `EntityRecord` — they are not replaced.
+
+## Common properties
+
+Every `EntityRecord` carries:
+
+| Property | Description |
+|----------|-------------|
+| `id` | Unique identifier |
+| `name`, `display_name`, `description` | Human-facing labels |
+| `entity_type` | Typed kind (`EntityKind`) |
+| `parent_id`, `children_ids` | Hierarchy |
+| `labels`, `tags` | Filtering and grouping |
+| `version`, `manufacturer`, `model`, `serial_number` | Identity |
+| `hardware_revision`, `firmware_version`, `software_version` | Revision tracking |
+| `provider`, `package` | Software supply chain |
+| `location` | Coordinates, zone references |
+| `capabilities` | Operational capabilities |
+| `health_status` | `healthy`, `warning`, `degraded`, `offline`, `critical`, `unknown` |
+| `readiness_status` | `ready`, `not_ready`, `partial`, `unknown` |
+| `trust_status` | `verified`, `trusted`, `untrusted`, `compromised`, `unknown` |
+| `security` | Identity, certificates, permissions |
+| `lifecycle_state` | `discovered` → `archived` |
+| `owner`, `metadata`, `audit` | Governance |
+
+Legacy API field **`kind`** is preserved as an alias of `entity_type.as_str()` for SDK compatibility.
+
+## Entity capabilities
+
+Capabilities are plain strings on the entity record. Examples:
+
+| Entity | Capabilities |
+|--------|----------------|
+| Human | `operate_robot`, `approve_mission`, `emergency_override` |
+| Robot | `navigate`, `pick`, `place`, `inspect` |
+| Wearable | `heart_rate`, `gps`, `fall_detection` |
+| Mission | `pause`, `resume`, `cancel` |
+| Package | `install`, `update`, `validate` |
+
+Capability requirements for missions continue to flow through readiness and assurance crates; entities expose the **inventory view**.
+
+## Health, readiness, trust, security, lifecycle
+
+| Dimension | Enum | Notes |
+|-----------|------|-------|
+| Health | `EntityHealthStatus` | Derived from device pool health and human health fields |
+| Readiness | `EntityReadinessStatus` | Derived from lifecycle and operator availability |
+| Trust | `EntityTrustStatus` | Maps legacy `trust_level` strings |
+| Lifecycle | `EntityLifecycleState` | Maps `DeviceLifecycleState` and availability |
+| Security | `EntitySecurityIdentity` | Certificates, permissions from TOML security sections |
+
+See also: [entity-relationships.md](./entity-relationships.md), [entity-registry.md](./entity-registry.md), [entity-graph.md](./entity-graph.md), [entity-query-language.md](./entity-query-language.md).
+
+## API (additive)
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/v1/entities` | List entities (optional query filters) |
+| GET | `/v1/entities/graph` | Full entity graph |
+| POST | `/v1/entities/query` | Structured query body |
+| GET | `/v1/entities/{id}` | Entity detail |
+| GET | `/v1/entities/{id}/relationships` | Edges, impact analysis, dependency chain |
+| GET | `/v1/entities/{id}/health` | Health snapshot |
+| GET | `/v1/entities/{id}/readiness` | Readiness snapshot |
+| GET | `/v1/entities/{id}/trust` | Trust and security metadata |
+
+Existing routes (`/v1/devices`, `/v1/robots`, `/v1/fleets`, `/v1/humans`, …) are unchanged.
+
+## Control Center
+
+The **Entities** tab in `@davalgi-spanda/web` uses the unified API:
+
+- Browse and search the entity inventory
+- Inspect health, readiness, trust, capabilities
+- Traverse relationship edges and neighborhood graph
+
+Component: `packages/web/src/EntityGraphPanel.tsx`
+
+## Roadmap integration
+
+Before adding a new top-level platform abstraction, ask:
+
+> **Should this be modeled as a new Entity kind?**
+
+If yes, extend `EntityKind`, add a projection in `build_entity_registry`, and document the mapping. See [../ROADMAP.md](../ROADMAP.md) — **Pillar 0 — Unified Entity Model**.
+
+Cross-references:
+
+| Roadmap item | Entity mapping |
+|--------------|----------------|
+| Device Registry (Pillar 4) | `device`, `sensor`, `actuator`, … |
+| Human entity model (Pillar 4) | `human`, `wearable`, `digital_twin` |
+| Fleet / swarm (Pillar 4) | `fleet`, `robot`, `swarm` |
+| Provider registry (Pillar 2) | `provider` |
+| Package loader (Pillar 2) | `package` |
+| Digital thread (Pillar 6) | Graph edges complement dependency graph |
+| Trust / security (Pillar 5) | `trust_status`, `security` on every entity |
+
+## Migration plan
+
+### Phase 1 — Foundation (shipped)
+
+- [x] `EntityRecord`, `EntityRegistry`, `EntityGraph`, `EntityQuery` in `spanda-config`
+- [x] `build_entity_registry(&ResolvedSystemConfig)` projects fleet tree, device registry, human registry, logical map, packages, providers
+- [x] Expanded `/v1/entities/*` REST API (backward compatible `kind` field)
+- [x] Control Center **Entities** tab
+- [x] SDK typed fields on `Entity`
+
+### Phase 2 — Runtime missions (Next)
+
+- [ ] Project runtime `MissionRuntime` into entity registry during active programs
+- [ ] Link mission entities to robot/fleet entities via `participates_in` edges
+- [ ] Mission readiness overlays on entity readiness API
+
+### Phase 3 — Graph unification (Next)
+
+- [ ] Align `spanda-graph` dependency nodes with entity IDs
+- [ ] Merge digital-thread device links into entity relationship store
+- [ ] Unified traceability queries across program graph and entity graph
+
+### Phase 4 — Industry extensions (Later)
+
+- [ ] Facility, building, zone entities from solution blueprint TOML
+- [ ] Medical device and ADAS-specific entity kinds with compliance metadata
+- [ ] Custom entity kinds via package manifests
+
+### Phase 5 — Write path (Later)
+
+- [ ] Entity mutation APIs (register, tag, relate) with audit
+- [ ] Bi-directional sync from entity registry to TOML fragments
+
+### Compatibility guarantees
+
+1. **No breaking changes** to existing REST routes or TOML schemas in Phase 1–3
+2. **`kind` field** on list responses remains stable for SDK consumers
+3. Domain crates (`HumanEntity`, `DeviceIdentityRecord`, …) stay authoritative for configuration authoring
+
+### Developer checklist — adding a new industry object
+
+1. Add or reuse an `EntityKind` variant (or `Custom` string)
+2. Implement projection in `build_entity_registry` from your TOML/runtime source
+3. Emit `EntityRelationship` edges to related entities
+4. Add query filter fields if needed on `EntityQuery`
+5. Update [feature-status.md](./feature-status.md) and roadmap cross-reference
+6. Add Control Center filter label if user-facing

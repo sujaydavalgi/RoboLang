@@ -36,6 +36,8 @@ Spanda Recovery ─── Spanda Trust
 Spanda Control Center
         │
 Spanda Registry ─── Spanda SDKs
+        │
+Unified Entity Model (all platform objects)
 ```
 
 **Lifecycle:** **Build · Verify · Simulate · Deploy · Operate · Observe · Recover · Govern · Audit · Continuously Improve**
@@ -61,6 +63,32 @@ Spanda Registry ─── Spanda SDKs
 ---
 
 ## Platform Pillars
+
+### Pillar 0 — Unified Entity Model
+
+**Purpose:** Represent every platform object — robots, fleets, humans, devices, providers, packages, missions, facilities — as a typed **Entity** with shared health, readiness, trust, security, lifecycle, relationships, and graph semantics.
+
+| Area | Items | Tier | Timeline | Ownership |
+|------|-------|------|----------|-----------|
+| **Entity taxonomy** | Extensible `EntityKind` (human, robot, fleet, wearable, provider, package, …) | **Experimental** | Now | Core |
+| **Entity record** | Common properties (identity, capabilities, location, metadata) | **Experimental** | Now | Core |
+| **Entity registry** | `build_entity_registry`, `ResolvedSystemConfig::entity_registry` | **Experimental** | Now | Core |
+| **Entity graph** | Traversal, impact analysis, dependency chain | **Experimental** | Now | Core |
+| **Entity relationships** | 18 relationship kinds (`contains`, `depends_on`, `assigned_to`, …) | **Experimental** | Now | Core |
+| **Entity query language** | GET filters + `POST /v1/entities/query` | **Experimental** | Now | Core |
+| **Entity REST API** | `/v1/entities/*` (health, readiness, trust, relationships, graph) | **Experimental** | Now | Core |
+| **Control Center Entities tab** | Browse, search, graph neighborhood | **Experimental** | Now | Control Center |
+| **Runtime mission entities** | Project active missions into registry | **Future** | Next | Core |
+| **Graph unification** | Align `spanda-graph` + digital thread with entity IDs | **Future** | Next | Core |
+| **Entity mutation API** | Register, tag, relate with audit | **Future** | Later | Core |
+
+**Design rule:** Before introducing a new top-level platform abstraction, determine whether it should be a new **Entity kind** instead.
+
+**Cross-references:** Device Registry (Pillar 4) · Human entity model (Pillar 4) · Provider registry (Pillar 2) · Digital thread (Pillar 6) · Trust (Pillar 5)
+
+**Topic guides:** [docs/entity-model.md](docs/entity-model.md) · [docs/entity-registry.md](docs/entity-registry.md) · [docs/entity-graph.md](docs/entity-graph.md) · [docs/entity-relationships.md](docs/entity-relationships.md) · [docs/entity-query-language.md](docs/entity-query-language.md)
+
+---
 
 ### Pillar 1 — Spanda Language
 
@@ -210,6 +238,7 @@ Full analysis: [docs/differentiation-roadmap.md](docs/differentiation-roadmap.md
 |------|-------|------|----------|-----------|
 | **Device Tree** | Logical ↔ physical mapping | **Stable** | Now | Core |
 | **Device Registry** | Device identity in TOML | **Stable** | Now | Core |
+| **Unified Entity Model** | Projects registry + fleet + humans into entity graph — [entity-model.md](docs/entity-model.md) | **Experimental** | Now | Core |
 | **Device Pool** | Central inventory, lifecycle, assign/trust/quarantine | **Experimental** | Now | Core |
 | **Provisioning** | Discover → ready workflow (`POST /v1/provision`) | **Experimental** | Now | Core |
 | **Discovery** | Subnet, mDNS/BLE/USB/CAN/MQTT/ROS2 + pool ingest | **Experimental** | Now | Package + Core |
@@ -248,7 +277,7 @@ Full analysis: [docs/differentiation-roadmap.md](docs/differentiation-roadmap.md
 | Operator approval + fleet mesh recovery | **Stable** |
 | `spanda demo self-healing` | **Stable** |
 
-**Topic guides:** [docs/device-tree.md](docs/device-tree.md) · [docs/device-pool.md](docs/device-pool.md) · [docs/configuration.md](docs/configuration.md) · [docs/health-checks.md](docs/health-checks.md) · [docs/fleet-distributed.md](docs/fleet-distributed.md) · [docs/swarm-health.md](docs/swarm-health.md) · [docs/human-interaction.md](docs/human-interaction.md)
+**Topic guides:** [docs/device-tree.md](docs/device-tree.md) · [docs/device-pool.md](docs/device-pool.md) · [docs/entity-model.md](docs/entity-model.md) · [docs/configuration.md](docs/configuration.md) · [docs/health-checks.md](docs/health-checks.md) · [docs/fleet-distributed.md](docs/fleet-distributed.md) · [docs/swarm-health.md](docs/swarm-health.md) · [docs/human-interaction.md](docs/human-interaction.md)
 
 ---
 

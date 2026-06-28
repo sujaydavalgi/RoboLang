@@ -291,6 +291,28 @@ See [hardware-compatibility.md](./hardware-compatibility.md).
 
 ---
 
+## Unified Entity Model
+
+Every platform object projects into a canonical **Entity** graph in `spanda-config`:
+
+```mermaid
+flowchart TB
+  TOML["Device tree · Device registry · Human registry · Logical map"]
+  BUILD["build_entity_registry()"]
+  REG["EntityRegistry"]
+  API["GET /v1/entities/*"]
+  CC["Control Center Entities tab"]
+  TOML --> BUILD --> REG
+  REG --> API
+  REG --> CC
+```
+
+Domain types (`DeviceIdentityRecord`, `HumanEntity`, `RobotNode`, …) remain TOML source of truth. The entity layer adds shared health, readiness, trust, relationships, and query semantics without breaking existing APIs.
+
+See [entity-model.md](./entity-model.md) · [entity-registry.md](./entity-registry.md) · [entity-graph.md](./entity-graph.md).
+
+---
+
 ## Compiler backend (experimental)
 
 ```

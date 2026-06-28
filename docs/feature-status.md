@@ -224,7 +224,8 @@ See [tier-3-experimental.md](./tier-3-experimental.md) and [tier-3-golden-paths.
 | **SRE** | **Experimental** | `/v1/sre/summary` with `slo`, `burn_rate`, MTTR/MTBF hints; incident workflow; PagerDuty webhook sync; fast-burn background monitor |
 | **Reporting** | **Experimental** | Markdown, JSON, PDF exports; scheduled webhook delivery (`GET/POST /v1/reports/schedules`) |
 | **Compliance** | **Experimental** | Evidence packs, `GET /v1/compliance/export`, signed profile catalog (`GET /v1/compliance/profiles`) |
-| **APIs** | **Experimental** | REST v1 + OpenAPI; program-level SDK routes (`/v1/programs/*`, `/v1/entities/*`); JSON-RPC gateway (Control Center methods); native gRPC (tonic) **Experimental** — 73 RPCs; rate limits (`SPANDA_API_RATE_LIMIT_PER_MINUTE`); versioning policy (`GET /v1/version`, `X-Spanda-Api-Version`) |
+| **APIs** | **Experimental** | REST v1 + OpenAPI; unified entity routes (`/v1/entities/*` — graph, relationships, readiness, query); program-level SDK routes (`/v1/programs/*`); JSON-RPC gateway (Control Center methods); native gRPC (tonic) **Experimental** — 73 RPCs; rate limits (`SPANDA_API_RATE_LIMIT_PER_MINUTE`); versioning policy (`GET /v1/version`, `X-Spanda-Api-Version`) |
+| **Unified Entity Model** | **Experimental** | `EntityRegistry` projects fleet, devices, humans, providers, packages into entity graph; Control Center Entities tab — [entity-model.md](./entity-model.md) |
 | **Observability** | **Experimental** | OTLP trace/metrics export, correlation IDs, WebSocket telemetry; `spanda-otel-collector`; Grafana templates (`spanda-grafana-dashboards`); HA collector guide |
 | **Digital Thread** | **Experimental** | Full lifecycle graph (requirement → retirement); `GET /v1/digital-thread/query` with `lifecycle_phase` filter |
 
