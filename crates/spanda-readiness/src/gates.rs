@@ -27,6 +27,8 @@ pub struct DeploymentGatePolicy {
     pub minimum_readiness_score: u32,
     pub require_safety_audit: bool,
     pub require_capability_traceability: bool,
+    pub require_official_provenance: bool,
+    pub require_registry_signatures: bool,
 }
 
 impl Default for DeploymentGatePolicy {
@@ -35,6 +37,8 @@ impl Default for DeploymentGatePolicy {
             minimum_readiness_score: 80,
             require_safety_audit: true,
             require_capability_traceability: true,
+            require_official_provenance: false,
+            require_registry_signatures: false,
         }
     }
 }
@@ -45,6 +49,8 @@ impl DeploymentGatePolicy {
             minimum_readiness_score: 90,
             require_safety_audit: true,
             require_capability_traceability: true,
+            require_official_provenance: true,
+            require_registry_signatures: true,
         }
     }
 }
@@ -135,6 +141,55 @@ pub fn evaluate_deployment_gates(
             },
         });
     }
+    if policy.require_official_provenance || policy.require_registry_signatures {
+        if let Some(root) = gate_project_root(options) {
+            let provenance = spanda_package::evaluate_project_provenance_gate(&root);
+            if policy.require_official_provenance {
+                gates.push(DeploymentGate {
+                    name: "official_provenance".into(),
+                    passed: provenance.passed_official_provenance(),
+                    message: if provenance.official_overrides.is_empty() {
+                        "no official package name overrides detected".into()
+                    } else {
+                        format!(
+                            "official name overrides without registry provenance: {}",
+                            provenance.official_overrides.join(", ")
+                        )
+                    },
+                });
+            }
+            if policy.require_registry_signatures {
+                gates.push(DeploymentGate {
+                    name: "registry_signatures".into(),
+                    passed: provenance.passed_registry_signatures(),
+                    message: if provenance.passed_registry_signatures() {
+                        "registry signature policy satisfied".into()
+                    } else {
+                        format!(
+                            "registry signature failures: {}",
+                            provenance.registry_signature_failures.join("; ")
+                        )
+                    },
+                });
+            }
+        } else {
+            if policy.require_official_provenance {
+                gates.push(DeploymentGate {
+                    name: "official_provenance".into(),
+                    passed: false,
+                    message: "project root with spanda.toml required for provenance audit".into(),
+                });
+            }
+            if policy.require_registry_signatures {
+                gates.push(DeploymentGate {
+                    name: "registry_signatures".into(),
+                    passed: false,
+                    message: "project root with spanda.lock required for registry signature audit"
+                        .into(),
+                });
+            }
+        }
+    }
     let health_issues = readiness
         .issues
         .iter()
@@ -151,4 +206,22 @@ pub fn evaluate_deployment_gates(
     });
     let passed = gates.iter().all(|gate| gate.passed);
     DeploymentGateReport { passed, gates }
+}
+
+fn gate_project_root(options: &ReadinessOptions) -> Option<std::path::PathBuf> {
+    // Resolve the project root for provenance gates from config or source path.
+
+    if let Some(root) = &options.project_root {
+        return Some(root.clone());
+    }
+    if let Some(cfg) = options.system_config.as_ref() {
+        return Some(cfg.project_root.clone());
+    }
+    let source = options.source_path.as_deref()?;
+    let start = if source.is_dir() {
+        source.to_path_buf()
+    } else {
+        source.parent()?.to_path_buf()
+    };
+    spanda_package::find_project_root(&start)
 }

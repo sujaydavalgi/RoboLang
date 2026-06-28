@@ -6,7 +6,7 @@ use spanda_package::{
     adapter_verify_ok, add_dependency, collect_source_files, evaluate_package_trust,
     find_project_root, init_package, load_official_packages_for_source, publish_package,
     registry_info, remove_dependency, resolve_dependencies, search_registry,
-    search_registry_merged, validate_package, verify_adapter_package, ApplicationPermissions,
+    search_registry_merged, validate_package_in, verify_adapter_package, ApplicationPermissions,
     DependencySpec, Lockfile, PackageManifest, ResolveOptions, LOCKFILE_FILENAME,
     MANIFEST_FILENAME,
 };
@@ -707,7 +707,7 @@ fn run_install_inner(root: &Path, manifest: &PackageManifest, verbose: bool) -> 
         for w in &result.warnings {
             eprintln!("  ⚠ {w}");
         }
-        let official = spanda_package::official_packages_from_lockfile(&lockfile);
+        let official = spanda_package::official_packages_from_lockfile(&lockfile, root);
         if !official.is_empty() {
             println!("  official packages: {}", official.join(", "));
         }
@@ -1006,7 +1006,7 @@ fn validate_project(root: &Path, manifest: &PackageManifest) {
     let perms = ApplicationPermissions::permissive();
 
     // Match on validate package and handle each case.
-    match validate_package(manifest, &perms) {
+    match validate_package_in(manifest, &perms, Some(root)) {
         Ok(report) => {
             // Process each warning.
             for w in &report.warnings {

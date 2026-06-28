@@ -181,6 +181,14 @@ pub struct ReadinessOptions {
         spanda_config::ExpectedAgentState,
         spanda_config::AgentDriftSnapshot,
     )>,
+
+    /// Program source path used to resolve project root for deploy gates.
+    #[serde(skip)]
+    pub source_path: Option<std::path::PathBuf>,
+
+    /// Explicit project root for deploy provenance gates (overrides `source_path` discovery).
+    #[serde(skip)]
+    pub project_root: Option<std::path::PathBuf>,
 }
 
 /// Twin readiness comparison status.

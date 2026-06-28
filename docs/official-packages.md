@@ -101,6 +101,18 @@ spanda-gps = "0.1"
 import positioning.gps;
 ```
 
+## Registry provenance (provider wiring)
+
+Built-in provider bootstrap uses **provenanced** dependencies only — not every package name in the official catalog.
+
+| How you depend | `bootstrap_providers_for_packages` wires live backends? |
+|----------------|--------------------------------------------------------|
+| `spanda-gps = "0.1"` (registry) | Yes |
+| `spanda-gps = { path = "../../packages/registry/spanda-gps" }` | Yes (canonical monorepo tree) |
+| `spanda-gps = { path = "../my-fork" }` | **No** — stub `.sd` only |
+
+Path or git overrides of official names emit an `official_provenance` validation warning. Production deploy gates block them. See [how-packages-work.md](./how-packages-work.md).
+
 ## Verify adapter metadata
 
 ```bash

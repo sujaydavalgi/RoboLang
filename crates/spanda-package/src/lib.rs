@@ -15,6 +15,7 @@ pub mod lockfile;
 pub mod manifest;
 pub mod official;
 pub mod project;
+pub mod provenance_gate;
 pub mod publish;
 pub mod registry;
 pub mod registry_fetch;
@@ -53,11 +54,17 @@ pub use integrity::{
 pub use lockfile::{Lockfile, LOCKFILE_FILENAME};
 pub use manifest::{find_project_root, PackageManifest, PackageSection, MANIFEST_FILENAME};
 pub use official::{
-    installed_official_packages, is_official_package, load_official_packages_for_project,
-    load_official_packages_for_source, official_packages_from_lockfile,
-    official_packages_from_manifest,
+    dependency_provenance, installed_official_packages, is_official_package,
+    load_official_packages_for_project, load_official_packages_for_source,
+    locked_dependency_provenance, official_packages_from_lockfile,
+    official_packages_from_manifest, provenance_wires_official_providers, OfficialProvenance,
+    unofficial_official_overrides_from_lockfile, unofficial_official_overrides_from_manifest,
 };
 pub use project::{add_dependency, collect_source_files, init_package, remove_dependency};
+pub use provenance_gate::{
+    evaluate_project_provenance_gate, registry_lockfile_signature_failures,
+    ProjectProvenanceGateReport,
+};
 pub use publish::{
     bundle_package, mirror_bundle_to_local_registry, publish_package, PublishReport,
 };
@@ -82,6 +89,6 @@ pub use safety::{SafetyLevel, SafetyMetadata};
 pub use tar_extract::extract_tarball_safe;
 pub use trust::{evaluate_package_trust, TrustFactor, TrustScoreReport};
 pub use validation::{
-    validate_package, ApplicationPermissions, ValidationIssue, ValidationReport, ValidationSeverity,
+    validate_package, validate_package_in, ApplicationPermissions, ValidationIssue, ValidationReport, ValidationSeverity,
 };
 pub use vendor::{vendor_dependencies, VendorReport};

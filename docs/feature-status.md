@@ -91,6 +91,8 @@ Platform overview: [platform-overview.md](./platform-overview.md)
 | **Live AI providers** | OpenAI, Anthropic, ONNX via Python bridge | Requires API keys or `SPANDA_ONNX_MODEL_PATH`; mock fallback by default |
 | **Live IoT bridges** | Modbus TCP, OPC-UA, zigbee, lora, matter, canbus | Env-gated (`SPANDA_LIVE_*=1`); in-memory hub fallback |
 | **Package publish** | `spanda publish`, registry search, mirror to `registry/packages/` | Remote upload via `SPANDA_REGISTRY_URL`; hosted index lists **40** packages after `build-registry.sh` |
+| **Official package provenance** | Registry-only provider bootstrap; path/git name-squatting blocked | `OfficialProvenance` API; `official_provenance` install warning; production `deploy gate` hard-fail |
+| **Registry signature policy** | `SPANDA_REGISTRY_REQUIRE_SIGNATURE=1` + lockfile signature audit | Required for production `deploy gate`; optional at install otherwise |
 
 ### Planned (v0.5 beta and beyond)
 
@@ -98,7 +100,7 @@ Platform overview: [platform-overview.md](./platform-overview.md)
 |------|-------------|
 | **Differentiation (NEXT)** | What-If Analysis, Mission Risk Analysis, Readiness Forecasting, Trust Graph, Scorecards |
 | **Differentiation (LATER)** | Digital Mission Twin, Certification Packs, Mission Time Travel, Human/Robot Teaming (**Spatial Computing blueprint**), Autonomous Governance |
-| **Human Interaction & Spatial Computing (H1–H4)** | Human entity model, operator capabilities, wearables, AR/VR/XR packages, collaborative missions, remote expert, Control Center human dashboards — [human-interaction-spatial-computing-roadmap.md](./human-interaction-spatial-computing-roadmap.md) |
+| **Human Interaction & Spatial Computing (H1–H4)** | H1 human registry + readiness (**experimental**); H2 wearable/AR package stubs (**experimental**); H3 voice/gesture/eye + remote expert API (**experimental**); H4 Control Center human UI (**planned**) — [human-interaction-spatial-computing-roadmap.md](./human-interaction-spatial-computing-roadmap.md) |
 | **Platform maturity (Phase A)** | `spanda graph`, `spanda deploy gate`, `spanda explain` (with `--config`/`--baseline`), `spanda trust` (package + program) — **Experimental**; see [platform-maturity-roadmap.md](./platform-maturity-roadmap.md) |
 | **Platform maturity (Phase B)** | Threat model, mission diff, scorecard (`spanda score`), policy engine (`spanda verify --policy`, `readiness --policy`, `deploy gate --operational-policy`, runtime `--enforce-policy`) — **Experimental** |
 | **Platform maturity (Phase C)** | Chaos, readiness trends, resource estimation, compliance profiles, ADR (`spanda adr`) — **Experimental** |

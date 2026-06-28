@@ -80,11 +80,11 @@ pub fn official_packages_from_resolved(cfg: &ResolvedSystemConfig) -> Vec<String
     let lock_path = cfg.project_root.join(LOCKFILE_FILENAME);
     if lock_path.exists() {
         if let Ok(lock) = spanda_package::Lockfile::load(&lock_path) {
-            return official_packages_from_lockfile(&lock);
+            return official_packages_from_lockfile(&lock, &cfg.project_root);
         }
     }
     if let Ok(manifest) = PackageManifest::load_from_dir(&cfg.project_root) {
-        return official_packages_from_manifest(&manifest);
+        return official_packages_from_manifest(&manifest, &cfg.project_root);
     }
     cfg.providers.clone()
 }

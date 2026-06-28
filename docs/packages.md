@@ -177,6 +177,21 @@ Applications can restrict which safety levels are permitted. Packages at `simula
 
 Run `spanda install` to resolve all dependencies and write `spanda.lock`.
 
+## Official package provenance
+
+Catalog membership (`is_official_package`) is not enough to wire built-in providers. Runtime and trust scoring require **registry provenance**:
+
+| Dependency source | Built-in providers wire? | Trust `official_framework` factor |
+|-------------------|--------------------------|-----------------------------------|
+| Registry version (`spanda-mqtt = "0.1"`) | Yes | Yes (when lockfile/registry metadata verifies) |
+| Lockfile `registry` source | Yes | Yes |
+| Path to canonical `packages/registry/<name>` | Yes (monorepo dev) | Yes |
+| Path/git override of an official name elsewhere | **No** — `.sd` stubs only | **No** (with `--project`) |
+
+`spanda install` / `spanda build` emit an `official_provenance` **warning** when an official name is reused via path or git without registry provenance.
+
+**Production deploy** (`spanda deploy gate --policy production`) treats name squatting as a **hard failure** and requires `SPANDA_REGISTRY_REQUIRE_SIGNATURE=1` plus valid Ed25519 signatures for every registry dependency in `spanda.lock`. See [deployment-gates.md](./deployment-gates.md) and [package-trust.md](./package-trust.md).
+
 ## Publishing
 
 ```bash

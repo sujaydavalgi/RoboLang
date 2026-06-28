@@ -40,7 +40,7 @@
 | [tier-3-priority-plan.md](./tier-3-priority-plan.md) | **Priority plan: beta → experimental hardening → v1.0 → production Tier 3** |
 | [provider-interfaces.md](./provider-interfaces.md) | **Provider trait contracts for packages** |
 | [official-packages.md](./official-packages.md) | **Official package catalog** |
-| [how-packages-work.md](./how-packages-work.md) | **Package loading pipeline and CLI workflow** |
+| [how-packages-work.md](./how-packages-work.md) | **Package loading pipeline, provenance, and CLI workflow** |
 | [configuration.md](./configuration.md) | **Cascading TOML configuration and ResolvedSystemConfig** |
 | [cascading-config.md](./cascading-config.md) | **Layered config overrides (base → environment → deployment → robot)** |
 | [device-tree.md](./device-tree.md) | **Fleet/device hierarchy and device identity in TOML** |
@@ -150,7 +150,7 @@
 | [mission-time-travel.md](./mission-time-travel.md) | **Replay mission state at any timestamp** |
 | [human-robot-teaming.md](./human-robot-teaming.md) | **Human approval, escalation, override paths** |
 | [dependency-graphs.md](./dependency-graphs.md) | **Dependency graph visualization (`spanda graph`)** |
-| [deployment-gates.md](./deployment-gates.md) | **Deployment gates — block unsafe rollout** |
+| [deployment-gates.md](./deployment-gates.md) | **Deployment gates — block unsafe rollout (production provenance + signatures)** |
 | [explainability.md](./explainability.md) | **`spanda explain` — code, missions, failures, decisions** |
 | [drift-detection.md](./drift-detection.md) | **Configuration drift — expected vs actual** |
 | [threat-modeling.md](./threat-modeling.md) | **Pre-deploy threat modeling** |

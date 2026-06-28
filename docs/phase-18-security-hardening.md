@@ -47,6 +47,7 @@ Follow-up to the post–Phase 17 audit (security **B**, stability **A−**, perf
 | B1 | Ed25519 signatures on publish (`SPANDA_REGISTRY_SIGN_KEY`) | **Complete** |
 | B2 | Verify on install (`SPANDA_REGISTRY_TRUST_KEY`, `SPANDA_REGISTRY_REQUIRE_SIGNATURE`) | **Complete** |
 | B3 | `version_signatures` in registry index | **Complete** |
+| B4 | Production deploy gate (`official_provenance`, `registry_signatures`) | **Complete** — `spanda deploy gate --policy production`; see [deployment-gates.md](./deployment-gates.md) |
 
 ## Phase 21 — Complete ✓ (hosted registry signing + embedder slimming)
 

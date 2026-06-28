@@ -17,7 +17,7 @@ vendor packages → .spanda/packages/
     ↓
 load .sd modules into ModuleRegistry
     ↓
-discover official packages from lockfile
+discover official packages from lockfile (registry provenance)
     ↓
 bootstrap ProviderRegistry
     ↓
@@ -47,7 +47,16 @@ spanda run src/main.sd  # loads packages automatically
 
 ## Official packages
 
-Official packages under `packages/registry/` export dotted module paths (e.g. `positioning.gps`, `communication.mqtt`). The `.sd` exports are thin scaffolds; live behavior is wired through [provider registration](./how-providers-work.md) when the package appears in `spanda.lock`.
+Official packages under `packages/registry/` export dotted module paths (e.g. `positioning.gps`, `communication.mqtt`). The `.sd` exports are thin scaffolds; live behavior is wired through [provider registration](./how-providers-work.md) when the package is **provenanced** in `spanda.lock`:
+
+| Provenance | Built-in providers wire? |
+|------------|--------------------------|
+| Registry version (`spanda-mqtt = "0.1"`) | Yes |
+| Lockfile `registry` source | Yes |
+| Path to canonical `packages/registry/<name>` | Yes (monorepo dev) |
+| Path/git override of an official name elsewhere | **No** — `.sd` stubs only |
+
+Reusing an official package name with a path or git override emits an `official_provenance` validation warning and excludes the name from provider bootstrap.
 
 See [official-packages.md](./official-packages.md) and [packages.md](./packages.md) for the full catalog.
 
@@ -59,8 +68,9 @@ See [official-packages.md](./official-packages.md) and [packages.md](./packages.
 - Capability requirements (`[capabilities]`)
 - Hardware requirements (`[hardware]`)
 - Safety levels (`[safety]`)
+- Official package provenance (`official_provenance` warning on name squatting)
 
-Unauthorized or incompatible packages produce actionable diagnostics before runtime.
+Unauthorized or incompatible packages produce actionable diagnostics before runtime. Production rollout should also run `spanda deploy gate --policy production` (see [deployment-gates.md](./deployment-gates.md)).
 
 ## Project layout
 

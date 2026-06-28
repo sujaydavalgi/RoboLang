@@ -9,7 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-### Added
+- **H3 HRI & collaboration (experimental):** `spanda-voice`, `spanda-gesture`, `spanda-eye-tracking` registry packages; `HriInputProvider` and `OverlayProvider` wiring; `[[spatial_sessions]]` config; Control Center `/v1/hri/sessions` API; collaborative continuity in spatial-computing blueprint examples.
+
+- **Official package provenance binding:** built-in provider bootstrap and trust scoring require registry provenance — registry lockfile source or version constraint, or a path to the canonical `packages/registry/<name>` tree; path/git overrides of official names no longer wire built-in providers; `official_provenance` validation warning; `OfficialProvenance` API in `spanda-package::official`.
+- **Production deploy gates:** `spanda deploy gate --policy production` hard-fails on `official_provenance` (official name path/git squatting) and `registry_signatures` (`SPANDA_REGISTRY_REQUIRE_SIGNATURE=1` plus verified lockfile registry signatures); `spanda-package::provenance_gate` helpers.
+
+- **H2 Wearables & AR (experimental):** nine registry packages (`spanda-smartwatch`, `spanda-industrial-wearables`, `spanda-bodycam`, `spanda-hololens`, `spanda-arkit`, `spanda-arcore`, `spanda-vision-pro`, `spanda-magic-leap`, `spanda-openxr`); `WearableTelemetryProvider` and `SpatialSessionProvider` traits; provider dispatch and package stubs; spatial-computing blueprint device tree wired to H2 providers.
 
 - **H1 Human Interaction (experimental):** `HumanRegistry` and fleet device tree nodes for humans, wearables, AR/VR/drones; operator capability registry; `human_collaboration` readiness profile and compliance template; `spanda demo spatial`; `./scripts/spatial_computing_smoke.sh`.
 

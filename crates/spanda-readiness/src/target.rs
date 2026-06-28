@@ -72,5 +72,7 @@ pub fn readiness_options_from_flags(
         system_config: None,
         baseline_config: None,
         agent_drift: Vec::new(),
+        source_path: None,
+        project_root: None,
     }
 }

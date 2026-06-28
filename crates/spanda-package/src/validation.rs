@@ -3,6 +3,7 @@
 use crate::error::{PackageError, PackageResult};
 use crate::hardware_req::{validate_capability, CapabilityRequirements, HardwareRequirements};
 use crate::manifest::PackageManifest;
+use crate::official::{dependency_provenance, OfficialProvenance};
 use crate::registry::find_registry_entry;
 use crate::safety::{SafetyLevel, SafetyMetadata};
 use spanda_hardware::list_hardware_profiles;
@@ -150,6 +151,15 @@ pub fn validate_package(
     manifest: &PackageManifest,
     app_perms: &ApplicationPermissions,
 ) -> PackageResult<ValidationReport> {
+    validate_package_in(manifest, app_perms, None)
+}
+
+/// Validate a package manifest with optional project-root provenance checks.
+pub fn validate_package_in(
+    manifest: &PackageManifest,
+    app_perms: &ApplicationPermissions,
+    project_root: Option<&std::path::Path>,
+) -> PackageResult<ValidationReport> {
     // Description:
     //     Validate package.
     //
@@ -176,6 +186,9 @@ pub fn validate_package(
     validate_license(manifest, app_perms, &mut report);
     validate_adapter(manifest, &mut report);
     validate_dependencies(manifest, &mut report);
+    if let Some(root) = project_root {
+        validate_official_provenance(manifest, root, &mut report);
+    }
     check_capability_excess(&manifest.capabilities, app_perms, &mut report);
 
     // Take this path when report.ok().
@@ -504,6 +517,28 @@ fn validate_dependencies(manifest: &PackageManifest, report: &mut ValidationRepo
     }
 }
 
+fn validate_official_provenance(
+    manifest: &PackageManifest,
+    project_root: &std::path::Path,
+    report: &mut ValidationReport,
+) {
+    // Warn when an official catalog name is overridden by path/git sources.
+
+    for (name, spec) in manifest.all_dependencies() {
+        if matches!(
+            dependency_provenance(name, spec, project_root),
+            OfficialProvenance::UnofficialOverride
+        ) {
+            report.push_warning(
+                "official_provenance",
+                format!(
+                    "dependency '{name}' reuses an official package name without registry provenance — built-in providers will not wire; use a registry version or path to packages/registry/{name}"
+                ),
+            );
+        }
+    }
+}
+
 /// Warn when package capabilities exceed application permissions.
 fn check_capability_excess(
     caps: &CapabilityRequirements,
@@ -663,5 +698,31 @@ sensors = ["Camera", "Lidar"]
         let perms = ApplicationPermissions::permissive();
         let report = validate_package(&manifest, &perms).unwrap();
         assert!(report.ok());
+    }
+
+    #[test]
+    fn warns_on_official_name_path_override() {
+        let root = tempfile::tempdir().unwrap();
+        let evil = root.path().join("evil-mqtt");
+        std::fs::create_dir_all(&evil).unwrap();
+        let manifest = PackageManifest::parse_str(&format!(
+            r#"
+[package]
+name = "demo"
+version = "0.1.0"
+
+[dependencies]
+spanda-mqtt = {{ path = "{}" }}
+"#,
+            evil.display()
+        ))
+        .unwrap();
+        let perms = ApplicationPermissions::permissive();
+        let report = validate_package_in(&manifest, &perms, Some(root.path())).unwrap();
+        assert!(report.issues.iter().any(|issue| {
+            issue.category == "official_provenance"
+                && issue.message.contains("spanda-mqtt")
+                && issue.message.contains("registry provenance")
+        }));
     }
 }

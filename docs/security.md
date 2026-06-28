@@ -163,6 +163,18 @@ See [audit-provenance.md](./audit-provenance.md) for audit block syntax and prov
 
 Package safety levels (`experimental` → `certified`) are validated in `spanda-package` and documented separately. Runtime `TrustLevel` complements package safety for communication policy.
 
+### Package provenance (supply chain)
+
+Official framework packages (`spanda-mqtt`, `spanda-ros2`, …) are defined in a static catalog, but **runtime provider wiring** and **trust scoring** require registry provenance:
+
+- Registry version constraints and lockfile `registry` sources qualify
+- Path to `packages/registry/<name>` qualifies for monorepo development
+- Path/git overrides of an official name elsewhere do **not** qualify
+
+`spanda trust --project` scores path/git name squatting at 0 on the `official_framework` factor. `spanda deploy gate --policy production` fails the `official_provenance` and `registry_signatures` gates when overrides exist or when `SPANDA_REGISTRY_REQUIRE_SIGNATURE=1` is unset / signatures do not verify.
+
+See [how-packages-work.md](./how-packages-work.md) · [deployment-gates.md](./deployment-gates.md) · [package-trust.md](./package-trust.md).
+
 ## Rules for audit/blockchain libraries
 
 1. **Never** block robot control on ledger confirmation

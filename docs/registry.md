@@ -140,3 +140,21 @@ When `SPANDA_REGISTRY_URL` is set, publish also uploads to the configured remote
 Supported semver operators: exact (`0.1.0`), caret (`^0.1.0`), comparisons (`>=0.1.0, <1.0.0`).
 
 The lockfile pins exact resolved versions for reproducibility.
+
+## Registry integrity environment variables
+
+| Variable | Effect |
+|----------|--------|
+| `SPANDA_REGISTRY_URL` | Registry base URL (`https://` or `file://`; defaults to hosted GitHub raw index) |
+| `SPANDA_REGISTRY_TRUST_KEY` | Public key material for verifying `version_signatures` |
+| `SPANDA_REGISTRY_SIGN_KEY` | Private signing material for `spanda publish` / index maintenance |
+| `SPANDA_REGISTRY_REQUIRE_CHECKSUM=1` | Fail install/fetch when index checksum metadata is missing |
+| `SPANDA_REGISTRY_REQUIRE_SIGNATURE=1` | Fail install/fetch when signatures are missing or invalid |
+
+For **production deployment**, set `SPANDA_REGISTRY_REQUIRE_SIGNATURE=1` and run `spanda deploy gate --policy production` so lockfile registry dependencies are audited against signed checksums in `registry/index.json`. See [deployment-gates.md](./deployment-gates.md).
+
+## Official vs community packages
+
+Packages under `packages/registry/` are **official** (curated catalog + hosted index). Community packages can be published to the same index but are not in the `framework_packages()` allowlist.
+
+Only **registry-provenanced** official names receive built-in provider wiring at runtime. Path or git overrides of official names are allowed for development but do not count as official for providers or production deploy gates. See [packages.md](./packages.md) · [official-packages.md](./official-packages.md).

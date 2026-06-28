@@ -9,6 +9,9 @@ Robotics teams adopt Spanda when **hardware fit is checked in CI** before hardwa
 | `spanda check` | Every push and PR | Non-zero exit (type/safety errors) |
 | `spanda verify --json` | Every push and PR (after `check` passes) | `compatible: false` or non-zero exit |
 | `spanda verify --json --all-targets` | Nightly or release branches | Any matrix cell incompatible for a required target |
+| `spanda deploy gate --policy production` | Release / deploy workflows | Any gate fails (includes `official_provenance`, `registry_signatures`) |
+
+Set `SPANDA_REGISTRY_REQUIRE_SIGNATURE=1` in production CI before running the deploy gate so lockfile registry dependencies are checked against signed checksums in `registry/index.json`.
 
 `spanda verify` answers: *Will this program run on the declared deploy target?* — memory, sensors, actuators, task timing, battery estimates, and AI model requirements.
 

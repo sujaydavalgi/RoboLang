@@ -1,6 +1,11 @@
 //! Static trust scoring for registry and vendored packages.
 //!
-use crate::official::is_official_package;
+use crate::lockfile::{Lockfile, LOCKFILE_FILENAME};
+use crate::manifest::PackageManifest;
+use crate::official::{
+    dependency_provenance, is_official_package, locked_dependency_provenance,
+    provenance_wires_official_providers, OfficialProvenance,
+};
 use crate::registry_remote::lookup_registry_entry;
 use crate::registry_sign::{registry_trust_key, verify_registry_signature};
 use crate::safety::SafetyLevel;
@@ -84,12 +89,33 @@ pub fn evaluate_package_trust(
     }
 
     if is_official_package(name) {
+        let (official_score, official_passed, official_detail) =
+            match project_dependency_provenance(name, project_root) {
+                Some(OfficialProvenance::UnofficialOverride) => {
+                    recommendations.push(
+                        "Use a registry version or path to packages/registry/<name> for official providers"
+                            .into(),
+                    );
+                    (
+                        0,
+                        false,
+                        "official package name overridden by path/git source",
+                    )
+                }
+                Some(prov) if provenance_wires_official_providers(prov) => (
+                    15,
+                    true,
+                    "official Spanda framework package with registry provenance",
+                ),
+                Some(_) => (0, false, "official package without registry provenance"),
+                None => (15, true, "official Spanda framework package"),
+            };
         factors.push(factor(
             "official_framework",
+            official_score,
             15,
-            15,
-            true,
-            "official Spanda framework package",
+            official_passed,
+            official_detail,
         ));
     } else {
         factors.push(factor(
@@ -245,6 +271,27 @@ fn vendored_safety_level(name: &str, project_root: Option<&Path>) -> Option<Safe
     let text = std::fs::read_to_string(&manifest).ok()?;
     let parsed = crate::manifest::PackageManifest::parse_str(&text).ok()?;
     Some(parsed.safety.level)
+}
+
+fn project_dependency_provenance(
+    name: &str,
+    project_root: Option<&Path>,
+) -> Option<OfficialProvenance> {
+    let root = project_root?;
+    let lock_path = root.join(LOCKFILE_FILENAME);
+    if lock_path.is_file() {
+        if let Ok(lock) = Lockfile::load(&lock_path) {
+            if let Some(dep) = lock.dependencies.get(name) {
+                return Some(locked_dependency_provenance(name, dep, root));
+            }
+        }
+    }
+    if let Ok(manifest) = PackageManifest::load_from_dir(root) {
+        if let Some(spec) = manifest.dependencies.get(name) {
+            return Some(dependency_provenance(name, spec, root));
+        }
+    }
+    None
 }
 
 #[cfg(test)]

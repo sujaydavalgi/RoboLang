@@ -24,13 +24,15 @@ Providers are optional domain backends registered in `ProviderRegistry`. The lea
 
 ## Bootstrap
 
-When you run a program inside a package project, the CLI loads official package names from `spanda.lock` and calls:
+When you run a program inside a package project, the CLI loads **provenanced** official package names from `spanda.lock` / `spanda.toml` and calls:
 
 ```rust
 bootstrap_providers_for_packages(&["spanda-gps", "spanda-mqtt", ...])
 ```
 
-This registers transport adapters, positioning stubs, connectivity stubs, and capability grants scoped to installed packages.
+Only registry-resolved dependencies (or a path to the canonical `packages/registry/<name>` tree) count as official for provider wiring. Reusing an official name via an arbitrary path or git URL does **not** register built-in providers — calls fall back to package `.sd` stubs.
+
+This registers transport adapters, positioning stubs, connectivity stubs, and capability grants scoped to provenanced packages.
 
 Transport providers are also attached to `RoutingCommBus` via `sync_comm_bus_for_official_packages`.
 
@@ -49,7 +51,7 @@ Imported official-package functions dispatch through the registry when the backi
 | `sim.gazebo` / `sim.webots` | `step()` | `SimulationProvider::step` |
 | `robotics.fleet` | `dispatch()` | `FleetProvider::dispatch_task` |
 
-If the package is not in `spanda.lock`, calls fall back to the `.sd` stub body (returns placeholder values).
+If the package is not **provenanced** in `spanda.lock` (registry source or canonical `packages/registry/` path), calls fall back to the `.sd` stub body (returns placeholder values).
 
 ## Capabilities and security
 

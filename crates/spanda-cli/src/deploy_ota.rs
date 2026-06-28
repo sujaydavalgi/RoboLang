@@ -869,6 +869,12 @@ fn cmd_gate(args: &[String]) {
         false,
     );
     options.system_config = system_config;
+    options.source_path = Some(std::path::PathBuf::from(&file));
+    if let Some(parent) = std::path::Path::new(&file).parent() {
+        if let Some(root) = spanda_package::find_project_root(parent) {
+            options.project_root = Some(root);
+        }
+    }
     let policy = if policy_name == "production" {
         spanda_readiness::DeploymentGatePolicy::production()
     } else {
