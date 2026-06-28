@@ -1741,6 +1741,94 @@ fn mission_status_to_entity_state(
     }
 }
 
+/// Digital-thread device link projected into the entity relationship store.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct DigitalThreadTraceabilityLink {
+    pub device_id: String,
+    pub capability: String,
+    pub assigned_robot: Option<String>,
+}
+
+/// Program dependency graph edge projected to entity ids.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ProgramGraphTraceabilityEdge {
+    pub from_entity_id: String,
+    pub to_entity_id: String,
+    pub relation: String,
+}
+
+/// Merge digital-thread and program-graph traceability into the entity registry.
+pub fn apply_traceability_overlay(
+    registry: &mut EntityRegistry,
+    device_links: &[DigitalThreadTraceabilityLink],
+    program_edges: &[ProgramGraphTraceabilityEdge],
+) {
+    for link in device_links {
+        if !registry.entities.contains_key(&link.device_id) {
+            continue;
+        }
+        let Some(robot_id) = link.assigned_robot.as_ref() else {
+            continue;
+        };
+        if !registry.entities.contains_key(robot_id) {
+            continue;
+        }
+        link_if_absent(
+            registry,
+            robot_id,
+            &link.device_id,
+            EntityRelationshipKind::DependsOn,
+            Some(&format!("traceability:{}", link.capability)),
+        );
+    }
+    for edge in program_edges {
+        if !registry.entities.contains_key(&edge.from_entity_id)
+            || !registry.entities.contains_key(&edge.to_entity_id)
+        {
+            continue;
+        }
+        let kind = program_relation_to_entity_kind(&edge.relation);
+        link_if_absent(
+            registry,
+            &edge.from_entity_id,
+            &edge.to_entity_id,
+            kind,
+            Some(&edge.relation),
+        );
+    }
+}
+
+fn program_relation_to_entity_kind(relation: &str) -> EntityRelationshipKind {
+    match relation {
+        "runs" => EntityRelationshipKind::ParticipatesIn,
+        "requires" | "requires_hardware" | "requires_package" | "requires_provider"
+        | "requires_component" | "uses_hardware" | "uses_provider" | "deploy_to" => {
+            EntityRelationshipKind::DependsOn
+        }
+        "exposes" | "provided_by" => EntityRelationshipKind::Provides,
+        "has_sensor" | "has_actuator" | "protected_by" | "kill_switch" | "device_type" => {
+            EntityRelationshipKind::Contains
+        }
+        _ => EntityRelationshipKind::DependsOn,
+    }
+}
+
+fn link_if_absent(
+    registry: &mut EntityRegistry,
+    from: &str,
+    to: &str,
+    kind: EntityRelationshipKind,
+    label: Option<&str>,
+) {
+    let label_string = label.map(String::from);
+    if registry.relationships.iter().any(|edge| {
+        edge.from_id == from && edge.to_id == to && edge.kind == kind && edge.label == label_string
+    }) {
+        return;
+    }
+    link(registry, from, to, kind, label);
+}
+
 impl Default for EntityRecord {
     fn default() -> Self {
         Self {

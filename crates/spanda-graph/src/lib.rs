@@ -2,11 +2,16 @@
 //!
 pub mod build;
 pub mod digital_thread;
+pub mod entity_alignment;
 pub mod format;
 
 pub use build::{build_dependency_graph, DependencyGraph, GraphEdge, GraphNode, GraphNodeKind};
 pub use digital_thread::{
     query_digital_thread, DigitalThreadDeviceLink, DigitalThreadQuery, DigitalThreadReport,
     LifecyclePhase, LifecycleRow,
+};
+pub use entity_alignment::{
+    annotate_entity_ids, build_alignment_context, graph_node_id, program_graph_entity_edges,
+    resolve_entity_id, EntityAlignmentContext, ProgramGraphEntityEdge,
 };
 pub use format::{format_dependency_graph, GraphFormat};

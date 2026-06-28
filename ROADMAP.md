@@ -79,7 +79,7 @@ Unified Entity Model (all platform objects)
 | **Entity REST API** | `/v1/entities/*` (health, readiness, trust, relationships, graph) | **Experimental** | Now | Core |
 | **Control Center Entities tab** | Browse, search, graph neighborhood | **Experimental** | Now | Control Center |
 | **Runtime mission entities** | Project active missions into registry | **Experimental** | Now | Core |
-| **Graph unification** | Align `spanda-graph` + digital thread with entity IDs | **Future** | Next | Core |
+| **Graph unification** | Align `spanda-graph` + digital thread with entity IDs; `GET /v1/entities/traceability` | **Experimental** | Now | Core |
 | **Entity mutation API** | Register, tag, relate with audit | **Future** | Later | Core |
 
 **Design rule:** Before introducing a new top-level platform abstraction, determine whether it should be a new **Entity kind** instead.

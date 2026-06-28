@@ -153,17 +153,17 @@ Cross-references:
 - [x] Control Center **Entities** tab
 - [x] SDK typed fields on `Entity`
 
-### Phase 2 — Runtime missions (Next)
+### Phase 2 — Runtime missions (Complete)
 
 - [x] Project runtime `MissionRuntime` into entity registry during active programs
 - [x] Link mission entities to robot/fleet entities via `participates_in` edges
 - [x] Mission readiness overlays on entity readiness API
 
-### Phase 3 — Graph unification (Next)
+### Phase 3 — Graph unification (Complete)
 
-- [ ] Align `spanda-graph` dependency nodes with entity IDs
-- [ ] Merge digital-thread device links into entity relationship store
-- [ ] Unified traceability queries across program graph and entity graph
+- [x] Align `spanda-graph` dependency nodes with entity IDs
+- [x] Merge digital-thread device links into entity relationship store
+- [x] Unified traceability queries across program graph and entity graph (`GET /v1/entities/traceability`)
 
 ### Phase 4 — Industry extensions (Later)
 

@@ -136,6 +136,47 @@ fn entity_query_filters_participates_in_mission() {
 }
 
 #[test]
+fn traceability_overlay_merges_device_capability_links() {
+    use spanda_config::{
+        apply_traceability_overlay, DigitalThreadTraceabilityLink, ProgramGraphTraceabilityEdge,
+    };
+
+    let resolved = warehouse_config();
+    let mut registry = build_entity_registry(&resolved);
+    let robot_id = resolved.robot_ids().into_iter().next().expect("robot");
+    let device_id = resolved
+        .device_registry
+        .devices
+        .first()
+        .map(|device| device.id.clone())
+        .expect("device");
+    apply_traceability_overlay(
+        &mut registry,
+        &[DigitalThreadTraceabilityLink {
+            device_id: device_id.clone(),
+            capability: "navigate".into(),
+            assigned_robot: Some(robot_id.to_string()),
+        }],
+        &[ProgramGraphTraceabilityEdge {
+            from_entity_id: robot_id.to_string(),
+            to_entity_id: device_id.clone(),
+            relation: "uses_hardware".into(),
+        }],
+    );
+    assert!(registry.relationships.iter().any(|edge| {
+        edge.from_id == robot_id
+            && edge.to_id == device_id
+            && edge.kind == EntityRelationshipKind::DependsOn
+            && edge.label.as_deref() == Some("traceability:navigate")
+    }));
+    assert!(registry.relationships.iter().any(|edge| {
+        edge.from_id == robot_id
+            && edge.to_id == device_id
+            && edge.label.as_deref() == Some("uses_hardware")
+    }));
+}
+
+#[test]
 fn impact_analysis_traverses_relationships() {
     let resolved = warehouse_config();
     let registry = build_entity_registry(&resolved);

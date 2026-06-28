@@ -37,6 +37,9 @@ Organization
 | Impact analysis | `GET /v1/entities/{id}/relationships` → `impact` | “What breaks if this GPS fails?” |
 | Dependency chain | same → `dependency_chain` | Provider/package dependency walk |
 | Digital thread | `/v1/digital-thread/query` | Program-centric trace (complementary) |
+| **Unified traceability** | `GET /v1/entities/traceability` | Entity + program + digital-thread chain |
+
+Phase 3 (complete) aligns dependency-graph nodes with entity IDs and merges digital-thread links into the entity relationship store. Query params: `entity_id`, `device_id`, `capability`.
 
 ### Impact analysis
 
@@ -55,7 +58,7 @@ Organization
 | **Config graph** | TOML layer merge order | `spanda-config` layer |
 | **Collaboration graph** | HRI sessions | `/v1/hri/collaboration` |
 
-Phase 3 of the [migration plan](./entity-model.md#migration-plan) unifies entity IDs into the dependency graph for end-to-end traceability.
+Phase 3 of the [migration plan](./entity-model.md#migration-plan) is complete: dependency nodes carry `entity_id` metadata and `/v1/entities/traceability` returns unified chains.
 
 ## Visualization
 

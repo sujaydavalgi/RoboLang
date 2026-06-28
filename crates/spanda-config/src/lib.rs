@@ -97,11 +97,12 @@ pub use drift::{
     DriftDimension, DriftFinding, DriftSeverity, ExpectedAgentState,
 };
 pub use entity::{
-    apply_runtime_mission_overlay, build_entity_registry, mission_entity_id,
-    runtime_missions_from_approval_seeds, EntityAuditInfo, EntityGraph, EntityHealthStatus,
-    EntityKind, EntityLifecycleState, EntityLocation, EntityQuery, EntityQueryResult,
-    EntityReadinessStatus, EntityRecord, EntityRegistry, EntityRelationship,
-    EntityRelationshipKind, EntitySecurityIdentity, EntityTrustStatus, RuntimeMissionEntity,
+    apply_runtime_mission_overlay, apply_traceability_overlay, build_entity_registry,
+    mission_entity_id, runtime_missions_from_approval_seeds, DigitalThreadTraceabilityLink,
+    EntityAuditInfo, EntityGraph, EntityHealthStatus, EntityKind, EntityLifecycleState,
+    EntityLocation, EntityQuery, EntityQueryResult, EntityReadinessStatus, EntityRecord,
+    EntityRegistry, EntityRelationship, EntityRelationshipKind, EntitySecurityIdentity,
+    EntityTrustStatus, ProgramGraphTraceabilityEdge, RuntimeMissionEntity,
 };
 pub use error::{ConfigError, ConfigResult};
 pub use human_entities::{
