@@ -7,8 +7,10 @@ use crate::state::ControlCenterState;
 use serde::Deserialize;
 use spanda_certify::build_certification_proof_summary;
 use spanda_config::{
-    default_snapshots_dir, detect_operational_drift_full, load_config_snapshot,
-    DeviceLifecycleState,
+    default_mission_approvals_path, default_snapshots_dir, detect_operational_drift_full,
+    load_config_snapshot,     load_mission_approval_queue, merge_mission_approval_seeds,
+    resolve_mission_approval, save_mission_approval_queue, DeviceLifecycleState,
+    MissionApprovalStatus,
 };
 use spanda_deploy_http::HttpResponse;
 use spanda_ota::{
@@ -44,7 +46,11 @@ struct OtaPlanRequest {
 struct OperatorMissionRequest {
     mission_id: String,
     #[serde(default)]
+    approval_id: Option<String>,
+    #[serde(default)]
     approved: bool,
+    #[serde(default)]
+    note: Option<String>,
 }
 
 #[derive(Deserialize)]
@@ -467,6 +473,25 @@ pub fn operator_quarantine(
     }))
 }
 
+pub fn mission_approvals_list(state: &ControlCenterState) -> HttpResponse {
+    let path = default_mission_approvals_path();
+    let mut queue = load_mission_approval_queue(&path).unwrap_or_default();
+    if let Some(resolved) = state.resolved.as_ref() {
+        merge_mission_approval_seeds(
+            &mut queue,
+            &resolved.human_registry.mission_approvals,
+            now_ms(),
+        );
+        let _ = save_mission_approval_queue(&path, &queue);
+    }
+    json_ok(&serde_json::json!({
+        "version": "v1",
+        "approvals": queue.requests,
+        "count": queue.requests.len(),
+        "pending": queue.requests.iter().filter(|r| r.status == MissionApprovalStatus::Pending).count(),
+    }))
+}
+
 pub fn operator_mission_approve(body: &str, ctx: Option<&RbacContext>) -> HttpResponse {
     if !ApiKeyStore::check(ctx, RbacAction::Approve) {
         return unauthorized();
@@ -475,12 +500,45 @@ pub fn operator_mission_approve(body: &str, ctx: Option<&RbacContext>) -> HttpRe
         Ok(v) => v,
         Err(e) => return bad_request(&e.to_string()),
     };
+    let path = default_mission_approvals_path();
+    let mut queue = load_mission_approval_queue(&path).unwrap_or_default();
+    let resolver = ctx
+        .map(|c| c.key_id.clone())
+        .unwrap_or_else(|| "operator".into());
+    let lookup = req
+        .approval_id
+        .as_deref()
+        .unwrap_or(req.mission_id.as_str());
+    let record = match resolve_mission_approval(&mut queue, lookup, req.approved, &resolver, now_ms())
+    {
+        Ok(record) => record,
+        Err(_) => {
+            queue.requests.push(spanda_config::MissionApprovalRecord {
+                id: format!("mission-{}", req.mission_id),
+                mission_id: req.mission_id.clone(),
+                requested_by: None,
+                status: if req.approved {
+                    MissionApprovalStatus::Approved
+                } else {
+                    MissionApprovalStatus::Rejected
+                },
+                created_at_ms: now_ms(),
+                resolved_at_ms: Some(now_ms()),
+                resolver: Some(resolver.clone()),
+                note: req.note.clone(),
+            });
+            queue.requests.last().unwrap().clone()
+        }
+    };
+    let _ = save_mission_approval_queue(&path, &queue);
     json_ok(&serde_json::json!({
         "version": "v1",
         "ok": true,
         "mission_id": req.mission_id,
+        "approval_id": record.id,
         "approved": req.approved,
         "status": if req.approved { "approved" } else { "rejected" },
+        "record": record,
     }))
 }
 

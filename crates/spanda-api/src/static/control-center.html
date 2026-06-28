@@ -578,7 +578,7 @@
     async function loadHumans() {
       try {
         errEl.hidden = true;
-        const [humans, wearables, sessions, health, readiness, collaboration, context] = await Promise.all([
+        const [humans, wearables, sessions, health, readiness, collaboration, context, twins, missionApprovals] = await Promise.all([
           api("/v1/humans"),
           api("/v1/wearables"),
           api("/v1/hri/sessions"),
@@ -586,6 +586,8 @@
           api("/v1/humans/readiness"),
           api("/v1/hri/collaboration"),
           api("/v1/hri/context"),
+          api("/v1/humans/twins"),
+          api("/v1/operator/mission/approvals"),
         ]);
         const humanRows = (humans.humans || []).map((h) =>
           `<tr><td>${h.id}</td><td>${h.role}</td><td>${h.display_name || "—"}</td><td>${h.availability || "—"}</td><td>${(h.capabilities || []).join(", ")}</td><td>${h.wearable_count}</td></tr>`
@@ -595,6 +597,12 @@
         ).join("");
         const sessionRows = (sessions.sessions || []).map((s) =>
           `<tr><td>${s.id}</td><td>${s.session_type}</td><td>${s.status}</td><td>${s.field_human_id || "—"}</td><td>${s.expert_human_id || "—"}</td><td>${(s.capabilities || []).join(", ")}</td></tr>`
+        ).join("");
+        const twinRows = (twins.twins || []).map((t) =>
+          `<tr><td>${t.id}</td><td>${t.entity_id}</td><td>${(t.mirror || []).join(", ")}</td><td>${t.replay ? "yes" : "no"}</td></tr>`
+        ).join("");
+        const approvalRows = (missionApprovals.approvals || []).map((a) =>
+          `<tr><td>${a.id}</td><td>${a.mission_id}</td><td>${a.requested_by || "—"}</td><td>${a.status}</td></tr>`
         ).join("");
         const policy = health.policy || {};
         document.getElementById("tab-humans").innerHTML = `
@@ -618,13 +626,18 @@
           <pre>${JSON.stringify(collaboration, null, 2)}</pre>
           <h3>Context awareness</h3>
           <pre>${JSON.stringify(context, null, 2)}</pre>
+          <h3>Human digital twins</h3>
+          <table><thead><tr><th>Twin</th><th>Entity</th><th>Mirror</th><th>Replay</th></tr></thead><tbody>${twinRows || "<tr><td colspan=4>none</td></tr>"}</tbody></table>
+          <h3>Mission approval queue</h3>
+          <table><thead><tr><th>ID</th><th>Mission</th><th>Requested by</th><th>Status</th></tr></thead><tbody>${approvalRows || "<tr><td colspan=4>none</td></tr>"}</tbody></table>
+          <p>Approve: <code>POST /v1/operator/mission/approve</code> with Bearer token · List: <code>GET /v1/operator/mission/approvals</code></p>
           <p>Annotate: <code>POST /v1/hri/sessions/{id}/annotate</code> · Operator readiness: <code>GET /v1/humans/{id}/readiness</code> · Team: <code>GET /v1/humans/readiness</code></p>
           <h3>VR training</h3>
           <p>Record: <code>spanda sim vr-training/training_mission.sd --record</code> · Replay: <code>spanda replay training_mission.trace --playback</code></p>
           <h3>Health opt-in policy</h3>
           <pre>${JSON.stringify(health, null, 2)}</pre>
           <h3>Approval queue</h3>
-          <p>Mission approvals via Operator tab · <code>POST /v1/operator/mission/approve</code></p>`;
+          <p>Mission approvals table above · <code>POST /v1/operator/mission/approve</code> (Bearer, Approve role)</p>`;
       } catch (e) {
         document.getElementById("tab-humans").innerHTML = `
           <h2>Human Interaction</h2>

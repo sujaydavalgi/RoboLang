@@ -168,3 +168,36 @@ pub fn humans_readiness_team(state: &ControlCenterState) -> HttpResponse {
     }
     json_ok(&payload)
 }
+
+pub fn humans_twins_list(state: &ControlCenterState) -> HttpResponse {
+    let Some(resolved) = state.resolved.as_ref() else {
+        return bad_request("no resolved configuration loaded");
+    };
+    let health_gate = resolved.human_health_gate();
+    let twins: Vec<_> = resolved
+        .human_registry
+        .human_twins()
+        .into_iter()
+        .map(|twin| {
+            let mut mirrors = twin.mirror.clone();
+            if !health_gate.allows_health_telemetry_read() {
+                mirrors.retain(|field| field != "health_status");
+            }
+            serde_json::json!({
+                "id": twin.id,
+                "entity_id": twin.entity_id,
+                "entity_type": twin.entity_type,
+                "mirror": mirrors,
+                "replay": twin.replay.unwrap_or(false),
+                "telemetry_sync": twin.telemetry_sync.unwrap_or(false),
+                "training_session_id": twin.training_session_id,
+            })
+        })
+        .collect();
+    json_ok(&serde_json::json!({
+        "version": "v1",
+        "twins": twins,
+        "count": twins.len(),
+        "health_mirror_gated": !health_gate.allows_health_telemetry_read(),
+    }))
+}

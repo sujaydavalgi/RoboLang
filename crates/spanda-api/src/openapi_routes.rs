@@ -235,6 +235,10 @@ pub const REST_V1_ROUTES: &[ApiRoute] = &[
         path: "/v1/operator/quarantine",
     },
     ApiRoute {
+        method: "GET",
+        path: "/v1/operator/mission/approvals",
+    },
+    ApiRoute {
         method: "POST",
         path: "/v1/operator/mission/approve",
     },
@@ -313,6 +317,10 @@ pub const REST_V1_ROUTES: &[ApiRoute] = &[
     ApiRoute {
         method: "GET",
         path: "/v1/humans/readiness",
+    },
+    ApiRoute {
+        method: "GET",
+        path: "/v1/humans/twins",
     },
     ApiRoute {
         method: "GET",

@@ -303,6 +303,7 @@ pub fn handle_request(
         ("/v1/operator/quarantine", "POST") => {
             e3::operator_quarantine(state, &request.body, ctx.as_ref())
         }
+        ("/v1/operator/mission/approvals", "GET") => e3::mission_approvals_list(state),
         ("/v1/operator/mission/approve", "POST") => {
             e3::operator_mission_approve(&request.body, ctx.as_ref())
         }
@@ -883,6 +884,9 @@ fn route_humans(
     }
     if path == "/v1/humans/readiness" && method == "GET" {
         return Some(crate::humans::humans_readiness_team(state));
+    }
+    if path == "/v1/humans/twins" && method == "GET" {
+        return Some(crate::humans::humans_twins_list(state));
     }
     let rest = path.strip_prefix("/v1/humans/")?;
     let (human_id, action) = rest.split_once('/').unwrap_or((rest, ""));

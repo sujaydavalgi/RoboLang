@@ -575,6 +575,12 @@
         "responses": { "200": { "description": "Device quarantined" } }
       }
     },
+    "/v1/operator/mission/approvals": {
+      "get": {
+        "summary": "List pending and resolved mission approval requests",
+        "responses": { "200": { "description": "Mission approval queue" } }
+      }
+    },
     "/v1/operator/mission/approve": {
       "post": {
         "summary": "Approve or reject a mission",
@@ -691,6 +697,12 @@
       "get": {
         "summary": "Team readiness rollup with per-operator summary",
         "responses": { "200": { "description": "Team readiness report" } }
+      }
+    },
+    "/v1/humans/twins": {
+      "get": {
+        "summary": "Human digital twin metadata with health mirror gating",
+        "responses": { "200": { "description": "Human twin list" } }
       }
     },
     "/v1/humans/{id}/readiness": {

@@ -46,4 +46,10 @@ fn humans_readiness_team_and_hri_context_from_blueprint() {
     assert_eq!(context.status, 200);
     assert!(context.body.contains("warehouse-a-restricted"));
     assert!(context.body.contains("human_locations"));
+    let twins = spanda_api::humans::humans_twins_list(&state);
+    assert_eq!(twins.status, 200);
+    assert!(twins.body.contains("operator-twin-001"));
+    let missions = spanda_api::e3::mission_approvals_list(&state);
+    assert_eq!(missions.status, 200);
+    assert!(missions.body.contains("pick-mission-approval"));
 }
