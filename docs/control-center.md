@@ -26,7 +26,7 @@ spanda control-center serve --grpc-bind 127.0.0.1:50051
 | Method | How |
 |--------|-----|
 | **Embedded UI** | Open `http://127.0.0.1:8080/` in a browser (default bind address) |
-| **Web package** | Use the **Control Center** view in `@spanda/web`; set the API URL to your serve address |
+| **Web package** | Use the **Control Center** view in `@davalgi-spanda/web`; set the API URL to your serve address |
 | **Desktop (Tauri)** | Start the API first, then `npm run control-center:desktop:dev` (Vite on port **5174**); optional `VITE_CONTROL_CENTER_URL=http://host:port` |
 | **Remote CLI** | `export SPANDA_CONTROL_CENTER_URL=http://127.0.0.1:8080` then `spanda control-center dashboard` (see [Remote CLI](#remote-cli-rest-parity)) |
 
@@ -57,7 +57,7 @@ spanda control-center serve
 
 When `SPANDA_API_KEY` is unset and no `SPANDA_API_KEYS_FILE` is loaded, `control-center serve` prints a warning with the same generate command.
 
-The embedded Control Center UI shows an **Operator API key** banner when no token is configured — paste a generated token for the browser session. The `@spanda/web` panel prompts you to set `VITE_SPANDA_API_KEY`.
+The embedded Control Center UI shows an **Operator API key** banner when no token is configured — paste a generated token for the browser session. The `@davalgi-spanda/web` panel prompts you to set `VITE_SPANDA_API_KEY`.
 
 ### Single operator key (local dev)
 
@@ -165,7 +165,7 @@ spanda control-center serve \
   --program examples/solutions/spatial-computing/warehouse-ar/pick_mission.sd
 ```
 
-The **Humans** tab shows operator dashboard, wearable inventory, AR/HRI sessions, VR training links, and health opt-in policy. The same panels ship in `@spanda/web` `ControlCenterPanel` (parity with embedded HTML).
+The **Humans** tab shows operator dashboard, wearable inventory, AR/HRI sessions, VR training links, and health opt-in policy. The same panels ship in `@davalgi-spanda/web` `ControlCenterPanel` (parity with embedded HTML).
 
 Before promoting Human Interaction to **Stable**: start HRI field soak (`date -u +%Y-%m-%d > .spanda/hri-field-soak-start.txt`), then run `./scripts/hri_stable_promotion_gate.sh` — see [stable-hardening-human-interaction.md](./stable-hardening-human-interaction.md).
 
@@ -382,7 +382,7 @@ spanda control-center serve --config spanda.toml --program rover.sd
 
 ## Control Center UI sections
 
-The `@spanda/web` Control Center panel includes:
+The `@davalgi-spanda/web` Control Center panel includes:
 
 | Section | Purpose |
 |---------|---------|
@@ -507,7 +507,7 @@ Package: `@spanda/control-center-desktop` (`packages/control-center-desktop`).
 2. Dev shell: `npm run control-center:desktop:dev` (Vite on port **5174**)
 3. Optional API URL: `VITE_CONTROL_CENTER_URL=http://host:port`
 
-The desktop shell reuses `ControlCenterPanel` from `@spanda/web`; it does not embed `spanda-api`. Production release: tag `desktop-v*`, CI workflow `.github/workflows/desktop-release.yml`, optional `./scripts/sign_tauri_macos.sh`. See [packages/control-center-desktop/README.md](../packages/control-center-desktop/README.md) · [desktop-release-runbook.md](./desktop-release-runbook.md).
+The desktop shell reuses `ControlCenterPanel` from `@davalgi-spanda/web`; it does not embed `spanda-api`. Production release: tag `desktop-v*`, CI workflow `.github/workflows/desktop-release.yml`, optional `./scripts/sign_tauri_macos.sh`. See [packages/control-center-desktop/README.md](../packages/control-center-desktop/README.md) · [desktop-release-runbook.md](./desktop-release-runbook.md).
 
 ---
 

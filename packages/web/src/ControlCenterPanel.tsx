@@ -387,7 +387,7 @@ export function ControlCenterPanel({ apiBase }: Props) {
         headers: authHeaders(),
         body: JSON.stringify({
           title: "Control Center incident",
-          description: "Opened from @spanda/web panel",
+          description: "Opened from @davalgi-spanda/web panel",
           severity: "warning",
         }),
       });

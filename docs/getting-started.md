@@ -657,7 +657,7 @@ export SPANDA_API_KEY="my-local-dev-key"
 cargo run -p spanda -- control-center serve --bind 127.0.0.1:8080
 ```
 
-Open `http://127.0.0.1:8080` for the embedded Control Center HTML UI, or use the React panel in `@spanda/web` / the Tauri desktop shell (`npm run control-center:desktop:dev` with the API running).
+Open `http://127.0.0.1:8080` for the embedded Control Center HTML UI, or use the React panel in `@davalgi-spanda/web` / the Tauri desktop shell (`npm run control-center:desktop:dev` with the API running).
 
 **API keys:** Run `spanda control-center api-key generate --export` to create a token, set `SPANDA_API_KEY` on the server, and use the same value as `Authorization: Bearer …` for mutations. Full guide: [control-center.md — Authentication & API keys](./control-center.md#authentication--api-keys).
 

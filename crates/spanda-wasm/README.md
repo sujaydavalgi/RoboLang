@@ -12,4 +12,4 @@
 npm run build:wasm
 ```
 
-Consumed by `@spanda/web` (`packages/web/`).
+Consumed by `@davalgi-spanda/web` (`packages/web/`).

@@ -65,7 +65,7 @@ flowchart TB
     LSP["@spanda/lsp"]
     WASM["spanda-wasm"]
     NODE["spanda-node"]
-    WEB["@spanda/web playground"]
+    WEB["@davalgi-spanda/web playground"]
   end
 
   SD --> LEX --> PAR --> AST --> TC

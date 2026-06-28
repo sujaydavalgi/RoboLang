@@ -19,9 +19,9 @@ echo "== TypeScript @davalgi-spanda/sdk =="
 npm ci --prefix sdk/typescript
 npm test --prefix sdk/typescript
 npm run build --prefix sdk/typescript
-echo "== npm @spanda/web =="
+echo "== npm @davalgi-spanda/web =="
 npm ci
-npm run build --workspace=@spanda/web
+npm run build --workspace=@davalgi-spanda/web
 (cd packages/web && npm pack >/dev/null)
 echo "npm pack OK"
 echo "Publish readiness verified. Tag crates-sdk-v*, sdk-python-v*, npm-sdk-v*, or npm-web-v* to release."

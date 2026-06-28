@@ -19,7 +19,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      "@spanda/web": path.resolve(packageRoot, "../web/src"),
+      "@davalgi-spanda/web": path.resolve(packageRoot, "../web/src"),
     },
   },
 });

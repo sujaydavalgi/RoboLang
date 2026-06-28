@@ -149,7 +149,7 @@ Enterprise operations pillars compose existing engines — they do **not** repla
 | Telemetry backends | `spanda-telemetry-timescale`, `spanda-telemetry-influx` | Telemetry |
 | Observability exporters | `spanda-otel-collector` | Observability |
 | SDK language bindings | `spanda-sdk-python` (official package) | SDKs |
-| Control Center UI | `@spanda/web` (`ControlCenterPanel`) + embedded serve HTML | Control Center |
+| Control Center UI | `@davalgi-spanda/web` (`ControlCenterPanel`) + embedded serve HTML | Control Center |
 | Compliance industry packs | `spanda-compliance-medical`, `spanda-compliance-defense` | Compliance |
 | Reporting templates | `spanda-report-executive`, `spanda-report-fleet` | Reporting |
 
@@ -167,13 +167,13 @@ Enterprise operations pillars compose existing engines — they do **not** repla
 | State | React Query + context | Server state from APIs; optimistic operator actions |
 | Styling | Existing design tokens from web playground | Consistent with WASM demo |
 | Desktop | Tauri (`@spanda/control-center-desktop`) | Wraps `ControlCenterPanel`; API via `spanda control-center serve` |
-| Build | Vite | Shared with `@spanda/web` |
+| Build | Vite | Shared with `@davalgi-spanda/web` |
 
 ### Module map
 
 ```mermaid
 flowchart TB
-  subgraph ui ["Control Center UI (@spanda/web)"]
+  subgraph ui ["Control Center UI (@davalgi-spanda/web)"]
     DASH["Dashboard"]
     FLEET["Fleet View"]
     MISSION["Mission View"]
@@ -376,11 +376,11 @@ Web-based operational visibility for robots, fleets, swarms, devices, sensors, m
 
 | Layer | Stack |
 |-------|-------|
-| UI | React + TypeScript (`ControlCenterPanel` in `@spanda/web`) |
+| UI | React + TypeScript (`ControlCenterPanel` in `@davalgi-spanda/web`) |
 | State | React Query + context |
 | Desktop | Tauri (`@spanda/control-center-desktop`) — CI signing scaffold + env-gated auto-update ([desktop-release-runbook.md](./desktop-release-runbook.md)) |
 | Backend | Rust `spanda-api` (`spanda control-center serve`) |
-| Build | Vite (shared with `@spanda/web`) |
+| Build | Vite (shared with `@davalgi-spanda/web`) |
 
 **Modules:** Dashboard, Fleet View, Mission View, Device Pool, Readiness, Health, Assurance, Diagnosis, Recovery, Security, Configuration, Simulation, Replay, Audit, Administration.
 
@@ -681,7 +681,7 @@ Builds on `spanda-capability` traceability matrices + `spanda-audit` + mission c
 | Deliverable | Component | Depends on |
 |-------------|-----------|------------|
 | `spanda-api` REST v1 | `spanda-api` crate | existing engines |
-| Control Center shell | `ControlCenterPanel` in `@spanda/web` + embedded HTML | `spanda-api` |
+| Control Center shell | `ControlCenterPanel` in `@davalgi-spanda/web` + embedded HTML | `spanda-api` |
 | Dashboard + Fleet + Readiness modules | UI modules | telemetry, readiness APIs |
 | Device Pool schema + lifecycle | extends `spanda-config` | `DeviceRegistry` |
 | RBAC v1 (API keys + 4 roles) | `spanda-security` | audit |

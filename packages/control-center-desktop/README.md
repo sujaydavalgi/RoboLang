@@ -1,6 +1,6 @@
 # Spanda Control Center (desktop)
 
-Tauri v2 desktop shell for the Spanda Control Center. The UI reuses `ControlCenterPanel` from `@spanda/web`; the API backend is expected to run separately via `spanda control-center serve` (or any compatible `spanda-api` deployment).
+Tauri v2 desktop shell for the Spanda Control Center. The UI reuses `ControlCenterPanel` from `@davalgi-spanda/web`; the API backend is expected to run separately via `spanda control-center serve` (or any compatible `spanda-api` deployment).
 
 ## Security note
 

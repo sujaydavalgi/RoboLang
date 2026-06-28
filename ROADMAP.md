@@ -753,7 +753,7 @@ Official classification for every roadmap item:
 | **Package** | Optional `.sd` + manifest in registry; installable | `spanda-ros2`, `spanda-gazebo` |
 | **Provider** | Trait implementation inside a package | MQTT bridge, ONNX inference backend |
 | **Solution Blueprint** | Industry composition doc + example tree; not a crate | ADAS, Warehouse, SAR |
-| **Control Center** | UI/API product surface (`spanda-api`, `@spanda/web`) | Dashboards, provisioning UI |
+| **Control Center** | UI/API product surface (`spanda-api`, `@davalgi-spanda/web`) | Dashboards, provisioning UI |
 | **Optional** | Ecosystem add-on; not required for core workflows | VS Code Marketplace, desktop app |
 | **Experimental** | Shipped with caveats; promotion path to Stable | Control Center, drift detection |
 | **Future** | Designed; not shipped | Self-hosting compiler, twin SaaS |

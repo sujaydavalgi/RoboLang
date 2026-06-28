@@ -237,7 +237,7 @@ crates/                     Rust workspace — see crates/README.md for full ind
 
 packages/
   native/                   @spanda/native — Node wrapper for N-API
-  web/                      @spanda/web — React playground
+  web/                      @davalgi-spanda/web — React playground
   lsp/                      @spanda/lsp — Language Server
   registry/                 38 official .sd packages (spanda-gps, spanda-ros2, spanda-onnx, spanda-fusion, …)
 

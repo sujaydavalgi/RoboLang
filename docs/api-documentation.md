@@ -66,7 +66,7 @@ Full mapping table: [api-reference.md § Facade → workspace](./api-reference.m
 |---------|------|-----------|
 | `src/` | Parser/runtime tests, provider classification | [api-reference.md § TypeScript core](./api-reference.md#ts-src) |
 | `@spanda/lsp` | Language server | [api-reference.md § @spanda/lsp](./api-reference.md#ts-packages-lsp) |
-| `@spanda/web` | Playground | [api-reference.md § @spanda/web](./api-reference.md#ts-packages-web-src) |
+| `@davalgi-spanda/web` | Playground | [api-reference.md § @davalgi-spanda/web](./api-reference.md#ts-packages-web-src) |
 | `@spanda/native` | N-API wrapper | [api-reference.md § @spanda/native](./api-reference.md#ts-packages-native) |
 
 TypeScript delegates to the Rust CLI when `target/release/spanda` is available.

@@ -1,7 +1,7 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { ControlCenterPanel } from "@spanda/web/ControlCenterPanel";
-import "@spanda/web/index.css";
+import { ControlCenterPanel } from "@davalgi-spanda/web/ControlCenterPanel";
+import "@davalgi-spanda/web/index.css";
 
 const apiBase =
   import.meta.env.VITE_CONTROL_CENTER_URL ?? "http://127.0.0.1:8080";

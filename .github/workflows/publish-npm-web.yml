@@ -22,7 +22,7 @@ jobs:
           node-version: "24"
           cache: npm
       - run: npm ci
-      - run: npm run build --workspace=@spanda/web
+      - run: npm run build --workspace=@davalgi-spanda/web
       - name: Dry-run publish
         if: github.event_name == 'pull_request'
         working-directory: packages/web

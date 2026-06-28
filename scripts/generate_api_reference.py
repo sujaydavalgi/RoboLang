@@ -150,7 +150,7 @@ TS_ROOTS = [
     ("src", "TypeScript core"),
     ("packages/native", "@spanda/native"),
     ("packages/lsp", "@spanda/lsp"),
-    ("packages/web/src", "@spanda/web"),
+    ("packages/web/src", "@davalgi-spanda/web"),
     ("editor/vscode/src", "VS Code extension"),
 ]
 

@@ -17,7 +17,7 @@ Phases **H1–H4** are shipped at **Experimental** tier with CI smoke (`scripts/
 | Human readiness | `human_collaboration` profile + CLI | **Shipped** |
 | H2 packages | Wearable + spatial session registry stubs + provider traits | **Shipped** (experimental) |
 | H3 packages | Voice / gesture / eye + `/v1/hri/sessions` API | **Shipped** (experimental) |
-| H4 UI | Embedded HTML Humans tab + `@spanda/web` `ControlCenterPanel` parity | **Shipped** |
+| H4 UI | Embedded HTML Humans tab + `@davalgi-spanda/web` `ControlCenterPanel` parity | **Shipped** |
 | H5 APIs | Team readiness, collaboration graph, hazard zones / context | **Shipped** (experimental) |
 | H6 APIs | Human twins, mission approval queue, vendor live backends | **Shipped** (experimental) |
 | Health opt-in | `HumanHealthGate` — config + `SPANDA_HUMAN_HEALTH_ENABLED` | **Shipped** |
@@ -59,7 +59,7 @@ The gate runs:
 | Surface | Humans tab | Endpoints |
 |---------|------------|-----------|
 | Embedded HTML (`spanda-api` static UI) | **Shipped** | Same REST v1 |
-| `@spanda/web` `ControlCenterPanel` | **Shipped** | Same REST v1 |
+| `@davalgi-spanda/web` `ControlCenterPanel` | **Shipped** | Same REST v1 |
 | `@spanda/control-center-desktop` | Inherits web panel | API via `spanda control-center serve` |
 
 Launch for manual verification:
@@ -70,7 +70,7 @@ spanda control-center serve \
   --program examples/solutions/spatial-computing/warehouse-ar/pick_mission.sd
 ```
 
-Open **Humans** tab (embedded UI) or `@spanda/web` Control Center view with `VITE_CONTROL_CENTER_URL`.
+Open **Humans** tab (embedded UI) or `@davalgi-spanda/web` Control Center view with `VITE_CONTROL_CENTER_URL`.
 
 ---
 

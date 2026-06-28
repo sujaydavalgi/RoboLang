@@ -263,7 +263,7 @@ See [human-interaction.md](./human-interaction.md) and [operator-capabilities.md
 
 | Deliverable | Owner | Status |
 |-------------|-------|--------|
-| Human Interaction tab (dashboard, wearables, sessions, VR links) | `spanda-api` + `@spanda/web` | **Experimental** (stable hardening checklist **shipped**) |
+| Human Interaction tab (dashboard, wearables, sessions, VR links) | `spanda-api` + `@davalgi-spanda/web` | **Experimental** (stable hardening checklist **shipped**) |
 | REST: `GET /v1/humans`, `/wearables`, `/human-health/policy` | `spanda-api` | **Experimental** |
 | Human health opt-in gate (`SPANDA_HUMAN_HEALTH_ENABLED` + TOML) | `spanda-security` | **Experimental** |
 | VR training continuity example | `examples/solutions/spatial-computing/vr-training/` | **Experimental** |
@@ -279,7 +279,7 @@ See [human-interaction.md](./human-interaction.md) and [operator-capabilities.md
 | Team readiness rollup API | `spanda-api` | **Experimental** |
 | Collaboration participant graph API | `spanda-api` | **Experimental** |
 | Context awareness snapshot API | `spanda-api` | **Experimental** |
-| Humans tab: team readiness, collaboration, hazard zones | `spanda-api` + `@spanda/web` | **Experimental** |
+| Humans tab: team readiness, collaboration, hazard zones | `spanda-api` + `@davalgi-spanda/web` | **Experimental** |
 
 **Exit criteria:** Blueprint lists hazard zones; `/v1/humans/readiness`, `/v1/hri/collaboration`, `/v1/hri/context` return JSON; promotion gate probes new endpoints; operator approval queue remains via E1 `POST /v1/operator/mission/approve`.
 
@@ -290,7 +290,7 @@ See [human-interaction.md](./human-interaction.md) and [operator-capabilities.md
 | Live vendor backends (HealthKit, HoloLens env gates) | `spanda-providers` | **Experimental** |
 | `[[twins]]` + `GET /v1/humans/twins` | `spanda-config` + `spanda-api` | **Experimental** |
 | Mission approval queue + `GET /v1/operator/mission/approvals` | `spanda-config` + `spanda-api` | **Experimental** |
-| Humans tab: twins + mission approval UI | `spanda-api` + `@spanda/web` | **Experimental** |
+| Humans tab: twins + mission approval UI | `spanda-api` + `@davalgi-spanda/web` | **Experimental** |
 | Field soak init + HRI security audit prep scripts | `scripts/` | **Shipped** |
 
 **Exit criteria:** `SPANDA_LIVE_HEALTHKIT=1` enriches smartwatch telemetry; blueprint lists twins and pending mission approvals; promotion gate checks audit prep artifact (skip with `SPANDA_HRI_SKIP_AUDIT=1`); soak started via `./scripts/hri_field_soak_init.sh`.

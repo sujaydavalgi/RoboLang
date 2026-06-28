@@ -27,8 +27,8 @@
     "test:watch": "vitest",
     "spanda": "node --import tsx src/cli/index.ts",
     "spanda:native": "cargo run -p spanda --",
-    "web:dev": "npm run dev --workspace=@spanda/web",
-    "web:build": "npm run build --workspace=@spanda/web",
+    "web:dev": "npm run dev --workspace=@davalgi-spanda/web",
+    "web:build": "npm run build --workspace=@davalgi-spanda/web",
     "control-center:desktop:dev": "npm run dev --workspace=@spanda/control-center-desktop",
     "control-center:desktop:check": "npm run check --workspace=@spanda/control-center-desktop"
   },

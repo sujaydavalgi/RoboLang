@@ -19,7 +19,7 @@ npm run build:wasm
 npm run web:dev       # http://localhost:5173
 ```
 
-The playground lives under `packages/web/` (`@spanda/web`).
+The playground lives under `packages/web/` (`@davalgi-spanda/web`).
 
 ## What works in the browser
 

@@ -82,7 +82,7 @@ Phases **E1–E4** are shipped at **Experimental** tier with CI smoke (`scripts/
 | Item | Experimental (today) | Stable requires |
 |------|---------------------|-----------------|
 | Python | REST client + stream extra | **Shipped:** PyPI publish scaffold + semver policy (`VERSIONING.md`, `sdk-python-v*` tags) |
-| TypeScript | `ControlCenterPanel` in `@spanda/web` | **Shipped:** npm publish scaffold (`PUBLISHING.md`, `npm-web-v*` tags) |
+| TypeScript | `ControlCenterPanel` in `@davalgi-spanda/web` | **Shipped:** npm publish scaffold (`PUBLISHING.md`, `npm-web-v*` tags) |
 | Remote CLI | `spanda control-center` client | **Shipped:** documented in [getting-started.md](./getting-started.md) |
 
 ### Desktop (Tauri)
