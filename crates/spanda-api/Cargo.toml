@@ -29,6 +29,8 @@ spanda-hardware = { path = "../spanda-hardware" }
 spanda-readiness = { path = "../spanda-readiness" }
 spanda-runtime = { path = "../spanda-runtime" }
 spanda-trust = { path = "../spanda-trust" }
+spanda-driver = { path = "../spanda-driver" }
+spanda-interpreter = { path = "../spanda-interpreter" }
 spanda-score = { path = "../spanda-score" }
 spanda-security = { path = "../spanda-security" }
 spanda-ast = { path = "../spanda-ast" }

@@ -559,13 +559,16 @@
     },
     "/v1/programs/simulation": {
       "post": {
-        "summary": "Simulation planning metadata (CLI parity)",
+        "summary": "Simulation planning or driver execution (CLI parity)",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "properties": { "file": { "type": "string" } }
+                "properties": {
+                  "file": { "type": "string" },
+                  "execute": { "type": "boolean", "default": false, "description": "Run driver when true" }
+                }
               }
             }
           }
@@ -575,13 +578,17 @@
     },
     "/v1/programs/replay": {
       "post": {
-        "summary": "Load and inspect mission trace for replay (CLI parity)",
+        "summary": "Inspect or replay a mission trace (CLI parity)",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "properties": { "file": { "type": "string" } }
+                "properties": {
+                  "file": { "type": "string" },
+                  "deterministic": { "type": "boolean", "default": false },
+                  "playback": { "type": "boolean", "default": false }
+                }
               }
             }
           }

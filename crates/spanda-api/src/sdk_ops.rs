@@ -18,7 +18,7 @@ use spanda_readiness::{
     evaluate_readiness_with_runtime, verify_mission, ReadinessOptions, ReadinessReport,
 };
 use spanda_trust::{evaluate_composite_trust, CompositeTrustOptions};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 fn entity_not_found(message: &str) -> HttpResponse {
     HttpResponse {
@@ -41,6 +41,15 @@ pub struct ProgramRequest {
     pub traceability: bool,
     #[serde(default)]
     pub capabilities: bool,
+    /// When true, `program_simulation` runs the driver (CLI `spanda sim` parity).
+    #[serde(default)]
+    pub execute: bool,
+    /// When true, `program_replay` runs deterministic verification against a trace.
+    #[serde(default)]
+    pub deterministic: bool,
+    /// When true, `program_replay` applies trace frames via playback (no re-run).
+    #[serde(default)]
+    pub playback: bool,
 }
 
 fn resolve_program_path(state: &ControlCenterState, file: Option<&str>) -> Result<PathBuf, String> {
@@ -355,7 +364,7 @@ pub fn entity_trust(state: &ControlCenterState, entity_id: &str) -> HttpResponse
     entity_not_found(&format!("entity '{entity_id}' not found"))
 }
 
-/// POST /v1/programs/replay — replay a mission trace (CLI parity).
+/// POST /v1/programs/replay — replay or inspect a mission trace (CLI parity).
 pub fn program_replay(state: &ControlCenterState, body: &str) -> HttpResponse {
     let req: ProgramRequest = serde_json::from_str(body).unwrap_or_default();
     let path = match resolve_program_path(state, req.file.as_deref()) {
@@ -365,11 +374,63 @@ pub fn program_replay(state: &ControlCenterState, body: &str) -> HttpResponse {
     if !path.exists() {
         return entity_not_found(&format!("trace not found: {}", path.display()));
     }
-    let trace = spanda_runtime::replay::MissionTrace::load(&path).map_err(|e| bad_request(&e.to_string()));
-    let trace = match trace {
+    let trace = match spanda_runtime::replay::MissionTrace::load(&path) {
         Ok(t) => t,
-        Err(resp) => return resp,
+        Err(e) => return bad_request(&e.to_string()),
     };
+    if req.playback {
+        let options = spanda_interpreter::RunOptions {
+            max_loop_iterations: 20,
+            replay_from_ms: Some(0.0),
+            ..Default::default()
+        };
+        return match spanda_driver::playback_mission(
+            path.to_str().unwrap_or("mission.trace"),
+            options,
+        ) {
+            Ok((report, robot_state)) => json_ok(&serde_json::json!({
+                "version": API_VERSION,
+                "file": path.display().to_string(),
+                "replay": {
+                    "mode": "playback",
+                    "frames_applied": report.frames_applied,
+                    "states_applied": report.states_applied,
+                    "final_pose": robot_state.pose,
+                    "loaded": true,
+                },
+            })),
+            Err(e) => bad_request(&e.to_string()),
+        };
+    }
+    if req.deterministic {
+        let trace_path = path.to_str().unwrap_or("mission.trace");
+        let source_path = resolve_trace_source(trace_path, &trace.source);
+        let source = match std::fs::read_to_string(&source_path) {
+            Ok(s) => s,
+            Err(e) => return bad_request(&format!("read {} failed: {e}", source_path)),
+        };
+        let options = spanda_interpreter::RunOptions {
+            max_loop_iterations: 20,
+            record_trace: true,
+            replay_deterministic: true,
+            trace_source: Some(trace.source.clone()),
+            ..Default::default()
+        };
+        return match spanda_driver::replay_mission(&source, trace_path, options) {
+            Ok((_result, verification)) => json_ok(&serde_json::json!({
+                "version": API_VERSION,
+                "file": path.display().to_string(),
+                "replay": {
+                    "mode": "deterministic",
+                    "source": trace.source,
+                    "frame_count": trace.frames.len(),
+                    "verification": verification,
+                    "loaded": true,
+                },
+            })),
+            Err(e) => bad_request(&e.to_string()),
+        };
+    }
     json_ok(&serde_json::json!({
         "version": API_VERSION,
         "file": path.display().to_string(),
@@ -382,23 +443,69 @@ pub fn program_replay(state: &ControlCenterState, body: &str) -> HttpResponse {
     }))
 }
 
-/// POST /v1/programs/simulation — dry-run simulation metadata (CLI parity stub).
+fn resolve_trace_source(trace_file: &str, source: &str) -> String {
+    if Path::new(source).is_file() {
+        return source.to_string();
+    }
+    if let Some(parent) = Path::new(trace_file).parent() {
+        let candidate = parent.join(source);
+        if candidate.is_file() {
+            return candidate.to_string_lossy().into_owned();
+        }
+    }
+    source.to_string()
+}
+
+/// POST /v1/programs/simulation — run simulation or return planning metadata.
 pub fn program_simulation(state: &ControlCenterState, body: &str) -> HttpResponse {
     let req: ProgramRequest = serde_json::from_str(body).unwrap_or_default();
-    let (program, path, _label) = match load_program(state, req.file.as_deref()) {
-        Ok(v) => v,
-        Err(resp) => return resp,
+    let path = match resolve_program_path(state, req.file.as_deref()) {
+        Ok(p) => p,
+        Err(msg) => return bad_request(&msg),
     };
-    let robot_count = program.robots().len();
-    json_ok(&serde_json::json!({
-        "version": API_VERSION,
-        "file": path.display().to_string(),
-        "simulation": {
-            "robot_count": robot_count,
-            "dry_run": true,
-            "status": "planned",
-        },
-    }))
+    if !path.exists() {
+        return entity_not_found(&format!("program not found: {}", path.display()));
+    }
+    if !req.execute {
+        let (program, _, _) = match parse_program_file(&path) {
+            Ok(v) => v,
+            Err(e) => return bad_request(&e),
+        };
+        let robot_count = program.robots().len();
+        return json_ok(&serde_json::json!({
+            "version": API_VERSION,
+            "file": path.display().to_string(),
+            "simulation": {
+                "robot_count": robot_count,
+                "dry_run": true,
+                "status": "planned",
+            },
+        }));
+    }
+    let source = match std::fs::read_to_string(&path) {
+        Ok(s) => s,
+        Err(e) => return bad_request(&format!("read {} failed: {e}", path.display())),
+    };
+    let options = spanda_interpreter::RunOptions {
+        max_loop_iterations: 20,
+        trace_source: Some(path.to_string_lossy().into_owned()),
+        ..Default::default()
+    };
+    match spanda_driver::run(&source, options) {
+        Ok(result) => json_ok(&serde_json::json!({
+            "version": API_VERSION,
+            "file": path.display().to_string(),
+            "simulation": {
+                "dry_run": false,
+                "status": "completed",
+                "event_count": result.events.len(),
+                "log_count": result.logs.len(),
+                "has_trace": result.mission_trace.is_some(),
+                "result": result,
+            },
+        })),
+        Err(e) => bad_request(&e.to_string()),
+    }
 }
 
 /// JSON body for gRPC `EvaluateProgramReadiness` (parity with `POST /v1/programs/readiness`).
