@@ -74,7 +74,7 @@ Enterprise operations pillars compose existing engines — they do **not** repla
 | 10 | **Configuration Drift** | Operate, Verify | Experimental | Expected vs actual parity across dimensions |
 | 11 | **OTA & Rollback** | Deploy | Experimental | Canary, blue/green, phased rollout |
 | 12 | **Package Trust** | Verify, Build | Experimental | Signature, reputation, vulnerability, coverage, compatibility scoring |
-| 13 | **SDKs** | Build, Operate | Experimental | Python SDK, REST v1, JSON-RPC gateway, WebSocket stream; CLI as reference SDK |
+| 13 | **SDKs** | Build, Operate | Experimental (published v0.4.x) | Rust/Python/TypeScript SDKs on crates.io, PyPI, npm; REST v1, JSON-RPC, WebSocket; CLI as reference |
 | 14 | **Operator Workflows** | Operate, Recover | Experimental | Mission approval, takeover, quarantine, device trust |
 | 15 | **SRE** | Operate, Observe | Experimental | SLO/SLA, MTTR/MTBF, incident reporting |
 | 16 | **Reporting** | Govern, Audit | Experimental | Fleet, mission, compliance, executive exports (incl. PDF) |

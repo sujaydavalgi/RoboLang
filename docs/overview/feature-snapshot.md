@@ -30,4 +30,5 @@ Compact snapshot — full matrix: [feature-status.md](../feature-status.md)
 | WASM | **Experimental** | Browser check/run/verify; limited vs native CLI |
 | ROS2 | **Experimental** | rclrs/rclpy bridge; requires ROS Humble setup |
 | Control Center | **Experimental** | `spanda control-center serve` (REST v1 + optional `--grpc-bind` tonic), embedded UI, Tauri desktop; stable-hardening checklist **shipped** — see [stable-hardening-enterprise-ops.md](../stable-hardening-enterprise-ops.md) |
+| Official SDKs | **Experimental** | Published: [crates.io/spanda-sdk](https://crates.io/crates/spanda-sdk), [PyPI](https://pypi.org/project/spanda-sdk/), [npm @davalgi-spanda/sdk](https://www.npmjs.com/package/@davalgi-spanda/sdk) |
 | GitHub Pages / Docs Site | **Experimental** | mdBook under [docs-site/](../../docs-site/); build with `mdbook build docs-site` |

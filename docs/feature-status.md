@@ -219,7 +219,7 @@ See [tier-3-experimental.md](./tier-3-experimental.md) and [tier-3-golden-paths.
 | **Configuration Drift** | **Experimental** | Full operational drift API; scheduled scans (`SPANDA_DRIFT_SCAN_INTERVAL_SECS`); seven dimensions via `GET /v1/drift` |
 | **OTA & Rollback** | **Experimental** | Canary, blue/green, phased dry-run; production `--require-certify` via `SPANDA_OTA_REQUIRE_CERTIFY` |
 | **Package Trust** | **Experimental** | `spanda trust`, `/v1/trust/package`, trust score |
-| **SDKs** | **Experimental** | Official Rust (`spanda-sdk`, PyPI/npm published for Python/TS); `pip install spanda-sdk`, `npm install @davalgi-spanda/sdk`; program-level REST + gRPC; legacy `packages/sdk-python` Control Center client |
+| **SDKs** | **Experimental** | Official Rust/Python/TypeScript clients **published** — `cargo add spanda-sdk`, `pip install spanda-sdk`, `npm install @davalgi-spanda/sdk`; program-level REST + gRPC; legacy `packages/sdk-python` |
 | **Operator Workflows** | **Experimental** | Mission approve, takeover, quarantine, recovery approval |
 | **SRE** | **Experimental** | `/v1/sre/summary` with `slo`, `burn_rate`, MTTR/MTBF hints; incident workflow; PagerDuty webhook sync; fast-burn background monitor |
 | **Reporting** | **Experimental** | Markdown, JSON, PDF exports; scheduled webhook delivery (`GET/POST /v1/reports/schedules`) |

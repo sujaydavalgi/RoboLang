@@ -94,6 +94,16 @@ spanda sim examples/showcase/killer_demo.sd        # simulate
 
 Install options: [docs/installation.md](docs/installation.md) · First project: [docs/getting-started.md](docs/getting-started.md)
 
+**Official SDKs** (Control Center API clients):
+
+```bash
+cargo add spanda-sdk
+pip install spanda-sdk
+npm install @davalgi-spanda/sdk
+```
+
+Guide: [docs/sdk.md](docs/sdk.md) · Publish: [docs/sdk-publishing.md](docs/sdk-publishing.md)
+
 ---
 
 ## Explore further
@@ -119,6 +129,7 @@ Install options: [docs/installation.md](docs/installation.md) · First project: 
 |------------|-------------|
 | [ROADMAP.md](ROADMAP.md) | **Product roadmap** — pillars, blueprints, timeline |
 | [docs/getting-started.md](docs/getting-started.md) | First robot in 10 minutes |
+| [docs/sdk.md](docs/sdk.md) | **Official SDKs** — `cargo add spanda-sdk`, `pip install spanda-sdk`, `@davalgi-spanda/sdk` |
 | [docs/platform-overview.md](docs/platform-overview.md) | Platform components and workflow |
 | [docs/spanda-language.md](docs/spanda-language.md) | Language guide |
 | [docs/solutions/README.md](docs/solutions/README.md) | Official Solution Blueprints |

@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **SDK registry publication complete:** `spanda-sdk` on crates.io (v0.4.0), PyPI (v0.4.0), and `@davalgi-spanda/sdk` on npm (v0.4.1); README and docs updated with install commands and token rotation table.
 - **npm TypeScript SDK scope:** published package is `@davalgi-spanda/sdk` (npm org `@davalgi-spanda`; `@spanda` scope unavailable on npm).
 - **SDK publishing guide:** [docs/sdk-publishing.md](docs/sdk-publishing.md) — PyPI/npm/crates.io tokens, GitHub secrets, release tags, troubleshooting.
 - **Rust SDK crates.io workflow:** [publish-sdk-rust.yml](.github/workflows/publish-sdk-rust.yml) (`crates-sdk-v*` tag).

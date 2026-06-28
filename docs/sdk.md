@@ -6,9 +6,19 @@ Official SDKs integrate with Spanda through the **Control Center API** (`spanda-
 
 | SDK | Package | Priority | Status |
 |-----|---------|----------|--------|
-| Rust | `spanda-sdk` crate | P0 | Experimental |
-| Python | `pip install spanda-sdk` (`sdk/python/`) | P1 | Experimental |
-| TypeScript | `@davalgi-spanda/sdk` (`sdk/typescript/`) | P2 | Experimental |
+| Rust | [`spanda-sdk`](https://crates.io/crates/spanda-sdk) on crates.io | P0 | Experimental (v0.4.0 published) |
+| Python | [`spanda-sdk`](https://pypi.org/project/spanda-sdk/) on PyPI | P1 | Experimental (v0.4.0 published) |
+| TypeScript | [`@davalgi-spanda/sdk`](https://www.npmjs.com/package/@davalgi-spanda/sdk) on npm | P2 | Experimental (v0.4.1 published) |
+
+Install from registries:
+
+```bash
+cargo add spanda-sdk
+pip install spanda-sdk
+npm install @davalgi-spanda/sdk
+```
+
+Maintainers: [Publishing SDKs](sdk-publishing.md) (`crates-sdk-v*`, `sdk-python-v*`, `npm-sdk-v*` tags).
 
 Legacy Python client: `packages/sdk-python` (Control Center helpers; use `sdk/python` for full SDK surface).
 

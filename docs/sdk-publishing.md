@@ -249,12 +249,22 @@ Check registry pages:
 - [pypi.org/project/spanda-sdk/](https://pypi.org/project/spanda-sdk/)
 - [npmjs.com/package/@davalgi-spanda/sdk](https://www.npmjs.com/package/@davalgi-spanda/sdk)
 
+Set a calendar reminder before each token expires and update the GitHub secret.
+
+| Registry | Secret | Typical expiry |
+|----------|--------|----------------|
+| crates.io | `CRATES_IO_TOKEN` | Up to 365 days (set at token creation) |
+| PyPI | `PYPI_API_TOKEN` | Per token policy on pypi.org |
+| npm | `NPM_TOKEN` | Up to 90 days (write granular tokens) |
+
 ---
 
 ## Troubleshooting
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
+| crates.io 400 verified email | Email not verified on crates.io account | [crates.io/settings/profile](https://crates.io/settings/profile) — verify inbox link; re-tag after confirmation |
+| crates.io empty token | `CRATES_IO_TOKEN` missing in GitHub | Add secret; re-tag `crates-sdk-v*` |
 | PyPI publish 403 / invalid credentials | Wrong or revoked `PYPI_API_TOKEN` | Regenerate token; update GitHub secret |
 | npm publish 401 / E401 | Expired token or missing Bypass 2FA | New granular token with Bypass 2FA; update `NPM_TOKEN` |
 | npm scope / org error | Package name not under your org | Use `@davalgi-spanda/sdk`, not `@spanda/sdk` |
