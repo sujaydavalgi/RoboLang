@@ -53,6 +53,7 @@
     <button type="button" data-tab="audit">Audit</button>
     <button type="button" data-tab="digital-thread">Digital Thread</button>
     <button type="button" data-tab="adas">ADAS</button>
+    <button type="button" data-tab="humans">Humans</button>
     <button type="button" data-tab="executive">Executive</button>
   </nav>
   <div id="error" class="error" hidden></div>
@@ -74,9 +75,10 @@
   <section id="tab-audit" class="panel" hidden></section>
   <section id="tab-digital-thread" class="panel" hidden></section>
   <section id="tab-adas" class="panel" hidden></section>
+  <section id="tab-humans" class="panel" hidden></section>
   <section id="tab-executive" class="panel" hidden></section>
   <script>
-    const tabs = ["dashboard", "fleet", "readiness", "devices", "alerts", "health", "assurance", "diagnosis", "provision", "config", "drift", "ota", "security", "sre", "operator", "audit", "digital-thread", "adas", "executive"];
+    const tabs = ["dashboard", "fleet", "readiness", "devices", "alerts", "health", "assurance", "diagnosis", "provision", "config", "drift", "ota", "security", "sre", "operator", "audit", "digital-thread", "adas", "humans", "executive"];
     const errEl = document.getElementById("error");
 
     document.querySelectorAll("nav button").forEach((btn) => {
@@ -105,6 +107,7 @@
         if (tab === "audit") loadAudit();
         if (tab === "digital-thread") loadDigitalThread();
         if (tab === "adas") loadAdas();
+        if (tab === "humans") loadHumans();
         if (tab === "executive") loadExecutive();
       });
     });
@@ -570,6 +573,54 @@
           <p>Record traces with <code>spanda sim src/highway_drive.sd --record</code> · Replay with <code>spanda replay src/highway_drive.trace --deterministic</code></p>
           <p>Export assurance: <code>GET /v1/compliance/export?profile=iso26262</code></p>`;
       } catch (e) { showError(String(e)); }
+    }
+
+    async function loadHumans() {
+      try {
+        errEl.hidden = true;
+        const [humans, wearables, sessions, health] = await Promise.all([
+          api("/v1/humans"),
+          api("/v1/wearables"),
+          api("/v1/hri/sessions"),
+          api("/v1/human-health/policy"),
+        ]);
+        const humanRows = (humans.humans || []).map((h) =>
+          `<tr><td>${h.id}</td><td>${h.role}</td><td>${h.display_name || "—"}</td><td>${h.availability || "—"}</td><td>${(h.capabilities || []).join(", ")}</td><td>${h.wearable_count}</td></tr>`
+        ).join("");
+        const wearableRows = (wearables.wearables || []).map((w) =>
+          `<tr><td>${w.id}</td><td>${w.type}</td><td>${w.human_id || "—"}</td><td>${w.provider || "—"}</td><td>${w.health_telemetry_allowed ? "allowed" : "gated"}</td></tr>`
+        ).join("");
+        const sessionRows = (sessions.sessions || []).map((s) =>
+          `<tr><td>${s.id}</td><td>${s.session_type}</td><td>${s.status}</td><td>${s.field_human_id || "—"}</td><td>${s.expert_human_id || "—"}</td><td>${(s.capabilities || []).join(", ")}</td></tr>`
+        ).join("");
+        const policy = health.policy || {};
+        document.getElementById("tab-humans").innerHTML = `
+          <h2>Human Interaction</h2>
+          <p class="subtitle">Spatial Computing blueprint — serve with <code>--config spanda.toml --program warehouse-ar/pick_mission.sd</code></p>
+          <div class="grid">
+            <div class="stat"><dt>Operators</dt><dd>${humans.count || 0}</dd></div>
+            <div class="stat"><dt>Wearables</dt><dd>${wearables.count || 0}</dd></div>
+            <div class="stat"><dt>HRI sessions</dt><dd>${sessions.count || 0}</dd></div>
+            <div class="stat"><dt>Health telemetry</dt><dd class="${policy.active ? "ok" : ""}">${policy.active ? "opt-in active" : "gated"}</dd></div>
+          </div>
+          <h3>Human dashboard</h3>
+          <table><thead><tr><th>ID</th><th>Role</th><th>Name</th><th>Availability</th><th>Capabilities</th><th>Wearables</th></tr></thead><tbody>${humanRows || "<tr><td colspan=6>none</td></tr>"}</tbody></table>
+          <h3>Wearable inventory</h3>
+          <table><thead><tr><th>ID</th><th>Type</th><th>Human</th><th>Provider</th><th>Health</th></tr></thead><tbody>${wearableRows || "<tr><td colspan=5>none</td></tr>"}</tbody></table>
+          <h3>AR session viewer &amp; live collaboration</h3>
+          <table><thead><tr><th>Session</th><th>Type</th><th>Status</th><th>Field</th><th>Expert</th><th>Capabilities</th></tr></thead><tbody>${sessionRows || "<tr><td colspan=6>none</td></tr>"}</tbody></table>
+          <p>Annotate: <code>POST /v1/hri/sessions/{id}/annotate</code> · Operator readiness: <code>GET /v1/humans/{id}/readiness</code></p>
+          <h3>VR training</h3>
+          <p>Record: <code>spanda sim vr-training/training_mission.sd --record</code> · Replay: <code>spanda replay training_mission.trace --playback</code></p>
+          <h3>Health opt-in policy</h3>
+          <pre>${JSON.stringify(health, null, 2)}</pre>
+          <h3>Approval queue</h3>
+          <p>Mission approvals via Operator tab · <code>POST /v1/operator/mission/approve</code></p>`;
+      } catch (e) {
+        document.getElementById("tab-humans").innerHTML = `
+          <h2>Human Interaction</h2>
+          <p class="error">Load with spatial-computing <code>--config</code>. ${e}</p>`;
+      }
     }
 
     async function loadExecutive() {

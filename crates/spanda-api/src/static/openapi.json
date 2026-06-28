@@ -669,6 +669,33 @@
         "responses": { "200": { "description": "Replay metadata" } }
       }
     },
+    "/v1/humans": {
+      "get": {
+        "summary": "List configured human operators and collaborators",
+        "responses": { "200": { "description": "Human entity list" } }
+      }
+    },
+    "/v1/humans/{id}/readiness": {
+      "get": {
+        "summary": "Per-operator readiness, certifications, and wearables",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Operator readiness" } }
+      }
+    },
+    "/v1/wearables": {
+      "get": {
+        "summary": "Wearable inventory with health opt-in gate status",
+        "responses": { "200": { "description": "Wearable list" } }
+      }
+    },
+    "/v1/human-health/policy": {
+      "get": {
+        "summary": "Human health telemetry opt-in policy (config + env gate)",
+        "responses": { "200": { "description": "Health privacy policy" } }
+      }
+    },
     "/v1/rpc": {
       "post": {
         "summary": "gRPC-compatible JSON gateway",

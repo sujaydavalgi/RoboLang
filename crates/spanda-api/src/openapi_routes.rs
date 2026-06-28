@@ -298,4 +298,20 @@ pub const REST_V1_ROUTES: &[ApiRoute] = &[
         method: "GET",
         path: "/v1/hri/sessions/{id}/replay",
     },
+    ApiRoute {
+        method: "GET",
+        path: "/v1/humans",
+    },
+    ApiRoute {
+        method: "GET",
+        path: "/v1/humans/{id}/readiness",
+    },
+    ApiRoute {
+        method: "GET",
+        path: "/v1/wearables",
+    },
+    ApiRoute {
+        method: "GET",
+        path: "/v1/human-health/policy",
+    },
 ];

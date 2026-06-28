@@ -235,6 +235,18 @@ pub fn handle_request(
         );
         return (response, correlation_id);
     }
+    if let Some(response) = route_humans(state, path, &request.method) {
+        e3::record_trace(
+            state,
+            &correlation_id,
+            &request.method,
+            path,
+            response.status,
+            started_ms,
+            ctx.as_ref(),
+        );
+        return (response, correlation_id);
+    }
     let response = match (path, request.method.as_str()) {
         ("/v1/tenant", "GET") => tenant_info(state),
         ("/v1/audit/mutations", "GET") => mutation_audit_list(state, ctx.as_ref()),
@@ -845,6 +857,28 @@ fn route_hri_session(
             state, session_id, body, ctx, now_ms,
         )),
         ("replay", "GET") => Some(crate::hri::hri_session_replay(state, session_id)),
+        _ => None,
+    }
+}
+
+fn route_humans(
+    state: &ControlCenterState,
+    path: &str,
+    method: &str,
+) -> Option<HttpResponse> {
+    if path == "/v1/humans" && method == "GET" {
+        return Some(crate::humans::humans_list(state));
+    }
+    if path == "/v1/wearables" && method == "GET" {
+        return Some(crate::humans::wearables_list(state));
+    }
+    if path == "/v1/human-health/policy" && method == "GET" {
+        return Some(crate::humans::human_health_policy(state));
+    }
+    let rest = path.strip_prefix("/v1/humans/")?;
+    let (human_id, action) = rest.split_once('/').unwrap_or((rest, ""));
+    match (action, method) {
+        ("readiness", "GET") => Some(crate::humans::human_readiness_get(state, human_id)),
         _ => None,
     }
 }

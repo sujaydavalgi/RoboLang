@@ -29,6 +29,7 @@ spanda-security = { path = "../spanda-security" }
 spanda-ast = { path = "../spanda-ast" }
 spanda-telemetry-store = { path = "../spanda-telemetry-store" }
 base64 = "0.22"
+chrono = "0.4"
 tungstenite = { version = "0.24", default-features = false, features = ["handshake"] }
 
 [build-dependencies]
