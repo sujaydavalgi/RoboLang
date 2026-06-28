@@ -1,0 +1,5 @@
+import sensors.ultrasonic;
+
+test "smoke" {
+    assert(true);
+}

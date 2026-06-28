@@ -1,0 +1,5 @@
+import automotive.uds;
+
+test "smoke" {
+    assert(true);
+}

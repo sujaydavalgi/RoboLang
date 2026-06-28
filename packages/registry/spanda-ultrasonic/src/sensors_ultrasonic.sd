@@ -1,0 +1,5 @@
+module sensors.ultrasonic;
+
+export fn read() -> Int {
+  return 0;
+}

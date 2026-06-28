@@ -1,0 +1,5 @@
+module automotive.v2x;
+
+export fn read() -> Int {
+  return 0;
+}

@@ -1,0 +1,5 @@
+import automotive.v2x;
+
+test "smoke" {
+    assert(true);
+}

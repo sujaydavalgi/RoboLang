@@ -1,0 +1,5 @@
+module automotive.ethernet;
+
+export fn read() -> Int {
+  return 0;
+}

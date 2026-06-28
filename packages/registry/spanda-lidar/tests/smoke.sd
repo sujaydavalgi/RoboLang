@@ -1,0 +1,5 @@
+import sensors.lidar;
+
+test "smoke" {
+    assert(true);
+}

@@ -204,6 +204,27 @@ pub fn bootstrap_providers_for_packages(package_names: &[&str]) -> ProviderRegis
         registry.grant_capability("iot.canbus");
         crate::iot_hub::seed_protocol_demos();
     }
+    if names.contains("spanda-radar") {
+        registry.grant_capability("sensors.radar.read");
+    }
+    if names.contains("spanda-lidar") {
+        registry.grant_capability("sensors.lidar.read");
+    }
+    if names.contains("spanda-ultrasonic") {
+        registry.grant_capability("sensors.ultrasonic.read");
+    }
+    if names.contains("spanda-automotive-ethernet") {
+        registry.grant_capability("automotive.ethernet.connect");
+    }
+    if names.contains("spanda-lin") {
+        registry.grant_capability("automotive.lin.read");
+    }
+    if names.contains("spanda-uds") {
+        registry.grant_capability("automotive.uds.diagnose");
+    }
+    if names.contains("spanda-v2x") {
+        registry.grant_capability("automotive.v2x.receive");
+    }
     if include_all || names.contains("spanda-anomaly") {
         registry.grant_capability("assurance.anomaly.scan");
     }

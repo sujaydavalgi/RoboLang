@@ -1,0 +1,14 @@
+[package]
+name = "spanda-lin"
+version = "0.1.0"
+description = "LIN bus vehicle protocol adapter (stub)"
+license = "Apache-2.0"
+
+[safety]
+level = "sensors"
+
+[capabilities]
+required = [ "automotive.lin.read" ]
+
+[hardware]
+requirements = []

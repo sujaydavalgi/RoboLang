@@ -1,0 +1,5 @@
+import automotive.lin;
+
+test "smoke" {
+    assert(true);
+}

@@ -1,0 +1,5 @@
+import sensors.radar;
+
+test "smoke" {
+    assert(true);
+}

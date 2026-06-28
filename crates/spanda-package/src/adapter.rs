@@ -274,6 +274,48 @@ pub fn framework_packages() -> &'static [FrameworkPackage] {
             import_paths: &["iot.canbus"],
         },
         FrameworkPackage {
+            name: "spanda-radar",
+            description: "Automotive radar sensor adapters",
+            category: super::category::PackageCategory::Sensors,
+            import_paths: &["sensors.radar"],
+        },
+        FrameworkPackage {
+            name: "spanda-lidar",
+            description: "Automotive LiDAR sensor adapters",
+            category: super::category::PackageCategory::Sensors,
+            import_paths: &["sensors.lidar"],
+        },
+        FrameworkPackage {
+            name: "spanda-ultrasonic",
+            description: "Ultrasonic parking sensor adapters",
+            category: super::category::PackageCategory::Sensors,
+            import_paths: &["sensors.ultrasonic"],
+        },
+        FrameworkPackage {
+            name: "spanda-automotive-ethernet",
+            description: "Automotive Ethernet SOME/IP and DoIP adapters",
+            category: super::category::PackageCategory::Hardware,
+            import_paths: &["automotive.ethernet"],
+        },
+        FrameworkPackage {
+            name: "spanda-lin",
+            description: "LIN bus vehicle protocol adapter",
+            category: super::category::PackageCategory::Hardware,
+            import_paths: &["automotive.lin"],
+        },
+        FrameworkPackage {
+            name: "spanda-uds",
+            description: "UDS/ISO-TP vehicle diagnostics adapter",
+            category: super::category::PackageCategory::Hardware,
+            import_paths: &["automotive.uds"],
+        },
+        FrameworkPackage {
+            name: "spanda-v2x",
+            description: "V2X DSRC and C-V2X communication adapter",
+            category: super::category::PackageCategory::Hardware,
+            import_paths: &["automotive.v2x"],
+        },
+        FrameworkPackage {
             name: "spanda-assurance",
             description: "Assurance evidence and safety case scaffolds",
             category: super::category::PackageCategory::Robotics,

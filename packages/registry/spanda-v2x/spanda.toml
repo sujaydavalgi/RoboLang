@@ -1,0 +1,14 @@
+[package]
+name = "spanda-v2x"
+version = "0.1.0"
+description = "V2X DSRC and C-V2X communication (stub)"
+license = "Apache-2.0"
+
+[safety]
+level = "sensors"
+
+[capabilities]
+required = [ "automotive.v2x.receive" ]
+
+[hardware]
+requirements = []

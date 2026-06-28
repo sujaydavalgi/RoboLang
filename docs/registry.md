@@ -15,7 +15,7 @@ spanda registry search openai
 
 ## Curated packages (hosted)
 
-All **37** curated packages under `packages/registry/` are published in the hosted index. Tarballs live at `registry/packages/<name>/<version>` with SHA-256 digests and Ed25519 signatures in `registry/index.json` (`version_checksums`, `version_signatures`). Rebuild with `./scripts/build-registry.sh` (runs `scripts/update_registry_checksums.py`, which delegates to `registry-index-maintain`). CI verifies signatures against the trust key in `registry/TRUST_KEY` (hosted signing material: `spanda-hosted-registry-v1` unless `SPANDA_REGISTRY_SIGN_KEY` is set).
+All **44** curated packages under `packages/registry/` are published in the hosted index. Tarballs live at `registry/packages/<name>/<version>` with SHA-256 digests and Ed25519 signatures in `registry/index.json` (`version_checksums`, `version_signatures`). Rebuild with `./scripts/build-registry.sh` (runs `scripts/update_registry_checksums.py`, which delegates to `registry-index-maintain`). CI verifies signatures against the trust key in `registry/TRUST_KEY` (hosted signing material: `spanda-hosted-registry-v1` unless `SPANDA_REGISTRY_SIGN_KEY` is set).
 
 | Package | Category | Import paths |
 |---------|----------|--------------|
@@ -48,6 +48,13 @@ All **37** curated packages under `packages/registry/` are published in the host
 | `spanda-lora` | iot | `iot.lora` |
 | `spanda-matter` | iot | `iot.matter` |
 | `spanda-canbus` | iot | `iot.canbus` |
+| `spanda-radar` | sensors | `sensors.radar` |
+| `spanda-lidar` | sensors | `sensors.lidar` |
+| `spanda-ultrasonic` | sensors | `sensors.ultrasonic` |
+| `spanda-automotive-ethernet` | automotive | `automotive.ethernet` |
+| `spanda-lin` | automotive | `automotive.lin` |
+| `spanda-uds` | automotive | `automotive.uds` |
+| `spanda-v2x` | automotive | `automotive.v2x` |
 
 ## Mission assurance packages (hosted)
 

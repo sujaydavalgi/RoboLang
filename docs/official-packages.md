@@ -48,6 +48,20 @@ Specialized adapter packages (examples under `examples/packages/`):
 | `spanda-gazebo` | `sim.gazebo` | Gazebo backend |
 | `spanda-webots` | `sim.webots` | Webots backend |
 
+## Automotive sensors and protocols
+
+| Package | Import path | Description |
+|---------|-------------|-------------|
+| `spanda-radar` | `sensors.radar` | Automotive radar adapters |
+| `spanda-lidar` | `sensors.lidar` | Automotive LiDAR adapters |
+| `spanda-ultrasonic` | `sensors.ultrasonic` | Ultrasonic parking sensors |
+| `spanda-automotive-ethernet` | `automotive.ethernet` | SOME/IP, DoIP, Automotive Ethernet |
+| `spanda-lin` | `automotive.lin` | LIN bus protocol |
+| `spanda-uds` | `automotive.uds` | UDS/ISO-TP diagnostics |
+| `spanda-v2x` | `automotive.v2x` | DSRC / C-V2X communication |
+
+See [solutions/adas.md](solutions/adas.md) for the ADAS Solution Blueprint.
+
 Aliases: `spanda-sim-gazebo`, `spanda-sim-webots` (registry metadata).
 
 ## Platform services
