@@ -204,6 +204,22 @@ pub const REST_V1_ROUTES: &[ApiRoute] = &[
     },
     ApiRoute {
         method: "POST",
+        path: "/v1/entities/register",
+    },
+    ApiRoute {
+        method: "POST",
+        path: "/v1/entities/relationships",
+    },
+    ApiRoute {
+        method: "POST",
+        path: "/v1/entities/sync",
+    },
+    ApiRoute {
+        method: "POST",
+        path: "/v1/entities/{id}/tags",
+    },
+    ApiRoute {
+        method: "POST",
         path: "/v1/entities/query",
     },
     ApiRoute {

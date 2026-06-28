@@ -235,7 +235,9 @@ pub fn handle_request(
         );
         return (response, correlation_id);
     }
-    if let Some(response) = route_sdk_entities(state, path, &request.method, query, &request.body) {
+    if let Some(response) =
+        route_sdk_entities(state, path, &request.method, query, &request.body, ctx.as_ref())
+    {
         e3::record_trace(
             state,
             &correlation_id,
@@ -903,12 +905,22 @@ fn route_hri_session(
 }
 
 fn route_sdk_entities(
-    state: &ControlCenterState,
+    state: &mut ControlCenterState,
     path: &str,
     method: &str,
     query: &str,
     body: &str,
+    ctx: Option<&RbacContext>,
 ) -> Option<HttpResponse> {
+    if path == "/v1/entities/register" && method == "POST" {
+        return Some(crate::entity_mutations::entity_register(state, body, ctx));
+    }
+    if path == "/v1/entities/relationships" && method == "POST" {
+        return Some(crate::entity_mutations::entity_relate(state, body, ctx));
+    }
+    if path == "/v1/entities/sync" && method == "POST" {
+        return Some(crate::entity_mutations::entity_sync(state, ctx));
+    }
     if path == "/v1/entities/graph" && method == "GET" {
         return Some(crate::sdk_ops::entity_graph(state));
     }
@@ -931,6 +943,9 @@ fn route_sdk_entities(
             ("trust", "GET") => Some(crate::sdk_ops::entity_trust(state, entity_id)),
             ("relationships", "GET") => {
                 Some(crate::sdk_ops::entity_relationships(state, entity_id))
+            }
+            ("tags", "POST") => {
+                Some(crate::entity_mutations::entity_tag(state, entity_id, body, ctx))
             }
             _ => None,
         };

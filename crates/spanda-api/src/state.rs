@@ -29,6 +29,7 @@ pub struct ControlCenterState {
     pub drift_scan_store: DriftScanStore,
     pub report_schedule_store: ReportScheduleStore,
     pub hri_session_store: HriSessionStore,
+    pub entity_overlay: spanda_config::EntityMutationStore,
 }
 
 impl ControlCenterState {
@@ -49,6 +50,9 @@ impl ControlCenterState {
             drift_scan_store: DriftScanStore::new(200),
             report_schedule_store: ReportScheduleStore::new(100),
             hri_session_store: HriSessionStore::new(),
+            entity_overlay: spanda_config::load_entity_overlay(
+                &spanda_config::default_entity_overlay_path(),
+            ),
         };
         crate::persistence::hydrate_runtime_state(&mut state);
         state
@@ -90,6 +94,7 @@ impl ControlCenterState {
             spanda_config::apply_runtime_mission_overlay(&mut registry, &missions);
         }
         crate::entity_traceability::enrich_entity_registry(self, &mut registry);
+        spanda_config::apply_entity_mutation_overlay(&mut registry, &self.entity_overlay);
         registry
     }
 

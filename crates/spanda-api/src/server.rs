@@ -85,6 +85,9 @@ pub fn run_control_center_server(options: &ControlCenterOptions) -> Result<(), S
     eprintln!("  POST /v1/rpc            gRPC-compatible JSON gateway");
     eprintln!("  GET  /v1/digital-thread/query  capability-to-device trace");
     eprintln!("  GET  /v1/entities/traceability unified entity + program trace");
+    eprintln!("  POST /v1/entities/register   register entity overlay (Bearer token)");
+    eprintln!("  POST /v1/entities/relationships relate entities (Bearer token)");
+    eprintln!("  POST /v1/entities/sync         sync overlay to TOML (Bearer token)");
     eprintln!("  GET  /v1/compliance/export     accreditation bundle");
     eprintln!("  WS   /v1/stream/telemetry        live telemetry + traces");
     eprintln!("  GET  /v1/observability/backend     OTLP collector endpoint summary");
