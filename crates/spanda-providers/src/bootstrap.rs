@@ -225,6 +225,12 @@ pub fn bootstrap_providers_for_packages(package_names: &[&str]) -> ProviderRegis
     if names.contains("spanda-v2x") {
         registry.grant_capability("automotive.v2x.receive");
     }
+    if names.contains("spanda-radar")
+        || names.contains("spanda-lidar")
+        || names.contains("spanda-ultrasonic")
+    {
+        crate::automotive_hub::seed_automotive_demos();
+    }
     if include_all || names.contains("spanda-anomaly") {
         registry.grant_capability("assurance.anomaly.scan");
     }

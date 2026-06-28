@@ -202,6 +202,21 @@ pub fn live_canbus_enabled() -> bool {
     live_iot_flag("SPANDA_LIVE_CANBUS")
 }
 
+/// Return true when live automotive radar reads are enabled.
+pub fn live_radar_enabled() -> bool {
+    live_iot_flag("SPANDA_LIVE_RADAR")
+}
+
+/// Return true when live automotive LiDAR reads are enabled.
+pub fn live_lidar_enabled() -> bool {
+    live_iot_flag("SPANDA_LIVE_LIDAR")
+}
+
+/// Return true when live ultrasonic parking sensor reads are enabled.
+pub fn live_ultrasonic_enabled() -> bool {
+    live_iot_flag("SPANDA_LIVE_ULTRASONIC")
+}
+
 pub fn read_zigbee_attribute_live(device: &str, cluster: &str) -> Option<String> {
     // Description:
     //     Read zigbee attribute live.
@@ -310,6 +325,78 @@ pub fn read_canbus_frame_live(can_id: u32) -> Option<f64> {
         "canbus_read_frame",
         vec![serde_json::Value::Number(can_id.into())],
     )
+}
+
+/// Read radar range from `SPANDA_RADAR_CMD` or Python bridge when live mode is enabled.
+pub fn read_radar_distance_live(sensor_id: &str) -> Option<f64> {
+    if !live_radar_enabled() {
+        return None;
+    }
+    read_distance_via_external_cmd("SPANDA_RADAR_CMD", sensor_id).or_else(|| {
+        if bridge_script_path().is_some() {
+            read_number_via_python_bridge(
+                "radar_read_distance",
+                vec![serde_json::Value::String(sensor_id.to_string())],
+            )
+        } else {
+            None
+        }
+    })
+}
+
+/// Read LiDAR range from `SPANDA_LIDAR_CMD` or Python bridge when live mode is enabled.
+pub fn read_lidar_distance_live(sensor_id: &str) -> Option<f64> {
+    if !live_lidar_enabled() {
+        return None;
+    }
+    read_distance_via_external_cmd("SPANDA_LIDAR_CMD", sensor_id).or_else(|| {
+        if bridge_script_path().is_some() {
+            read_number_via_python_bridge(
+                "lidar_read_distance",
+                vec![serde_json::Value::String(sensor_id.to_string())],
+            )
+        } else {
+            None
+        }
+    })
+}
+
+/// Read ultrasonic range from `SPANDA_ULTRASONIC_CMD` or Python bridge when live mode is enabled.
+pub fn read_ultrasonic_distance_live(sensor_id: &str) -> Option<f64> {
+    if !live_ultrasonic_enabled() {
+        return None;
+    }
+    read_distance_via_external_cmd("SPANDA_ULTRASONIC_CMD", sensor_id).or_else(|| {
+        if bridge_script_path().is_some() {
+            read_number_via_python_bridge(
+                "ultrasonic_read_distance",
+                vec![serde_json::Value::String(sensor_id.to_string())],
+            )
+        } else {
+            None
+        }
+    })
+}
+
+fn read_distance_via_external_cmd(cmd_env: &str, sensor_id: &str) -> Option<f64> {
+    let template = std::env::var(cmd_env)
+        .ok()
+        .filter(|value| !value.trim().is_empty())?;
+    let command = template.replace("{sensor}", sensor_id);
+    let output = std::process::Command::new("sh")
+        .arg("-c")
+        .arg(command)
+        .output()
+        .ok()?;
+    if !output.status.success() {
+        return None;
+    }
+    String::from_utf8_lossy(&output.stdout)
+        .lines()
+        .next()?
+        .trim()
+        .parse()
+        .ok()
 }
 
 fn read_string_via_python_bridge(fn_name: &str, args: Vec<serde_json::Value>) -> Option<String> {
@@ -573,5 +660,21 @@ mod tests {
         std::env::remove_var("SPANDA_LIVE_MODBUS");
         assert!(!live_modbus_enabled());
         assert!(read_modbus_register_live(40001).is_none());
+    }
+
+    #[test]
+    fn live_radar_disabled_by_default() {
+        std::env::remove_var("SPANDA_LIVE_RADAR");
+        assert!(!live_radar_enabled());
+        assert!(read_radar_distance_live("front-radar").is_none());
+    }
+
+    #[test]
+    fn live_radar_external_cmd_parses_stdout() {
+        std::env::set_var("SPANDA_LIVE_RADAR", "1");
+        std::env::set_var("SPANDA_RADAR_CMD", "echo 42.5");
+        assert_eq!(read_radar_distance_live("front-radar"), Some(42.5));
+        std::env::remove_var("SPANDA_LIVE_RADAR");
+        std::env::remove_var("SPANDA_RADAR_CMD");
     }
 }

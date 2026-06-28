@@ -1,6 +1,7 @@
 //! Runtime dispatch from official package module exports to provider registry backends.
 //!
 use crate::anomaly_onnx::scan_learned_score;
+use crate::automotive_hub::{read_lidar_distance, read_radar_distance, read_ultrasonic_distance};
 use crate::iot_hub::{
     number_arg, publish_telemetry, read_canbus_frame, read_lora_payload, read_matter_cluster,
     read_modbus_register, read_opcua_node, read_zigbee_attribute, register_device, send_command,
@@ -814,6 +815,75 @@ pub fn dispatch_official_package_call(
                 sim_time_ms,
                 &key,
                 "iot",
+                module_path,
+                function_name,
+                started,
+                false,
+            );
+            Some(RuntimeValue::Number {
+                value,
+                unit: spanda_ast::nodes::UnitKind::None,
+            })
+        }
+        ("sensors.radar", "read") if registry.has_capability("sensors.radar.read") => {
+            let sensor = if args.is_empty() {
+                "front-radar".to_string()
+            } else {
+                string_arg(args, 0)
+            };
+            let value = read_radar_distance(&sensor);
+            record_call(
+                telemetry,
+                mission_trace,
+                sim_time_ms,
+                &key,
+                "sensors",
+                module_path,
+                function_name,
+                started,
+                false,
+            );
+            Some(RuntimeValue::Number {
+                value,
+                unit: spanda_ast::nodes::UnitKind::None,
+            })
+        }
+        ("sensors.lidar", "read") if registry.has_capability("sensors.lidar.read") => {
+            let sensor = if args.is_empty() {
+                "front-lidar".to_string()
+            } else {
+                string_arg(args, 0)
+            };
+            let value = read_lidar_distance(&sensor);
+            record_call(
+                telemetry,
+                mission_trace,
+                sim_time_ms,
+                &key,
+                "sensors",
+                module_path,
+                function_name,
+                started,
+                false,
+            );
+            Some(RuntimeValue::Number {
+                value,
+                unit: spanda_ast::nodes::UnitKind::None,
+            })
+        }
+        ("sensors.ultrasonic", "read") if registry.has_capability("sensors.ultrasonic.read") => {
+            let sensor = if args.is_empty() {
+                "ultrasonic-array".to_string()
+            } else {
+                string_arg(args, 0)
+            };
+            let value = read_ultrasonic_distance(&sensor);
+            record_call(
+                telemetry,
+                mission_trace,
+                sim_time_ms,
+                &key,
+                "sensors",
                 module_path,
                 function_name,
                 started,
