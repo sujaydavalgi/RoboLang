@@ -83,7 +83,11 @@ Reference configurations for nine vehicle classes. Each uses the same blueprint 
 
 Configure application-specific limits in `spanda.readiness.toml` and select compliance profile at verify time. Device-tree fixtures live under [`applications/`](../../examples/solutions/adas/applications/).
 
-Sim-recorded golden trace (scheduler frames): [`sim_record/lane_keep_task.trace`](../../examples/solutions/adas/sim_record/lane_keep_task.trace).
+Sim-recorded golden traces:
+
+- **Behavior loops:** [`src/highway_drive.trace`](../../examples/solutions/adas/src/highway_drive.trace) (`behavior_tick`, 20 frames @ 50ms)
+- **Task scheduler:** [`sim_record/lane_keep_task.trace`](../../examples/solutions/adas/sim_record/lane_keep_task.trace) (`scheduler_tick`)
+- **Lane keeping example:** [`lane_keeping/lane_keeping.trace`](../../examples/solutions/adas/lane_keeping/lane_keeping.trace) (`behavior_tick`, 33ms loop)
 
 ---
 
@@ -291,6 +295,8 @@ Configure in `spanda.providers.toml`. See [provider-interfaces.md](../provider-i
 ## Control Center
 
 ADAS dashboard tab — vehicle health, sensor health, readiness, trust score, active alerts, driver takeover requests, OTA status, replay viewer, assurance reports.
+
+Grafana template: import `packages/registry/spanda-grafana-dashboards/dashboards/control-center-adas.json` and point at OTLP metrics from Control Center (`POST /v1/observability/otlp/export-metrics`). See [spanda-grafana-dashboards](../../packages/registry/spanda-grafana-dashboards/README.md).
 
 ```bash
 spanda control-center serve --config spanda.toml --program src/highway_drive.sd

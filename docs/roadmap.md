@@ -123,7 +123,7 @@ Industry reference architectures built entirely on existing platform capabilitie
 | Autonomous Rover (flagship) | **Stable** | [examples/showcase/autonomous_rover/](../examples/showcase/autonomous_rover/) |
 | Compliance profiles | **Experimental** | [examples/showcase/compliance/](../examples/showcase/compliance/) |
 
-**ADAS blueprint** (2026-06): lane keeping, adaptive cruise, AEB, sensor recovery, driver takeover, highway pilot; nine application device-tree variants; scenario fixtures + sim-recorded golden trace; automotive device tree; ISO 26262 readiness/assurance; Control Center ADAS tab; `spanda demo adas` (bundled); `./scripts/adas_smoke.sh` (CI).
+**ADAS blueprint** (2026-06): lane keeping, adaptive cruise, AEB, sensor recovery, driver takeover, highway pilot; nine application device-tree variants; scenario fixtures + sim-recorded golden traces (`behavior_tick` + `scheduler_tick`); Grafana ADAS dashboard template; automotive device tree; ISO 26262 readiness/assurance; Control Center ADAS tab; `spanda demo adas` (bundled); `./scripts/adas_smoke.sh` (CI).
 
 **Planned:** warehouse operations blueprint, medical device blueprint, ROS2/Nav2 automotive stack package integration.
 

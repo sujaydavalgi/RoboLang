@@ -72,6 +72,7 @@ inspect_app construction vehicle-construction-001
 
 echo "--- sim-recorded trace replay ---"
 ( cd "$ADAS" && run_spanda replay sim_record/lane_keep_task.trace --deterministic )
+( cd "$ADAS" && run_spanda replay lane_keeping/lane_keeping.trace --deterministic )
 
 echo "--- continuity (camera_failure.sd) ---"
 run_spanda continuity "$ADAS/sensor_failure_recovery/camera_failure.sd" \

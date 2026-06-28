@@ -18,6 +18,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Grafana ADAS dashboard:** `spanda-grafana-dashboards` template `control-center-adas.json` for fleet health, safety alerts, and mission trace volume.
+- **ADAS lane keeping trace:** `lane_keeping/lane_keeping.trace` (20 `behavior_tick` frames) replayed in `adas_smoke.sh`.
+
 - **Control Center API key generator:** `spanda control-center api-key generate [--export]`; startup warning when no keys configured; embedded UI auth banner with paste field; docs updated in [control-center.md](docs/control-center.md).
 
 - **Control Center auth docs:** [control-center.md](docs/control-center.md) documents UI access paths, API key setup (`SPANDA_API_KEY`, `SPANDA_API_KEYS_FILE`), role matrix, and which endpoints require Bearer auth; [getting-started.md](docs/getting-started.md) cross-links the guide.

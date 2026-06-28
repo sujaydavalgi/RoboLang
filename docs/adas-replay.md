@@ -29,6 +29,8 @@ spanda explain examples/solutions/adas/src/highway_drive.trace
 
 | Event | Description | Example frame |
 |-------|-------------|---------------|
+| `behavior_tick` | Behavior loop iteration (`loop every`) | `highway_drive.trace`, `lane_keeping.trace` |
+| `scheduler_tick` | Task scheduler frame (`task every`) | `sim_record/lane_keep_task.trace` |
 | `readiness_check` | Pre-drive go/no-go | Score 94, all factors pass |
 | `safety_event` | Lane departure, AEB activation | Steering correction applied |
 | `sensor_degradation` | Camera obstruction, radar failure | Device + severity |
@@ -64,9 +66,10 @@ Committed traces for CI regression:
 
 | Trace | Scenario |
 |-------|----------|
-| `src/highway_drive.trace` | Camera obstruction → radar failover → degraded mode |
-| Generated AEB trace | Emergency braking activation |
-| Generated takeover trace | Driver distraction → takeover request |
+| `src/highway_drive.trace` | Highway pilot behavior loop (20 `behavior_tick` @ 50ms) |
+| `lane_keeping/lane_keeping.trace` | Lane keeping assist (20 `behavior_tick` @ 33ms) |
+| `sim_record/lane_keep_task.trace` | Task scheduler golden trace (20 `scheduler_tick`) |
+| `fixtures/*.trace` | Narrative scenarios (AEB, camera failure, driver takeover) |
 
 Smoke script validates deterministic replay: `./scripts/adas_smoke.sh`
 

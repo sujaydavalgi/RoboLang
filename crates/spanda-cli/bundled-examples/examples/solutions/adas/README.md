@@ -54,7 +54,7 @@ adas/
 
 | Directory | Function | Demonstrates |
 |-----------|----------|--------------|
-| [`lane_keeping/`](./lane_keeping/) | Lane Keeping Assist | `lane_detection`, steering control, readiness gate |
+| [`lane_keeping/`](./lane_keeping/) | Lane Keeping Assist | `lane_detection`, steering control, readiness gate, `lane_keeping.trace` |
 | [`adaptive_cruise/`](./adaptive_cruise/) | Adaptive Cruise Control | `adaptive_speed_control`, obstacle detection |
 | [`automatic_emergency_braking/`](./automatic_emergency_braking/) | Automatic Emergency Braking | `emergency_braking`, safety validation, audit trail |
 | [`sensor_failure_recovery/`](./sensor_failure_recovery/) | Sensor failure recovery | Mission continuity, degraded mode, self-healing |
@@ -105,6 +105,8 @@ Record traces for replay and diagnosis. `behavior` loops emit `behavior_tick` fr
 ```bash
 spanda sim src/highway_drive.sd --record
 spanda replay src/highway_drive.trace --deterministic
+spanda sim lane_keeping/lane_keeping.sd --record
+spanda replay lane_keeping/lane_keeping.trace --deterministic
 spanda sim sim_record/lane_keep_task.sd --record
 spanda replay sim_record/lane_keep_task.trace --deterministic
 spanda replay fixtures/aeb_activation.trace --playback

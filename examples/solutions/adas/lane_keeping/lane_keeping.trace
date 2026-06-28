@@ -1,0 +1,467 @@
+{
+  "version": 2,
+  "source": "lane_keeping/lane_keeping.sd",
+  "deterministic": true,
+  "frames": [
+    {
+      "sim_time_ms": 33.0,
+      "event": "behavior_tick",
+      "payload": {
+        "interval_ms": 33.0,
+        "iteration": 1,
+        "sim_time_ms": 33.0
+      },
+      "state": {
+        "pose": {
+          "x": 0.0,
+          "y": 0.0,
+          "theta": 0.0,
+          "z": 0.0
+        },
+        "velocity": {
+          "linear": 0.0,
+          "angular": 0.0
+        },
+        "emergency_stop": false,
+        "active_mode": "normal"
+      }
+    },
+    {
+      "sim_time_ms": 66.0,
+      "event": "behavior_tick",
+      "payload": {
+        "interval_ms": 33.0,
+        "iteration": 2,
+        "sim_time_ms": 66.0
+      },
+      "state": {
+        "pose": {
+          "x": 0.026400000000000003,
+          "y": 0.0,
+          "theta": 0.0,
+          "z": 0.0
+        },
+        "velocity": {
+          "linear": 0.8,
+          "angular": 0.0
+        },
+        "emergency_stop": false,
+        "active_mode": "normal"
+      }
+    },
+    {
+      "sim_time_ms": 99.0,
+      "event": "behavior_tick",
+      "payload": {
+        "interval_ms": 33.0,
+        "iteration": 3,
+        "sim_time_ms": 99.0
+      },
+      "state": {
+        "pose": {
+          "x": 0.05280000000000001,
+          "y": 0.0,
+          "theta": 0.0,
+          "z": 0.0
+        },
+        "velocity": {
+          "linear": 0.8,
+          "angular": 0.0
+        },
+        "emergency_stop": false,
+        "active_mode": "normal"
+      }
+    },
+    {
+      "sim_time_ms": 132.0,
+      "event": "behavior_tick",
+      "payload": {
+        "interval_ms": 33.0,
+        "iteration": 4,
+        "sim_time_ms": 132.0
+      },
+      "state": {
+        "pose": {
+          "x": 0.0792,
+          "y": 0.0,
+          "theta": 0.0,
+          "z": 0.0
+        },
+        "velocity": {
+          "linear": 0.8,
+          "angular": 0.0
+        },
+        "emergency_stop": false,
+        "active_mode": "normal"
+      }
+    },
+    {
+      "sim_time_ms": 165.0,
+      "event": "behavior_tick",
+      "payload": {
+        "interval_ms": 33.0,
+        "iteration": 5,
+        "sim_time_ms": 165.0
+      },
+      "state": {
+        "pose": {
+          "x": 0.10560000000000001,
+          "y": 0.0,
+          "theta": 0.0,
+          "z": 0.0
+        },
+        "velocity": {
+          "linear": 0.8,
+          "angular": 0.0
+        },
+        "emergency_stop": false,
+        "active_mode": "normal"
+      }
+    },
+    {
+      "sim_time_ms": 198.0,
+      "event": "behavior_tick",
+      "payload": {
+        "interval_ms": 33.0,
+        "iteration": 6,
+        "sim_time_ms": 198.0
+      },
+      "state": {
+        "pose": {
+          "x": 0.132,
+          "y": 0.0,
+          "theta": 0.0,
+          "z": 0.0
+        },
+        "velocity": {
+          "linear": 0.8,
+          "angular": 0.0
+        },
+        "emergency_stop": false,
+        "active_mode": "normal"
+      }
+    },
+    {
+      "sim_time_ms": 231.0,
+      "event": "behavior_tick",
+      "payload": {
+        "interval_ms": 33.0,
+        "iteration": 7,
+        "sim_time_ms": 231.0
+      },
+      "state": {
+        "pose": {
+          "x": 0.1584,
+          "y": 0.0,
+          "theta": 0.0,
+          "z": 0.0
+        },
+        "velocity": {
+          "linear": 0.8,
+          "angular": 0.0
+        },
+        "emergency_stop": false,
+        "active_mode": "normal"
+      }
+    },
+    {
+      "sim_time_ms": 264.0,
+      "event": "behavior_tick",
+      "payload": {
+        "interval_ms": 33.0,
+        "iteration": 8,
+        "sim_time_ms": 264.0
+      },
+      "state": {
+        "pose": {
+          "x": 0.18480000000000002,
+          "y": 0.0,
+          "theta": 0.0,
+          "z": 0.0
+        },
+        "velocity": {
+          "linear": 0.8,
+          "angular": 0.0
+        },
+        "emergency_stop": false,
+        "active_mode": "normal"
+      }
+    },
+    {
+      "sim_time_ms": 297.0,
+      "event": "behavior_tick",
+      "payload": {
+        "interval_ms": 33.0,
+        "iteration": 9,
+        "sim_time_ms": 297.0
+      },
+      "state": {
+        "pose": {
+          "x": 0.21120000000000003,
+          "y": 0.0,
+          "theta": 0.0,
+          "z": 0.0
+        },
+        "velocity": {
+          "linear": 0.8,
+          "angular": 0.0
+        },
+        "emergency_stop": false,
+        "active_mode": "normal"
+      }
+    },
+    {
+      "sim_time_ms": 330.0,
+      "event": "behavior_tick",
+      "payload": {
+        "interval_ms": 33.0,
+        "iteration": 10,
+        "sim_time_ms": 330.0
+      },
+      "state": {
+        "pose": {
+          "x": 0.23760000000000003,
+          "y": 0.0,
+          "theta": 0.0,
+          "z": 0.0
+        },
+        "velocity": {
+          "linear": 0.8,
+          "angular": 0.0
+        },
+        "emergency_stop": false,
+        "active_mode": "normal"
+      }
+    },
+    {
+      "sim_time_ms": 363.0,
+      "event": "behavior_tick",
+      "payload": {
+        "interval_ms": 33.0,
+        "iteration": 11,
+        "sim_time_ms": 363.0
+      },
+      "state": {
+        "pose": {
+          "x": 0.264,
+          "y": 0.0,
+          "theta": 0.0,
+          "z": 0.0
+        },
+        "velocity": {
+          "linear": 0.8,
+          "angular": 0.0
+        },
+        "emergency_stop": false,
+        "active_mode": "normal"
+      }
+    },
+    {
+      "sim_time_ms": 396.0,
+      "event": "behavior_tick",
+      "payload": {
+        "interval_ms": 33.0,
+        "iteration": 12,
+        "sim_time_ms": 396.0
+      },
+      "state": {
+        "pose": {
+          "x": 0.2904,
+          "y": 0.0,
+          "theta": 0.0,
+          "z": 0.0
+        },
+        "velocity": {
+          "linear": 0.8,
+          "angular": 0.0
+        },
+        "emergency_stop": false,
+        "active_mode": "normal"
+      }
+    },
+    {
+      "sim_time_ms": 429.0,
+      "event": "behavior_tick",
+      "payload": {
+        "interval_ms": 33.0,
+        "iteration": 13,
+        "sim_time_ms": 429.0
+      },
+      "state": {
+        "pose": {
+          "x": 0.31679999999999997,
+          "y": 0.0,
+          "theta": 0.0,
+          "z": 0.0
+        },
+        "velocity": {
+          "linear": 0.8,
+          "angular": 0.0
+        },
+        "emergency_stop": false,
+        "active_mode": "normal"
+      }
+    },
+    {
+      "sim_time_ms": 462.0,
+      "event": "behavior_tick",
+      "payload": {
+        "interval_ms": 33.0,
+        "iteration": 14,
+        "sim_time_ms": 462.0
+      },
+      "state": {
+        "pose": {
+          "x": 0.34319999999999995,
+          "y": 0.0,
+          "theta": 0.0,
+          "z": 0.0
+        },
+        "velocity": {
+          "linear": 0.8,
+          "angular": 0.0
+        },
+        "emergency_stop": false,
+        "active_mode": "normal"
+      }
+    },
+    {
+      "sim_time_ms": 495.0,
+      "event": "behavior_tick",
+      "payload": {
+        "interval_ms": 33.0,
+        "iteration": 15,
+        "sim_time_ms": 495.0
+      },
+      "state": {
+        "pose": {
+          "x": 0.36959999999999993,
+          "y": 0.0,
+          "theta": 0.0,
+          "z": 0.0
+        },
+        "velocity": {
+          "linear": 0.8,
+          "angular": 0.0
+        },
+        "emergency_stop": false,
+        "active_mode": "normal"
+      }
+    },
+    {
+      "sim_time_ms": 528.0,
+      "event": "behavior_tick",
+      "payload": {
+        "interval_ms": 33.0,
+        "iteration": 16,
+        "sim_time_ms": 528.0
+      },
+      "state": {
+        "pose": {
+          "x": 0.3959999999999999,
+          "y": 0.0,
+          "theta": 0.0,
+          "z": 0.0
+        },
+        "velocity": {
+          "linear": 0.8,
+          "angular": 0.0
+        },
+        "emergency_stop": false,
+        "active_mode": "normal"
+      }
+    },
+    {
+      "sim_time_ms": 561.0,
+      "event": "behavior_tick",
+      "payload": {
+        "interval_ms": 33.0,
+        "iteration": 17,
+        "sim_time_ms": 561.0
+      },
+      "state": {
+        "pose": {
+          "x": 0.4223999999999999,
+          "y": 0.0,
+          "theta": 0.0,
+          "z": 0.0
+        },
+        "velocity": {
+          "linear": 0.8,
+          "angular": 0.0
+        },
+        "emergency_stop": false,
+        "active_mode": "normal"
+      }
+    },
+    {
+      "sim_time_ms": 594.0,
+      "event": "behavior_tick",
+      "payload": {
+        "interval_ms": 33.0,
+        "iteration": 18,
+        "sim_time_ms": 594.0
+      },
+      "state": {
+        "pose": {
+          "x": 0.44879999999999987,
+          "y": 0.0,
+          "theta": 0.0,
+          "z": 0.0
+        },
+        "velocity": {
+          "linear": 0.8,
+          "angular": 0.0
+        },
+        "emergency_stop": false,
+        "active_mode": "normal"
+      }
+    },
+    {
+      "sim_time_ms": 627.0,
+      "event": "behavior_tick",
+      "payload": {
+        "interval_ms": 33.0,
+        "iteration": 19,
+        "sim_time_ms": 627.0
+      },
+      "state": {
+        "pose": {
+          "x": 0.47519999999999984,
+          "y": 0.0,
+          "theta": 0.0,
+          "z": 0.0
+        },
+        "velocity": {
+          "linear": 0.8,
+          "angular": 0.0
+        },
+        "emergency_stop": false,
+        "active_mode": "normal"
+      }
+    },
+    {
+      "sim_time_ms": 660.0,
+      "event": "behavior_tick",
+      "payload": {
+        "interval_ms": 33.0,
+        "iteration": 20,
+        "sim_time_ms": 660.0
+      },
+      "state": {
+        "pose": {
+          "x": 0.5015999999999998,
+          "y": 0.0,
+          "theta": 0.0,
+          "z": 0.0
+        },
+        "velocity": {
+          "linear": 0.8,
+          "angular": 0.0
+        },
+        "emergency_stop": false,
+        "active_mode": "normal"
+      }
+    }
+  ]
+}
