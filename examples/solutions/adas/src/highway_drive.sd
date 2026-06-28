@@ -139,7 +139,7 @@ robot Vehicle {
 
   safety {
     max_speed = 1.0 m/s;
-    stop_if front_lidar.nearest_distance < 2 m;
+    stop_if front_lidar.nearest_distance < 0.5 m;
   }
 
   mission HighwayPilot {

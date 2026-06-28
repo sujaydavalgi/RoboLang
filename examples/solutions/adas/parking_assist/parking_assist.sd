@@ -1,0 +1,40 @@
+// Parking assist — reference workflow
+//
+//   spanda verify parking_assist.sd --capabilities
+//   spanda sim parking_assist.sd --record
+
+hardware JetsonAutomotive {
+  sensors [ Camera, Lidar ];
+  actuators [ DifferentialDrive ];
+  connectivity [ WiFi ];
+}
+
+robot Vehicle {
+  sensor rear_camera: Camera;
+  sensor front_lidar: Lidar;
+  actuator wheels: DifferentialDrive;
+
+  exposes capabilities [ vision_processing, obstacle_avoidance, autonomous_navigation ];
+
+  safety {
+    max_speed = 0.5 m/s;
+    stop_if front_lidar.nearest_distance < 0.4 m;
+  }
+
+  mission ParkingAssist {
+    requires capabilities [ vision_processing, obstacle_avoidance ];
+    park_loop;
+  }
+
+  behavior park_loop() {
+    loop every 100ms {
+      let rear = rear_camera.analyze();
+      let proximity = front_lidar.read();
+      let _ = rear;
+      let _ = proximity;
+      wheels.drive(linear: 0.3 m/s, angular: 0.0 rad/s);
+    }
+  }
+}
+
+deploy Vehicle to JetsonAutomotive;

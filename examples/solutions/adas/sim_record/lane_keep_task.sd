@@ -1,0 +1,35 @@
+// Sim-recorded golden trace — task scheduler frames for replay/diagnose demos.
+//
+//   spanda sim sim_record/lane_keep_task.sd --record
+//   spanda replay sim_record/lane_keep_task.trace --deterministic
+//
+// Uses `task` (not `behavior`) so `--record` captures scheduler_tick frames.
+
+hardware JetsonAutomotive {
+  sensors [ Camera, IMU ];
+  actuators [ DifferentialDrive ];
+}
+
+robot Vehicle {
+  sensor front_camera: Camera;
+  sensor imu: IMU;
+  actuator wheels: DifferentialDrive;
+
+  exposes capabilities [ vision_processing, autonomous_navigation ];
+
+  safety {
+    max_speed = 1.0 m/s;
+  }
+
+  mission LaneKeepSim {
+    requires capabilities [ vision_processing, autonomous_navigation ];
+    lane_keep_tick;
+  }
+
+  task lane_keep_tick every 50ms {
+    let _ = front_camera.analyze();
+    wheels.drive(linear: 0.6 m/s, angular: 0.0 rad/s);
+  }
+}
+
+deploy Vehicle to JetsonAutomotive;

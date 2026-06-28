@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "source": "driver_takeover/driver_takeover.sd",
+  "deterministic": false,
+  "frames": [
+    {
+      "sim_time_ms": 0.0,
+      "event": "readiness_check",
+      "payload": {
+        "score": 91,
+        "passed": true
+      },
+      "state": null
+    },
+    {
+      "sim_time_ms": 12000.0,
+      "event": "anomaly",
+      "payload": {
+        "type": "driver_distraction",
+        "severity": "critical",
+        "detector": "DriverDistraction"
+      },
+      "state": null
+    },
+    {
+      "sim_time_ms": 12050.0,
+      "event": "driver_takeover",
+      "payload": {
+        "reason": "driver_distraction_detected",
+        "handoff": "driver",
+        "audit_recorded": true
+      },
+      "state": null
+    },
+    {
+      "sim_time_ms": 12100.0,
+      "event": "assurance_evidence",
+      "payload": {
+        "type": "continuity_decision",
+        "takeover_logged": true
+      },
+      "state": null
+    }
+  ]
+}

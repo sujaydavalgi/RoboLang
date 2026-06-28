@@ -1,0 +1,7 @@
+[package]
+name = "adas-mining"
+version = "0.1.0"
+description = "Mining vehicle ADAS application variant"
+
+[config]
+devices = "spanda.devices.toml"

@@ -14,7 +14,8 @@ spanda install
 spanda check src/highway_drive.sd
 spanda verify src/highway_drive.sd --profile iso26262 --capabilities --traceability --json
 spanda readiness src/highway_drive.sd --profile iso26262 --config spanda.toml --json
-spanda sim src/highway_drive.sd --record
+spanda sim src/highway_drive.sd
+spanda sim sim_record/lane_keep_task.sd --record
 spanda replay src/highway_drive.trace --deterministic
 spanda diagnose src/highway_drive.sd src/highway_drive.trace
 spanda explain src/highway_drive.trace
@@ -39,7 +40,12 @@ adas/
 ├── spanda.providers.toml        # Optional automotive protocol packages (future)
 └── src/
     ├── highway_drive.sd         # Primary reference program
-    └── highway_drive.trace      # Golden replay fixture
+    └── highway_drive.trace      # Replay fixture (narrative; use sim_record/ for scheduler frames)
+├── sim_record/
+│   ├── lane_keep_task.sd        # Task-based program for sim --record
+│   └── lane_keep_task.trace     # Golden trace (20 scheduler_tick frames)
+├── applications/                # Nine vehicle-class device trees
+└── fixtures/                    # Scenario traces for diagnose/explain
 ```
 
 ---
@@ -53,6 +59,9 @@ adas/
 | [`automatic_emergency_braking/`](./automatic_emergency_braking/) | Automatic Emergency Braking | `emergency_braking`, safety validation, audit trail |
 | [`sensor_failure_recovery/`](./sensor_failure_recovery/) | Sensor failure recovery | Mission continuity, degraded mode, self-healing |
 | [`driver_takeover/`](./driver_takeover/) | Driver takeover | Continuity framework, driver monitoring |
+| [`parking_assist/`](./parking_assist/) | Parking Assist | `vision_processing`, `obstacle_avoidance` |
+| [`blind_spot_monitoring/`](./blind_spot_monitoring/) | Blind Spot Monitoring | `obstacle_avoidance` |
+| [`canbus_gateway/`](./canbus_gateway/) | CAN bus ECU gateway | `spanda-canbus` provider hook |
 
 ---
 
@@ -91,15 +100,17 @@ Logical capabilities verified through the existing capability framework:
 
 ## Simulation scenarios
 
-Record traces for replay and diagnosis:
+Record traces for replay and diagnosis. Programs using `task` capture `scheduler_tick` frames; `behavior` loops record narrative events via hand-authored fixtures in `fixtures/`.
 
 ```bash
-spanda sim lane_keeping/lane_keeping.sd --record --fault camera_obstructed
-spanda sim sensor_failure_recovery/camera_failure.sd --record
-spanda replay src/highway_drive.trace --deterministic
+spanda sim sim_record/lane_keep_task.sd --record
+spanda replay sim_record/lane_keep_task.trace --deterministic
+spanda replay fixtures/aeb_activation.trace --playback
+spanda diagnose src/highway_drive.sd fixtures/camera_failure_recovery.trace
+spanda explain driver_takeover/driver_takeover.sd fixtures/driver_takeover.trace
 ```
 
-Scenarios: heavy rain, snow, fog, night driving, camera/radar/LiDAR failure, GPS spoofing, CAN bus failure, emergency vehicle encounter.
+See [`fixtures/README.md`](./fixtures/README.md) for scenario trace library.
 
 ---
 

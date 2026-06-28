@@ -1,0 +1,7 @@
+[package]
+name = "adas-delivery"
+version = "0.1.0"
+description = "Delivery vehicle ADAS application variant"
+
+[config]
+devices = "spanda.devices.toml"

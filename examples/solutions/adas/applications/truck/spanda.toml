@@ -1,0 +1,7 @@
+[package]
+name = "adas-truck"
+version = "0.1.0"
+description = "Commercial truck ADAS application variant"
+
+[config]
+devices = "spanda.devices.toml"

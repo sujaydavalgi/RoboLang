@@ -1,0 +1,52 @@
+# Autonomous shuttle — geo-fenced low-speed mobility
+[fleet]
+id = "shuttle-fleet"
+
+[[fleet.robots]]
+id = "vehicle-shuttle-001"
+model = "AutonomousShuttle"
+hardware_profile = "JetsonAutomotive"
+
+[fleet.robots.compute]
+id = "compute-shuttle-001"
+type = "JetsonOrin"
+serial = "JTN-SHUTTLE-001"
+
+[[fleet.robots.compute.devices]]
+id = "front-camera"
+type = "Camera"
+provider = "spanda-opencv"
+mount = "front"
+capabilities = ["lane_detection", "pedestrian_detection", "obstacle_detection"]
+
+[[fleet.robots.compute.devices]]
+id = "front-lidar"
+type = "Lidar"
+provider = "spanda-slam"
+mount = "front"
+capabilities = ["obstacle_detection", "localization"]
+
+[[fleet.robots.compute.devices]]
+id = "gps-receiver"
+type = "GPS"
+provider = "spanda-gps"
+capabilities = ["localization", "route_following"]
+
+[[fleet.robots.compute.devices]]
+id = "imu"
+type = "IMU"
+provider = "spanda-fusion"
+capabilities = ["localization"]
+
+[[fleet.robots.compute.devices]]
+id = "vehicle-canbus"
+type = "CommunicationGateway"
+provider = "spanda-canbus"
+bus = "can0"
+capabilities = ["emergency_braking", "steering_control"]
+
+[[fleet.robots.compute.devices]]
+id = "comm-gateway"
+type = "CommunicationGateway"
+provider = "spanda-mqtt"
+capabilities = ["telemetry_streaming", "secure_communication"]

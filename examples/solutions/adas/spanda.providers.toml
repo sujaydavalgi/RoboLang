@@ -4,7 +4,7 @@
 [providers.can]
 package = "spanda-canbus"
 protocols = ["CAN", "CAN_FD"]
-status = "planned"
+status = "experimental"
 
 [providers.lin]
 package = "spanda-lin"

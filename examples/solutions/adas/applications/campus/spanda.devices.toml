@@ -1,0 +1,66 @@
+# Campus shuttle — pedestrian-rich low-speed mobility
+[fleet]
+id = "campus-fleet"
+
+[[fleet.robots]]
+id = "vehicle-campus-001"
+model = "CampusShuttle"
+hardware_profile = "JetsonAutomotive"
+
+[fleet.robots.compute]
+id = "compute-campus-001"
+type = "JetsonOrin"
+serial = "JTN-CAMPUS-001"
+
+[[fleet.robots.compute.devices]]
+id = "front-camera"
+type = "Camera"
+provider = "spanda-opencv"
+mount = "front"
+capabilities = ["lane_detection", "pedestrian_detection", "obstacle_detection"]
+
+[[fleet.robots.compute.devices]]
+id = "side-camera-left"
+type = "Camera"
+provider = "spanda-opencv"
+mount = "left"
+capabilities = ["pedestrian_detection", "obstacle_detection"]
+
+[[fleet.robots.compute.devices]]
+id = "side-camera-right"
+type = "Camera"
+provider = "spanda-opencv"
+mount = "right"
+capabilities = ["pedestrian_detection", "obstacle_detection"]
+
+[[fleet.robots.compute.devices]]
+id = "front-lidar"
+type = "Lidar"
+provider = "spanda-slam"
+mount = "front"
+capabilities = ["obstacle_detection", "localization"]
+
+[[fleet.robots.compute.devices]]
+id = "gps-receiver"
+type = "GPS"
+provider = "spanda-gps"
+capabilities = ["localization", "route_following"]
+
+[[fleet.robots.compute.devices]]
+id = "imu"
+type = "IMU"
+provider = "spanda-fusion"
+capabilities = ["localization"]
+
+[[fleet.robots.compute.devices]]
+id = "vehicle-canbus"
+type = "CommunicationGateway"
+provider = "spanda-canbus"
+bus = "can0"
+capabilities = ["emergency_braking", "steering_control"]
+
+[[fleet.robots.compute.devices]]
+id = "comm-gateway"
+type = "CommunicationGateway"
+provider = "spanda-mqtt"
+capabilities = ["telemetry_streaming", "secure_communication"]

@@ -1,0 +1,46 @@
+// Blind spot monitoring — reference workflow
+//
+//   spanda verify blind_spot.sd --capabilities
+
+hardware JetsonAutomotive {
+  sensors [ Camera, Lidar ];
+  actuators [ DifferentialDrive ];
+  connectivity [ CAN, WiFi ];
+}
+
+robot Vehicle {
+  sensor rear_camera: Camera;
+  sensor rear_lidar: Lidar;
+  actuator wheels: DifferentialDrive;
+
+  exposes capabilities [ vision_processing, obstacle_avoidance, telemetry_streaming ];
+
+  safety {
+    max_speed = 1.0 m/s;
+    stop_if rear_lidar.nearest_distance < 1.0 m;
+  }
+
+  mission BlindSpotMonitor {
+    requires capabilities [ vision_processing, obstacle_avoidance ];
+    monitor_blind_spot;
+  }
+
+  behavior monitor_blind_spot() {
+    loop every 50ms {
+      let rear = rear_camera.analyze();
+      let scan = rear_lidar.read();
+      let _ = rear;
+      let _ = scan;
+    }
+  }
+}
+
+on anomaly BlindSpotWarning severity Warning {
+  audit.record("blind_spot_warning");
+}
+
+anomaly_detector BlindSpotWarning {
+  expected rear_lidar.status == Healthy;
+}
+
+deploy Vehicle to JetsonAutomotive;

@@ -1,0 +1,7 @@
+[package]
+name = "adas-construction"
+version = "0.1.0"
+description = "Construction equipment ADAS application variant"
+
+[config]
+devices = "spanda.devices.toml"

@@ -1,0 +1,36 @@
+// CAN bus gateway — optional spanda-canbus provider integration
+//
+//   spanda install   # resolves spanda-canbus from registry
+//   spanda verify canbus_gateway.sd --capabilities
+//
+// After install, extend with `import iot.canbus` and read_frame() for ECU telemetry.
+// Device tree maps brake/steering ECUs to spanda-canbus on can0 — see spanda.devices.toml.
+
+hardware JetsonAutomotive {
+  sensors [ GPS, Lidar ];
+  actuators [ DifferentialDrive ];
+  connectivity [ CAN, WiFi ];
+}
+
+robot Vehicle {
+  sensor gps: GPS;
+  sensor front_lidar: Lidar;
+  actuator wheels: DifferentialDrive;
+
+  exposes capabilities [ obstacle_avoidance, gps_navigation, telemetry_streaming ];
+
+  safety {
+    max_speed = 1.0 m/s;
+    stop_if front_lidar.nearest_distance < 0.5 m;
+  }
+
+  behavior drive() {
+    loop every 100ms {
+      let scan = front_lidar.read();
+      let _ = scan;
+      wheels.drive(linear: 0.5 m/s, angular: 0.0 rad/s);
+    }
+  }
+}
+
+deploy Vehicle to JetsonAutomotive;

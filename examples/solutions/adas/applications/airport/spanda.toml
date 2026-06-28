@@ -1,0 +1,7 @@
+[package]
+name = "adas-airport"
+version = "0.1.0"
+description = "Airport ground vehicle ADAS application variant"
+
+[config]
+devices = "spanda.devices.toml"

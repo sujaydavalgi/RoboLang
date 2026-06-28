@@ -1,0 +1,45 @@
+# Agricultural vehicle — outdoor GPS, route following, low-speed autonomy
+[fleet]
+id = "agricultural-fleet"
+
+[[fleet.robots]]
+id = "vehicle-agricultural-001"
+model = "AgriculturalTractor"
+hardware_profile = "JetsonAutomotive"
+
+[fleet.robots.compute]
+id = "compute-ag-001"
+type = "JetsonOrin"
+serial = "JTN-AG-001"
+
+[[fleet.robots.compute.devices]]
+id = "gps-rtk"
+type = "GPS"
+provider = "spanda-gps"
+capabilities = ["localization", "route_following"]
+
+[[fleet.robots.compute.devices]]
+id = "imu"
+type = "IMU"
+provider = "spanda-fusion"
+capabilities = ["localization"]
+
+[[fleet.robots.compute.devices]]
+id = "front-camera"
+type = "Camera"
+provider = "spanda-opencv"
+mount = "front"
+capabilities = ["obstacle_detection", "lane_detection"]
+
+[[fleet.robots.compute.devices]]
+id = "vehicle-canbus"
+type = "CommunicationGateway"
+provider = "spanda-canbus"
+bus = "can0"
+capabilities = ["adaptive_speed_control", "steering_control"]
+
+[[fleet.robots.compute.devices]]
+id = "comm-gateway"
+type = "CommunicationGateway"
+provider = "spanda-cellular"
+capabilities = ["telemetry_streaming"]

@@ -1,0 +1,7 @@
+[package]
+name = "adas-passenger"
+version = "0.1.0"
+description = "Passenger vehicle ADAS application variant (full sensor suite)"
+
+[config]
+devices = "../../spanda.devices.toml"

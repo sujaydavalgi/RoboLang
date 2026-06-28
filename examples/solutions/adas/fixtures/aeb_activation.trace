@@ -1,0 +1,49 @@
+{
+  "version": 1,
+  "source": "automatic_emergency_braking/aeb.sd",
+  "deterministic": false,
+  "frames": [
+    {
+      "sim_time_ms": 0.0,
+      "event": "readiness_check",
+      "payload": {
+        "profile": "iso26262",
+        "score": 92,
+        "passed": true
+      },
+      "state": null
+    },
+    {
+      "sim_time_ms": 3200.0,
+      "event": "provider_call",
+      "payload": {
+        "category": "sensor",
+        "device": "front-lidar",
+        "function": "read",
+        "failed": false
+      },
+      "state": null
+    },
+    {
+      "sim_time_ms": 3240.0,
+      "event": "safety_event",
+      "payload": {
+        "type": "emergency_braking",
+        "severity": "critical",
+        "obstacle_distance_m": 1.4,
+        "explanation": "Front LiDAR range below threshold; emergency brake applied"
+      },
+      "state": null
+    },
+    {
+      "sim_time_ms": 3250.0,
+      "event": "assurance_evidence",
+      "payload": {
+        "type": "safety_validation",
+        "passed": true,
+        "audit_id": "aeb-2026-001"
+      },
+      "state": null
+    }
+  ]
+}

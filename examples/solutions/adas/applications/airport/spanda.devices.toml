@@ -1,0 +1,58 @@
+# Airport ground vehicle — geofenced ops without cabin monitoring
+[fleet]
+id = "airport-fleet"
+
+[[fleet.robots]]
+id = "vehicle-airport-001"
+model = "AirportGroundVehicle"
+hardware_profile = "JetsonAutomotive"
+
+[fleet.robots.compute]
+id = "compute-airport-001"
+type = "JetsonOrin"
+serial = "JTN-AIRPORT-001"
+
+[[fleet.robots.compute.devices]]
+id = "front-camera"
+type = "Camera"
+provider = "spanda-opencv"
+mount = "front"
+capabilities = ["obstacle_detection", "pedestrian_detection"]
+
+[[fleet.robots.compute.devices]]
+id = "front-lidar"
+type = "Lidar"
+provider = "spanda-slam"
+mount = "front"
+capabilities = ["obstacle_detection", "localization"]
+
+[[fleet.robots.compute.devices]]
+id = "gps-receiver"
+type = "GPS"
+provider = "spanda-gps"
+capabilities = ["localization", "route_following"]
+
+[[fleet.robots.compute.devices]]
+id = "imu"
+type = "IMU"
+provider = "spanda-fusion"
+capabilities = ["localization"]
+
+[[fleet.robots.compute.devices]]
+id = "geofence-gateway"
+type = "CommunicationGateway"
+provider = "spanda-mqtt"
+capabilities = ["geofence_enforcement", "secure_communication"]
+
+[[fleet.robots.compute.devices]]
+id = "vehicle-canbus"
+type = "CommunicationGateway"
+provider = "spanda-canbus"
+bus = "can0"
+capabilities = ["emergency_braking", "steering_control"]
+
+[[fleet.robots.compute.devices]]
+id = "comm-gateway"
+type = "CommunicationGateway"
+provider = "spanda-cellular"
+capabilities = ["telemetry_streaming"]

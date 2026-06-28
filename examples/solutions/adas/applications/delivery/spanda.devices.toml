@@ -1,0 +1,47 @@
+# Delivery vehicle — urban low-speed autonomy and parking
+[fleet]
+id = "delivery-fleet"
+
+[[fleet.robots]]
+id = "vehicle-delivery-001"
+model = "DeliveryVan"
+hardware_profile = "JetsonAutomotive"
+
+[fleet.robots.compute]
+id = "compute-delivery-001"
+type = "JetsonOrin"
+serial = "JTN-DELIVERY-001"
+
+[[fleet.robots.compute.devices]]
+id = "front-camera"
+type = "Camera"
+provider = "spanda-opencv"
+mount = "front"
+capabilities = ["lane_detection", "obstacle_detection", "pedestrian_detection"]
+
+[[fleet.robots.compute.devices]]
+id = "rear-camera"
+type = "Camera"
+provider = "spanda-opencv"
+mount = "rear"
+capabilities = ["parking_assist", "obstacle_detection"]
+
+[[fleet.robots.compute.devices]]
+id = "front-radar"
+type = "Radar"
+provider = "spanda-slam"
+mount = "front"
+capabilities = ["obstacle_detection", "adaptive_speed_control"]
+
+[[fleet.robots.compute.devices]]
+id = "gps-receiver"
+type = "GPS"
+provider = "spanda-gps"
+capabilities = ["localization", "route_following"]
+
+[[fleet.robots.compute.devices]]
+id = "vehicle-canbus"
+type = "CommunicationGateway"
+provider = "spanda-canbus"
+bus = "can0"
+capabilities = ["emergency_braking", "adaptive_speed_control"]

@@ -4,14 +4,16 @@ version = "0.1.0"
 description = "Official ADAS & Autonomous Driving Solution Blueprint"
 license = "Apache-2.0"
 
+[config]
+devices = "spanda.devices.toml"
+
 [dependencies]
 spanda-gps = "0.1"
 spanda-nav = "0.1"
 spanda-mqtt = "0.1"
 spanda-opencv = "0.1"
+spanda-canbus = "0.1"
 
-[hardware]
-targets = ["JetsonAutomotive"]
 
 [capabilities]
 required = [

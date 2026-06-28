@@ -1,0 +1,48 @@
+{
+  "version": 1,
+  "source": "sensor_failure_recovery/camera_failure.sd",
+  "deterministic": false,
+  "frames": [
+    {
+      "sim_time_ms": 0.0,
+      "event": "readiness_check",
+      "payload": {
+        "score": 94,
+        "passed": true
+      },
+      "state": null
+    },
+    {
+      "sim_time_ms": 8500.0,
+      "event": "sensor_degradation",
+      "payload": {
+        "device": "front-camera",
+        "type": "obstruction",
+        "severity": "warning"
+      },
+      "state": null
+    },
+    {
+      "sim_time_ms": 8550.0,
+      "event": "recovery_action",
+      "payload": {
+        "action": "switch_to_redundant_sensor",
+        "target": "front-lidar",
+        "passed_safety_validation": true,
+        "passed_capability_verification": true
+      },
+      "state": null
+    },
+    {
+      "sim_time_ms": 8600.0,
+      "event": "continuity_decision",
+      "payload": {
+        "operating_mode": "degraded",
+        "speed_reduction_percent": 40,
+        "driver_takeover_required": false,
+        "assurance_evidence_generated": true
+      },
+      "state": null
+    }
+  ]
+}

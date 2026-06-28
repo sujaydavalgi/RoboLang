@@ -1,0 +1,47 @@
+# Construction equipment — ISO 13849 machinery profile, 360° obstacle detection
+[fleet]
+id = "construction-fleet"
+
+[[fleet.robots]]
+id = "vehicle-construction-001"
+model = "Excavator"
+hardware_profile = "JetsonAutomotive"
+
+[fleet.robots.compute]
+id = "compute-construction-001"
+type = "JetsonOrin"
+serial = "JTN-CONST-001"
+
+[[fleet.robots.compute.devices]]
+id = "front-lidar"
+type = "Lidar"
+provider = "spanda-slam"
+mount = "front"
+capabilities = ["obstacle_detection"]
+
+[[fleet.robots.compute.devices]]
+id = "rear-lidar"
+type = "Lidar"
+provider = "spanda-slam"
+mount = "rear"
+capabilities = ["obstacle_detection"]
+
+[[fleet.robots.compute.devices]]
+id = "front-camera"
+type = "Camera"
+provider = "spanda-opencv"
+mount = "front"
+capabilities = ["obstacle_detection", "pedestrian_detection"]
+
+[[fleet.robots.compute.devices]]
+id = "vehicle-canbus"
+type = "CommunicationGateway"
+provider = "spanda-canbus"
+bus = "can0"
+capabilities = ["emergency_braking"]
+
+[[fleet.robots.compute.devices]]
+id = "gps-receiver"
+type = "GPS"
+provider = "spanda-gps"
+capabilities = ["localization"]

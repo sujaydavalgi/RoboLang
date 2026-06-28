@@ -1,0 +1,7 @@
+[package]
+name = "adas-agricultural"
+version = "0.1.0"
+description = "Agricultural vehicle ADAS application variant"
+
+[config]
+devices = "spanda.devices.toml"

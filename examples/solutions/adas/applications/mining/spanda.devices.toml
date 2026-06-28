@@ -1,0 +1,58 @@
+# Mining vehicle — harsh environment, redundant positioning
+[fleet]
+id = "mining-fleet"
+
+[[fleet.robots]]
+id = "vehicle-mining-001"
+model = "MiningHaulTruck"
+hardware_profile = "JetsonAutomotive"
+
+[fleet.robots.compute]
+id = "compute-mining-001"
+type = "JetsonOrin"
+serial = "JTN-MINING-001"
+
+[[fleet.robots.compute.devices]]
+id = "front-lidar"
+type = "Lidar"
+provider = "spanda-slam"
+mount = "front"
+capabilities = ["obstacle_detection", "localization"]
+
+[[fleet.robots.compute.devices]]
+id = "rear-lidar"
+type = "Lidar"
+provider = "spanda-slam"
+mount = "rear"
+capabilities = ["obstacle_detection"]
+
+[[fleet.robots.compute.devices]]
+id = "gps-primary"
+type = "GPS"
+provider = "spanda-gps"
+capabilities = ["localization", "route_following"]
+
+[[fleet.robots.compute.devices]]
+id = "gps-rtk"
+type = "GPS"
+provider = "spanda-gps"
+capabilities = ["localization"]
+
+[[fleet.robots.compute.devices]]
+id = "imu"
+type = "IMU"
+provider = "spanda-fusion"
+capabilities = ["localization"]
+
+[[fleet.robots.compute.devices]]
+id = "vehicle-canbus"
+type = "CommunicationGateway"
+provider = "spanda-canbus"
+bus = "can0"
+capabilities = ["emergency_braking", "adaptive_speed_control"]
+
+[[fleet.robots.compute.devices]]
+id = "comm-gateway"
+type = "CommunicationGateway"
+provider = "spanda-cellular"
+capabilities = ["secure_communication", "telemetry_streaming"]

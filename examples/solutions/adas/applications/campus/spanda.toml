@@ -1,0 +1,7 @@
+[package]
+name = "adas-campus"
+version = "0.1.0"
+description = "Campus shuttle ADAS application variant"
+
+[config]
+devices = "spanda.devices.toml"
