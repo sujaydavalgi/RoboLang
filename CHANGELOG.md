@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **ADAS & Autonomous Driving Solution Blueprint:** `examples/solutions/adas/` with highway pilot reference, five ADAS function examples, automotive device tree, readiness/assurance/security configs; `spanda demo adas`; `./scripts/adas_smoke.sh`.
+- **ADAS documentation:** [docs/solutions/adas.md](docs/solutions/adas.md), [automotive-device-tree.md](docs/automotive-device-tree.md), [adas-readiness.md](docs/adas-readiness.md), [adas-assurance.md](docs/adas-assurance.md), [adas-security.md](docs/adas-security.md), [adas-replay.md](docs/adas-replay.md), [demo-plan-adas.md](docs/demo-plan-adas.md).
+- **Control Center ADAS tab** and **website/solutions.html** Official Solution Blueprints page.
+
 - **Compliance profiles (ISO 13849, IEC 61508):** signed catalog templates `iso13849` and `iec61508`; showcase programs `automotive_rover.sd`, `machinery_rover.sd`, `iec61508_rover.sd`; Control Center compliance tab profile selector; readiness scoring in compliance verify uses deploy target.
 - **Compliance CLI and demo:** `spanda compliance list` (built-in + signed catalog); `spanda demo compliance` runs all five profile showcases.
 - **WebSocket reconnect contract:** resume offsets, heartbeat, backpressure (`SPANDA_WS_MAX_PENDING_FRAMES`, `SPANDA_WS_HEARTBEAT_INTERVAL_MS`).

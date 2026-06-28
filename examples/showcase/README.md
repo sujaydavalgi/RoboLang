@@ -21,6 +21,8 @@ Start here when evaluating Spanda as a **professional autonomous-systems platfor
 | `spanda demo continuity` | Mission continuity, takeover, delegation, succession |
 | `spanda demo maturity` | Phase A graph, explain, trust, deployment gates |
 | `spanda demo trust` | Tamper/trust showcases — package tampering, integrity, spoofing, runtime intrusion |
+| `spanda demo compliance` | Industry profile verification (defense, medical, ISO 26262, ISO 13849, IEC 61508) |
+| `spanda demo adas` | ADAS & Autonomous Driving Solution Blueprint |
 
 Set `SPANDA_ROOT` to the repository root if examples are not found.
 
@@ -93,3 +95,5 @@ One command: `spanda demo trust` · smoke: `./scripts/showcase_smoke.sh`, `./scr
 | [`world_model_patrol.sd`](./world_model_patrol.sd) | Observe → fusion → belief |
 
 Browse by capability: [examples/features/README.md](../features/README.md)
+
+**Solution blueprints:** [examples/solutions/adas/](../solutions/adas/) — ADAS & Autonomous Driving

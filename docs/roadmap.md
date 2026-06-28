@@ -70,6 +70,7 @@ Full enterprise analysis: [enterprise-operations-roadmap.md](./enterprise-operat
 | [Platform maturity](#platform-maturity) | 16 areas shipped **Experimental** (graph, explain, gates, trust, policy, drift, …) | Stable hardening for Phase A–D deliverables |
 | [Differentiation](#differentiation--signature-capabilities) | NOW items shipped **Experimental** (contracts, explain, audit, coverage) | Stable hardening; NEXT signature capabilities |
 | Enterprise operations | E1–E4 **Experimental** (Control Center, device pool, provisioning, APIs, smoke) | **Stable promotion:** operational gates (soak, audit, releases) — code checklist **shipped** |
+| Official Solution Blueprints | ADAS & Autonomous Driving **Experimental** | Additional industry blueprints (warehouse ops, medical devices) |
 
 ---
 
@@ -108,6 +109,24 @@ Full analysis: [platform-maturity-roadmap.md](./platform-maturity-roadmap.md)
 | D | v1.0 (2027) | Full trust platform | **Shipped (experimental)** — tamper/integrity, decision explain, runtime policy, AI generate/suggest |
 
 Topic guides: [dependency-graphs.md](./dependency-graphs.md) · [deployment-gates.md](./deployment-gates.md) · [tamper-detection.md](./tamper-detection.md) · [security-assurance.md](./security-assurance.md)
+
+---
+
+## Official Solution Blueprints
+
+Industry reference architectures built entirely on existing platform capabilities — optional packages and blueprint programs, not core language extensions.
+
+| Blueprint | Status | Path |
+|-----------|--------|------|
+| **ADAS & Autonomous Driving** | **Experimental** | [examples/solutions/adas/](../examples/solutions/adas/) · [solutions/adas.md](./solutions/adas.md) |
+| Autonomous Rover (flagship) | **Stable** | [examples/showcase/autonomous_rover/](../examples/showcase/autonomous_rover/) |
+| Compliance profiles | **Experimental** | [examples/showcase/compliance/](../examples/showcase/compliance/) |
+
+**ADAS blueprint** (2026-06): lane keeping, adaptive cruise, AEB, sensor recovery, driver takeover, highway pilot; automotive device tree; ISO 26262 readiness/assurance; Control Center ADAS tab; `spanda demo adas`; `./scripts/adas_smoke.sh`.
+
+**Planned:** warehouse operations blueprint, medical device blueprint, ROS2/Nav2 automotive stack package integration.
+
+Demo plan: [demo-plan-adas.md](./demo-plan-adas.md) · Website: [website/solutions.html](../website/solutions.html)
 
 ---
 
@@ -603,6 +622,7 @@ See [product-strategy.md](./product-strategy.md) § v0.5 beta and [tier-3-priori
 - [enterprise-operations-roadmap.md](./enterprise-operations-roadmap.md) — Control Center, Device Pool, provisioning, RBAC, APIs, observability (20 pillars)
 - [differentiation-roadmap.md](./differentiation-roadmap.md) — signature capabilities, mission contracts, explainability, coverage (15 areas)
 - [platform-maturity-roadmap.md](./platform-maturity-roadmap.md) — adoption, trust, operations expansion (16 areas)
+- [solutions/adas.md](./solutions/adas.md) — ADAS & Autonomous Driving Official Solution Blueprint
 - [platform-overview.md](./platform-overview.md)
 - [feature-status.md](./feature-status.md)
 - [product-strategy.md](./product-strategy.md)

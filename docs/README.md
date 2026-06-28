@@ -157,6 +157,11 @@
 | [mission-diff.md](./mission-diff.md) | **Mission differencing and change-impact** |
 | [policy-engine.md](./policy-engine.md) | **Declarative operational policies** |
 | [compliance-profiles.md](./compliance-profiles.md) | **Industry verification profile templates** |
+| [solutions/README.md](./solutions/README.md) | **Official Solution Blueprints index** |
+| [solutions/adas.md](./solutions/adas.md) | **ADAS & Autonomous Driving blueprint** |
+| [automotive-device-tree.md](./automotive-device-tree.md) | **Automotive device hierarchy and capability mapping** |
+| [adas-readiness.md](./adas-readiness.md) | **ADAS pre-drive readiness gates** |
+| [demo-plan-adas.md](./demo-plan-adas.md) | **ADAS blueprint demo plan** |
 | [chaos-engineering.md](./chaos-engineering.md) | **Chaos injection and resilience validation** |
 | [resource-estimation.md](./resource-estimation.md) | **Mission resource estimation** |
 | [readiness-trends.md](./readiness-trends.md) | **Readiness trend analysis and forecasting** |
