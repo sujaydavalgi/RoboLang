@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Official SDK foundations:** `crates/spanda-sdk` (Rust), `sdk/python` (`pip install spanda-sdk`), `sdk/typescript` (`@spanda/sdk`); program-level REST endpoints on `spanda-api` for CLI parity (`/v1/programs/*`, `/v1/entities/*`); docs in [docs/sdk.md](docs/sdk.md), [docs/control-center-api.md](docs/control-center-api.md).
 - **Website roadmap & platform pages:** [website/roadmap.html](website/roadmap.html), [website/platform.html](website/platform.html) — product ecosystem navigation.
 - **Platform pillar link hubs:** [docs/pillars/](docs/pillars/README.md) — 8 navigation hubs cross-linking topic guides.
 - **CI gates index:** [scripts/gates/README.md](scripts/gates/README.md) — smoke scripts by pillar and blueprint.

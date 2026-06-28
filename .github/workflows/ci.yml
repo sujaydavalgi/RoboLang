@@ -37,6 +37,9 @@ jobs:
       - run: cargo build -p spanda-core --no-default-features
       - run: cargo run -q -p spanda-package --bin registry-index-maintain -- --verify
       - run: cargo test --workspace
+      - run: pip install pytest
+      - run: PYTHONPATH=sdk/python python -m pytest sdk/python
+      - run: npm ci --prefix sdk/typescript && npm test --prefix sdk/typescript
       - run: cargo doc --workspace --no-deps
       - run: python3 scripts/validate_documentation.py --warn --report
       - run: cargo build -p spanda --release

@@ -131,6 +131,11 @@
 | [spanda-reference.md](./spanda-reference.md) | **Spanda language API** — keywords, `std.*`, builtins, CLI (JavaDoc + man style) |
 | [api-documentation.md](./api-documentation.md) | **API doc hierarchy** — language vs compiler vs JSON contract |
 | [api-reference.md](./api-reference.md) | **Rust/TypeScript compiler API** — crates grouped by lean-core layer |
+| [control-center-api.md](./control-center-api.md) | **Control Center REST v1** — SDK program ops, entity registry, auth |
+| [sdk.md](./sdk.md) | **Official SDKs** — Rust, Python, TypeScript overview |
+| [sdk-rust.md](./sdk-rust.md) | Rust SDK (`spanda-sdk`) |
+| [sdk-python.md](./sdk-python.md) | Python SDK (`spanda-sdk`) |
+| [sdk-typescript.md](./sdk-typescript.md) | TypeScript SDK (`@spanda/sdk`) |
 | [api-contract.json](./api-contract.json) | JSON schema for diagnostics, run results, and verify output |
 | [standard-library.md](./standard-library.md) | Standard library overview and design |
 | [robotics-platform.md](./robotics-platform.md) | **Robotics platform: missions, fleet, safety zones, navigation, fusion, package strategy** |
