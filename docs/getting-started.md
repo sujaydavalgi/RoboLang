@@ -707,14 +707,53 @@ npm run control-center:desktop:dev
 
 Point the UI at a different API URL with `VITE_CONTROL_CENTER_URL=http://host:port`.
 
-### Python SDK
+### Official SDKs
+
+Start Control Center with a program, then use any SDK (thin HTTP clients — no duplicated platform logic):
+
+```bash
+cargo run -p spanda -- control-center serve \
+  --bind 127.0.0.1:8080 \
+  --program examples/robotics/rover.sd
+```
+
+**Rust** (`crates/spanda-sdk`):
+
+```rust
+use spanda_sdk::SpandaClient;
+let client = SpandaClient::local();
+let report = client.readiness("rover.sd")?;
+```
+
+**Python** (`sdk/python`):
+
+```bash
+pip install -e sdk/python
+export SPANDA_CONTROL_CENTER_URL=http://127.0.0.1:8080
+python -c "from spanda import SpandaClient; print(SpandaClient.local().readiness('rover.sd'))"
+```
+
+**TypeScript** (`sdk/typescript`, package `@spanda/sdk`):
+
+```bash
+npm ci --prefix sdk/typescript && npm run build --prefix sdk/typescript
+```
+
+```typescript
+import { SpandaClient } from "@spanda/sdk";
+const report = await SpandaClient.local().readiness("rover.sd");
+```
+
+Full guides: [sdk.md](./sdk.md) · [control-center-api.md](./control-center-api.md)
+
+### Legacy Python client (enterprise ops)
 
 ```bash
 pip install -e 'packages/sdk-python[stream]'
 export SPANDA_CONTROL_CENTER_URL=http://127.0.0.1:8080
 ```
 
-See [packages/sdk-python/README.md](../packages/sdk-python/README.md).
+See [packages/sdk-python/README.md](../packages/sdk-python/README.md) for drift, OTA, and SRE helpers (`ControlCenterClient`).
 
 ---
 

@@ -580,6 +580,14 @@ pub fn rpc_gateway(state: &mut ControlCenterState, body: &str) -> HttpResponse {
             serde_json::from_str(&crate::sdk_ops::get_entity_json(state, entity_id))
                 .unwrap_or_default()
         }
+        "spanda.v1.ControlCenter/GetEntityHealth" => {
+            serde_json::from_str(&crate::sdk_ops::entity_health_json(state, entity_id))
+                .unwrap_or_default()
+        }
+        "spanda.v1.ControlCenter/GetEntityTrust" => {
+            serde_json::from_str(&crate::sdk_ops::entity_trust_json(state, entity_id))
+                .unwrap_or_default()
+        }
         "spanda.v1.ControlCenter/EvaluateProgramReadiness" => {
             serde_json::from_str(&crate::sdk_ops::program_readiness_json(state, body_json))
                 .unwrap_or_default()
@@ -590,6 +598,32 @@ pub fn rpc_gateway(state: &mut ControlCenterState, body: &str) -> HttpResponse {
         }
         "spanda.v1.ControlCenter/EvaluateProgramDiagnose" => {
             serde_json::from_str(&crate::sdk_ops::program_diagnose_json(state, body_json))
+                .unwrap_or_default()
+        }
+        "spanda.v1.ControlCenter/EvaluateProgramHeal" => {
+            serde_json::from_str(&crate::sdk_ops::program_heal_json(state, body_json))
+                .unwrap_or_default()
+        }
+        "spanda.v1.ControlCenter/VerifyProgramHardware" => {
+            serde_json::from_str(&crate::sdk_ops::program_verify_hardware_json(state, body_json))
+                .unwrap_or_default()
+        }
+        "spanda.v1.ControlCenter/VerifyProgramCapabilities" => {
+            serde_json::from_str(
+                &crate::sdk_ops::program_verify_capabilities_json(state, body_json),
+            )
+            .unwrap_or_default()
+        }
+        "spanda.v1.ControlCenter/VerifyProgramMission" => {
+            serde_json::from_str(&crate::sdk_ops::program_verify_mission_json(state, body_json))
+                .unwrap_or_default()
+        }
+        "spanda.v1.ControlCenter/RunProgramSimulation" => {
+            serde_json::from_str(&crate::sdk_ops::program_simulation_json(state, body_json))
+                .unwrap_or_default()
+        }
+        "spanda.v1.ControlCenter/ReplayProgram" => {
+            serde_json::from_str(&crate::sdk_ops::program_replay_json(state, body_json))
                 .unwrap_or_default()
         }
         "spanda.v1.ControlCenter/GetTrustProgram" => {

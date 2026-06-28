@@ -107,7 +107,7 @@ gRPC-compatible JSON gateway for clients without tonic. Example:
 }
 ```
 
-Supported SDK methods include `ListEntities`, `EvaluateProgramReadiness`, `EvaluateProgramAssure`, `EvaluateProgramDiagnose`, `GetTrustProgram`.
+Supported SDK methods include `ListEntities`, `GetEntity`, `GetEntityHealth`, `GetEntityTrust`, `EvaluateProgramReadiness`, `EvaluateProgramAssure`, `EvaluateProgramDiagnose`, `EvaluateProgramHeal`, `VerifyProgramHardware`, `VerifyProgramCapabilities`, `VerifyProgramMission`, `RunProgramSimulation`, `ReplayProgram`, and `GetTrustProgram`.
 
 ## Event types (WebSocket)
 
