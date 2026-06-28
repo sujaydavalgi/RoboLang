@@ -1,0 +1,5 @@
+import spatial.openxr;
+
+test smoke_spanda_openxr() {
+  assert start_session("demo") == 1;
+}

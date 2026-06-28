@@ -1,0 +1,5 @@
+import wearable.smartwatch;
+
+test smoke_spanda_smartwatch() {
+  assert read_telemetry("demo") == 1;
+}

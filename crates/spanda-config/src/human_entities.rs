@@ -80,6 +80,26 @@ pub struct SpatialDeviceEntity {
     pub trust_level: Option<String>,
 }
 
+/// Remote expert or collaborative spatial session configuration.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct RemoteExpertSession {
+    pub id: String,
+    #[serde(rename = "type", default)]
+    pub session_type: Option<String>,
+    #[serde(default)]
+    pub field_human_id: Option<String>,
+    #[serde(default)]
+    pub expert_human_id: Option<String>,
+    #[serde(default)]
+    pub robot_id: Option<String>,
+    #[serde(default)]
+    pub ar_device_id: Option<String>,
+    #[serde(default)]
+    pub camera_device_id: Option<String>,
+    #[serde(default)]
+    pub capabilities: Vec<String>,
+}
+
 /// Control Center logical node in the fleet tree.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct ControlCenterEntity {
@@ -111,6 +131,8 @@ pub struct HumanRegistry {
     pub iot_devices: Vec<SpatialDeviceEntity>,
     #[serde(default)]
     pub control_center: Vec<ControlCenterEntity>,
+    #[serde(default)]
+    pub spatial_sessions: Vec<RemoteExpertSession>,
 }
 
 impl HumanEntity {
@@ -182,6 +204,10 @@ impl HumanRegistry {
 
     pub fn operator_ids(&self) -> Vec<String> {
         self.humans.iter().map(|h| h.id.clone()).collect()
+    }
+
+    pub fn spatial_session(&self, id: &str) -> Option<&RemoteExpertSession> {
+        self.spatial_sessions.iter().find(|s| s.id == id)
     }
 }
 
@@ -307,6 +333,7 @@ fn merge_flat_tables(raw: &toml::Value, registry: &mut HumanRegistry) {
     append_table(raw, "drones", &mut registry.drones);
     append_table(raw, "iot_devices", &mut registry.iot_devices);
     append_table(raw, "control_center", &mut registry.control_center);
+    append_table(raw, "spatial_sessions", &mut registry.spatial_sessions);
 }
 
 fn append_table<T: for<'de> Deserialize<'de>>(raw: &toml::Value, key: &str, target: &mut Vec<T>) {
@@ -328,6 +355,7 @@ fn dedupe_registry(registry: &mut HumanRegistry) {
     dedupe_by_id(&mut registry.drones, |d| d.id.clone());
     dedupe_by_id(&mut registry.iot_devices, |d| d.id.clone());
     dedupe_by_id(&mut registry.control_center, |c| c.id.clone());
+    dedupe_by_id(&mut registry.spatial_sessions, |s| s.id.clone());
 }
 
 fn dedupe_by_id<T, F>(items: &mut Vec<T>, id_fn: F)

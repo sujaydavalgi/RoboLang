@@ -467,3 +467,89 @@ fn fusion_package_dispatches_weights() {
         other => panic!("expected number, got {other:?}"),
     }
 }
+
+#[test]
+fn hri_packages_dispatch_wearable_and_spatial() {
+    use spanda_providers::dispatch_official_package_call;
+    use spanda_runtime::value::RuntimeValue;
+
+    let mut registry = bootstrap_providers_for_packages(&[
+        "spanda-smartwatch",
+        "spanda-hololens",
+    ]);
+    let telemetry = dispatch_official_package_call(
+        &mut registry,
+        "wearable.smartwatch",
+        "read_telemetry",
+        &[RuntimeValue::String {
+            value: "watch-001".into(),
+        }],
+        None,
+        None,
+        0.0,
+    )
+    .expect("wearable telemetry dispatch");
+    match telemetry {
+        RuntimeValue::Object { type_name, .. } => assert_eq!(type_name, "WearableTelemetry"),
+        other => panic!("expected object, got {other:?}"),
+    }
+    let session = dispatch_official_package_call(
+        &mut registry,
+        "spatial.hololens",
+        "start_session",
+        &[RuntimeValue::String {
+            value: "hololens-001".into(),
+        }],
+        None,
+        None,
+        0.0,
+    )
+    .expect("spatial session dispatch");
+    match session {
+        RuntimeValue::Number { value, .. } => assert!((value - 1.0).abs() < f64::EPSILON),
+        other => panic!("expected number, got {other:?}"),
+    }
+}
+
+#[test]
+fn h3_packages_dispatch_voice_and_overlay() {
+    use spanda_providers::dispatch_official_package_call;
+    use spanda_runtime::value::RuntimeValue;
+
+    let mut registry = bootstrap_providers_for_packages(&["spanda-voice", "spanda-hololens"]);
+    let events = dispatch_official_package_call(
+        &mut registry,
+        "hri.voice",
+        "poll_events",
+        &[],
+        None,
+        None,
+        0.0,
+    )
+    .expect("voice poll dispatch");
+    match events {
+        RuntimeValue::Number { value, .. } => assert!((value - 1.0).abs() < f64::EPSILON),
+        other => panic!("expected number, got {other:?}"),
+    }
+    let overlay = dispatch_official_package_call(
+        &mut registry,
+        "spatial.hololens",
+        "subscribe_overlay",
+        &[
+            RuntimeValue::String {
+                value: "annotation".into(),
+            },
+            RuntimeValue::String {
+                value: "hololens-tech-001".into(),
+            },
+        ],
+        None,
+        None,
+        0.0,
+    )
+    .expect("overlay dispatch");
+    match overlay {
+        RuntimeValue::Number { value, .. } => assert!((value - 1.0).abs() < f64::EPSILON),
+        other => panic!("expected number, got {other:?}"),
+    }
+}

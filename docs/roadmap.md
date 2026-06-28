@@ -161,16 +161,16 @@ Full analysis: [human-interaction-spatial-computing-roadmap.md](./human-interact
 
 | Phase | Release | Theme | Status |
 |-------|---------|-------|--------|
-| H1 | v0.6 (Q1 2027) | Human entity, operator capabilities, readiness profiles | **Planned** |
-| H2 | v0.7 (Q2 2027) | Wearables & AR reference packages | **Planned** |
-| H3 | v0.8 (Q3 2027) | HRI, collaboration, remote expert | **Planned** |
+| H1 | v0.6 (Q1 2027) | Human entity, operator capabilities, readiness profiles | **Experimental** |
+| H2 | v0.7 (Q2 2027) | Wearables & AR reference packages | **Experimental** |
+| H3 | v0.8 (Q3 2027) | HRI, collaboration, remote expert | **Experimental** |
 | H4 | v1.0 (2027) | Control Center human UI, health opt-in, stable hardening | **Planned** |
 
 ### Solution blueprint
 
 | Blueprint | Status | Path |
 |-----------|--------|------|
-| **Spatial Computing & Human-Robot Collaboration** | **Planned** | [examples/solutions/spatial-computing/](../examples/solutions/spatial-computing/) · [solutions/spatial-computing.md](./solutions/spatial-computing.md) |
+| **Spatial Computing & Human-Robot Collaboration** | **Experimental** | [examples/solutions/spatial-computing/](../examples/solutions/spatial-computing/) · [solutions/spatial-computing.md](./solutions/spatial-computing.md) |
 
 Topic guides: [human-interaction.md](./human-interaction.md) · [wearables.md](./wearables.md) · [spatial-computing.md](./spatial-computing.md) · [ar-vr-xr.md](./ar-vr-xr.md) · [hri.md](./hri.md) · [human-readiness.md](./human-readiness.md) · [remote-expert.md](./remote-expert.md) · [operator-capabilities.md](./operator-capabilities.md) · [hri-packages.md](./hri-packages.md)
 

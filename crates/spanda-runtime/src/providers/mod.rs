@@ -1,10 +1,16 @@
 //! Lean-core provider contracts and registry for optional domain packages.
 //!
+pub mod hri;
 pub mod iot;
 pub mod registry;
 pub mod traits;
 pub mod transport_types;
 pub mod types;
+
+pub use hri::{
+    HriInputProvider, OverlayProvider, SpatialSessionInfo, SpatialSessionProvider,
+    WearableTelemetryProvider,
+};
 
 pub use iot::{
     ActuatorCommand, Command, CommandProvider, DeviceShadow, DeviceShadowProvider, IoTDevice,

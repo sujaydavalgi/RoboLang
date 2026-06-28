@@ -74,6 +74,11 @@ fn parses_spatial_computing_human_collaboration_tree() {
     let lines = resolved.device_tree.hierarchy_lines();
     assert!(lines.iter().any(|l| l.contains("human:")));
     assert!(lines.iter().any(|l| l.contains("wearable:")));
+    assert!(!resolved.human_registry.spatial_sessions.is_empty());
+    assert!(resolved
+        .human_registry
+        .spatial_session("repair-session-001")
+        .is_some());
 }
 
 #[test]

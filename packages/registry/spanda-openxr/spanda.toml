@@ -1,0 +1,14 @@
+[package]
+name = "spanda-openxr"
+version = "0.1.0"
+description = "OpenXR VR/XR session provider"
+license = "Apache-2.0"
+
+[safety]
+level = "hardware"
+
+[capabilities]
+required = ["spatial.session"]
+
+[hardware]
+requirements = []

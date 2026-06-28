@@ -639,6 +639,36 @@
         "responses": { "200": { "description": "Evidence log entries" } }
       }
     },
+    "/v1/hri/sessions": {
+      "get": {
+        "summary": "List configured and active HRI collaboration sessions",
+        "responses": { "200": { "description": "HRI session list" } }
+      },
+      "post": {
+        "summary": "Start a remote expert or collaborative HRI session",
+        "security": [{ "bearerAuth": [] }],
+        "responses": { "200": { "description": "Session started" } }
+      }
+    },
+    "/v1/hri/sessions/{id}/annotate": {
+      "post": {
+        "summary": "Publish an AR annotation to an active HRI session",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Annotation recorded" } }
+      }
+    },
+    "/v1/hri/sessions/{id}/replay": {
+      "get": {
+        "summary": "Replay artifact metadata for an HRI session",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Replay metadata" } }
+      }
+    },
     "/v1/rpc": {
       "post": {
         "summary": "gRPC-compatible JSON gateway",

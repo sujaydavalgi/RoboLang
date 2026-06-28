@@ -3,7 +3,8 @@
 use super::package_stubs::{
     CloudPackageStub, ConnectivityPackageStub, FleetPackageStub, GpsPositioningStub,
     LedgerPackageStub, MaintenancePackageStub, NavNavigationStub, SimulationPackageStub,
-    SlamPackageStub, VisionPackageStub,
+    SlamPackageStub, SpatialSessionPackageStub, VisionPackageStub, WearablePackageStub,
+    HriInputPackageStub, OverlayPackageStub,
 };
 use super::transport_adapter::TransportAdapterProvider;
 use spanda_comm::TransportKind;
@@ -208,6 +209,39 @@ pub fn bootstrap_providers_for_packages(package_names: &[&str]) -> ProviderRegis
     }
     if include_all || names.contains("spanda-fusion") {
         registry.grant_capability("assurance.fusion.weight");
+    }
+    for package in [
+        "spanda-smartwatch",
+        "spanda-industrial-wearables",
+        "spanda-bodycam",
+    ] {
+        if names.contains(package) {
+            registry.grant_capability("wearable.telemetry");
+            registry.register_wearable_telemetry(Box::new(WearablePackageStub::new(package)));
+        }
+    }
+    for package in [
+        "spanda-hololens",
+        "spanda-arkit",
+        "spanda-arcore",
+        "spanda-vision-pro",
+        "spanda-magic-leap",
+        "spanda-openxr",
+    ] {
+        if names.contains(package) {
+            registry.grant_capability("spatial.session");
+            registry.register_spatial_session(Box::new(SpatialSessionPackageStub::new(package)));
+        }
+    }
+    if names.contains("spanda-hololens") {
+        registry.grant_capability("hri.overlay");
+        registry.register_overlay(Box::new(OverlayPackageStub::new("spanda-hololens")));
+    }
+    for package in ["spanda-voice", "spanda-gesture", "spanda-eye-tracking"] {
+        if names.contains(package) {
+            registry.grant_capability("hri.input");
+            registry.register_hri_input(Box::new(HriInputPackageStub::new(package)));
+        }
     }
     if names.contains("spanda-zigbee")
         || names.contains("spanda-lora")

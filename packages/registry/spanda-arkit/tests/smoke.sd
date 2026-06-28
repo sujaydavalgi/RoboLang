@@ -1,0 +1,5 @@
+import spatial.arkit;
+
+test smoke_spanda_arkit() {
+  assert start_session("demo") == 1;
+}

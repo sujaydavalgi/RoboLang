@@ -77,35 +77,56 @@ role = "technician"
 capabilities = ["maintenance_technician", "remote_expert"]
 assignments = { robot_id = "AMR" }
 
+[[fleet.humans]]
+id = "expert-002"
+role = "remote_expert"
+display_name = "Dr. Kim"
+capabilities = ["remote_expert", "approve_recovery"]
+availability = "available"
+trust_level = "trusted"
+
+[[spatial_sessions]]
+id = "repair-session-001"
+type = "remote_expert"
+field_human_id = "tech-001"
+expert_human_id = "expert-002"
+robot_id = "AMR"
+ar_device_id = "hololens-tech-001"
+camera_device_id = "front-camera"
+capabilities = ["live_video", "spatial_anchors", "annotation", "replay_record"]
+
 [[fleet.wearables]]
 id = "watch-001"
 type = "SmartWatch"
-provider = "spanda-ble"
+provider = "spanda-smartwatch"
 human_id = "operator-001"
 capabilities = ["heart_rate", "battery_level", "connectivity_status"]
 
 [[fleet.wearables]]
 id = "vest-001"
 type = "SmartVest"
-provider = "spanda-ble"
+provider = "spanda-industrial-wearables"
 human_id = "operator-001"
 capabilities = ["fall_detection", "proximity_alert"]
 
 [[fleet.ar_devices]]
 id = "hololens-001"
 type = "ARHeadset"
+provider = "spanda-hololens"
 human_id = "operator-001"
 capabilities = ["spatial_anchors", "hand_tracking", "robot_overlay", "mission_overlay"]
 
 [[fleet.ar_devices]]
 id = "hololens-tech-001"
 type = "ARHeadset"
+provider = "spanda-hololens"
 human_id = "tech-001"
 capabilities = ["spatial_anchors", "annotation", "live_video"]
 
 [[fleet.vr_devices]]
 id = "vr-training-001"
 type = "VRHeadset"
+provider = "spanda-openxr"
 capabilities = ["vr_training", "mission_replay", "digital_twin_view"]
 
 [[fleet.control_center]]

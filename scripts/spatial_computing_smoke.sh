@@ -30,6 +30,7 @@ check() {
 check config validate --config "$SC/spanda.toml"
 check check "$MAIN"
 check verify "$MAIN" --capabilities --config "$SC/spanda.toml"
+check verify "$SC/remote-maintenance/repair.sd" --capabilities --config "$SC/spanda.toml"
 check readiness "$MAIN" --profile human_collaboration --config "$SC/spanda.toml"
 
 for example in \

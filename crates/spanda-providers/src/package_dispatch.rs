@@ -75,6 +75,18 @@ pub fn official_package_for_module(module_path: &str) -> Option<&'static str> {
         "assurance.continuity" => Some("spanda-mission-continuity"),
         "assurance.resilience" => Some("spanda-resilience"),
         "assurance.fusion" => Some("spanda-fusion"),
+        "wearable.smartwatch" => Some("spanda-smartwatch"),
+        "wearable.industrial" => Some("spanda-industrial-wearables"),
+        "wearable.bodycam" => Some("spanda-bodycam"),
+        "spatial.hololens" => Some("spanda-hololens"),
+        "spatial.arkit" => Some("spanda-arkit"),
+        "spatial.arcore" => Some("spanda-arcore"),
+        "spatial.vision_pro" => Some("spanda-vision-pro"),
+        "spatial.magic_leap" => Some("spanda-magic-leap"),
+        "spatial.openxr" => Some("spanda-openxr"),
+        "hri.voice" => Some("spanda-voice"),
+        "hri.gesture" => Some("spanda-gesture"),
+        "hri.eye" => Some("spanda-eye-tracking"),
         _ => None,
     }
 }
@@ -96,6 +108,15 @@ fn project_provider_key(package: &str) -> String {
     //     let result = spanda_providers::package_dispatch::project_provider_key(package);
 
     format!("{package}::project")
+}
+
+fn wearable_device_arg(args: &[RuntimeValue]) -> &str {
+    args.first()
+        .and_then(|value| match value {
+            RuntimeValue::String { value } => Some(value.as_str()),
+            _ => None,
+        })
+        .unwrap_or("")
 }
 
 fn ok_int() -> RuntimeValue {
@@ -333,6 +354,175 @@ pub fn dispatch_official_package_call(
                         started,
                         false,
                     );
+                })
+        }
+        ("wearable.smartwatch", "read_telemetry")
+        | ("wearable.industrial", "read_telemetry")
+        | ("wearable.bodycam", "read_telemetry")
+            if registry.has_capability("wearable.telemetry") =>
+        {
+            let device_id = wearable_device_arg(args);
+            registry
+                .with_wearable_telemetry(&key, |provider| provider.read_telemetry(device_id))
+                .map(|result| {
+                    let failed = result.is_err();
+                    record_call(
+                        telemetry,
+                        mission_trace,
+                        sim_time_ms,
+                        &key,
+                        category,
+                        module_path,
+                        function_name,
+                        started,
+                        failed,
+                    );
+                    result.unwrap_or(RuntimeValue::Void)
+                })
+        }
+        ("wearable.smartwatch", "connectivity_status")
+            if registry.has_capability("wearable.telemetry") =>
+        {
+            let device_id = wearable_device_arg(args);
+            let connected = registry
+                .with_wearable_telemetry(&key, |provider| provider.connectivity_status(device_id))
+                .unwrap_or(false);
+            record_call(
+                telemetry,
+                mission_trace,
+                sim_time_ms,
+                &key,
+                category,
+                module_path,
+                function_name,
+                started,
+                false,
+            );
+            Some(RuntimeValue::Bool { value: connected })
+        }
+        ("spatial.hololens", "start_session")
+        | ("spatial.arkit", "start_session")
+        | ("spatial.arcore", "start_session")
+        | ("spatial.vision_pro", "start_session")
+        | ("spatial.magic_leap", "start_session")
+        | ("spatial.openxr", "start_session")
+            if registry.has_capability("spatial.session") =>
+        {
+            let device_id = wearable_device_arg(args);
+            registry
+                .with_spatial_session(&key, |provider| provider.start_session(device_id))
+                .map(|result| {
+                    let failed = result.is_err();
+                    record_call(
+                        telemetry,
+                        mission_trace,
+                        sim_time_ms,
+                        &key,
+                        category,
+                        module_path,
+                        function_name,
+                        started,
+                        failed,
+                    );
+                    if result.is_ok() {
+                        ok_int()
+                    } else {
+                        RuntimeValue::Void
+                    }
+                })
+        }
+        ("spatial.hololens", "stop_session")
+        | ("spatial.arkit", "stop_session")
+        | ("spatial.arcore", "stop_session")
+        | ("spatial.vision_pro", "stop_session")
+        | ("spatial.magic_leap", "stop_session")
+        | ("spatial.openxr", "stop_session")
+            if registry.has_capability("spatial.session") =>
+        {
+            let session_id = wearable_device_arg(args);
+            registry
+                .with_spatial_session(&key, |provider| provider.stop_session(session_id))
+                .map(|result| {
+                    let failed = result.is_err();
+                    record_call(
+                        telemetry,
+                        mission_trace,
+                        sim_time_ms,
+                        &key,
+                        category,
+                        module_path,
+                        function_name,
+                        started,
+                        failed,
+                    );
+                    if result.is_ok() {
+                        ok_int()
+                    } else {
+                        RuntimeValue::Void
+                    }
+                })
+        }
+        ("hri.voice", "poll_events")
+        | ("hri.gesture", "poll_events")
+        | ("hri.eye", "poll_events")
+            if registry.has_capability("hri.input") =>
+        {
+            registry
+                .with_hri_input(&key, |provider| provider.poll_events())
+                .map(|result| {
+                    let failed = result.is_err();
+                    record_call(
+                        telemetry,
+                        mission_trace,
+                        sim_time_ms,
+                        &key,
+                        category,
+                        module_path,
+                        function_name,
+                        started,
+                        failed,
+                    );
+                    result
+                        .map(|events| {
+                            RuntimeValue::Number {
+                                value: events.len() as f64,
+                                unit: spanda_ast::nodes::UnitKind::None,
+                            }
+                        })
+                        .unwrap_or(RuntimeValue::Void)
+                })
+        }
+        ("spatial.hololens", "subscribe_overlay")
+            if registry.has_capability("hri.overlay") =>
+        {
+            let layer = wearable_device_arg(args);
+            let device_id = args
+                .get(1)
+                .and_then(|value| match value {
+                    RuntimeValue::String { value } => Some(value.as_str()),
+                    _ => None,
+                })
+                .unwrap_or("");
+            registry
+                .with_overlay(&key, |provider| provider.subscribe_overlay(layer, device_id))
+                .map(|result| {
+                    let failed = result.is_err();
+                    record_call(
+                        telemetry,
+                        mission_trace,
+                        sim_time_ms,
+                        &key,
+                        category,
+                        module_path,
+                        function_name,
+                        started,
+                        failed,
+                    );
+                    if result.is_ok() {
+                        ok_int()
+                    } else {
+                        RuntimeValue::Void
+                    }
                 })
         }
         ("sim.gazebo", "step") | ("sim.webots", "step")

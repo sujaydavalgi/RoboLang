@@ -1,0 +1,5 @@
+import hri.voice;
+
+test smoke_spanda_voice() {
+  assert poll_events() == 1;
+}

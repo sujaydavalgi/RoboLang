@@ -1,0 +1,5 @@
+import spatial.vision_pro;
+
+test smoke_spanda_vision_pro() {
+  assert start_session("demo") == 1;
+}

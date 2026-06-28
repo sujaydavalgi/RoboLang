@@ -2,6 +2,7 @@
 //!
 use crate::correlation::TraceLog;
 use crate::drift_scheduler::DriftScanStore;
+use crate::hri::HriSessionStore;
 use crate::report_scheduler::ReportScheduleStore;
 use spanda_audit::AuditRuntime;
 use spanda_config::{DeviceRegistry, ResolvedSystemConfig};
@@ -27,6 +28,7 @@ pub struct ControlCenterState {
     pub tenant_id: String,
     pub drift_scan_store: DriftScanStore,
     pub report_schedule_store: ReportScheduleStore,
+    pub hri_session_store: HriSessionStore,
 }
 
 impl ControlCenterState {
@@ -46,6 +48,7 @@ impl ControlCenterState {
             tenant_id: default_tenant_id(),
             drift_scan_store: DriftScanStore::new(200),
             report_schedule_store: ReportScheduleStore::new(100),
+            hri_session_store: HriSessionStore::new(),
         };
         crate::persistence::hydrate_runtime_state(&mut state);
         state

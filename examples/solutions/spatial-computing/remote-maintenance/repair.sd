@@ -37,6 +37,7 @@ robot ServiceArm {
 continuity_policy RepairContinuity {
   on robot.failed {
     pause mission;
+    reassign mission;
   }
 }
 

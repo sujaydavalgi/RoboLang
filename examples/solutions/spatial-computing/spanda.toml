@@ -11,10 +11,11 @@ spanda-mqtt = "0.1"
 spanda-opencv = "0.1"
 spanda-ble = "0.1"
 spanda-mission-continuity = "0.1"
-# Planned H2 packages (optional):
-# spanda-hololens = "0.1"
-# spanda-smartwatch = "0.1"
-# spanda-voice = "0.1"
+spanda-hololens = "0.1"
+spanda-smartwatch = "0.1"
+spanda-voice = "0.1"
+spanda-gesture = "0.1"
+spanda-eye-tracking = "0.1"
 
 [hardware]
 targets = ["RoverV1", "JetsonOrin"]

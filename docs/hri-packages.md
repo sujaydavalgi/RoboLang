@@ -10,18 +10,18 @@ Optional packages for wearables, AR/VR/XR, and HRI modalities. **None ship in co
 
 | Package | Category | Provides | Requires | Status |
 |---------|----------|----------|----------|--------|
-| `spanda-vision-pro` | AR | `spatial_anchors`, `hand_tracking`, `robot_overlay` | visionOS SDK (host) | **Planned** |
-| `spanda-hololens` | AR | `spatial_anchors`, `hand_tracking`, `annotation` | Windows + HoloLens SDK | **Planned** |
-| `spanda-magic-leap` | AR | `spatial_anchors`, `robot_overlay` | Magic Leap SDK | **Planned** |
-| `spanda-arkit` | AR | `spatial_anchors`, `plane_detection`, `robot_overlay` | iOS ARKit | **Planned** |
-| `spanda-arcore` | AR | `spatial_anchors`, `plane_detection` | Android ARCore | **Planned** |
-| `spanda-smartwatch` | Wearable | `heart_rate`, `battery_level`, `connectivity_status` | HealthKit / Health Connect | **Planned** |
-| `spanda-industrial-wearables` | Wearable | `fall_detection`, `proximity_alert`, `gas_detection` | BLE industrial devices | **Planned** |
-| `spanda-bodycam` | Wearable | `video_stream`, `gps_location` | RTSP / USB body cameras | **Planned** |
-| `spanda-voice` | HRI | `voice_command` | Platform speech API | **Planned** |
-| `spanda-gesture` | HRI | `gesture_recognition`, `hand_tracking` | Camera / depth sensor | **Planned** |
-| `spanda-eye-tracking` | HRI | `eye_tracking`, `gaze_target` | AR headset eye sensors | **Planned** |
-| `spanda-openxr` | VR/XR | `vr_training`, `mission_replay_view` | OpenXR runtime | **Planned** |
+| `spanda-vision-pro` | AR | `spatial_anchors`, `hand_tracking`, `robot_overlay` | visionOS SDK (host) | **Experimental** |
+| `spanda-hololens` | AR | `spatial_anchors`, `hand_tracking`, `annotation` | Windows + HoloLens SDK | **Experimental** |
+| `spanda-magic-leap` | AR | `spatial_anchors`, `robot_overlay` | Magic Leap SDK | **Experimental** |
+| `spanda-arkit` | AR | `spatial_anchors`, `plane_detection`, `robot_overlay` | iOS ARKit | **Experimental** |
+| `spanda-arcore` | AR | `spatial_anchors`, `plane_detection` | Android ARCore | **Experimental** |
+| `spanda-smartwatch` | Wearable | `heart_rate`, `battery_level`, `connectivity_status` | HealthKit / Health Connect | **Experimental** |
+| `spanda-industrial-wearables` | Wearable | `fall_detection`, `proximity_alert`, `gas_detection` | BLE industrial devices | **Experimental** |
+| `spanda-bodycam` | Wearable | `video_stream`, `gps_location` | RTSP / USB body cameras | **Experimental** |
+| `spanda-voice` | HRI | `voice_command` | Platform speech API | **Experimental** |
+| `spanda-gesture` | HRI | `gesture_recognition`, `hand_tracking` | Camera / depth sensor | **Experimental** |
+| `spanda-eye-tracking` | HRI | `eye_tracking`, `gaze_target` | AR headset eye sensors | **Experimental** |
+| `spanda-openxr` | VR/XR | `vr_training`, `mission_replay_view` | OpenXR runtime | **Experimental** |
 
 ---
 
@@ -51,16 +51,16 @@ registers = [
 
 ---
 
-## Provider traits (planned)
+## Provider traits (experimental)
 
 | Trait | Responsibility |
 |-------|----------------|
-| `SpatialSessionProvider` | Start/stop AR/XR sessions, anchor sync |
-| `WearableTelemetryProvider` | Heart rate, battery, connectivity |
-| `HriInputProvider` | Voice, gesture, eye, pose events |
-| `OverlayProvider` | Subscribe to robot/mission/readiness overlay layers |
+| `SpatialSessionProvider` | Start/stop AR/XR sessions, anchor sync (`spanda-runtime/src/providers/hri.rs`) |
+| `WearableTelemetryProvider` | Heart rate, battery, connectivity (`spanda-runtime/src/providers/hri.rs`) |
+| `HriInputProvider` | Voice, gesture, eye, pose events (`spanda-voice`, `spanda-gesture`, `spanda-eye-tracking`) |
+| `OverlayProvider` | Subscribe to robot/mission/readiness overlay layers (`spanda-hololens` stub) |
 
-Traits live in `spanda-runtime` provider dispatch; packages implement backends.
+Traits live in `spanda-runtime` provider dispatch; packages implement backends via registry stubs until vendor SDK bindings ship.
 
 ---
 
@@ -77,13 +77,18 @@ spanda verify examples/solutions/spatial-computing/remote-maintenance/repair.sd 
 
 ## Registry status
 
-Packages are **documented and planned** — registry index entries ship in H2 (v0.7) per [human-interaction-spatial-computing-roadmap.md](./human-interaction-spatial-computing-roadmap.md).
+H2 wearable and spatial packages ship in the curated registry (`registry/index.json`) as **experimental stubs** — vendor SDK bindings remain out of core. Enable live session/telemetry shims with:
+
+```bash
+export SPANDA_LIVE_WEARABLE=1
+export SPANDA_HOLOLENS_SESSION=1   # or SPANDA_SPATIAL_SESSION=1
+```
 
 Existing registry packages used by blueprints today:
 
 - `spanda-opencv` — camera streams for remote expert
 - `spanda-mqtt` — spatial session sync transport
-- `spanda-ble` — wearable discovery
+- `spanda-ble` — wearable discovery (complements `spanda-smartwatch` / `spanda-industrial-wearables`)
 - `spanda-mission-continuity` — takeover and delegation
 
 ---

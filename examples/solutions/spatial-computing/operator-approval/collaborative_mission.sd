@@ -38,7 +38,8 @@ robot CollaborativeAMR {
 
 continuity_policy ApprovalContinuity {
   on robot.failed {
-    pause mission;
+    reassign mission;
+    resume from checkpoint;
   }
 }
 

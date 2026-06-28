@@ -291,6 +291,51 @@ pub fn package_contributions() -> Vec<PackageCapabilityContribution> {
         contrib("spanda-cloud", &["telemetry_streaming"]),
         contrib("spanda-slam", &["autonomous_navigation"]),
         contrib("spanda-mission-continuity", &["mission_continuity", "human_takeover"]),
+        contrib(
+            "spanda-smartwatch",
+            &["heart_rate", "battery_level", "connectivity_status"],
+        ),
+        contrib(
+            "spanda-industrial-wearables",
+            &["fall_detection", "proximity_alert", "gas_detection"],
+        ),
+        contrib("spanda-bodycam", &["video_stream", "gps_location"]),
+        contrib(
+            "spanda-hololens",
+            &[
+                "spatial_anchors",
+                "hand_tracking",
+                "annotation",
+                "robot_overlay",
+                "mission_overlay",
+            ],
+        ),
+        contrib(
+            "spanda-arkit",
+            &["spatial_anchors", "plane_detection", "robot_overlay"],
+        ),
+        contrib("spanda-arcore", &["spatial_anchors", "plane_detection"]),
+        contrib(
+            "spanda-vision-pro",
+            &["spatial_anchors", "hand_tracking", "robot_overlay"],
+        ),
+        contrib(
+            "spanda-magic-leap",
+            &["spatial_anchors", "robot_overlay"],
+        ),
+        contrib(
+            "spanda-openxr",
+            &["vr_training", "mission_replay", "digital_twin_view"],
+        ),
+        contrib("spanda-voice", &["voice_command"]),
+        contrib(
+            "spanda-gesture",
+            &["gesture_recognition", "hand_tracking"],
+        ),
+        contrib(
+            "spanda-eye-tracking",
+            &["eye_tracking", "gaze_target"],
+        ),
     ]
 }
 

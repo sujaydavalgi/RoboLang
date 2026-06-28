@@ -1,0 +1,9 @@
+module hri.gesture;
+
+export fn poll_events() -> Int {
+  return 1;
+}
+
+export fn backend_name() -> String {
+  return "spanda-gesture";
+}

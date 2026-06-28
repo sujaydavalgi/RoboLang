@@ -1,0 +1,5 @@
+import hri.gesture;
+
+test smoke_spanda_gesture() {
+  assert poll_events() == 1;
+}

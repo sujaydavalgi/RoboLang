@@ -1,0 +1,5 @@
+import spatial.magic_leap;
+
+test smoke_spanda_magic_leap() {
+  assert start_session("demo") == 1;
+}

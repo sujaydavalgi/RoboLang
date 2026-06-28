@@ -1,0 +1,5 @@
+import wearable.industrial;
+
+test smoke_spanda_industrial_wearables() {
+  assert read_telemetry("demo") == 1;
+}

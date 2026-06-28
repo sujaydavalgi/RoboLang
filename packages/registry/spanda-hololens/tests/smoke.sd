@@ -1,0 +1,5 @@
+import spatial.hololens;
+
+test smoke_spanda_hololens() {
+  assert start_session("demo") == 1;
+}

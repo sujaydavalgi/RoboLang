@@ -220,8 +220,8 @@ See [human-interaction.md](./human-interaction.md) and [operator-capabilities.md
 | Phase | Release | Theme | Status |
 |-------|---------|-------|--------|
 | **H1** | v0.6 (Q1 2027) | Human entity & readiness | **Shipped (experimental)** |
-| **H2** | v0.7 (Q2 2027) | Wearables & AR packages | **Planned** |
-| **H3** | v0.8 (Q3 2027) | HRI, collaboration, remote expert | **Planned** |
+| **H2** | v0.7 (Q2 2027) | Wearables & AR packages | **Shipped (experimental)** |
+| **H3** | v0.8 (Q3 2027) | HRI, collaboration, remote expert | **Shipped (experimental)** |
 | **H4** | v1.0 (2027) | Control Center human UI, health opt-in, stable hardening | **Planned** |
 
 ### H1 — Human entity & readiness
@@ -234,25 +234,30 @@ See [human-interaction.md](./human-interaction.md) and [operator-capabilities.md
 | Spatial Computing solution blueprint scaffold | `examples/solutions/spatial-computing/` |
 | Topic guides (8 docs) | `docs/` |
 
-**Exit criteria:** `spanda verify` traces operator capabilities; `spanda readiness --profile human_collaboration` scores operator + team; device tree includes human nodes; `./scripts/spatial_computing_smoke.sh` (planned).
+**Exit criteria:** `spanda verify` traces operator capabilities; `spanda readiness --profile human_collaboration` scores operator + team; device tree includes human nodes; `./scripts/spatial_computing_smoke.sh`.
 
 ### H2 — Wearables & AR
 
-| Deliverable | Owner |
-|-------------|-------|
-| Registry packages: `spanda-smartwatch`, `spanda-bodycam`, `spanda-arkit`, `spanda-arcore`, `spanda-hololens`, `spanda-vision-pro` | Packages |
-| Wearable discovery ingest (BLE, Wi-Fi) | Existing discovery + packages |
-| AR session provider trait | `spanda-runtime` + packages |
-| Example: `warehouse-ar/`, `wearable-health/` | Examples |
+| Deliverable | Owner | Status |
+|-------------|-------|--------|
+| Registry packages: `spanda-smartwatch`, `spanda-industrial-wearables`, `spanda-bodycam`, `spanda-arkit`, `spanda-arcore`, `spanda-hololens`, `spanda-vision-pro`, `spanda-magic-leap`, `spanda-openxr` | Packages | **Experimental** |
+| `WearableTelemetryProvider` + `SpatialSessionProvider` traits | `spanda-runtime` | **Experimental** |
+| Provider dispatch + package stubs | `spanda-providers` | **Experimental** |
+| Blueprint device tree uses H2 package providers | `examples/solutions/spatial-computing/` | **Experimental** |
+
+**Exit criteria:** Registry index includes H2 packages; `bootstrap_providers_for_packages` registers wearable/spatial stubs; blueprint `spanda.devices.toml` references real package names; `./scripts/spatial_computing_smoke.sh` passes.
 
 ### H3 — HRI & collaboration
 
-| Deliverable | Owner |
-|-------------|-------|
-| Packages: `spanda-voice`, `spanda-gesture`, `spanda-eye-tracking` | Packages |
-| Collaborative mission patterns (continuity + delegation) | Blueprint programs |
-| Remote expert workflow (replay + diagnosis + AR annotations) | Blueprint + Control Center API |
-| Examples: `remote-maintenance/`, `search-and-rescue-ar/`, `operator-approval/` | Examples |
+| Deliverable | Owner | Status |
+|-------------|-------|--------|
+| Packages: `spanda-voice`, `spanda-gesture`, `spanda-eye-tracking` | Packages | **Experimental** |
+| `HriInputProvider` + `OverlayProvider` registry wiring | `spanda-runtime` / `spanda-providers` | **Experimental** |
+| `[[spatial_sessions]]` config + remote expert human | `spanda-config` + blueprint | **Experimental** |
+| Control Center HRI session API (`/v1/hri/sessions`) | `spanda-api` | **Experimental** |
+| Collaborative continuity patterns in blueprint examples | `examples/solutions/spatial-computing/` | **Experimental** |
+
+**Exit criteria:** H3 packages in registry index; voice/gesture dispatch works; blueprint lists `repair-session-001`; `./scripts/spatial_computing_smoke.sh` verifies remote maintenance; OpenAPI documents HRI session routes.
 
 ### H4 — Control Center & stable
 

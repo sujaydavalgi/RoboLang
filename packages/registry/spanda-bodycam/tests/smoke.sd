@@ -1,0 +1,5 @@
+import wearable.bodycam;
+
+test smoke_spanda_bodycam() {
+  assert read_telemetry("demo") == 1;
+}

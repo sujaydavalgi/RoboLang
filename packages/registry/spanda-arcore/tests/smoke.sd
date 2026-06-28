@@ -1,0 +1,5 @@
+import spatial.arcore;
+
+test smoke_spanda_arcore() {
+  assert start_session("demo") == 1;
+}

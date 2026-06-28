@@ -1,0 +1,14 @@
+[package]
+name = "spanda-gesture"
+version = "0.1.0"
+description = "Gesture recognition HRI input provider"
+license = "Apache-2.0"
+
+[safety]
+level = "hardware"
+
+[capabilities]
+required = ["hri.input"]
+
+[hardware]
+requirements = []

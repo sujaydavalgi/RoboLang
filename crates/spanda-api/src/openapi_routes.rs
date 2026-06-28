@@ -282,4 +282,20 @@ pub const REST_V1_ROUTES: &[ApiRoute] = &[
         method: "POST",
         path: "/v1/integrations/pagerduty/webhook",
     },
+    ApiRoute {
+        method: "GET",
+        path: "/v1/hri/sessions",
+    },
+    ApiRoute {
+        method: "POST",
+        path: "/v1/hri/sessions",
+    },
+    ApiRoute {
+        method: "POST",
+        path: "/v1/hri/sessions/{id}/annotate",
+    },
+    ApiRoute {
+        method: "GET",
+        path: "/v1/hri/sessions/{id}/replay",
+    },
 ];

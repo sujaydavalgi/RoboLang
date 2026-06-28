@@ -1,5 +1,8 @@
 //! Runtime registry for optional domain provider implementations.
 //!
+use super::hri::{
+    HriInputProvider, OverlayProvider, SpatialSessionProvider, WearableTelemetryProvider,
+};
 use super::traits::{
     ActuatorProvider, CloudProvider, ConnectivityProvider, CryptoProvider, FleetProvider,
     HalProvider, LedgerProvider, MaintenanceProvider, NavigationProvider, PositioningProvider,
@@ -29,6 +32,10 @@ pub struct ProviderRegistry {
     cloud: HashMap<String, Box<dyn CloudProvider>>,
     ros: HashMap<String, Box<dyn RosProvider>>,
     hal: HashMap<String, Box<dyn HalProvider>>,
+    wearable_telemetry: HashMap<String, Box<dyn WearableTelemetryProvider>>,
+    spatial_sessions: HashMap<String, Box<dyn SpatialSessionProvider>>,
+    hri_inputs: HashMap<String, Box<dyn HriInputProvider>>,
+    overlays: HashMap<String, Box<dyn OverlayProvider>>,
     granted_capabilities: ProviderCapabilitySet,
     official_packages: Vec<String>,
 }
@@ -1452,5 +1459,53 @@ impl ProviderRegistry {
         //     let result = spanda_runtime::registry::with_ledger(&mut self, key, f);
 
         self.ledger.get_mut(key).map(|p| f(p.as_mut()))
+    }
+
+    pub fn register_wearable_telemetry(&mut self, provider: Box<dyn WearableTelemetryProvider>) {
+        let key = registry_key(&provider.metadata().id);
+        self.wearable_telemetry.insert(key, provider);
+    }
+
+    pub fn register_spatial_session(&mut self, provider: Box<dyn SpatialSessionProvider>) {
+        let key = registry_key(&provider.metadata().id);
+        self.spatial_sessions.insert(key, provider);
+    }
+
+    pub fn with_wearable_telemetry<F, R>(&mut self, key: &str, f: F) -> Option<R>
+    where
+        F: FnOnce(&mut dyn WearableTelemetryProvider) -> R,
+    {
+        self.wearable_telemetry.get_mut(key).map(|p| f(p.as_mut()))
+    }
+
+    pub fn with_spatial_session<F, R>(&mut self, key: &str, f: F) -> Option<R>
+    where
+        F: FnOnce(&mut dyn SpatialSessionProvider) -> R,
+    {
+        self.spatial_sessions.get_mut(key).map(|p| f(p.as_mut()))
+    }
+
+    pub fn register_hri_input(&mut self, provider: Box<dyn HriInputProvider>) {
+        let key = registry_key(&provider.metadata().id);
+        self.hri_inputs.insert(key, provider);
+    }
+
+    pub fn register_overlay(&mut self, provider: Box<dyn OverlayProvider>) {
+        let key = registry_key(&provider.metadata().id);
+        self.overlays.insert(key, provider);
+    }
+
+    pub fn with_hri_input<F, R>(&mut self, key: &str, f: F) -> Option<R>
+    where
+        F: FnOnce(&mut dyn HriInputProvider) -> R,
+    {
+        self.hri_inputs.get_mut(key).map(|p| f(p.as_mut()))
+    }
+
+    pub fn with_overlay<F, R>(&mut self, key: &str, f: F) -> Option<R>
+    where
+        F: FnOnce(&mut dyn OverlayProvider) -> R,
+    {
+        self.overlays.get_mut(key).map(|p| f(p.as_mut()))
     }
 }

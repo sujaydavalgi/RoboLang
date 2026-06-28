@@ -1,6 +1,10 @@
 //! Package-scoped provider stubs registered when official packages are installed.
 //!
 use spanda_audit::{sha256, Hash, LedgerBackend, MockLedgerBackend};
+use spanda_runtime::providers::hri::{
+    HriInputProvider, OverlayProvider, SpatialSessionInfo, SpatialSessionProvider,
+    WearableTelemetryProvider,
+};
 use spanda_runtime::providers::traits::{
     CloudProvider, ConnectivityProvider, FleetProvider, LedgerProvider, MaintenanceProvider,
     NavigationProvider, PositioningProvider, SimulationProvider, SlamProvider, VisionProvider,
@@ -10,6 +14,8 @@ use spanda_runtime::providers::types::{
 };
 use spanda_runtime::robot_state::RobotState;
 use spanda_runtime::value::{runtime_pose, RuntimeValue};
+use spanda_ast::nodes::UnitKind;
+use std::collections::HashMap;
 
 fn package_metadata(package: &str, name: &str, description: &str) -> ProviderMetadata {
     // Description:
@@ -1341,5 +1347,221 @@ impl SimulationProvider for SimulationPackageStub {
             },
             emergency_stop: false,
         }
+    }
+}
+
+/// Package-scoped wearable telemetry stub for H2 registry packages.
+pub struct WearablePackageStub {
+    package: &'static str,
+}
+
+impl WearablePackageStub {
+    pub fn new(package: &'static str) -> Self {
+        Self { package }
+    }
+}
+
+impl WearableTelemetryProvider for WearablePackageStub {
+    fn metadata(&self) -> ProviderMetadata {
+        package_metadata(
+            self.package,
+            "project",
+            "Package-scoped wearable telemetry stub",
+        )
+    }
+
+    fn read_telemetry(&mut self, device_id: &str) -> ProviderResult<RuntimeValue> {
+        let live = std::env::var("SPANDA_LIVE_WEARABLE")
+            .map(|v| v == "1" || v.eq_ignore_ascii_case("true"))
+            .unwrap_or(false);
+        let mut fields = HashMap::new();
+        fields.insert(
+            "device_id".into(),
+            RuntimeValue::String {
+                value: device_id.to_string(),
+            },
+        );
+        fields.insert(
+            "heart_rate".into(),
+            RuntimeValue::Number {
+                value: if live { 72.0 } else { 0.0 },
+                unit: UnitKind::None,
+            },
+        );
+        fields.insert(
+            "battery_percent".into(),
+            RuntimeValue::Number {
+                value: if live { 88.0 } else { 100.0 },
+                unit: UnitKind::None,
+            },
+        );
+        fields.insert(
+            "connected".into(),
+            RuntimeValue::Bool {
+                value: live || !device_id.is_empty(),
+            },
+        );
+        Ok(RuntimeValue::Object {
+            type_name: "WearableTelemetry".into(),
+            fields,
+        })
+    }
+
+    fn connectivity_status(&self, device_id: &str) -> bool {
+        std::env::var("SPANDA_LIVE_WEARABLE")
+            .map(|v| v == "1" || v.eq_ignore_ascii_case("true"))
+            .unwrap_or(!device_id.is_empty())
+    }
+}
+
+/// Package-scoped spatial session stub for H2 AR/XR registry packages.
+pub struct SpatialSessionPackageStub {
+    package: &'static str,
+    active_session: Option<SpatialSessionInfo>,
+}
+
+impl SpatialSessionPackageStub {
+    pub fn new(package: &'static str) -> Self {
+        Self {
+            package,
+            active_session: None,
+        }
+    }
+}
+
+impl SpatialSessionProvider for SpatialSessionPackageStub {
+    fn metadata(&self) -> ProviderMetadata {
+        package_metadata(
+            self.package,
+            "project",
+            "Package-scoped spatial session stub",
+        )
+    }
+
+    fn start_session(&mut self, device_id: &str) -> ProviderResult<SpatialSessionInfo> {
+        let live = std::env::var(format!(
+            "SPANDA_{}_SESSION",
+            self.package.replace("spanda-", "").replace('-', "_").to_uppercase()
+        ))
+        .or_else(|_| std::env::var("SPANDA_SPATIAL_SESSION"))
+        .map(|v| v == "1" || v.eq_ignore_ascii_case("true"))
+        .unwrap_or(true);
+        if !live {
+            return Err(ProviderError::new(
+                ProviderId::new(self.package, "project"),
+                format!("{} session backend not enabled", self.package),
+            ));
+        }
+        let info = SpatialSessionInfo {
+            session_id: format!("{}-{}", self.package, device_id),
+            device_id: device_id.to_string(),
+            active: true,
+        };
+        self.active_session = Some(info.clone());
+        Ok(info)
+    }
+
+    fn stop_session(&mut self, session_id: &str) -> ProviderResult<()> {
+        if self
+            .active_session
+            .as_ref()
+            .is_some_and(|s| s.session_id == session_id)
+        {
+            self.active_session = None;
+            Ok(())
+        } else {
+            Err(ProviderError::new(
+                ProviderId::new(self.package, "project"),
+                format!("session not found: {session_id}"),
+            ))
+        }
+    }
+
+    fn publish_anchor(&mut self, _session_id: &str, _anchor: RuntimeValue) -> ProviderResult<()> {
+        Ok(())
+    }
+
+    fn session_status(&self, session_id: &str) -> Option<SpatialSessionInfo> {
+        self.active_session
+            .as_ref()
+            .filter(|s| s.session_id == session_id)
+            .cloned()
+    }
+}
+
+/// Package-scoped HRI input stub for voice, gesture, and eye-tracking packages.
+pub struct HriInputPackageStub {
+    package: &'static str,
+}
+
+impl HriInputPackageStub {
+    pub fn new(package: &'static str) -> Self {
+        Self { package }
+    }
+}
+
+impl HriInputProvider for HriInputPackageStub {
+    fn metadata(&self) -> ProviderMetadata {
+        package_metadata(self.package, "project", "Package-scoped HRI input stub")
+    }
+
+    fn poll_events(&mut self) -> ProviderResult<Vec<RuntimeValue>> {
+        let live = std::env::var("SPANDA_LIVE_HRI")
+            .map(|v| v == "1" || v.eq_ignore_ascii_case("true"))
+            .unwrap_or(false);
+        let event_kind = match self.package {
+            "spanda-voice" => "voice_command",
+            "spanda-gesture" => "gesture_recognition",
+            "spanda-eye-tracking" => "eye_tracking",
+            _ => "hri_event",
+        };
+        let mut fields = HashMap::new();
+        fields.insert(
+            "kind".into(),
+            RuntimeValue::String {
+                value: event_kind.into(),
+            },
+        );
+        fields.insert(
+            "active".into(),
+            RuntimeValue::Bool { value: live },
+        );
+        Ok(vec![RuntimeValue::Object {
+            type_name: "HriEvent".into(),
+            fields,
+        }])
+    }
+}
+
+/// Package-scoped overlay subscription stub for AR remote-expert layers.
+pub struct OverlayPackageStub {
+    package: &'static str,
+}
+
+impl OverlayPackageStub {
+    pub fn new(package: &'static str) -> Self {
+        Self { package }
+    }
+}
+
+impl OverlayProvider for OverlayPackageStub {
+    fn metadata(&self) -> ProviderMetadata {
+        package_metadata(self.package, "project", "Package-scoped AR overlay stub")
+    }
+
+    fn subscribe_overlay(&mut self, layer: &str, device_id: &str) -> ProviderResult<()> {
+        if device_id.is_empty() {
+            return Err(ProviderError::new(
+                ProviderId::new(self.package, "project"),
+                "device_id required for overlay subscription",
+            ));
+        }
+        if layer.is_empty() {
+            return Err(ProviderError::new(
+                ProviderId::new(self.package, "project"),
+                "overlay layer required",
+            ));
+        }
+        Ok(())
     }
 }

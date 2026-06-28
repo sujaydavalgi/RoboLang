@@ -1,0 +1,13 @@
+module spatial.magic_leap;
+
+export fn start_session(device_id: String) -> Int {
+  return 1;
+}
+
+export fn stop_session(session_id: String) -> Int {
+  return 1;
+}
+
+export fn backend_name() -> String {
+  return "spanda-magic-leap";
+}

@@ -1,0 +1,5 @@
+import hri.eye;
+
+test smoke_spanda_eye_tracking() {
+  assert poll_events() == 1;
+}

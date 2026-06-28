@@ -97,8 +97,8 @@ pub use drift::{
 pub use error::{ConfigError, ConfigResult};
 pub use human_entities::{
     is_operator_capability, operator_capability_names, records_from_human_registry,
-    CertificationRecord, ControlCenterEntity, HumanEntity, HumanRegistry, SpatialDeviceEntity,
-    WearableEntity,
+    CertificationRecord, ControlCenterEntity, HumanEntity, HumanRegistry, RemoteExpertSession,
+    SpatialDeviceEntity, WearableEntity,
 };
 pub use integration::{
     config_flag_from_args, configured_human_ids, configured_robot_ids, default_verify_target,

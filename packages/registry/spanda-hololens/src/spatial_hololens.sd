@@ -1,0 +1,17 @@
+module spatial.hololens;
+
+export fn start_session(device_id: String) -> Int {
+  return 1;
+}
+
+export fn stop_session(session_id: String) -> Int {
+  return 1;
+}
+
+export fn backend_name() -> String {
+  return "spanda-hololens";
+}
+
+export fn subscribe_overlay(layer: String, device_id: String) -> Int {
+  return 1;
+}

@@ -1,0 +1,13 @@
+module wearable.bodycam;
+
+export fn read_telemetry(device_id: String) -> Int {
+  return 1;
+}
+
+export fn connectivity_status(device_id: String) -> Int {
+  return 1;
+}
+
+export fn backend_name() -> String {
+  return "spanda-bodycam";
+}

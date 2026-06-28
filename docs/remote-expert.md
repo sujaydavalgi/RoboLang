@@ -87,7 +87,7 @@ capabilities = ["live_video", "spatial_anchors", "annotation", "replay_record"]
 - **AR Session Viewer** — anchor list, expert cursor position
 - **Replay viewer** — post-session playback link
 
-Planned REST endpoints:
+Planned REST endpoints (experimental — implemented in `spanda-api`):
 
 | Endpoint | Description |
 |----------|-------------|

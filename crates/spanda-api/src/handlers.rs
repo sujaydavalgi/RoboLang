@@ -216,6 +216,25 @@ pub fn handle_request(
         );
         return (response, correlation_id);
     }
+    if let Some(response) = route_hri_session(
+        state,
+        path,
+        &request.method,
+        &request.body,
+        started_ms,
+        ctx.as_ref(),
+    ) {
+        e3::record_trace(
+            state,
+            &correlation_id,
+            &request.method,
+            path,
+            response.status,
+            started_ms,
+            ctx.as_ref(),
+        );
+        return (response, correlation_id);
+    }
     let response = match (path, request.method.as_str()) {
         ("/v1/tenant", "GET") => tenant_info(state),
         ("/v1/audit/mutations", "GET") => mutation_audit_list(state, ctx.as_ref()),
@@ -801,6 +820,31 @@ fn route_sre_incident(
     match (action, method) {
         ("ack", "POST") => Some(e3::sre_incident_ack(state, incident_id, body, ctx)),
         ("resolve", "POST") => Some(e3::sre_incident_resolve(state, incident_id, ctx)),
+        _ => None,
+    }
+}
+
+fn route_hri_session(
+    state: &mut ControlCenterState,
+    path: &str,
+    method: &str,
+    body: &str,
+    now_ms: f64,
+    ctx: Option<&RbacContext>,
+) -> Option<HttpResponse> {
+    if path == "/v1/hri/sessions" && method == "GET" {
+        return Some(crate::hri::hri_sessions_list(state));
+    }
+    if path == "/v1/hri/sessions" && method == "POST" {
+        return Some(crate::hri::hri_sessions_create(state, body, ctx));
+    }
+    let rest = path.strip_prefix("/v1/hri/sessions/")?;
+    let (session_id, action) = rest.split_once('/').unwrap_or((rest, ""));
+    match (action, method) {
+        ("annotate", "POST") => Some(crate::hri::hri_session_annotate(
+            state, session_id, body, ctx, now_ms,
+        )),
+        ("replay", "GET") => Some(crate::hri::hri_session_replay(state, session_id)),
         _ => None,
     }
 }
