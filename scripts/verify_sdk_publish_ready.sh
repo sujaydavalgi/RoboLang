@@ -21,4 +21,4 @@ npm ci
 npm run build --workspace=@spanda/web
 (cd packages/web && npm pack >/dev/null)
 echo "npm pack OK"
-echo "Publish readiness verified. Tag sdk-python-v* or npm-web-v* to release."
+echo "Publish readiness verified. Tag sdk-python-v*, npm-sdk-v*, or npm-web-v* to release."

@@ -27,8 +27,8 @@ These endpoints delegate to the same Rust crates as CLI commands:
 | `POST /v1/programs/verify/hardware` | `spanda verify` |
 | `POST /v1/programs/verify/capabilities` | `spanda verify --capabilities` |
 | `POST /v1/programs/verify/mission` | `spanda verify mission` |
-| `POST /v1/programs/simulation` | `spanda sim` (metadata) |
-| `POST /v1/programs/replay` | `spanda replay` (trace load) |
+| `POST /v1/programs/simulation` | `spanda sim` (set `"execute": true` to run) |
+| `POST /v1/programs/replay` | `spanda replay` (set `"deterministic"` or `"playback"`) |
 | `GET /v1/trust/program` | `spanda trust <file.sd>` |
 
 ### Request body (program ops)

@@ -39,8 +39,8 @@ fn main() -> Result<(), spanda_sdk::SpandaError> {
 | `get_entity(id)` | `GET /v1/entities/{id}` |
 | `list_devices()` | `GET /v1/devices` |
 | `provision_device(id, body)` | `POST /v1/devices/{id}/provision` |
-| `run_simulation(project)` | `POST /v1/programs/simulation` |
-| `replay(trace)` | `POST /v1/programs/replay` |
+| `run_simulation(project, execute)` | `POST /v1/programs/simulation` |
+| `replay(trace)` / `replay_with_options(...)` | `POST /v1/programs/replay` |
 | `get_health(entity_id)` | `GET /v1/entities/{id}/health` |
 | `get_trust(entity_id)` | `GET /v1/entities/{id}/trust` |
 | `get_package_trust(name, version)` | `GET /v1/trust/package` |
@@ -62,6 +62,23 @@ use spanda_sdk::EventStream;
 let stream = EventStream::local();
 println!("Connect to {}", stream.url());
 ```
+
+## Native gRPC (optional)
+
+Enable the `grpc` feature for a tonic client:
+
+```toml
+spanda-sdk = { path = "../crates/spanda-sdk", features = ["grpc"] }
+```
+
+```rust
+use spanda_sdk::GrpcClient;
+
+let mut client = GrpcClient::connect_blocking("http://127.0.0.1:50051")?;
+let entities = client.list_entities().await?; // use within tokio runtime
+```
+
+REST + `rpc()` remain the default; gRPC requires `--grpc-bind` on Control Center.
 
 ## Error handling
 
