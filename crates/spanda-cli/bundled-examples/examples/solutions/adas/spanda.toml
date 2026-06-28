@@ -16,6 +16,7 @@ spanda-canbus = "0.1"
 spanda-radar = "0.1"
 spanda-lidar = "0.1"
 spanda-ultrasonic = "0.1"
+spanda-ros2 = "0.1"
 
 
 [capabilities]

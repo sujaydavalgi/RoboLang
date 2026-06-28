@@ -292,6 +292,25 @@ Configure in `spanda.providers.toml`. See [provider-interfaces.md](../provider-i
 
 ---
 
+## ROS 2 automotive bridge
+
+Optional integration with ROS 2 Humble perception stacks and Nav2 motion planning:
+
+```bash
+spanda verify ros2_automotive/automotive_nav.sd --capabilities
+SPANDA_ROS2_LIVE=1 spanda run ros2_automotive/automotive_nav.sd
+```
+
+Requires `spanda-ros2` in `spanda.toml`. See [`ros2_automotive/README.md`](../../examples/solutions/adas/ros2_automotive/README.md).
+
+---
+
+## Stable promotion
+
+Blueprint ships at **Experimental** tier. Promotion gate: `./scripts/adas_stable_promotion_gate.sh` (30-day field soak + security audit + smoke + Control Center probe). See [stable-hardening-adas.md](../stable-hardening-adas.md).
+
+---
+
 ## Control Center
 
 ADAS dashboard tab — vehicle health, sensor health, readiness, trust score, active alerts, driver takeover requests, OTA status, replay viewer, assurance reports.
@@ -325,6 +344,7 @@ Smoke: `./scripts/adas_smoke.sh`
 - [adas-assurance.md](../adas-assurance.md)
 - [adas-security.md](../adas-security.md)
 - [adas-replay.md](../adas-replay.md)
+- [stable-hardening-adas.md](../stable-hardening-adas.md)
 - [compliance-profiles.md](../compliance-profiles.md)
 - [mission-continuity.md](../mission-continuity.md)
 - [readiness.md](../readiness.md)

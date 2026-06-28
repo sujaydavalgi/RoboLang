@@ -1,0 +1,47 @@
+// ROS 2 automotive navigation bridge — Nav2 /cmd_vel and perception topics
+//
+//   spanda verify ros2_automotive/automotive_nav.sd --capabilities
+//   SPANDA_ROS2_LIVE=1 spanda run ros2_automotive/automotive_nav.sd
+//
+// Requires `spanda-ros2` in spanda.toml. Live bridge: SPANDA_ROS2_LIVE=1 + ROS Humble.
+
+import robotics.ros2;
+
+hardware JetsonAutomotive {
+  sensors [ Camera, Lidar ];
+  actuators [ DifferentialDrive ];
+  connectivity [ WiFi ];
+}
+
+robot Vehicle {
+  topic cmd_vel: Velocity publish on "/cmd_vel";
+  sensor front_camera: Camera;
+  sensor front_lidar: Lidar;
+  actuator wheels: DifferentialDrive;
+
+  exposes capabilities [
+    autonomous_navigation, obstacle_avoidance, vision_processing, telemetry_streaming
+  ];
+
+  safety {
+    max_speed = 1.0 m/s;
+    stop_if front_lidar.nearest_distance < 0.8 m;
+  }
+
+  mission AutomotiveRos2Nav {
+    requires capabilities [ autonomous_navigation, obstacle_avoidance, vision_processing ];
+    nav_loop;
+  }
+
+  behavior nav_loop() {
+    loop every 50ms {
+      let scene = front_camera.analyze();
+      let scan = front_lidar.read();
+      let _ = scene;
+      let _ = scan;
+      publish cmd_vel with velocity(linear: 0.5 m/s, angular: 0.0 rad/s);
+    }
+  }
+}
+
+deploy Vehicle to JetsonAutomotive;

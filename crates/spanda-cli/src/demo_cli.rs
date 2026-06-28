@@ -1033,6 +1033,7 @@ fn demo_adas(root: &Path) {
         ("blind_spot_monitoring/blind_spot.sd", "Blind Spot Monitoring"),
         ("traffic_sign_recognition/traffic_sign.sd", "Traffic Sign Recognition"),
         ("pedestrian_detection/pedestrian.sd", "Pedestrian Detection"),
+        ("ros2_automotive/automotive_nav.sd", "ROS 2 Automotive Nav"),
         ("canbus_gateway/canbus_gateway.sd", "CAN Bus Gateway"),
         ("sensor_failure_recovery/camera_failure.sd", "Sensor failure recovery"),
         ("driver_takeover/driver_takeover.sd", "Driver takeover"),

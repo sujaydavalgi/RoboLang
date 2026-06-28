@@ -50,6 +50,7 @@ for example in \
   "$ADAS/blind_spot_monitoring/blind_spot.sd" \
   "$ADAS/traffic_sign_recognition/traffic_sign.sd" \
   "$ADAS/pedestrian_detection/pedestrian.sd" \
+  "$ADAS/ros2_automotive/automotive_nav.sd" \
   "$ADAS/canbus_gateway/canbus_gateway.sd"
 do
   check check "$example"

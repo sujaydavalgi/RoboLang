@@ -41,6 +41,9 @@ adas/
 └── src/
     ├── highway_drive.sd         # Primary reference program
     └── highway_drive.trace      # Sim-recorded behavior_tick frames (20 ticks @ 50ms)
+├── ros2_automotive/
+│   ├── automotive_nav.sd        # ROS 2 /cmd_vel bridge for Nav2 stacks
+│   └── README.md
 ├── sim_record/
 │   ├── lane_keep_task.sd        # Task-based program for sim --record
 │   └── lane_keep_task.trace     # Golden trace (20 scheduler_tick frames)
@@ -63,6 +66,7 @@ adas/
 | [`blind_spot_monitoring/`](./blind_spot_monitoring/) | Blind Spot Monitoring | `obstacle_avoidance` |
 | [`traffic_sign_recognition/`](./traffic_sign_recognition/) | Traffic Sign Recognition | `vision_processing`, lane/sign detection |
 | [`pedestrian_detection/`](./pedestrian_detection/) | Pedestrian Detection | `vision_processing`, `obstacle_avoidance` |
+| [`ros2_automotive/`](./ros2_automotive/) | ROS 2 / Nav2 bridge | `spanda-ros2`, `/cmd_vel` publish |
 | [`canbus_gateway/`](./canbus_gateway/) | CAN bus ECU gateway | `spanda-canbus` provider hook |
 
 ---
