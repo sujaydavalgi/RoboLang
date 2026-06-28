@@ -4,11 +4,22 @@ Official Python client for robotics scripts, notebooks, CI/CD, and ROS2 integrat
 
 ## Install
 
+From PyPI (released packages):
+
+```bash
+pip install spanda-sdk
+pip install "spanda-sdk[stream]"   # WebSocket telemetry extra
+```
+
+From this monorepo (development):
+
 ```bash
 pip install -e sdk/python
 # stream extras for WebSocket telemetry
 pip install -e "sdk/python[stream]"
 ```
+
+Maintainers: see [Publishing SDKs](sdk-publishing.md) for PyPI tokens, GitHub secrets, and release tags.
 
 ## Usage
 

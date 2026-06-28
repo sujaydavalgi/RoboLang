@@ -725,18 +725,19 @@ let client = SpandaClient::local();
 let report = client.readiness("rover.sd")?;
 ```
 
-**Python** (`sdk/python`):
+**Python** (`pip install spanda-sdk` or `sdk/python` from source):
 
 ```bash
-pip install -e sdk/python
+pip install spanda-sdk
 export SPANDA_CONTROL_CENTER_URL=http://127.0.0.1:8080
 python -c "from spanda import SpandaClient; print(SpandaClient.local().readiness('rover.sd'))"
 ```
 
-**TypeScript** (`sdk/typescript`, package `@davalgi-spanda/sdk`):
+**TypeScript** (`npm install @davalgi-spanda/sdk` or build from `sdk/typescript`):
 
 ```bash
-npm ci --prefix sdk/typescript && npm run build --prefix sdk/typescript
+npm install @davalgi-spanda/sdk
+# or from monorepo: npm ci --prefix sdk/typescript && npm run build --prefix sdk/typescript
 ```
 
 ```typescript
@@ -744,7 +745,7 @@ import { SpandaClient } from "@davalgi-spanda/sdk";
 const report = await SpandaClient.local().readiness("rover.sd");
 ```
 
-Full guides: [sdk.md](./sdk.md) · [control-center-api.md](./control-center-api.md)
+Full guides: [sdk.md](./sdk.md) · [control-center-api.md](./control-center-api.md) · [sdk-publishing.md](./sdk-publishing.md) (maintainers: PyPI/npm release)
 
 ### Legacy Python client (enterprise ops)
 

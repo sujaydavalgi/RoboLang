@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **npm TypeScript SDK scope:** published package is `@davalgi-spanda/sdk` (npm org `@davalgi-spanda`; `@spanda` scope unavailable on npm).
+- **SDK publishing guide:** [docs/sdk-publishing.md](docs/sdk-publishing.md) — PyPI/npm tokens, GitHub secrets, release tags, troubleshooting.
 - **SDK simulation/replay execution:** program API endpoints run the driver when `"execute": true` (sim) or `"deterministic"` / `"playback"` (replay); optional Rust `grpc` feature on `spanda-sdk`; PyPI/npm publish workflows for `sdk/python` and `@spanda/sdk`.
 - **Official SDK foundations:** `crates/spanda-sdk` (Rust), `sdk/python` (`pip install spanda-sdk`), `sdk/typescript` (`@spanda/sdk`); program-level REST endpoints on `spanda-api` for CLI parity (`/v1/programs/*`, `/v1/entities/*`); matching gRPC RPCs (`EvaluateProgramReadiness`, `ListEntities`, …); docs in [docs/sdk.md](docs/sdk.md), [docs/control-center-api.md](docs/control-center-api.md).
 - **SDK smoke and JSON-RPC:** `scripts/sdk_smoke.sh` exercises program REST endpoints; JSON-RPC gateway maps Control Center SDK methods; `rpc()` on all SDK clients.

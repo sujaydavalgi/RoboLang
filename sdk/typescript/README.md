@@ -27,8 +27,9 @@ console.log(report.score);
 ## Documentation
 
 - [docs/sdk-typescript.md](../../docs/sdk-typescript.md)
+- [docs/sdk-publishing.md](../../docs/sdk-publishing.md)
 - [docs/control-center-api.md](../../docs/control-center-api.md)
 
 ## Publish
 
-Requires GitHub secret `NPM_TOKEN` (granular token with `@davalgi-spanda/*` write + Bypass 2FA). Tag `npm-sdk-v*` triggers [.github/workflows/publish-sdk-typescript.yml](../../.github/workflows/publish-sdk-typescript.yml). npm write tokens expire within 90 days — rotate `NPM_TOKEN` before expiry.
+See [docs/sdk-publishing.md](../../docs/sdk-publishing.md) for `NPM_TOKEN`, release tags (`npm-sdk-v*`), and token rotation.

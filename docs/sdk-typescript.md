@@ -4,6 +4,14 @@ Official TypeScript/JavaScript client for Control Center UI, web dashboards, VS 
 
 ## Install
 
+From npm (released package):
+
+```bash
+npm install @davalgi-spanda/sdk
+```
+
+From this monorepo (development):
+
 ```bash
 cd sdk/typescript && npm install && npm run build
 ```
@@ -65,3 +73,7 @@ npx tsx examples/sdk/typescript/control_center.ts
 ```bash
 cd sdk/typescript && npm test
 ```
+
+## Publishing
+
+See [Publishing SDKs](sdk-publishing.md) for npm org `@davalgi-spanda`, `NPM_TOKEN`, release tags (`npm-sdk-v*`), and 90-day token rotation.

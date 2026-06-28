@@ -4,6 +4,15 @@ Official Python client for Spanda Control Center API v1.
 
 ## Install
 
+From PyPI:
+
+```bash
+pip install spanda-sdk
+pip install "spanda-sdk[stream]"   # WebSocket telemetry
+```
+
+From this monorepo:
+
 ```bash
 pip install -e sdk/python
 # WebSocket telemetry
@@ -36,6 +45,7 @@ spanda control-center serve --program examples/robotics/rover.sd
 ## Documentation
 
 - [docs/sdk-python.md](../../docs/sdk-python.md)
+- [docs/sdk-publishing.md](../../docs/sdk-publishing.md)
 - [docs/control-center-api.md](../../docs/control-center-api.md)
 
 ## Legacy client
