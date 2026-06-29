@@ -22,6 +22,7 @@ pub mod recovery_coverage;
 pub mod recovery_diagnostics;
 pub mod report;
 pub mod resilience;
+pub mod runtime_bridge;
 pub mod state;
 pub mod types;
 
@@ -81,6 +82,7 @@ pub use recovery_coverage::{
     RecoveryCoverageReport, RecoveryCoverageStatus, RecoveryGap, RecoveryPlanSummary,
 };
 pub use recovery_diagnostics::collect_recovery_diagnostics;
+pub use runtime_bridge::AssuranceBackedRuntime;
 pub use report::{
     format_anomaly, format_assurance, format_continuity, format_delegation, format_diagnosis,
     format_mission_assurance, format_mitigation, format_prognostics, format_recovery,

@@ -1,6 +1,13 @@
 //! Spanda communication bus trait, in-memory transport, and comm safety helpers.
 //!
 
+pub mod comm_bus_host;
+
+pub use comm_bus_host::{
+    default_comm_bus_factory, default_comm_bus_factory_fn, CommBusFactory, CommBusHost,
+    SimCommBusHost,
+};
+
 pub use spanda_ast::comm_decl::*;
 
 use spanda_ast::nodes::SpandaType;

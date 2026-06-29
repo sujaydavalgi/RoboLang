@@ -24,5 +24,6 @@ spanda-runtime = { path = "../spanda-runtime" }
 certify-runtime = ["dep:spanda-certify"]
 
 [dev-dependencies]
+spanda-interpreter = { path = "../spanda-interpreter" }
 spanda-lexer = { path = "../spanda-lexer" }
 spanda-parser = { path = "../spanda-parser" }

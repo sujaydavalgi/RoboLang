@@ -5,21 +5,10 @@ use crate::detection::{
     evaluate_restart_loops, static_fault_scan,
 };
 use crate::types::{
-    FaultScanReport, FaultTimeline, RuntimeFault, RuntimeHealth, RuntimeHealthStatus,
-    RuntimeReliabilityEvidence,
+    FaultScanOptions, FaultScanReport, FaultTimeline, RuntimeFault, RuntimeHealth,
+    RuntimeHealthStatus, RuntimeReliabilityEvidence,
 };
 use spanda_ast::nodes::Program;
-
-/// Options for fault scanning.
-#[derive(Debug, Clone, Default)]
-pub struct FaultScanOptions {
-    pub inject_crash: bool,
-    pub inject_memory_leak: bool,
-    pub inject_reboot: bool,
-    pub inject_heartbeat_loss: bool,
-    pub inject_resource_pressure: bool,
-    pub sim_time_ms: f64,
-}
 
 /// Scan a program for runtime fault configuration and active faults.
 pub fn scan_program_faults(

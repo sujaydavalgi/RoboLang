@@ -181,12 +181,7 @@ pub struct MissionPlan {
 }
 
 /// Mission execution state.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct MissionExecutionState {
-    pub plan: String,
-    pub current_step: Option<String>,
-    pub status: String,
-}
+pub use spanda_runtime::continuity_types::MissionExecutionState;
 
 /// Reason for mission abort.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

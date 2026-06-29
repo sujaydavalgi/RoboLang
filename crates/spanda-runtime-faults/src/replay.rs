@@ -3,6 +3,8 @@
 use crate::types::{FaultTimeline, RuntimeFault, RuntimeFaultKind};
 use spanda_runtime::replay::{MissionTrace, TraceFrame};
 
+pub use spanda_runtime::fault_primitives::record_fault_in_trace;
+
 /// Fault event names recorded in mission traces.
 pub const FAULT_EVENTS: &[&str] = &[
     "fault_crash",
@@ -15,35 +17,6 @@ pub const FAULT_EVENTS: &[&str] = &[
     "fault_deadlock",
     "fault_oom",
 ];
-
-/// Record a runtime fault in a mission trace.
-pub fn record_fault_in_trace(trace: &mut MissionTrace, fault: &RuntimeFault, sim_time_ms: f64) {
-    // Append a fault event frame to a mission trace for replay analysis.
-    //
-    // Parameters:
-    // - `trace` — mission trace to append to
-    // - `fault` — detected runtime fault
-    // - `sim_time_ms` — simulation timestamp
-    //
-    // Returns:
-    // None (modifies trace in place).
-    //
-    // Options:
-    // None.
-    //
-    // Example:
-    // record_fault_in_trace(&mut trace, &fault, 1000.0);
-
-    let event = fault_kind_to_trace_event(&fault.kind);
-    let payload = serde_json::json!({
-        "kind": fault.kind.as_str(),
-        "target": fault.target,
-        "status": fault.status.as_str(),
-        "message": fault.message,
-        "evidence": fault.evidence,
-    });
-    trace.record(sim_time_ms, event, payload);
-}
 
 /// Record all faults from a scan into a mission trace.
 pub fn record_faults_in_trace(trace: &mut MissionTrace, faults: &[RuntimeFault], sim_time_ms: f64) {
@@ -165,26 +138,6 @@ pub fn fault_frames(trace: &MissionTrace) -> Vec<&TraceFrame> {
 
 fn is_fault_event(event: &str) -> bool {
     event.starts_with("fault_") || FAULT_EVENTS.contains(&event)
-}
-
-fn fault_kind_to_trace_event(kind: &RuntimeFaultKind) -> &'static str {
-    match kind {
-        RuntimeFaultKind::ProcessCrash
-        | RuntimeFaultKind::RuntimePanic
-        | RuntimeFaultKind::ProviderCrash
-        | RuntimeFaultKind::PackageCrash => "fault_crash",
-        RuntimeFaultKind::UnexpectedReboot | RuntimeFaultKind::OsReboot => "fault_reboot",
-        RuntimeFaultKind::WatchdogTimeout => "fault_watchdog_timeout",
-        RuntimeFaultKind::MemoryLeak => "fault_memory_growth",
-        RuntimeFaultKind::RestartLoop => "fault_restart_loop",
-        RuntimeFaultKind::CpuOverload
-        | RuntimeFaultKind::MemoryPressure
-        | RuntimeFaultKind::DiskPressure => "fault_resource_pressure",
-        RuntimeFaultKind::HeartbeatLoss => "fault_heartbeat_loss",
-        RuntimeFaultKind::Deadlock | RuntimeFaultKind::TaskStarvation => "fault_deadlock",
-        RuntimeFaultKind::OutOfMemory => "fault_oom",
-        _ => "fault_event",
-    }
 }
 
 fn trace_event_to_kind(s: &str) -> RuntimeFaultKind {

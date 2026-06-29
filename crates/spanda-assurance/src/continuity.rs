@@ -4,76 +4,23 @@
 //! mission should resume or restart, and what evidence supports the decision.
 //! Composes with readiness, recovery, capability, hardware, and trust gates.
 
-use crate::recovery::{RecoveryContext, RecoveryLevel, RecoveryPlanner, ValidationGateResult};
-use crate::types::MissionExecutionState;
+use crate::recovery::{RecoveryContext, RecoveryLevel, RecoveryPlanner};
+pub use spanda_runtime::continuity_primitives::{
+    extract_continuity_policies, issue_to_continuity_trigger, program_has_continuity_for_trigger,
+    parse_trigger,
+};
+pub use spanda_runtime::continuity_types::{
+    ContinuationDecision, ContinuityContext, ContinuityEvidence, ContinuityPolicySpec,
+    ContinuityTrigger, MissionCheckpoint, MissionExecutionState, MissionStateSnapshot,
+    MissionStateTransfer, SuccessionScope, TakeoverMode, TakeoverReport,
+};
+use spanda_runtime::recovery_types::ValidationGateResult;
 use serde::{Deserialize, Serialize};
 use spanda_ast::nodes::Program;
 use spanda_ast::robotics_decl::FleetDecl;
 use spanda_readiness::{
     evaluate_fleet_readiness, evaluate_readiness, ReadinessOptions, ReadinessStatus,
 };
-
-// ---------------------------------------------------------------------------
-// Enums
-// ---------------------------------------------------------------------------
-
-/// Trigger that initiates a continuity evaluation.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
-pub enum ContinuityTrigger {
-    RobotFailed,
-    RobotDegraded,
-    DeviceDisconnected,
-    FleetMemberOffline,
-    SwarmMemberLost,
-    CommunicationInterrupted,
-    BatteryCritical,
-    HardwareCapabilityLost,
-}
-
-/// Scope for succession and delegation targets.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
-pub enum SuccessionScope {
-    Robot,
-    Device,
-    Fleet,
-    Swarm,
-    Group,
-    Crowd,
-    MissionCluster,
-}
-
-/// Takeover execution mode.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
-pub enum TakeoverMode {
-    /// Continue from last checkpoint.
-    Resume,
-    /// Start mission again from the beginning.
-    Restart,
-    /// Restart only the failed stage.
-    PartialRestart,
-    /// Backup agent already synchronized.
-    ShadowTakeover,
-    /// Immediate replacement.
-    HotTakeover,
-    /// Replacement initialized after failure.
-    ColdTakeover,
-    /// Transfer control to operator.
-    HumanTakeover,
-}
-
-/// Continuation decision from the decision engine.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
-pub enum ContinuationDecision {
-    Continue,
-    Restart,
-    PartialRestart,
-    Abort,
-    HumanApprovalRequired,
-}
 
 /// Trust tier for successor eligibility.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
@@ -104,38 +51,6 @@ impl ContinuityTrustLevel {
 // ---------------------------------------------------------------------------
 // Checkpoint & state transfer models
 // ---------------------------------------------------------------------------
-
-/// Snapshot of mission, robot, health, safety, and capability state at a checkpoint.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct MissionCheckpoint {
-    pub name: String,
-    pub progress_percent: f64,
-    pub mission_state: MissionExecutionState,
-    pub robot_state: String,
-    pub health_state: String,
-    pub safety_state: String,
-    pub capability_state: String,
-}
-
-/// Full mission state snapshot for transfer.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct MissionStateSnapshot {
-    pub mission: String,
-    pub completed_steps: Vec<String>,
-    pub current_goal: Option<String>,
-    pub progress_percent: f64,
-    pub checkpoints: Vec<MissionCheckpoint>,
-}
-
-/// Payload transferred to a successor.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct MissionStateTransfer {
-    pub from_entity: String,
-    pub to_entity: String,
-    pub snapshot: MissionStateSnapshot,
-    pub transferable: bool,
-    pub transfer_notes: Vec<String>,
-}
 
 /// Environment, safety, and health context transferred with mission state.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -207,118 +122,8 @@ pub struct SuccessorRanking {
 }
 
 // ---------------------------------------------------------------------------
-// Evidence
-// ---------------------------------------------------------------------------
-
-/// Assurance evidence for continuity decisions.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct ContinuityEvidence {
-    pub takeover_evidence: Vec<String>,
-    pub delegation_evidence: Vec<String>,
-    pub continuity_evidence: Vec<String>,
-    pub safety_gates: Vec<ValidationGateResult>,
-    pub diagnosis: Option<String>,
-    pub recovery_outcome: Option<String>,
-}
-
-// ---------------------------------------------------------------------------
 // Reports
 // ---------------------------------------------------------------------------
-
-/// Input context for continuity evaluation.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct ContinuityContext {
-    pub mission: String,
-    pub failed_entity: String,
-    pub trigger: ContinuityTrigger,
-    pub progress_percent: f64,
-    pub scope: SuccessionScope,
-    pub current_step: Option<String>,
-    pub checkpoints: Vec<String>,
-}
-
-impl Default for ContinuityContext {
-    fn default() -> Self {
-        Self {
-            mission: "default_mission".into(),
-            failed_entity: "Rover".into(),
-            trigger: ContinuityTrigger::RobotFailed,
-            progress_percent: 0.0,
-            scope: SuccessionScope::Robot,
-            current_step: None,
-            checkpoints: Vec::new(),
-        }
-    }
-}
-
-/// Continuity policy extracted from declarations.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct ContinuityPolicySpec {
-    pub name: String,
-    pub triggers: Vec<(String, Vec<String>)>,
-}
-
-/// Extract continuity policies from program declarations.
-pub fn extract_continuity_policies(program: &Program) -> Vec<ContinuityPolicySpec> {
-    let Program::Program {
-        continuity_policies,
-        ..
-    } = program;
-
-    continuity_policies
-        .iter()
-        .map(|decl| {
-            let spanda_ast::assurance_decl::ContinuityPolicyDecl::ContinuityPolicyDecl {
-                name,
-                branches,
-                ..
-            } = decl;
-            ContinuityPolicySpec {
-                name: name.clone(),
-                triggers: branches
-                    .iter()
-                    .map(|b| (b.condition.clone(), b.actions.clone()))
-                    .collect(),
-            }
-        })
-        .collect()
-}
-
-/// Map a runtime fault or health event to a continuity trigger.
-pub fn issue_to_continuity_trigger(issue: &str) -> Option<ContinuityTrigger> {
-    let lower = issue.to_ascii_lowercase();
-    if lower.contains("swarm") {
-        Some(ContinuityTrigger::SwarmMemberLost)
-    } else if lower.contains("fleet") {
-        Some(ContinuityTrigger::FleetMemberOffline)
-    } else if lower.contains("battery") {
-        Some(ContinuityTrigger::BatteryCritical)
-    } else if lower.contains("disconnect") || lower.contains("offline") || lower.contains("camera")
-    {
-        Some(ContinuityTrigger::DeviceDisconnected)
-    } else if lower.contains("degraded") || lower.contains("gps") {
-        Some(ContinuityTrigger::RobotDegraded)
-    } else if lower.contains("capability") {
-        Some(ContinuityTrigger::HardwareCapabilityLost)
-    } else if lower.contains("communication") || lower.contains("comm") {
-        Some(ContinuityTrigger::CommunicationInterrupted)
-    } else if lower.contains("robot") || lower.contains("critical") || lower.contains("failed") {
-        Some(ContinuityTrigger::RobotFailed)
-    } else {
-        None
-    }
-}
-
-/// Return true when the program declares `continuity_policy` for the trigger.
-pub fn program_has_continuity_for_trigger(program: &Program, trigger: ContinuityTrigger) -> bool {
-    let trigger_key = trigger_condition_key(trigger);
-    extract_continuity_policies(program).iter().any(|policy| {
-        policy
-            .triggers
-            .iter()
-            .any(|(condition, _)| condition_matches_trigger(condition, trigger_key))
-    })
-}
 
 /// Mission continuity evaluation report.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -334,21 +139,6 @@ pub struct MissionContinuityReport {
     pub state_transfer: Option<MissionStateTransfer>,
     pub evidence: ContinuityEvidence,
     pub passed: bool,
-}
-
-/// Takeover coordination report.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct TakeoverReport {
-    pub mission: String,
-    pub failed_entity: String,
-    pub successor: String,
-    pub mode: TakeoverMode,
-    pub decision: ContinuationDecision,
-    pub state_transfer: MissionStateTransfer,
-    pub safety_gates: Vec<ValidationGateResult>,
-    pub evidence: ContinuityEvidence,
-    pub succeeded: bool,
-    pub diagnosis: String,
 }
 
 /// Delegation report for mission ownership transfer.
@@ -1120,20 +910,6 @@ pub fn plan_succession(program: &Program, context: &ContinuityContext) -> Succes
         policy,
         evidence,
         passed,
-    }
-}
-
-/// Parse continuity trigger from CLI string.
-pub fn parse_trigger(s: &str) -> ContinuityTrigger {
-    match s.to_lowercase().as_str() {
-        "robot_degraded" | "degraded" => ContinuityTrigger::RobotDegraded,
-        "device_disconnected" | "disconnect" => ContinuityTrigger::DeviceDisconnected,
-        "fleet_member_offline" | "fleet_offline" => ContinuityTrigger::FleetMemberOffline,
-        "swarm_member_lost" | "swarm_lost" => ContinuityTrigger::SwarmMemberLost,
-        "communication_interrupted" | "comm_lost" => ContinuityTrigger::CommunicationInterrupted,
-        "battery_critical" | "battery" => ContinuityTrigger::BatteryCritical,
-        "hardware_capability_lost" | "capability_lost" => ContinuityTrigger::HardwareCapabilityLost,
-        _ => ContinuityTrigger::RobotFailed,
     }
 }
 

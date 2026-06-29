@@ -13,6 +13,7 @@ pub mod policy;
 pub mod rate_limit;
 pub mod rbac;
 pub mod runtime;
+pub mod runtime_bridge;
 pub mod secret_vault;
 pub mod secrets;
 pub mod secure_comm;
@@ -43,6 +44,7 @@ pub use rbac::{
     Role,
 };
 pub use runtime::{SecurityContext, SecuritySnapshot};
+pub use runtime_bridge::SecurityBackedRuntime;
 pub use secret_vault::{ManagedSecretVault, SecretMetadata, SecretVaultBackend};
 pub use secrets::{SecretHandle, SecretSource, SecretStore};
 pub use secure_comm::{SecureEndpointRegistry, SecurePolicy};

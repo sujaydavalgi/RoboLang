@@ -9,6 +9,7 @@ pub mod iot_live;
 pub mod package_dispatch;
 pub mod package_stubs;
 pub mod radar_env_lock;
+pub mod runtime_bridge;
 pub mod transport_adapter;
 
 pub use automotive_hub::{
@@ -22,4 +23,5 @@ pub use iot_hub::{hub_stats, register_device, seed_modbus_demo_register};
 pub use package_dispatch::{
     dispatch_official_package_call, official_package_for_module, ProviderDispatchContext,
 };
+pub use runtime_bridge::ProviderBackedRuntime;
 pub use transport_adapter::{adapter_config_to_runtime, TransportAdapterProvider};

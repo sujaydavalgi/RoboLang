@@ -1,9 +1,8 @@
 //! Recovery path coverage reporting for known failure modes.
 
-use crate::{
-    extract_continuity_policies, extract_recovery_policies, RecoveryContext, RecoveryLevel,
-    RecoveryPlanner,
-};
+use spanda_runtime::continuity_primitives::extract_continuity_policies;
+use spanda_runtime::recovery_primitives::extract_recovery_policies;
+use crate::recovery::{RecoveryContext, RecoveryLevel, RecoveryPlanner};
 use serde::{Deserialize, Serialize};
 use spanda_ast::nodes::Program;
 use spanda_config::{recovery_failure_catalog, ResolvedSystemConfig};

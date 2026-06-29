@@ -12,6 +12,7 @@ spanda-audit = { path = "../spanda-audit" }
 spanda-ast = { path = "../spanda-ast" }
 spanda-comm = { path = "../spanda-comm" }
 spanda-error = { path = "../spanda-error" }
+spanda-runtime = { path = "../spanda-runtime" }
 spanda-lexer = { path = "../spanda-lexer" }
 spanda-parser = { path = "../spanda-parser" }
 aes-gcm = "0.10"

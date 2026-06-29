@@ -1,6 +1,7 @@
 //! Routes publish/subscribe/service calls across transport adapters and in-memory simulation.
 //!
 pub mod live_bridges;
+pub mod runtime_bridge;
 pub mod transport_live;
 
 use std::cell::RefCell;
