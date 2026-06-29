@@ -5,9 +5,19 @@ use spanda_providers::{
     seed_automotive_demos,
 };
 use spanda_runtime::value::RuntimeValue;
+use std::sync::Mutex;
+
+static RADAR_TEST_LOCK: Mutex<()> = Mutex::new(());
+
+fn clear_live_radar_env() {
+    std::env::remove_var("SPANDA_LIVE_RADAR");
+    std::env::remove_var("SPANDA_RADAR_CMD");
+}
 
 #[test]
 fn automotive_hub_seeds_radar_distance() {
+    let _lock = RADAR_TEST_LOCK.lock().unwrap();
+    clear_live_radar_env();
     seed_automotive_demos();
     let value = read_radar_distance("front-radar");
     assert!((value - 25.0).abs() < f64::EPSILON);
@@ -15,6 +25,8 @@ fn automotive_hub_seeds_radar_distance() {
 
 #[test]
 fn package_dispatch_reads_radar_when_capability_granted() {
+    let _lock = RADAR_TEST_LOCK.lock().unwrap();
+    clear_live_radar_env();
     let mut registry = bootstrap_providers_for_packages(&["spanda-radar"]);
     let value = dispatch_official_package_call(
         &mut registry,
@@ -34,11 +46,12 @@ fn package_dispatch_reads_radar_when_capability_granted() {
 
 #[test]
 fn live_radar_cmd_overrides_hub_stub() {
+    let _lock = RADAR_TEST_LOCK.lock().unwrap();
+    clear_live_radar_env();
     std::env::set_var("SPANDA_LIVE_RADAR", "1");
     std::env::set_var("SPANDA_RADAR_CMD", "echo 99.0");
     seed_automotive_demos();
     let value = read_radar_distance("front-radar");
     assert!((value - 99.0).abs() < f64::EPSILON);
-    std::env::remove_var("SPANDA_LIVE_RADAR");
-    std::env::remove_var("SPANDA_RADAR_CMD");
+    clear_live_radar_env();
 }

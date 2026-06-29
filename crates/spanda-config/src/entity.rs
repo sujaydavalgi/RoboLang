@@ -668,16 +668,13 @@ impl EntityRegistry {
         let mut chain = Vec::new();
         let mut current = entity_id.to_string();
         let mut visited = HashSet::new();
-        loop {
-            let Some(dep) = self.relationships.iter().find(|r| {
-                r.from_id == current
-                    && matches!(
-                        r.kind,
-                        EntityRelationshipKind::DependsOn | EntityRelationshipKind::Consumes
-                    )
-            }) else {
-                break;
-            };
+        while let Some(dep) = self.relationships.iter().find(|r| {
+            r.from_id == current
+                && matches!(
+                    r.kind,
+                    EntityRelationshipKind::DependsOn | EntityRelationshipKind::Consumes
+                )
+        }) {
             if !visited.insert(dep.to_id.clone()) {
                 break;
             }
@@ -993,11 +990,7 @@ fn robot_entity_kind(robot: &RobotNode) -> EntityKind {
     if let Some(kind) = robot.entity_kind.as_deref() {
         return EntityKind::parse(kind);
     }
-    if robot
-        .model
-        .as_deref()
-        .is_some_and(|model| is_automotive_model(model))
-    {
+    if robot.model.as_deref().is_some_and(is_automotive_model) {
         return EntityKind::Vehicle;
     }
     EntityKind::Robot
@@ -1658,12 +1651,11 @@ pub fn runtime_missions_from_approval_seeds(
     seeds
         .iter()
         .map(|seed| {
-            let pending = seed
+            let pending = !seed
                 .status
                 .as_deref()
                 .map(|s| s.eq_ignore_ascii_case("approved"))
-                .unwrap_or(false)
-                == false;
+                .unwrap_or(false);
             RuntimeMissionEntity {
                 id: format!("mission:{}", seed.mission_id),
                 name: seed.mission_id.clone(),

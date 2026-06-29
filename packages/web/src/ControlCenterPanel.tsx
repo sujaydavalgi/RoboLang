@@ -10,6 +10,7 @@ import {
   type EntityGraphPayload,
   type EntityRelationship,
   type EntitySummary,
+  type RegisterEntityInput,
 } from "./EntityGraphPanel";
 
 type DashboardData = {
@@ -588,6 +589,95 @@ export function ControlCenterPanel({ apiBase }: Props) {
     if (entityId) void loadEntityDetail(entityId);
   };
 
+  const registerEntity = async (input: RegisterEntityInput) => {
+    if (!apiKey) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const res = await fetch(`${base}/v1/entities/register`, {
+        method: "POST",
+        headers: authHeaders(),
+        body: JSON.stringify(input),
+      });
+      if (!res.ok) throw new Error(`register entity ${res.status}`);
+      await loadEntities();
+      if (input.id) {
+        selectEntity(input.id);
+      }
+    } catch (e) {
+      setError(String(e));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const tagEntity = async (entityId: string, tags: string[]) => {
+    if (!apiKey) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const res = await fetch(`${base}/v1/entities/${encodeURIComponent(entityId)}/tags`, {
+        method: "POST",
+        headers: authHeaders(),
+        body: JSON.stringify({ add: tags }),
+      });
+      if (!res.ok) throw new Error(`tag entity ${res.status}`);
+      await loadEntities();
+      if (selectedEntity === entityId) await loadEntityDetail(entityId);
+    } catch (e) {
+      setError(String(e));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const relateEntities = async (
+    fromId: string,
+    toId: string,
+    kind: string,
+    label?: string,
+  ) => {
+    if (!apiKey) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const body: Record<string, string> = { from_id: fromId, to_id: toId, kind };
+      if (label) body.label = label;
+      const res = await fetch(`${base}/v1/entities/relationships`, {
+        method: "POST",
+        headers: authHeaders(),
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) throw new Error(`relate entities ${res.status}`);
+      await loadEntities();
+      if (selectedEntity) await loadEntityDetail(selectedEntity);
+    } catch (e) {
+      setError(String(e));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const syncEntities = async () => {
+    if (!apiKey) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const res = await fetch(`${base}/v1/entities/sync`, {
+        method: "POST",
+        headers: authHeaders(),
+        body: JSON.stringify({}),
+      });
+      if (!res.ok) throw new Error(`sync entities ${res.status}`);
+      await loadEntities();
+      if (selectedEntity) await loadEntityDetail(selectedEntity);
+    } catch (e) {
+      setError(String(e));
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const resolveMissionApproval = async (approvalId: string, missionId: string, approved: boolean) => {
     if (!apiKey) return;
     setBusy(true);
@@ -964,6 +1054,14 @@ export function ControlCenterPanel({ apiBase }: Props) {
           detail={entityDetail}
           relationships={entityRelationships}
           loading={busy}
+          write={{
+            canWrite: Boolean(apiKey),
+            busy,
+            onRegister: registerEntity,
+            onTag: tagEntity,
+            onRelate: relateEntities,
+            onSync: syncEntities,
+          }}
         />
       )}
 

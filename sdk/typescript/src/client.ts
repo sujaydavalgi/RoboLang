@@ -176,6 +176,49 @@ export class SpandaClient {
     return this.request("GET", `/v1/entities/${entityId}/trust`);
   }
 
+  async entityGraph(): Promise<JsonValue> {
+    return this.request("GET", "/v1/entities/graph");
+  }
+
+  async entityTraceability(
+    query: { entityId?: string; capability?: string; deviceId?: string } = {},
+  ): Promise<JsonValue> {
+    const params = new URLSearchParams();
+    if (query.entityId) params.set("entity_id", query.entityId);
+    if (query.capability) params.set("capability", query.capability);
+    if (query.deviceId) params.set("device_id", query.deviceId);
+    const qs = params.toString();
+    return this.request("GET", `/v1/entities/traceability${qs ? `?${qs}` : ""}`);
+  }
+
+  async queryEntities(body: JsonValue): Promise<JsonValue> {
+    return this.request("POST", "/v1/entities/query", body);
+  }
+
+  async registerEntity(body: JsonValue): Promise<JsonValue> {
+    return this.request("POST", "/v1/entities/register", body, true);
+  }
+
+  async tagEntity(
+    entityId: string,
+    body: { add?: string[]; remove?: string[] },
+  ): Promise<JsonValue> {
+    return this.request("POST", `/v1/entities/${entityId}/tags`, body, true);
+  }
+
+  async relateEntities(body: {
+    from_id: string;
+    to_id: string;
+    kind: string;
+    label?: string;
+  }): Promise<JsonValue> {
+    return this.request("POST", "/v1/entities/relationships", body, true);
+  }
+
+  async syncEntities(): Promise<JsonValue> {
+    return this.request("POST", "/v1/entities/sync", {}, true);
+  }
+
   async getPackageTrust(packageName: string, version?: string): Promise<JsonValue> {
     let path = `/v1/trust/package?name=${encodeURIComponent(packageName)}`;
     if (version) {

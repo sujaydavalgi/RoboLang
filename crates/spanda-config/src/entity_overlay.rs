@@ -265,9 +265,7 @@ fn write_entity_to_toml(value: &mut toml::Value, record: &EntityRecord) -> bool 
         EntityKind::Facility => upsert_table_row(value, "facilities", facility_row(record)),
         EntityKind::Building => upsert_table_row(value, "buildings", building_row(record)),
         EntityKind::Zone | EntityKind::Hazard => upsert_table_row(value, "zones", zone_row(record)),
-        EntityKind::Custom(_) | _ => {
-            upsert_table_row(value, "entity_kinds", entity_kind_row(record))
-        }
+        _ => upsert_table_row(value, "entity_kinds", entity_kind_row(record)),
     }
 }
 
