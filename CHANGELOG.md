@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Entity model stabilization:** `scripts/entity_model_smoke.sh` CI job covering graph, traceability, query, and mutation APIs; Control Center Entities tab write UI (register, tag, relate, sync); TypeScript SDK entity mutation helpers (`registerEntity`, `tagEntity`, `relateEntities`, `syncEntities`, `entityGraph`, `entityTraceability`, `queryEntities`).
 - **Entity Model Phase 5 — write path:** mutation overlay store with `POST /v1/entities/register`, `{id}/tags`, `relationships`, and `sync`; audit events; TOML sync to facilities/overrides fragments; SDK helpers.
 - **Entity Model Phase 4 — industry extensions:** facility/building/zone TOML projection, ADAS `vehicle` entity kind + compliance metadata, flat hazard zones and spatial sessions, package `entity_kinds` manifest section, and `spanda.facilities.toml` config fragment.
 - **Entity Model Phase 3 — graph unification:** align `spanda-graph` dependency nodes with entity IDs (`entity_id` metadata); merge digital-thread device links and program-graph edges into the entity relationship store via `apply_traceability_overlay`; unified `GET /v1/entities/traceability` query across entity registry, program graph, and digital thread.

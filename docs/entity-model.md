@@ -176,6 +176,12 @@ Cross-references:
 - [x] Entity mutation APIs (register, tag, relate) with audit
 - [x] Bi-directional sync from entity registry to TOML fragments (`POST /v1/entities/sync`)
 
+### Stabilization (Complete)
+
+- [x] CI smoke script `scripts/entity_model_smoke.sh` (graph, traceability, query, mutations, TypeScript SDK)
+- [x] Control Center **Entities** tab write UI (register, tag, relate, sync) with API key auth
+- [x] TypeScript SDK parity: `registerEntity`, `tagEntity`, `relateEntities`, `syncEntities`, `entityGraph`, `entityTraceability`, `queryEntities`
+
 ### Compatibility guarantees
 
 1. **No breaking changes** to existing REST routes or TOML schemas in Phase 1–3
