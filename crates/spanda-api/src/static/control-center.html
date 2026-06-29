@@ -679,10 +679,16 @@
     async function loadSmartSpaces() {
       try {
         errEl.hidden = true;
-        const [summary, dashboard, readiness] = await Promise.all([
+        const [summary, dashboard, readiness, devices, health, security, environment, energyDetail, floorMap] = await Promise.all([
           api("/v1/smart-spaces/summary"),
           api("/v1/dashboard"),
           api("/v1/facilities/tower-demo/readiness").catch(() => api("/v1/facilities/home-demo/readiness")),
+          api("/v1/smart-spaces/devices?facility_id=tower-demo").catch(() => ({})),
+          api("/v1/facilities/tower-demo/health").catch(() => ({})),
+          api("/v1/facilities/tower-demo/security").catch(() => ({})),
+          api("/v1/zones/room-lobby/environment").catch(() => ({})),
+          api("/v1/energy/systems/battery-001").catch(() => ({})),
+          api("/v1/facilities/tower-demo/floor-map").catch(() => ({})),
         ]);
         const facilities = summary.facilities || {};
         const energy = summary.energy || {};
@@ -725,8 +731,18 @@
         let occupancyBlock = "";
         try {
           const occ = await api("/v1/zones/floor-12/occupancy");
-          occupancyBlock = `<h3>Sample occupancy (floor-12)</h3><pre>${JSON.stringify(occ, null, 2)}</pre>`;
+          const timelineRows = (occ.timeline || []).map((p) =>
+            `<tr><td>${p.offset_minutes}</td><td>${p.count}</td><td>${p.flow}</td></tr>`
+          ).join("");
+          occupancyBlock = `<h3>Occupancy (floor-12)</h3><pre>${JSON.stringify(occ.occupancy, null, 2)}</pre>
+            <h4>Timeline</h4><table><thead><tr><th>Offset min</th><th>Count</th><th>Flow</th></tr></thead><tbody>${timelineRows}</tbody></table>`;
         } catch (_) { /* optional */ }
+        const deviceRows = (devices.devices || []).map((d) =>
+          `<tr><td>${d.id}</td><td>${d.type || "—"}</td><td>${d.zone || "—"}</td><td>${d.health_status || "—"}</td></tr>`
+        ).join("");
+        const floorRows = (floorMap.zones || []).map((n) =>
+          `<tr><td>${n.zone?.name || n.zone?.id || "—"}</td><td>${n.zone?.parent || "—"}</td><td>${n.device_count || 0}</td></tr>`
+        ).join("");
         document.getElementById("tab-smart-spaces").innerHTML = `
           <h2>Smart Spaces &amp; Ambient Intelligence</h2>
           <p class="subtitle">Serve with <code>--config examples/solutions/smart-spaces/spanda.toml --program smart-building/floor_readiness.sd</code></p>
@@ -755,6 +771,18 @@
           ${factorChart || "<p>No factor chart</p>"}
           <h4>Trust inventory</h4>
           <table><thead><tr><th>Device</th><th>Trust</th><th>Health</th><th>Provider</th></tr></thead><tbody>${trustRows || "<tr><td colspan=4>none</td></tr>"}</tbody></table>
+          <h3>Device inventory</h3>
+          <table><thead><tr><th>ID</th><th>Type</th><th>Zone</th><th>Health</th></tr></thead><tbody>${deviceRows || "<tr><td colspan=4>none</td></tr>"}</tbody></table>
+          <h3>Facility health</h3>
+          <pre>${JSON.stringify(health, null, 2)}</pre>
+          <h3>Security</h3>
+          <pre>${JSON.stringify(security, null, 2)}</pre>
+          <h3>Environmental</h3>
+          <pre>${JSON.stringify(environment, null, 2)}</pre>
+          <h3>Energy detail</h3>
+          <pre>${JSON.stringify(energyDetail, null, 2)}</pre>
+          <h3>Floor map</h3>
+          <table><thead><tr><th>Zone</th><th>Parent</th><th>Devices</th></tr></thead><tbody>${floorRows || "<tr><td colspan=3>none</td></tr>"}</tbody></table>
           <h3>Emergency &amp; continuity</h3>
           <table><thead><tr><th>Primary</th><th>Backup</th><th>On failure</th></tr></thead><tbody>${continuityRows || "<tr><td colspan=3>none</td></tr>"}</tbody></table>
           <p>API: <code>GET /v1/smart-spaces/summary</code> · <code>GET /v1/facilities</code> · <code>GET /v1/energy/systems</code> · <code>GET /v1/emergency/status</code> · <code>GET /v1/zones/{id}/occupancy</code></p>`;

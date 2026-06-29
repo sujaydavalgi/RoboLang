@@ -544,15 +544,33 @@ export function ControlCenterPanel({ apiBase }: Props) {
   const loadSmartSpaces = async () => {
     setBusy(true);
     try {
-      const [summaryRes, readinessRes, dashboardRes, occupancyRes] = await Promise.all([
+      const facility = "tower-demo";
+      const [
+        summaryRes,
+        readinessRes,
+        dashboardRes,
+        occupancyRes,
+        devicesRes,
+        healthRes,
+        securityRes,
+        environmentRes,
+        energyRes,
+        floorMapRes,
+      ] = await Promise.all([
         fetch(`${base}/v1/smart-spaces/summary`),
-        fetch(`${base}/v1/facilities/tower-demo/readiness`).catch(() =>
+        fetch(`${base}/v1/facilities/${facility}/readiness`).catch(() =>
           fetch(`${base}/v1/facilities/home-demo/readiness`),
         ),
         fetch(`${base}/v1/dashboard`),
         fetch(`${base}/v1/zones/floor-12/occupancy`).catch(() =>
           fetch(`${base}/v1/zones/room-living/occupancy`),
         ),
+        fetch(`${base}/v1/smart-spaces/devices?facility_id=${facility}`),
+        fetch(`${base}/v1/facilities/${facility}/health`),
+        fetch(`${base}/v1/facilities/${facility}/security`),
+        fetch(`${base}/v1/zones/room-lobby/environment`),
+        fetch(`${base}/v1/energy/systems/battery-001`),
+        fetch(`${base}/v1/facilities/${facility}/floor-map`),
       ]);
       if (!summaryRes.ok) throw new Error(`smart-spaces summary ${summaryRes.status}`);
       const summary = await summaryRes.json();
@@ -560,6 +578,12 @@ export function ControlCenterPanel({ apiBase }: Props) {
         ...summary,
         dashboard: dashboardRes.ok ? await dashboardRes.json() : null,
         occupancy: occupancyRes.ok ? await occupancyRes.json() : null,
+        devices: devicesRes.ok ? await devicesRes.json() : null,
+        facilityHealth: healthRes.ok ? await healthRes.json() : null,
+        facilitySecurity: securityRes.ok ? await securityRes.json() : null,
+        environment: environmentRes.ok ? await environmentRes.json() : null,
+        energyDetail: energyRes.ok ? await energyRes.json() : null,
+        floorMap: floorMapRes.ok ? await floorMapRes.json() : null,
       });
       if (readinessRes.ok) {
         setSmartSpacesReadiness(await readinessRes.json());
@@ -1839,6 +1863,23 @@ export function ControlCenterPanel({ apiBase }: Props) {
                   (smartSpacesSummary.wearables as Record<string, unknown>[]) ?? [];
                 const trustRows =
                   (smartSpacesSummary.trust_entries as Record<string, unknown>[]) ?? [];
+                const deviceRows =
+                  (smartSpacesSummary.devices as Record<string, unknown> | null)?.devices as
+                    | Record<string, unknown>[]
+                    | undefined ?? [];
+                const facilityHealth = smartSpacesSummary.facilityHealth as Record<
+                  string,
+                  unknown
+                > | null;
+                const facilitySecurity = smartSpacesSummary.facilitySecurity as Record<
+                  string,
+                  unknown
+                > | null;
+                const environment = smartSpacesSummary.environment as Record<string, unknown> | null;
+                const energyDetail = smartSpacesSummary.energyDetail as Record<string, unknown> | null;
+                const floorMap = smartSpacesSummary.floorMap as Record<string, unknown> | null;
+                const floorZones =
+                  (floorMap?.zones as Record<string, unknown>[]) ?? [];
                 const factorChart =
                   (smartSpacesReadiness?.factors as Record<string, unknown>[]) ??
                   (smartSpacesReadiness?.factor_chart as Record<string, unknown>[]) ??
@@ -1987,8 +2028,107 @@ export function ControlCenterPanel({ apiBase }: Props) {
                     </table>
                     {occupancy && (
                       <>
-                        <h3>Sample occupancy</h3>
-                        <pre>{JSON.stringify(occupancy, null, 2)}</pre>
+                        <h3>Occupancy &amp; flow</h3>
+                        <pre>{JSON.stringify(occupancy.occupancy, null, 2)}</pre>
+                        <h4>Presence timeline</h4>
+                        <table>
+                          <thead>
+                            <tr>
+                              <th>Offset (min)</th>
+                              <th>Count</th>
+                              <th>Flow</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {((occupancy.timeline as Record<string, unknown>[]) ?? []).map(
+                              (point, idx) => (
+                                <tr key={idx}>
+                                  <td>{String(point.offset_minutes)}</td>
+                                  <td>{String(point.count)}</td>
+                                  <td>{String(point.flow)}</td>
+                                </tr>
+                              ),
+                            )}
+                          </tbody>
+                        </table>
+                      </>
+                    )}
+                    <h3>Device inventory</h3>
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>ID</th>
+                          <th>Type</th>
+                          <th>Zone</th>
+                          <th>Health</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {deviceRows.map((device) => (
+                          <tr key={String(device.id)}>
+                            <td>{String(device.id)}</td>
+                            <td>{String(device.type ?? "—")}</td>
+                            <td>{String(device.zone ?? "—")}</td>
+                            <td>{String(device.health_status ?? "—")}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                    {facilityHealth && (
+                      <>
+                        <h3>Device pool health</h3>
+                        <p>
+                          Overall: <strong>{String(facilityHealth.overall_status)}</strong>
+                        </p>
+                        <pre>{JSON.stringify(facilityHealth.device_pool, null, 2)}</pre>
+                      </>
+                    )}
+                    {facilitySecurity && (
+                      <>
+                        <h3>Security &amp; access</h3>
+                        <p>
+                          Lockdown: {String(facilitySecurity.lockdown_active)} · Package trust min:{" "}
+                          {String(facilitySecurity.package_trust_min ?? "—")}
+                        </p>
+                        <pre>{JSON.stringify(facilitySecurity.locks_and_cameras, null, 2)}</pre>
+                      </>
+                    )}
+                    {environment && (
+                      <>
+                        <h3>Environmental (room-lobby)</h3>
+                        <pre>{JSON.stringify(environment.readings, null, 2)}</pre>
+                      </>
+                    )}
+                    {energyDetail && (
+                      <>
+                        <h3>Energy detail (battery-001)</h3>
+                        <pre>{JSON.stringify(energyDetail.detail, null, 2)}</pre>
+                      </>
+                    )}
+                    {floorZones.length > 0 && (
+                      <>
+                        <h3>Floor map</h3>
+                        <table>
+                          <thead>
+                            <tr>
+                              <th>Zone</th>
+                              <th>Parent</th>
+                              <th>Devices</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {floorZones.map((node) => {
+                              const zone = (node.zone as Record<string, unknown>) ?? {};
+                              return (
+                                <tr key={String(zone.id)}>
+                                  <td>{String(zone.name ?? zone.id)}</td>
+                                  <td>{String(zone.parent ?? "—")}</td>
+                                  <td>{String(node.device_count ?? 0)}</td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
                       </>
                     )}
                     {smartSpacesReadiness && (
