@@ -707,6 +707,31 @@ pub fn entity_trust_json(state: &ControlCenterState, entity_id: &str) -> String 
     entity_trust(state, entity_id).body
 }
 
+/// JSON body for gRPC `GetEntityGraph`.
+pub fn entity_graph_json(state: &ControlCenterState) -> String {
+    entity_graph(state).body
+}
+
+/// JSON body for gRPC `GetEntityTraceability`.
+pub fn entity_traceability_json(state: &ControlCenterState, query: &str) -> String {
+    entity_traceability(state, query).body
+}
+
+/// JSON body for gRPC `QueryEntities`.
+pub fn entity_query_json(state: &ControlCenterState, body: &str) -> String {
+    entity_query(state, body).body
+}
+
+/// JSON body for gRPC `GetEntityRelationships`.
+pub fn entity_relationships_json(state: &ControlCenterState, entity_id: &str) -> String {
+    entity_relationships(state, entity_id).body
+}
+
+/// JSON body for gRPC `GetEntityReadiness`.
+pub fn entity_readiness_json(state: &ControlCenterState, entity_id: &str) -> String {
+    entity_readiness(state, entity_id).body
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

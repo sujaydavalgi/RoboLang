@@ -1,6 +1,6 @@
 //! gRPC server smoke tests for Control Center.
 use spanda_api::grpc::spanda_v1::control_center_client::ControlCenterClient;
-use spanda_api::grpc::spanda_v1::{DeviceBodyRequest, DeviceIdRequest};
+use spanda_api::grpc::spanda_v1::{DeviceBodyRequest, DeviceIdRequest, EntityBodyRequest};
 use spanda_api::grpc::spanda_v1::{Empty, QueryRequest, ReadinessRequest, TrustPackageRequest};
 use spanda_api::{run_control_center_server, ControlCenterOptions};
 use std::net::TcpListener;
@@ -375,4 +375,88 @@ async fn grpc_sdk_program_and_entity_endpoints() {
         "unexpected body: {}",
         readiness.json
     );
+}
+
+#[tokio::test]
+async fn grpc_entity_graph_and_mutations_with_warehouse_config() {
+    let _guard = GRPC_TEST_LOCK.lock().unwrap();
+    std::env::set_var("SPANDA_API_KEY", "grpc-device-test-key");
+    let warehouse_src = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .unwrap()
+        .join("spanda-config/tests/fixtures/warehouse");
+    let temp_dir = tempfile::tempdir().expect("temp config dir");
+    copy_dir_all(&warehouse_src, temp_dir.path());
+    let program = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .unwrap()
+        .parent()
+        .unwrap()
+        .join("examples/showcase/compliance/defense_rover.sd");
+    let http_port = pick_port();
+    let grpc_port = pick_port();
+    let options = ControlCenterOptions {
+        bind: format!("127.0.0.1:{http_port}"),
+        grpc_bind: Some(format!("127.0.0.1:{grpc_port}")),
+        config_path: Some(temp_dir.path().to_path_buf()),
+        program_path: Some(program),
+        once: true,
+        timeout_ms: 500,
+        ..Default::default()
+    };
+    let grpc_bind = spawn_control_center(options);
+    let _temp_dir = temp_dir;
+    let mut client = connect(&grpc_bind).await;
+
+    let graph = client
+        .get_entity_graph(Empty {})
+        .await
+        .expect("entity graph")
+        .into_inner();
+    assert!(graph.json.contains("graph"));
+
+    let trace = client
+        .get_entity_traceability(QueryRequest {
+            query: "entity_id=rover-001".into(),
+        })
+        .await
+        .expect("entity traceability")
+        .into_inner();
+    assert!(trace.json.contains("traceability"));
+
+    let mut register_req = tonic::Request::new(spanda_api::grpc::spanda_v1::JsonBodyRequest {
+        body_json: r#"{
+            "id": "grpc-smoke-bay",
+            "entity_type": "calibration_station",
+            "display_name": "gRPC Smoke Bay",
+            "parent_id": "warehouse-a",
+            "capabilities": ["calibrate"]
+        }"#
+        .into(),
+    });
+    register_req.metadata_mut().insert(
+        "authorization",
+        tonic::metadata::MetadataValue::try_from("Bearer grpc-device-test-key").unwrap(),
+    );
+    let registered = client
+        .register_entity(register_req)
+        .await
+        .expect("register entity")
+        .into_inner();
+    assert!(registered.json.contains("grpc-smoke-bay"));
+
+    let mut tag_req = tonic::Request::new(EntityBodyRequest {
+        entity_id: "grpc-smoke-bay".into(),
+        body_json: r#"{"add":["grpc-smoke"]}"#.into(),
+    });
+    tag_req.metadata_mut().insert(
+        "authorization",
+        tonic::metadata::MetadataValue::try_from("Bearer grpc-device-test-key").unwrap(),
+    );
+    let tagged = client
+        .tag_entity(tag_req)
+        .await
+        .expect("tag entity")
+        .into_inner();
+    assert!(tagged.json.contains("grpc-smoke"));
 }

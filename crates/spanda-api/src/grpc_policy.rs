@@ -6,7 +6,7 @@ use serde_json::{json, Value};
 pub const PROTO_PACKAGE: &str = "spanda.v1";
 
 /// Semver for the published `control_center.proto` contract (independent of crate version).
-pub const PROTO_SEMVER: &str = "1.0.1";
+pub const PROTO_SEMVER: &str = "1.0.2";
 
 /// Relative path to the proto file from the `spanda-api` crate root.
 pub const PROTO_FILE: &str = "proto/spanda/v1/control_center.proto";

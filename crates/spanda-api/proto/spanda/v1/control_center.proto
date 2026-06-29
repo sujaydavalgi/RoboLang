@@ -1,5 +1,5 @@
 syntax = "proto3";
-// Spanda Control Center gRPC API — proto semver 1.0.1 (package spanda.v1).
+// Spanda Control Center gRPC API — proto semver 1.0.2 (package spanda.v1).
 package spanda.v1;
 
 message Empty {}
@@ -57,6 +57,11 @@ message ApprovalBodyRequest {
 
 message EntityIdRequest {
   string entity_id = 1;
+}
+
+message EntityBodyRequest {
+  string entity_id = 1;
+  string body_json = 2;
 }
 
 service ControlCenter {
@@ -133,4 +138,13 @@ service ControlCenter {
   rpc GetEntity(EntityIdRequest) returns (JsonResponse);
   rpc GetEntityHealth(EntityIdRequest) returns (JsonResponse);
   rpc GetEntityTrust(EntityIdRequest) returns (JsonResponse);
+  rpc GetEntityGraph(Empty) returns (JsonResponse);
+  rpc GetEntityTraceability(QueryRequest) returns (JsonResponse);
+  rpc QueryEntities(JsonBodyRequest) returns (JsonResponse);
+  rpc GetEntityRelationships(EntityIdRequest) returns (JsonResponse);
+  rpc GetEntityReadiness(EntityIdRequest) returns (JsonResponse);
+  rpc RegisterEntity(JsonBodyRequest) returns (JsonResponse);
+  rpc TagEntity(EntityBodyRequest) returns (JsonResponse);
+  rpc RelateEntities(JsonBodyRequest) returns (JsonResponse);
+  rpc SyncEntities(Empty) returns (JsonResponse);
 }

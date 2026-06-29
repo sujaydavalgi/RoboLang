@@ -10,9 +10,9 @@ pub mod spanda_v1 {
 
 use spanda_v1::control_center_server::{ControlCenter, ControlCenterServer};
 use spanda_v1::{
-    ApprovalBodyRequest, DeviceBodyRequest, DeviceIdRequest, DriftRequest, Empty, EntityIdRequest,
-    HealthResponse, IncidentBodyRequest, IncidentIdRequest, JsonBodyRequest, JsonResponse,
-    QueryRequest, ReadinessRequest, TrustPackageRequest,
+    ApprovalBodyRequest, DeviceBodyRequest, DeviceIdRequest, DriftRequest, Empty, EntityBodyRequest,
+    EntityIdRequest, HealthResponse, IncidentBodyRequest, IncidentIdRequest, JsonBodyRequest,
+    JsonResponse, QueryRequest, ReadinessRequest, TrustPackageRequest,
 };
 
 struct GrpcControlCenter {
@@ -948,6 +948,117 @@ impl ControlCenter for GrpcControlCenter {
         let entity_id = request.into_inner().entity_id;
         self.with_state(|state| crate::sdk_ops::entity_trust_json(state, &entity_id))
             .map(Response::new)
+    }
+
+    async fn get_entity_graph(
+        &self,
+        request: Request<Empty>,
+    ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
+        self.with_state(crate::sdk_ops::entity_graph_json)
+            .map(Response::new)
+    }
+
+    async fn get_entity_traceability(
+        &self,
+        request: Request<QueryRequest>,
+    ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
+        let query = request.into_inner().query;
+        self.with_state(|state| crate::sdk_ops::entity_traceability_json(state, &query))
+            .map(Response::new)
+    }
+
+    async fn query_entities(
+        &self,
+        request: Request<JsonBodyRequest>,
+    ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
+        let body = request.into_inner().body_json;
+        self.with_state(|state| crate::sdk_ops::entity_query_json(state, &body))
+            .map(Response::new)
+    }
+
+    async fn get_entity_relationships(
+        &self,
+        request: Request<EntityIdRequest>,
+    ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
+        let entity_id = request.into_inner().entity_id;
+        self.with_state(|state| crate::sdk_ops::entity_relationships_json(state, &entity_id))
+            .map(Response::new)
+    }
+
+    async fn get_entity_readiness(
+        &self,
+        request: Request<EntityIdRequest>,
+    ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
+        let entity_id = request.into_inner().entity_id;
+        self.with_state(|state| crate::sdk_ops::entity_readiness_json(state, &entity_id))
+            .map(Response::new)
+    }
+
+    async fn register_entity(
+        &self,
+        request: Request<JsonBodyRequest>,
+    ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
+        let ctx = self.rbac_from_request(&request);
+        let body = request.into_inner().body_json;
+        let json = self
+            .with_state_mut(|state| {
+                crate::entity_mutations::entity_register_json(state, &body, ctx.as_ref())
+            })?
+            .json;
+        self.respond_mutation("RegisterEntity", json, ctx)
+    }
+
+    async fn tag_entity(
+        &self,
+        request: Request<EntityBodyRequest>,
+    ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
+        let ctx = self.rbac_from_request(&request);
+        let inner = request.into_inner();
+        let json = self
+            .with_state_mut(|state| {
+                crate::entity_mutations::entity_tag_json(
+                    state,
+                    &inner.entity_id,
+                    &inner.body_json,
+                    ctx.as_ref(),
+                )
+            })?
+            .json;
+        self.respond_mutation("TagEntity", json, ctx)
+    }
+
+    async fn relate_entities(
+        &self,
+        request: Request<JsonBodyRequest>,
+    ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
+        let ctx = self.rbac_from_request(&request);
+        let body = request.into_inner().body_json;
+        let json = self
+            .with_state_mut(|state| {
+                crate::entity_mutations::entity_relate_json(state, &body, ctx.as_ref())
+            })?
+            .json;
+        self.respond_mutation("RelateEntities", json, ctx)
+    }
+
+    async fn sync_entities(
+        &self,
+        request: Request<Empty>,
+    ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
+        let ctx = self.rbac_from_request(&request);
+        let json = self
+            .with_state_mut(|state| crate::entity_mutations::entity_sync_json(state, ctx.as_ref()))?
+            .json;
+        self.respond_mutation("SyncEntities", json, ctx)
     }
 }
 

@@ -585,6 +585,25 @@ pub fn rpc_gateway(state: &mut ControlCenterState, body: &str) -> HttpResponse {
             serde_json::from_str(&crate::sdk_ops::entity_trust_json(state, entity_id))
                 .unwrap_or_default()
         }
+        "spanda.v1.ControlCenter/GetEntityGraph" => {
+            serde_json::from_str(&crate::sdk_ops::entity_graph_json(state)).unwrap_or_default()
+        }
+        "spanda.v1.ControlCenter/GetEntityTraceability" => {
+            serde_json::from_str(&crate::sdk_ops::entity_traceability_json(state, query))
+                .unwrap_or_default()
+        }
+        "spanda.v1.ControlCenter/QueryEntities" => {
+            serde_json::from_str(&crate::sdk_ops::entity_query_json(state, body_json))
+                .unwrap_or_default()
+        }
+        "spanda.v1.ControlCenter/GetEntityRelationships" => {
+            serde_json::from_str(&crate::sdk_ops::entity_relationships_json(state, entity_id))
+                .unwrap_or_default()
+        }
+        "spanda.v1.ControlCenter/GetEntityReadiness" => {
+            serde_json::from_str(&crate::sdk_ops::entity_readiness_json(state, entity_id))
+                .unwrap_or_default()
+        }
         "spanda.v1.ControlCenter/EvaluateProgramReadiness" => {
             serde_json::from_str(&crate::sdk_ops::program_readiness_json(state, body_json))
                 .unwrap_or_default()

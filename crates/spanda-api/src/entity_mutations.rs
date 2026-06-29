@@ -192,3 +192,36 @@ fn run_entity_sync(
     state.reload_config()?;
     Ok(result)
 }
+
+/// JSON body for gRPC `RegisterEntity`.
+pub fn entity_register_json(
+    state: &mut ControlCenterState,
+    body: &str,
+    ctx: Option<&RbacContext>,
+) -> String {
+    entity_register(state, body, ctx).body
+}
+
+/// JSON body for gRPC `TagEntity`.
+pub fn entity_tag_json(
+    state: &mut ControlCenterState,
+    entity_id: &str,
+    body: &str,
+    ctx: Option<&RbacContext>,
+) -> String {
+    entity_tag(state, entity_id, body, ctx).body
+}
+
+/// JSON body for gRPC `RelateEntities`.
+pub fn entity_relate_json(
+    state: &mut ControlCenterState,
+    body: &str,
+    ctx: Option<&RbacContext>,
+) -> String {
+    entity_relate(state, body, ctx).body
+}
+
+/// JSON body for gRPC `SyncEntities`.
+pub fn entity_sync_json(state: &mut ControlCenterState, ctx: Option<&RbacContext>) -> String {
+    entity_sync(state, ctx).body
+}
