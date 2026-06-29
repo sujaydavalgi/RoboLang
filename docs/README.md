@@ -44,6 +44,7 @@
 | [platform-services.md](./platform-services.md) | **Platform service boundaries** |
 | [event-model.md](./event-model.md) | **Common event model** |
 | [design-principles.md](./design-principles.md) | **Architectural design principles** |
+| [architecture-waiver-burn-down.md](./architecture-waiver-burn-down.md) | **Waiver burn-down and SCC refactor plan** |
 | [lean-core.md](./lean-core.md) | **Lean-core workspace architecture (Phases 1–17)** |
 | [crates/README.md](../crates/README.md) | **Workspace crate index and dependency rules** |
 | [lean-core-roadmap.md](./lean-core-roadmap.md) | **Phased plan — Phases 1–35 complete; crate extraction and verification/DX** |

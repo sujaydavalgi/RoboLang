@@ -162,10 +162,10 @@ Source of truth: [`scripts/architecture-manifest.yaml`](../scripts/architecture-
 
 | Blueprint | Path | Owner |
 |-----------|------|-------|
-| Warehouse | `examples/solutions/warehouse/` | solutions |
-| SAR | `examples/solutions/sar/` | solutions |
+| Warehouse | `examples/end_to_end/warehouse_delivery/` | solutions |
+| SAR | `examples/solutions/spatial-computing/search-and-rescue-ar/` | solutions |
 | ADAS | `examples/solutions/adas/` | solutions |
-| Healthcare | `examples/solutions/healthcare/` | solutions |
+| Healthcare | `examples/solutions/spatial-computing/wearable-health/` | solutions |
 | Agriculture | `examples/solutions/agriculture/` | solutions |
 | Environmental | `examples/solutions/environmental-monitoring/` | solutions |
 | Maritime | `examples/solutions/maritime/` | solutions |

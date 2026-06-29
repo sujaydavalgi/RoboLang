@@ -147,6 +147,9 @@ Architecture governance is enforced by `scripts/validate_architecture.py`:
 | Layer violations | Upward dependencies fail CI unless listed in `dependency_waivers` |
 | Circular dependencies | New strongly connected components fail CI; baseline SCC documented |
 | Duplicate entity types | Warn if forbidden types appear outside `spanda-config` |
+| TypeScript layer imports | Fail on new upward imports (37 baseline waivers) |
+| Manifest YAML/JSON sync | Fail when `.json` is stale |
+| Blueprint governance | Fail when blueprints contain forbidden artifacts |
 | Public API docs | Covered by `scripts/validate_documentation.py` |
 
 ```bash
@@ -189,3 +192,4 @@ Known upward dependencies and the compile-run-verify SCC are tracked as waivers 
 | [platform-services.md](./platform-services.md) | Service responsibilities and boundaries |
 | [event-model.md](./event-model.md) | Common event schema and publishers |
 | [design-principles.md](./design-principles.md) | Guiding principles for contributors |
+| [architecture-waiver-burn-down.md](./architecture-waiver-burn-down.md) | Incremental refactor plan for baseline waivers |

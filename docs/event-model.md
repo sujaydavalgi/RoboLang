@@ -175,7 +175,7 @@ See [fleet-distributed.md](./fleet-distributed.md).
 
 ## Event envelope
 
-Recommended JSON shape for REST, telemetry store, and audit:
+Recommended JSON shape for REST, telemetry store, and audit. Rust implementations should use `spanda_audit::PlatformEvent` (`crates/spanda-audit/src/platform_event.rs`).
 
 ```json
 {

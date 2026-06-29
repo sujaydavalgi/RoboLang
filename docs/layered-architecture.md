@@ -185,10 +185,10 @@ Industry compositions under `examples/solutions/`:
 
 | Blueprint | Path |
 |-----------|------|
-| Warehouse | `examples/solutions/warehouse/` |
-| SAR | `examples/solutions/sar/` |
+| Warehouse | `examples/end_to_end/warehouse_delivery/` |
+| SAR | `examples/solutions/spatial-computing/search-and-rescue-ar/` |
 | ADAS | `examples/solutions/adas/` |
-| Healthcare | `examples/solutions/healthcare/` |
+| Healthcare | `examples/solutions/spatial-computing/wearable-health/` |
 | Agriculture | `examples/solutions/agriculture/` |
 | Environmental | `examples/solutions/environmental-monitoring/` |
 | Maritime | `examples/solutions/maritime/` |
