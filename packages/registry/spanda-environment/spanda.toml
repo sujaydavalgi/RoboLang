@@ -1,0 +1,8 @@
+[package]
+name = "spanda-environment"
+version = "0.1.0"
+description = "Indoor air quality and environmental sensor providers (stub)"
+license = "Apache-2.0"
+
+[capabilities]
+environment = ["telemetry.read", "threshold.alert", "baseline.drift"]

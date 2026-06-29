@@ -1,0 +1,8 @@
+[package]
+name = "spanda-home-assistant"
+version = "0.1.0"
+description = "Home Assistant REST/WebSocket interop bridge (stub)"
+license = "Apache-2.0"
+
+[capabilities]
+bridge = ["state.read", "service.call", "event.subscribe"]

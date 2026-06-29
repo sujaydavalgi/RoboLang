@@ -1,0 +1,8 @@
+[package]
+name = "spanda-energy"
+version = "0.1.0"
+description = "Solar, battery, EV, and demand-response energy providers (stub)"
+license = "Apache-2.0"
+
+[capabilities]
+energy = ["telemetry.read", "generation.control", "storage.control", "load.shed", "ev.schedule"]

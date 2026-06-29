@@ -1,0 +1,8 @@
+[package]
+name = "spanda-smart-locks"
+version = "0.1.0"
+description = "Smart lock and access-control providers (stub)"
+license = "Apache-2.0"
+
+[capabilities]
+access = ["lock.command", "state.read", "audit.event"]

@@ -1,0 +1,8 @@
+[package]
+name = "spanda-building"
+version = "0.1.0"
+description = "Building and facility entity helpers for Smart Spaces blueprints (stub)"
+license = "Apache-2.0"
+
+[capabilities]
+building = ["entity.facility", "entity.zone", "readiness.rollup"]

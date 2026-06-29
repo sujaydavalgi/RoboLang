@@ -1,0 +1,8 @@
+[package]
+name = "spanda-knx"
+version = "0.1.0"
+description = "KNX building bus adapter (stub)"
+license = "Apache-2.0"
+
+[capabilities]
+iot = ["telemetry.read", "command.send", "group.address"]
