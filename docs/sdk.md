@@ -7,7 +7,7 @@ Official SDKs integrate with Spanda through the **Control Center API** (`spanda-
 | SDK | Package | Priority | Status |
 |-----|---------|----------|--------|
 | Rust | [`spanda-sdk`](https://crates.io/crates/spanda-sdk) on crates.io | P0 | Experimental (v0.4.0 published) |
-| Python | [`spanda-sdk`](https://pypi.org/project/spanda-sdk/) on PyPI | P1 | Experimental (v0.4.0 published) |
+| Python | [`spanda-sdk`](https://pypi.org/project/spanda-sdk/) on PyPI | P1 | Experimental (v0.4.1 — publish via `sdk-python-v0.4.1`) |
 | TypeScript | [`@davalgi-spanda/sdk`](https://www.npmjs.com/package/@davalgi-spanda/sdk) on npm | P2 | Experimental (v0.4.1 published) |
 | Web panel | [`@davalgi-spanda/web`](https://www.npmjs.com/package/@davalgi-spanda/web) on npm | — | Experimental (publish via `npm-web-v*`) |
 

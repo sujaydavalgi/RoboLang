@@ -49,6 +49,7 @@
 | [how-packages-work.md](./how-packages-work.md) | **Package loading pipeline, provenance, and CLI workflow** |
 | [configuration.md](./configuration.md) | **Cascading TOML configuration and ResolvedSystemConfig** |
 | [entity-model.md](./entity-model.md) | **Unified Entity Model — foundational platform abstraction** |
+| [entity-model-stable-promotion.md](./entity-model-stable-promotion.md) | **Entity model Experimental → Stable promotion** |
 | [entity-registry.md](./entity-registry.md) | **Entity registry — inventory, lookup, filtering** |
 | [entity-graph.md](./entity-graph.md) | **Entity graph — traversal, impact, visualization** |
 | [entity-relationships.md](./entity-relationships.md) | **Entity relationship taxonomy** |
