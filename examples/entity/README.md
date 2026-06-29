@@ -79,9 +79,7 @@ const report = await client.verifyEntity("rover-001", {
 
 ## Related docs
 
+- [entity-overview.md](../../docs/entity-overview.md)
+- [entity-apis.md](../../docs/entity-apis.md)
+- [entity-sdk.md](../../docs/entity-sdk.md)
 - [entity-model.md](../../docs/entity-model.md)
-- [entity-verification.md](../../docs/entity-verification.md)
-- [entity-readiness.md](../../docs/entity-readiness.md)
-- [entity-health.md](../../docs/entity-health.md)
-- [entity-trust.md](../../docs/entity-trust.md)
-- [entity-integration-report.md](../../docs/entity-integration-report.md)

@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Entity API and SDK reference docs:** [entity-apis.md](docs/entity-apis.md) (REST/gRPC endpoint reference) and [entity-sdk.md](docs/entity-sdk.md) (Rust, TypeScript, Python method parity and examples).
 - **Entity model examples (Phase 15):** eight runnable programs under `examples/entity/` (graph, query, relationships, health, readiness, trust, traceability, verify) with type-checked `.sd` sources.
 - **gRPC `VerifyEntity`:** proto semver **1.0.3**, **83 RPCs**; `GrpcClient::entity_verify` parity with `POST /v1/entities/{id}/verify`.
 - **Entity readiness, health, and trust integration (Phases 3–5):** `evaluate_entity_readiness`, `evaluate_entity_health`, and `evaluate_entity_trust` route operational engines through `EntityRegistry`; enriched `GET /v1/entities/{id}/health|readiness|trust` with `report` payloads; CLI evaluation parity; guides [entity-readiness.md](docs/entity-readiness.md), [entity-health.md](docs/entity-health.md), [entity-trust.md](docs/entity-trust.md), [entity-best-practices.md](docs/entity-best-practices.md), [entity-migration-guide.md](docs/entity-migration-guide.md).

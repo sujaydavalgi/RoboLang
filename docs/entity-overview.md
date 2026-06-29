@@ -36,6 +36,8 @@ spanda entity readiness rover-001 --config "$CONFIG"
 | Guide | Topic |
 |-------|-------|
 | [entity-model.md](./entity-model.md) | Core concepts and migration phases |
+| [entity-apis.md](./entity-apis.md) | REST and gRPC endpoint reference |
+| [entity-sdk.md](./entity-sdk.md) | Rust, TypeScript, and Python clients |
 | [entity-registry.md](./entity-registry.md) | Registry projection and inventory |
 | [entity-graph.md](./entity-graph.md) | Graph traversal and impact analysis |
 | [entity-relationships.md](./entity-relationships.md) | Relationship taxonomy |

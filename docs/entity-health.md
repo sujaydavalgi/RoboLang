@@ -40,4 +40,4 @@ spanda entity health rover-001 --program patrol.sd --json
 | Fleet members | Child robot/device rollup |
 | Program checks | `evaluate_health_checks`, `evaluate_runtime_health` |
 
-See also: [entity-readiness.md](./entity-readiness.md), [entity-model.md](./entity-model.md).
+See also: [entity-sdk.md](./entity-sdk.md), [entity-readiness.md](./entity-readiness.md), [entity-model.md](./entity-model.md).

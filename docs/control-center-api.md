@@ -46,6 +46,8 @@ These endpoints delegate to the same Rust crates as CLI commands:
 
 ## Entity registry
 
+Full entity REST/gRPC reference: [entity-apis.md](./entity-apis.md). SDK methods: [entity-sdk.md](./entity-sdk.md).
+
 Read endpoints are unauthenticated by default; mutations require Bearer `SPANDA_API_KEY`.
 
 | Endpoint | Auth | Description |

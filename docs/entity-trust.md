@@ -39,4 +39,4 @@ spanda entity trust package-spanda-gps --program patrol.sd --json
 | Robot | Contained device trust rollup |
 | Program context | `evaluate_composite_trust` (tamper/integrity) |
 
-See also: [entity-verification.md](./entity-verification.md), [entity-model.md](./entity-model.md).
+See also: [entity-sdk.md](./entity-sdk.md), [entity-verification.md](./entity-verification.md), [entity-model.md](./entity-model.md).

@@ -96,9 +96,11 @@ Capability requirements for missions continue to flow through readiness and assu
 | Lifecycle | `EntityLifecycleState` | Maps `DeviceLifecycleState` and availability |
 | Security | `EntitySecurityIdentity` | Certificates, permissions from TOML security sections |
 
-See also: [entity-verification.md](./entity-verification.md), [entity-relationships.md](./entity-relationships.md), [entity-registry.md](./entity-registry.md), [entity-graph.md](./entity-graph.md), [entity-query-language.md](./entity-query-language.md).
+See also: [entity-apis.md](./entity-apis.md), [entity-sdk.md](./entity-sdk.md), [entity-verification.md](./entity-verification.md), [entity-relationships.md](./entity-relationships.md), [entity-registry.md](./entity-registry.md), [entity-graph.md](./entity-graph.md), [entity-query-language.md](./entity-query-language.md).
 
 ## API (additive)
+
+Full REST and gRPC reference: [entity-apis.md](./entity-apis.md). SDK methods: [entity-sdk.md](./entity-sdk.md).
 
 | Method | Path | Description |
 |--------|------|-------------|
@@ -116,7 +118,7 @@ See also: [entity-verification.md](./entity-verification.md), [entity-relationsh
 | POST | `/v1/entities/relationships` | Relate two entities (Bearer) |
 | POST | `/v1/entities/sync` | Sync overlay to TOML fragments (Bearer) |
 
-**gRPC (tonic):** same JSON payloads via `GetEntityGraph`, `GetEntityTraceability`, `QueryEntities`, `GetEntityRelationships`, `GetEntityReadiness`, `RegisterEntity`, `TagEntity`, `RelateEntities`, `SyncEntities` on `--grpc-bind`. Mutations require Bearer metadata (Rust `GrpcClient` reads `SPANDA_API_KEY`). JSON-RPC gateway exposes read-only entity methods via `POST /v1/rpc`.
+**gRPC (tonic):** same JSON payloads via entity RPCs on `--grpc-bind` (proto semver **1.0.3**, **83 RPCs**). Mutations require Bearer metadata (Rust `GrpcClient` reads `SPANDA_API_KEY`). JSON-RPC gateway exposes read-only entity methods via `POST /v1/rpc`.
 
 Existing routes (`/v1/devices`, `/v1/robots`, `/v1/fleets`, `/v1/humans`, …) are unchanged.
 

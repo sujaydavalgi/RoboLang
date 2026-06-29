@@ -86,6 +86,8 @@ Exit code is non-zero when `compatible` is false.
 
 ## SDK
 
+Full method reference: [entity-sdk.md](./entity-sdk.md).
+
 | SDK | Method |
 |-----|--------|
 | Rust | `client.entity_verify(id, body)` |

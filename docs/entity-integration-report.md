@@ -102,7 +102,7 @@ scripts/entity_model_smoke.sh
 | 10 | CLI entity commands | ✅ Shipped |
 | 11 | Entity Query Language | ✅ Shipped |
 | 12 | Traceability | ✅ Shipped |
-| 13–17 | Documentation & diagrams | ✅ Shipped (overview, guides, architecture, examples) |
+| 13–17 | Documentation & diagrams | ✅ Shipped (overview, APIs, SDK, guides, architecture, examples) |
 | 15 | Example programs | ✅ `examples/entity/*.sd` (8 programs) |
 | 18 | Full workspace validation | ✅ fmt, clippy, grpc + entity smoke in CI |
 

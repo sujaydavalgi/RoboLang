@@ -40,4 +40,4 @@ spanda entity readiness rover-001 --program patrol.sd --dependencies --json
 | Device | `evaluate_device_readiness` |
 | Facility | Child entity rollup |
 
-See also: [entity-verification.md](./entity-verification.md), [entity-model.md](./entity-model.md).
+See also: [entity-sdk.md](./entity-sdk.md), [entity-verification.md](./entity-verification.md), [entity-model.md](./entity-model.md).

@@ -50,6 +50,8 @@
 | [configuration.md](./configuration.md) | **Cascading TOML configuration and ResolvedSystemConfig** |
 | [entity-model.md](./entity-model.md) | **Unified Entity Model — foundational platform abstraction** |
 | [entity-overview.md](./entity-overview.md) | **Entity model overview and documentation map** |
+| [entity-apis.md](./entity-apis.md) | **Entity REST and gRPC API reference** |
+| [entity-sdk.md](./entity-sdk.md) | **Entity SDK — Rust, TypeScript, Python** |
 | [entity-model-stable-promotion.md](./entity-model-stable-promotion.md) | **Entity model Experimental → Stable promotion** |
 | [entity-registry.md](./entity-registry.md) | **Entity registry — inventory, lookup, filtering** |
 | [entity-graph.md](./entity-graph.md) | **Entity graph — traversal, impact, visualization** |
