@@ -3,7 +3,8 @@ import { check } from "../src/types/checker.js";
 import { TypeCheckError } from "../src/types/index.js";
 import { parse } from "../src/parser/index.js";
 import { tokenize } from "../src/lexer/index.js";
-import { compile, run } from "../src/compile.js";
+import { compile } from "../src/compile.js";
+import { run } from "../src/cli/run-program.js";
 import { createDefaultSimulator } from "../src/simulator/index.js";
 import { SafetyMonitor, createSafetyConfigFromRobot } from "../src/safety/index.js";
 

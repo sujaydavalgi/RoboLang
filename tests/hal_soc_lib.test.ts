@@ -1,7 +1,8 @@
 import { describe, it, expect } from "vitest";
 import { tokenize } from "../src/lexer/index.js";
 import { parse } from "../src/parser/index.js";
-import { compile, run } from "../src/compile.js";
+import { compile } from "../src/compile.js";
+import { run } from "../src/cli/run-program.js";
 import { createDefaultSimulator } from "../src/simulator/index.js";
 import { createSimHal } from "../src/hal/index.js";
 import { getSocProfile, validateHalAgainstSoc, listSocProfiles } from "../src/soc/index.js";

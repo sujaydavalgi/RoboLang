@@ -6,7 +6,8 @@
 import type { RobotDecl, Stmt } from "../ast/nodes.js";
 import type { PipelineDecl, WatchdogDecl } from "../foundations.js";
 import { createMissionTrace, recordTraceFrame, recordTraceFrameWithState, type MissionTrace, type ReplayStateSnapshot } from "../replay.js";
-import { recordTaskHeartbeat } from "../telemetry-store.js";
+import type { TelemetrySink } from "./telemetry-sink.js";
+import { noopTelemetrySink } from "./telemetry-sink.js";
 
 const RUNTIME_TASK_COST_MS = 5;
 
@@ -106,6 +107,11 @@ export class ReliabilityRuntime {
   private topicQos = new Map<string, { deadline_ms: number }>();
   private topicLastPublishMs = new Map<string, number>();
   private topicDeadlineMisses = new Map<string, number>();
+  private telemetrySink: TelemetrySink = noopTelemetrySink;
+
+  setTelemetrySink(sink: TelemetrySink): void {
+    this.telemetrySink = sink;
+  }
 
   loadFromRobot(robot: RobotDecl, recordTrace: boolean, traceSource?: string): void {
 
@@ -197,7 +203,7 @@ export class ReliabilityRuntime {
 
   touchHeartbeat(taskName: string, simTimeMs: number, robotId?: string): void {
     this.taskHeartbeats.set(taskName, simTimeMs);
-    recordTaskHeartbeat(taskName, simTimeMs, robotId);
+    this.telemetrySink.recordTaskHeartbeat(taskName, simTimeMs, robotId);
   }
 
   configureScheduler(multiplexedTasks: number, baseTickMs: number): void {

@@ -1,7 +1,8 @@
 import { describe, it, expect } from "vitest";
 import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
-import { compile, run } from "../src/compile.js";
+import { compile } from "../src/compile.js";
+import { run } from "../src/cli/run-program.js";
 import { createDefaultSimulator } from "../src/simulator/index.js";
 import {
   validateTaskTiming,

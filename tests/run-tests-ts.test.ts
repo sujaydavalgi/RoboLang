@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { runTests, runTestsWithRegistry } from "../src/compile.js";
+import { runTests, runTestsWithRegistry } from "../src/cli/run-program.js";
 import { parse } from "../src/parser/index.js";
 import { tokenize } from "../src/lexer/index.js";
 import { ModuleRegistry } from "../src/modules/index.js";

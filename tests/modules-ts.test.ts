@@ -1,11 +1,13 @@
 import { describe, it, expect } from "vitest";
 import { tokenize } from "../src/lexer/index.js";
 import { parse } from "../src/parser/index.js";
-import { compileWithRegistry, run } from "../src/compile.js";
+import { compileWithRegistry } from "../src/compile.js";
+import { run } from "../src/cli/run-program.js";
 import { checkWithRegistry } from "../src/types/index.js";
 import { ModuleRegistry } from "../src/modules/index.js";
 import { createDefaultSimulator } from "../src/simulator/index.js";
 import { Interpreter } from "../src/runtime/interpreter.js";
+import { createProviderBackedRuntime } from "../src/provider-runtime-bridge.js";
 
 describe("TypeScript ModuleRegistry", () => {
   it("resolves cross-module export at type-check time", () => {
@@ -119,6 +121,7 @@ robot R {
       maxLoopIterations: 1,
       moduleRegistry: registry,
       officialPackages: ["spanda-gps"],
+      providerRuntime: createProviderBackedRuntime(),
     });
     interpreter.run(program);
     const metrics = interpreter.collectRuntimeMetrics();

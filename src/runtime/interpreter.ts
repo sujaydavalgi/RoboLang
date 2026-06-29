@@ -28,21 +28,14 @@ import { MemoryStore } from "../ai/MemoryStore.js";
 import { mockAnalyzeFrame, mockCameraFrame } from "../ai/MockAIProvider.js";
 import { getSocProfile } from "../soc/index.js";
 import { RoutingCommBus, type TransportKind, TlsTransportSession, effectiveTransportPolicy, transportSecurityFromBusFields, resolveBrokerUrl, type SecureCommPolicy } from "../transport/index.js";
+import type { ProviderRegistry } from "../providers/registry.js";
 import {
-  bootstrapProvidersForPackages,
-  dispatchOfficialPackageCall,
-  syncCommBusForOfficialPackages,
-  type ProviderRegistry,
-} from "../providers/index.js";
-import { parseTrustBoundary, boundaryForTransportName } from "../security/trust-boundary.js";
-import { SafetyMonitor, createSafetyConfigFromRobot, interpolatePoses } from "../safety/index.js";
-import type { SafetyZoneRuntime } from "../safety/index.js";
-import {
-  SecurityContext,
-  createRobotIdentity,
+  boundaryForTransportName,
+  parseTrustBoundary,
   parseTrustLevel,
-  type SecurePolicy,
-} from "../security/index.js";
+  type SecurePolicyConfig,
+} from "./security-types.js";
+import { SafetyMonitor, createSafetyConfigFromRobot, interpolatePoses } from "../safety/index.js";
 import {
   getNumber,
   getPoseFields,
@@ -56,10 +49,17 @@ import {
 } from "./values.js";
 import { callExternBridge } from "../ffi/subprocess-bridge.js";
 import { ConcurrencyRuntime } from "../concurrency.js";
-import { recordSensorReading, recordTopicPublish } from "../telemetry-store.js";
 import type { MissionTrace, ReplayStateSnapshot } from "../replay.js";
 import { setProviderCallObserver } from "./provider-observer.js";
 import { createHealthPollState, pollRuntimeHealthChanges, type HealthPollState } from "./health-runtime.js";
+import type { TelemetrySink } from "./telemetry-sink.js";
+import { defaultTelemetrySink } from "./telemetry-sink.js";
+import type { SecurityRuntime } from "./security-runtime.js";
+import { defaultSecurityRuntime } from "./security-runtime.js";
+import type { ProviderRuntime } from "./provider-runtime.js";
+import { defaultProviderRuntime } from "./provider-runtime.js";
+import type { AdapterRuntime } from "./adapter-runtime.js";
+import { defaultAdapterRuntime } from "./adapter-runtime.js";
 import type { ModuleRegistry } from "../modules/index.js";
 import type { ExternFnDecl, ModuleFnDecl, ResourceBudgetDecl, TaskDecl, TaskPriority } from "../foundations.js";
 import type { CaptureResult, RegexPattern } from "../regex.js";
@@ -106,7 +106,6 @@ import {
   type MissionRuntime,
 } from "../robotics-platform.js";
 import { tryPublishNav2CmdVel } from "../navigation/index.js";
-import { invokeNav2Bridge, invokeSlamBridge } from "../adapter-bridge.js";
 
 export type PoseValue = { x: number; y: number; theta: number; z: number };
 
@@ -197,6 +196,10 @@ export type InterpreterOptions = {
   /** Optional domain provider registry; defaults to package-scoped bootstrap when unset. */
   providerRegistry?: ProviderRegistry;
   persistTelemetry?: boolean;
+  telemetrySink?: TelemetrySink;
+  securityRuntime?: SecurityRuntime;
+  providerRuntime?: ProviderRuntime;
+  adapterRuntime?: AdapterRuntime;
 };
 
 export class Environment {
@@ -336,7 +339,10 @@ export class Interpreter {
   private verifyRules: Expr[] = [];
   private fusionSensors: string[] = [];
   private slamEnabled = false;
-  private security = new SecurityContext();
+  private security: SecurityRuntime;
+  private readonly telemetrySink: TelemetrySink;
+  private readonly providerRuntime: ProviderRuntime;
+  private readonly adapterRuntime: AdapterRuntime;
   private commBus = new RoutingCommBus();
   private defaultTransport: TransportKind = "local";
   private topicPathToMessageType = new Map<string, string>();
@@ -366,9 +372,14 @@ export class Interpreter {
   private providerRegistry: ProviderRegistry;
 
   constructor(private options: InterpreterOptions) {
+    this.telemetrySink = options.telemetrySink ?? defaultTelemetrySink();
+    this.security = options.securityRuntime ?? defaultSecurityRuntime();
+    this.providerRuntime = options.providerRuntime ?? defaultProviderRuntime();
+    this.adapterRuntime = options.adapterRuntime ?? defaultAdapterRuntime();
+    this.reliability.setTelemetrySink(this.telemetrySink);
     this.providerRegistry =
       options.providerRegistry ??
-      bootstrapProvidersForPackages(options.officialPackages ?? []);
+      this.providerRuntime.bootstrapProvidersForPackages(options.officialPackages ?? []);
     setProviderCallObserver((providerKey, category, durationMs, failed) => {
       this.reliability.recordProviderCall(providerKey, category, durationMs, failed);
     });
@@ -395,7 +406,7 @@ export class Interpreter {
     this.loadProgramMetadata(program);
     if (this.providerRegistry.officialPackages().length > 0) {
       this.commBus.attachProviderRegistry(this.providerRegistry);
-      syncCommBusForOfficialPackages(this.commBus, this.providerRegistry);
+      this.providerRuntime.syncCommBus(this.commBus, this.providerRegistry);
       this.options.onLog?.(
         `providers: ${this.providerRegistry.officialPackages().length} official package(s) active`,
       );
@@ -406,7 +417,7 @@ export class Interpreter {
     if (this.options.injectSecurityFaults) {
       for (const fault of ["InvalidSignature", "ExpiredCertificate", "ReplayAttack"]) {
         this.commBus.injectFault(fault);
-        this.security.securityFaultsActive.add(fault);
+        this.security.injectSecurityFault(fault);
       }
     }
     for (const robot of program.robots) {
@@ -1205,6 +1216,7 @@ export class Interpreter {
         this.injectedFaults,
         simTime,
         this.healthPollState,
+        this.telemetrySink,
       );
       this.updateTwinSnapshot();
       this.runConnectivityMaintenance();
@@ -1580,6 +1592,7 @@ export class Interpreter {
         this.injectedFaults,
         simTime,
         this.healthPollState,
+        this.telemetrySink,
       );
       this.updateTwinSnapshot();
       this.reliability.checkWatchdogs(this.reliabilityHost());
@@ -2203,12 +2216,13 @@ export class Interpreter {
     this.agentTraitImpls.clear();
     this.verifyRules = [];
     this.fusionSensors = [];
-    this.security = new SecurityContext();
+    this.security = (this.options.securityRuntime ?? defaultSecurityRuntime());
+    this.security.reset();
     this.currentAgent = null;
     this.commBus = new RoutingCommBus();
     this.commBus.attachProviderRegistry(this.providerRegistry);
     if (this.providerRegistry.officialPackages().length > 0) {
-      syncCommBusForOfficialPackages(this.commBus, this.providerRegistry);
+      this.providerRuntime.syncCommBus(this.commBus, this.providerRegistry);
     }
     for (const fault of this.injectedFaults) {
       this.commBus.injectFault(fault);
@@ -2232,7 +2246,7 @@ export class Interpreter {
     // continue when robot.permissions.
     if (robot.permissions) {
       this.security.enableStrictPermissions();
-      this.security.capabilities.grantAll(robot.permissions.capabilities);
+      this.security.grantCapabilities(robot.permissions.capabilities);
       this.options.onLog?.(
         `permissions: strict mode, granted ${robot.permissions.capabilities.length} capability(ies)`,
       );
@@ -2244,14 +2258,14 @@ export class Interpreter {
 
       // continue when level.
       if (level) {
-        this.security.trust = level;
+        this.security.setTrust(level);
         this.options.onLog?.(`trust: level set to ${level}`);
       }
     }
 
     // Iterate over secrets ?? [].
     for (const secret of robot.secrets ?? []) {
-      this.security.secrets.register(secret.name, secret.source);
+      this.security.registerSecret(secret.name, secret.source);
       this.env.define(secret.name, { kind: "secret", name: secret.name });
       this.options.onLog?.(`secret '${secret.name}': registered`);
     }
@@ -2260,7 +2274,7 @@ export class Interpreter {
     if (robot.identity) {
       const id = robot.identity.fields.find(([k]) => k === "id")?.[1] ?? "unknown";
       const publicKey = robot.identity.fields.find(([k]) => k === "public_key")?.[1] ?? "";
-      this.security.identity = createRobotIdentity(id, publicKey, this.security.trust);
+      this.security.setIdentity(id, publicKey);
       this.env.define("identity", { kind: "identity", id, publicKey });
       this.security.grantIfNotStrict("identity.sign");
       this.security.grantIfNotStrict("identity.verify");
@@ -2269,7 +2283,7 @@ export class Interpreter {
 
     for (const tb of robot.trustBoundaries ?? []) {
       try {
-        this.security.trustBoundaries.declare(parseTrustBoundary(tb.name));
+        this.security.declareTrustBoundary(parseTrustBoundary(tb.name));
         this.options.onLog?.(`trust boundary: ${tb.name}`);
       } catch (e) {
         throw new RuntimeError(String(e), tb.span.start.line);
@@ -2296,13 +2310,13 @@ export class Interpreter {
       for (const secret of robot.secrets ?? []) {
         if (secret.name.includes("cert") && secret.source.source === "file") {
           busSecurity = { ...busSecurity, certPath: secret.source.path };
-          this.security.wireCertPath = secret.source.path;
+          this.security.setWireCert(secret.source.path);
         }
         if (secret.name.includes("key")) {
           busSecurity = { ...busSecurity, keySecret: secret.name };
           if (secret.source.source === "file") {
             busSecurity = { ...busSecurity, keyPath: secret.source.path };
-            this.security.wireKeySecret = secret.name;
+            this.security.setWireKeySecret(secret.name);
           }
         }
       }
@@ -2610,7 +2624,7 @@ export class Interpreter {
     };
   }
 
-  private evalSafetyZone(zone: SafetyZoneDecl): SafetyZoneRuntime {
+  private evalSafetyZone(zone: SafetyZoneDecl): import("../safety/index.js").SafetyZoneRuntime {
     // Description:
     //     EvalSafetyZone.
     //
@@ -2639,7 +2653,7 @@ export class Interpreter {
     //     const result = evalSafetyZone(zone);
 
     // const result = evalSafetyZone(zone);
-    const base: SafetyZoneRuntime = {
+    const base: import("../safety/index.js").SafetyZoneRuntime = {
       name: zone.name,
       shape: zone.shape,
       x: getNumber(this.evalExpr(zone.x)),
@@ -2677,13 +2691,13 @@ export class Interpreter {
 
     // continue when topic.secure.
     if (topic.secure) {
-      this.security.secureEndpoints.register(path, {
+      this.security.registerSecureEndpoint(path, {
         signed: topic.secure.signed,
         minTrust: topic.secure.minTrust ? parseTrustLevel(topic.secure.minTrust) : null,
         requires: topic.secure.requires,
-        encryption: (topic.secure.encryption as SecurePolicy["encryption"]) ?? "none",
-        authentication: (topic.secure.authentication as SecurePolicy["authentication"]) ?? "none",
-        integrity: (topic.secure.integrity as SecurePolicy["integrity"]) ?? "none",
+        encryption: (topic.secure.encryption as SecurePolicyConfig["encryption"]) ?? "none",
+        authentication: (topic.secure.authentication as SecurePolicyConfig["authentication"]) ?? "none",
+        integrity: (topic.secure.integrity as SecurePolicyConfig["integrity"]) ?? "none",
         trustedSources: topic.secure.trustedSources ?? [],
         rejectUntrusted: topic.secure.rejectUntrusted ?? false,
       });
@@ -2812,7 +2826,7 @@ export class Interpreter {
     const argValues = args.map((arg) => this.evalExpr(arg));
     const modulePath = this.importedFunctionModules.get(func.name);
     if (modulePath) {
-      const dispatched = dispatchOfficialPackageCall(
+      const dispatched = this.providerRuntime.dispatchOfficialPackageCall(
         this.providerRegistry,
         modulePath,
         func.name,
@@ -2927,7 +2941,7 @@ export class Interpreter {
         const value = this.evalExpr(stmt.value);
 
         if (topic?.kind === "topic") {
-          const sourceId = this.currentAgent ?? this.security.identity?.id ?? "robot";
+          const sourceId = this.currentAgent ?? this.security.identityId() ?? "robot";
           const payload =
             typeof value === "object" && value !== null ? JSON.stringify(value) : String(value);
           try {
@@ -2944,7 +2958,7 @@ export class Interpreter {
             sourceId,
           );
           this.options.backend.publishTopic?.(topic.topicPath, topic.messageType, value);
-          recordTopicPublish(
+          this.telemetrySink.recordTopicPublish(
             this.currentRobot?.name,
             topic.topicPath,
             value,
@@ -4000,7 +4014,7 @@ export class Interpreter {
         };
       }
     }
-    recordSensorReading(
+    this.telemetrySink.recordSensorReading(
       target.name,
       target.sensorType,
       reading,
@@ -4153,7 +4167,7 @@ export class Interpreter {
       angularVal?.kind === "number" ? angularVal.value : 0.0;
 
     this.options.onLog?.(`navigation: executing goal '${goalText}'`);
-    const bridgeOutput = invokeNav2Bridge(goalText);
+    const bridgeOutput = this.adapterRuntime.invokeNav2Bridge(goalText);
     if (bridgeOutput) {
       this.options.onLog?.(`navigation: Nav2 bridge output: ${bridgeOutput}`);
     }
@@ -4187,7 +4201,7 @@ export class Interpreter {
     // Dispatch SLAM adapter helpers for map and localization stubs.
     if (method === "localize") {
       const state = this.options.backend.getState();
-      const bridgeOutput = invokeSlamBridge("localize");
+      const bridgeOutput = this.adapterRuntime.invokeSlamBridge("localize");
       if (bridgeOutput) {
         this.options.onLog?.(`slam: bridge localize output: ${bridgeOutput}`);
       } else {
@@ -4203,7 +4217,7 @@ export class Interpreter {
       };
     }
     if (method === "map") {
-      const bridgeOutput = invokeSlamBridge("map");
+      const bridgeOutput = this.adapterRuntime.invokeSlamBridge("map");
       if (bridgeOutput) {
         this.options.onLog?.(`slam: bridge map output: ${bridgeOutput}`);
       } else {
@@ -4299,7 +4313,7 @@ export class Interpreter {
         this.options.onLog?.(
           `navigation: executing goal '${target.goal ?? "none"}'`,
         );
-        const bridgeOutput = invokeNav2Bridge(target.goal ?? "none");
+        const bridgeOutput = this.adapterRuntime.invokeNav2Bridge(target.goal ?? "none");
         if (bridgeOutput) {
           this.options.onLog?.(`navigation: Nav2 bridge output: ${bridgeOutput}`);
         }

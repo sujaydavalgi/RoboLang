@@ -2,7 +2,8 @@ import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
-import { compile, runSource } from "../src/compile.js";
+import { compile } from "../src/compile.js";
+import { runSource } from "../src/cli/run-program.js";
 import { createDefaultSimulator } from "../src/simulator/index.js";
 import { TypeCheckError } from "../src/types/index.js";
 

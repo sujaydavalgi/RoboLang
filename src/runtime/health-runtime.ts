@@ -4,7 +4,8 @@
  */
 
 import type { Program } from "../ast/nodes.js";
-import { recordHealthEvent } from "../telemetry-store.js";
+import type { TelemetrySink } from "./telemetry-sink.js";
+import { noopTelemetrySink } from "./telemetry-sink.js";
 
 export type HealthPollState = {
   lastOverall?: string;
@@ -23,6 +24,7 @@ export function pollRuntimeHealthChanges(
   injectedFaults: ReadonlySet<string>,
   simTimeMs: number,
   state: HealthPollState,
+  telemetrySink: TelemetrySink = noopTelemetrySink,
 ): void {
   if (!program?.healthChecks?.length) {
     return;
@@ -30,7 +32,7 @@ export function pollRuntimeHealthChanges(
 
   const overall = injectedFaults.size > 0 ? "Degraded" : "Healthy";
   if (state.lastOverall !== overall) {
-    recordHealthEvent("overall", overall, simTimeMs);
+    telemetrySink.recordHealthEvent("overall", overall, simTimeMs);
     state.lastOverall = overall;
   }
 
@@ -40,7 +42,7 @@ export function pollRuntimeHealthChanges(
     if (state.lastChecks.get(key) === status) {
       continue;
     }
-    recordHealthEvent(key, status, simTimeMs);
+    telemetrySink.recordHealthEvent(key, status, simTimeMs);
     state.lastChecks.set(key, status);
   }
 }

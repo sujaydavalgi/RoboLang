@@ -6,7 +6,8 @@
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
-import { compileFile, run } from "../compile.js";
+import { compileFile } from "../compile.js";
+import { run } from "./run-program.js";
 import { createDefaultSimulator } from "../simulator/index.js";
 import { LexerError } from "../lexer/index.js";
 import { ParseError } from "../parser/index.js";

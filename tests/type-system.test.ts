@@ -1,7 +1,8 @@
 import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { compile, run } from "../src/compile.js";
+import { compile } from "../src/compile.js";
+import { run } from "../src/cli/run-program.js";
 import { tokenize } from "../src/lexer/index.js";
 import { parse, ParseError } from "../src/parser/index.js";
 import { TypeCheckError } from "../src/types/index.js";

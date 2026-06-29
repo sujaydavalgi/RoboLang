@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { tokenize } from "../src/lexer/index.js";
 import { parse } from "../src/parser/index.js";
-import { run } from "../src/compile.js";
+import { run } from "../src/cli/run-program.js";
 import { createDefaultSimulator } from "../src/simulator/index.js";
 import { applyGpsPositionFaults } from "../src/connectivity-positioning.js";
 

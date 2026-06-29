@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { compile, run } from "../src/compile.js";
+import { compile } from "../src/compile.js";
+import { run } from "../src/cli/run-program.js";
 import { createDefaultSimulator } from "../src/simulator/index.js";
 import { isCliAvailable, lintViaCli } from "../src/rust-bridge.js";
 
