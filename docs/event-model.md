@@ -198,7 +198,7 @@ gRPC events mirror the same fields in proto messages where defined.
 
 | Publisher | Primary events | Consumers |
 |-----------|----------------|-----------|
-| `spanda-config` / API | Entity* | Control Center, audit |
+| `spanda-config` / API | Entity* | Control Center, audit (`PlatformEvent` via `record_platform_event`) |
 | `spanda-readiness` | Readiness* | CLI, API, assurance |
 | `spanda-interpreter` | Mission*, trace frames | Telemetry, replay |
 | `spanda-trust` | Trust* | Explain, scorecard |

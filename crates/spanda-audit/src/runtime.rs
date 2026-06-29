@@ -156,6 +156,14 @@ impl AuditRuntime {
         Ok(id)
     }
 
+    pub fn record_platform_event(
+        &mut self,
+        event: &crate::platform_event::PlatformEvent,
+    ) -> AuditResult<RecordId> {
+        let payload = event.to_json_string()?;
+        self.record_event(event.event_type.as_str(), &payload)
+    }
+
     pub fn verify_record(&self, record_id: &RecordId) -> AuditResult<bool> {
         // Description:
         //     Verify record.

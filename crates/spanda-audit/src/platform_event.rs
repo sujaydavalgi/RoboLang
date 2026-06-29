@@ -7,6 +7,19 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
+use crate::error::{AuditError, AuditResult};
+
+/// Well-known platform event names from `docs/event-model.md`.
+pub mod names {
+    pub const ENTITY_CREATED: &str = "EntityCreated";
+    pub const ENTITY_UPDATED: &str = "EntityUpdated";
+    pub const ENTITY_TAGGED: &str = "EntityTagged";
+    pub const ENTITY_RELATED: &str = "EntityRelated";
+    pub const READINESS_CHANGED: &str = "ReadinessChanged";
+    pub const MISSION_STARTED: &str = "MissionStarted";
+    pub const MISSION_COMPLETED: &str = "MissionCompleted";
+}
+
 /// Namespaced platform event type (e.g. `ReadinessChanged`).
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct PlatformEventType(pub String);
@@ -61,11 +74,17 @@ impl PlatformEvent {
     pub fn namespaced_type(&self) -> String {
         format!("spanda.events.{}", self.event_type.as_str())
     }
+
+    pub fn to_json_string(&self) -> AuditResult<String> {
+        serde_json::to_string(self)
+            .map_err(|error| AuditError::Serialization(error.to_string()))
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::AuditRuntime;
     use serde_json::json;
 
     #[test]
@@ -85,8 +104,18 @@ mod tests {
     }
 
     #[test]
-    fn namespaced_type_prefixes_event_name() {
-        let event = PlatformEvent::new("MissionStarted", "spanda-interpreter", json!({}));
-        assert_eq!(event.namespaced_type(), "spanda.events.MissionStarted");
+    fn record_platform_event_round_trips_envelope() {
+        let mut rt = AuditRuntime::new("PlatformEvents", vec![]);
+        let event = PlatformEvent::new(
+            names::ENTITY_CREATED,
+            "spanda-api",
+            serde_json::json!({"entity_id": "robot/demo"}),
+        )
+        .with_entity_id("robot/demo");
+        rt.record_platform_event(&event).unwrap();
+        let exported = rt.export_json().unwrap();
+        assert!(exported.contains(names::ENTITY_CREATED));
+        assert!(exported.contains("robot/demo"));
+        assert!(exported.contains("spanda-api"));
     }
 }

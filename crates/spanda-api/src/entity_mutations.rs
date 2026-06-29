@@ -2,6 +2,7 @@
 //!
 use crate::handlers::{bad_request, json_ok, unauthorized};
 use crate::state::ControlCenterState;
+use spanda_audit::platform_event::{names, PlatformEvent};
 use spanda_config::{
     default_entity_overlay_path, register_entity_overlay, relate_entities_overlay,
     save_entity_overlay, sync_entity_overlay_to_toml, tag_entity_overlay, EntityRegisterRequest,
@@ -13,15 +14,25 @@ use spanda_security::{ApiKeyStore, RbacAction, RbacContext};
 const API_VERSION: &str = "v1";
 
 fn record_entity_audit(state: &mut ControlCenterState, action: &str, payload: &serde_json::Value) {
-    let body = serde_json::json!({
-        "domain": "entity",
-        "action": action,
-        "payload": payload,
-    })
-    .to_string();
-    let _ = state
-        .mutation_audit
-        .record_event("control_center.entity.mutation", &body);
+    let event_type = match action {
+        "register" => names::ENTITY_CREATED,
+        "tag" => names::ENTITY_TAGGED,
+        "relate" => names::ENTITY_RELATED,
+        "sync" => names::ENTITY_UPDATED,
+        _ => names::ENTITY_UPDATED,
+    };
+    let entity_id = payload
+        .get("entity_id")
+        .and_then(|value| value.as_str())
+        .map(str::to_string);
+    let event = {
+        let mut event = PlatformEvent::new(event_type, "spanda-api", payload.clone());
+        if let Some(id) = entity_id {
+            event = event.with_entity_id(id);
+        }
+        event
+    };
+    let _ = state.mutation_audit.record_platform_event(&event);
 }
 
 /// POST /v1/entities/register — register or update an entity in the overlay.

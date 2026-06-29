@@ -89,12 +89,12 @@ Recommended order:
 
 **Target:** Subsystems emit `spanda_audit::PlatformEvent` envelopes
 
-| Subsystem | Events |
-|-----------|--------|
-| Entity API | `EntityCreated`, `EntityTagged`, … |
-| Readiness | `ReadinessChanged`, `ReadinessGateFailed` |
-| Interpreter | `MissionStarted`, `MissionCompleted` |
-| Telemetry store | Persist all platform events |
+| Subsystem | Events | Status |
+|-----------|--------|--------|
+| Entity API mutations | `EntityCreated`, `EntityTagged`, `EntityRelated`, `EntityUpdated` | **Shipped** (`spanda-api` → `record_platform_event`) |
+| Readiness | `ReadinessChanged`, `ReadinessGateFailed` | Planned |
+| Interpreter | `MissionStarted`, `MissionCompleted` | Planned |
+| Telemetry store | Persist all platform events | Planned |
 
 See [event-model.md](./event-model.md).
 
