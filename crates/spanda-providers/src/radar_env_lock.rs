@@ -16,7 +16,11 @@ impl RadarEnvLock {
         #[cfg(unix)]
         {
             let path = radar_lock_path();
-            let file = OpenOptions::new().create(true).write(true).open(path)?;
+            let file = OpenOptions::new()
+                .create(true)
+                .truncate(true)
+                .write(true)
+                .open(path)?;
             let rc = unsafe { libc::flock(file.as_raw_fd(), libc::LOCK_EX) };
             if rc != 0 {
                 return Err(io::Error::last_os_error());
