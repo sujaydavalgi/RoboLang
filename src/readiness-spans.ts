@@ -4,7 +4,7 @@
  */
 
 import type { Program } from "./ast/nodes.js";
-import type { ReadinessIssue } from "./readiness.js";
+import type { ReadinessIssue } from "./readiness-types.js";
 
 type Spanned = { span: { start: { line: number; column: number } } };
 

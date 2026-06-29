@@ -5,24 +5,9 @@
 
 import type { Program } from "./ast/nodes.js";
 import type { HardwareDecl } from "./foundations.js";
+import type { HardwareProfile } from "./hardware-profile-types.js";
 
-export type HardwareProfile = {
-  name: string;
-  cpu: string | null;
-  memoryMb: number | null;
-  storageMb: number | null;
-  gpuTops: number | null;
-  gpuRequired: boolean;
-  sensors: string[];
-  actuators: string[];
-  connectivity: string[];
-  batteryWh: number | null;
-  networkBandwidthMbps: number | null;
-  networkLatencyMs: number | null;
-  packetLossPct: number | null;
-  minControlPeriodMs: number;
-  powerDrawW: number;
-};
+export type { HardwareProfile } from "./hardware-profile-types.js";
 
 function profile(
   name: string,

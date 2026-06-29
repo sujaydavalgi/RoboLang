@@ -5,7 +5,7 @@
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
-import type { MissionStateSnapshot } from "./mission-continuity.js";
+import type { MissionStateSnapshot } from "./runtime/continuity-types.js";
 
 export type ContinuityCheckpointStore = {
   entries: Record<string, MissionStateSnapshot>;

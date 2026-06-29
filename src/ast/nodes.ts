@@ -15,7 +15,7 @@ import type {
   TopicRole,
   TransportKind,
   TwinSyncDecl,
-} from "../comm/index.js";
+} from "../comm/decls.js";
 import type {
   CapabilityDecl,
   EnumDecl,
@@ -46,7 +46,7 @@ export type {
   TopicRole,
   TransportKind,
   TwinSyncDecl,
-} from "../comm/index.js";
+} from "../comm/decls.js";
 
 export type SourceLocation = {
   line: number;

@@ -3,163 +3,31 @@
  * @module
  */
 
-import type { FieldDecl, StructDecl } from "../foundations.js";
-import type { SpandaType, Span } from "../ast/nodes.js";
 import type { RuntimeValue } from "../runtime/values.js";
+import type { TransportKind, DiscoverFilter, DiscoverTarget } from "./decls.js";
 
-export type TransportKind = "local" | "ros2" | "mqtt" | "dds" | "websocket" | "sim";
-
-export function transportFromIdent(s: string): TransportKind | null {
-  // Description:
-  //     TransportFromIdent.
-  //
-  // Inputs:
-  //     s: string
-  //         Caller-supplied s.
-  //
-  // Outputs:
-  //     result: TransportKind | null
-  //         Return value from `transportFromIdent`.
-  //
-  // Example:
-  //     const result = transportFromIdent(s);
-  // Description:
-  //     TransportFromIdent.
-  //
-  // Inputs:
-  //     s: string
-  //         Caller-supplied s.
-  //
-  // Outputs:
-  //     result: TransportKind | null
-  //         Return value from `transportFromIdent`.
-  //
-  // Example:
-  //     const result = transportFromIdent(s);
-
-  // const result = transportFromIdent(s);
-  switch (s) {
-    case "local":
-      return "local";
-    case "ros2":
-      return "ros2";
-    case "mqtt":
-      return "mqtt";
-    case "dds":
-      return "dds";
-    case "websocket":
-      return "websocket";
-    case "sim":
-      return "sim";
-    default:
-      return null;
-  }
-}
-
-export function transportAsStr(t: TransportKind): string {
-  // Description:
-  //     TransportAsStr.
-  //
-  // Inputs:
-  //     t: TransportKind
-  //         Caller-supplied t.
-  //
-  // Outputs:
-  //     result: string
-  //         Return value from `transportAsStr`.
-  //
-  // Example:
-  //     const result = transportAsStr(t);
-  // Description:
-  //     TransportAsStr.
-  //
-  // Inputs:
-  //     t: TransportKind
-  //         Caller-supplied t.
-  //
-  // Outputs:
-  //     result: string
-  //         Return value from `transportAsStr`.
-  //
-  // Example:
-  //     const result = transportAsStr(t);
-
-  // const result = transportAsStr(t);
-  return t;
-}
-
-export type QosReliability = "reliable" | "best_effort";
-export type TopicRole = "publish" | "subscribe" | "both";
-
-export type QosDecl = {
-  reliability: QosReliability | null;
-  rateHz: number | null;
-  deadlineMs: number | null;
-  history: string | null;
-  span: Span;
-};
-
-export type MessageDecl = {
-  kind: "MessageDecl";
-  name: string;
-  fields: FieldDecl[];
-  version: number | null;
-  span: Span;
-};
-
-export type MessageSchema = {
-  name: string;
-  fields: [string, string][];
-  version: number | null;
-};
-
-export type BusDecl = {
-  kind: "BusDecl";
-  name: string;
-  transport: TransportKind;
-  transportName?: string | null;
-  brokerUrl?: string | null;
-  encryption?: string | null;
-  authentication?: string | null;
-  integrity?: string | null;
-  span: Span;
-};
-
-export type PeerRobotDecl = {
-  kind: "PeerRobotDecl";
-  name: string;
-  span: Span;
-};
-
-export type DeviceDecl = {
-  kind: "DeviceDecl";
-  name: string;
-  deviceType: string;
-  span: Span;
-};
-
-export type AgentChannelDecl = {
-  kind: "AgentChannelDecl";
-  fromAgent: string;
-  toAgent: string;
-  messageType: string;
-  span: Span;
-};
-
-export type TwinSyncDecl = {
-  kind: "TwinSyncDecl";
-  telemetry: boolean;
-  replay: boolean;
-  faults: boolean;
-  events: boolean;
-  span: Span;
-};
-
-export type DiscoverTarget = "robots" | "agents" | "devices";
-
-export type DiscoverFilter = {
-  capability: string | null;
-};
+export type {
+  AgentChannelDecl,
+  BusDecl,
+  DiscoverFilter,
+  DiscoverTarget,
+  MessageDecl,
+  MessageSchema,
+  PeerRobotDecl,
+  DeviceDecl,
+  QosDecl,
+  QosReliability,
+  TopicRole,
+  TransportKind,
+  TwinSyncDecl,
+} from "./decls.js";
+export {
+  COMM_CAPABILITIES,
+  MessageRegistry,
+  isCommCapability,
+  transportAsStr,
+  transportFromIdent,
+} from "./decls.js";
 
 export type CommEnvelope = {
   value: RuntimeValue;
@@ -179,183 +47,6 @@ export type SimNetworkConfig = {
   packetLoss: number;
 };
 
-export class MessageRegistry {
-  private schemas = new Map<string, MessageSchema>();
-  private builtin = new Set(["Velocity", "Pose", "Scan", "String"]);
-
-  static new(): MessageRegistry {
-    // Description:
-    //     Construct a new instance.
-    //
-    // Inputs:
-    //     None.
-    //
-    // Outputs:
-    //     result: MessageRegistry
-    //         Return value from `new`.
-    //
-    // Example:
-    //     const result = new();
-    // Description:
-    //     Construct a new instance.
-    //
-    // Inputs:
-    //     None.
-    //
-    // Outputs:
-    //     result: MessageRegistry
-    //         Return value from `new`.
-    //
-    // Example:
-    //     const result = new();
-
-    // const result = new();
-    return new MessageRegistry();
-}
-
-  register(decl: MessageDecl): void {
-    // Register the value.
-    //
-    // Parameters:
-    // - `decl` — input value
-    //
-    // Returns:
-    // Nothing.
-    //
-    // Options:
-    // None.
-    //
-    // Example:
-
-    // const result = register(decl);
-
-    this.schemas.set(decl.name, {
-      name: decl.name,
-      fields: decl.fields.map((f) => [f.name, f.typeName]),
-      version: decl.version,
-    });
-  }
-
-  static fromProgram(messages: MessageDecl[], structs: StructDecl[]): MessageRegistry {
-    // Description:
-    //     FromProgram.
-    //
-    // Inputs:
-    //     messages: MessageDecl[]
-    //         Caller-supplied messages.
-    //     structs: StructDecl[]
-    //         Caller-supplied structs.
-    //
-    // Outputs:
-    //     result: MessageRegistry
-    //         Return value from `fromProgram`.
-    //
-    // Example:
-    //     const result = fromProgram(messages, structs);
-    // Description:
-    //     FromProgram.
-    //
-    // Inputs:
-    //     messages: MessageDecl[]
-    //         Caller-supplied messages.
-    //     structs: StructDecl[]
-    //         Caller-supplied structs.
-    //
-    // Outputs:
-    //     result: MessageRegistry
-    //         Return value from `fromProgram`.
-    //
-    // Example:
-    //     const result = fromProgram(messages, structs);
-
-    // const result = fromProgram(messages, structs);
-    const reg = MessageRegistry.new();
-
-    // Process each message.
-    for (const msg of messages) reg.register(msg);
-
-    // Process each struct.
-    for (const s of structs) {
-      reg.schemas.set(s.name, {
-        name: s.name,
-        fields: s.fields.map((f) => [f.name, f.typeName]),
-        version: null,
-      });
-    }
-    return reg;
-}
-
-  isKnown(name: string): boolean {
-    // IsKnown.
-    //
-    // Parameters:
-    // - `name` — input value
-    //
-    // Returns:
-    // true or false.
-    //
-    // Options:
-    // None.
-    //
-    // Example:
-
-    // const result = isKnown(name);
-
-    return this.builtin.has(name) || this.schemas.has(name);
-  }
-
-  resolveType(name: string): SpandaType | null {
-    // ResolveType.
-    //
-    // Parameters:
-    // - `name` — input value
-    //
-    // Returns:
-    // Some value on success, otherwise none.
-    //
-    // Options:
-    // None.
-    //
-    // Example:
-
-    // const result = resolveType(name);
-
-    switch (name) {
-      case "Velocity":
-        return { kind: "velocity" };
-      case "Pose":
-        return { kind: "pose" };
-      case "Scan":
-        return { kind: "scan" };
-      case "String":
-        return { kind: "string" };
-      case "Command":
-      case "Conversation":
-      case "Feedback":
-      case "Approval":
-      case "Intent":
-      case "SafeMessage":
-      case "VerifiedMessage":
-      case "TrustedSource":
-      case "ActionProposal":
-      case "SafeAction":
-      case "CommandMessage":
-      case "BatteryRequest":
-      case "BatteryStatus":
-      case "NavigationFeedback":
-      case "NavigationResult":
-      case "LidarReading":
-      case "LidarScan":
-      case "Timestamp":
-      case "PathPlan":
-        return { kind: "named", name };
-      default:
-        if (this.schemas.has(name)) return { kind: "named", name };
-        return null;
-    }
-  }
-}
-
 export class InMemoryCommBus {
   private subscriptions = new Map<string, string[]>();
   private buffers = new Map<string, CommEnvelope[]>();
@@ -373,24 +64,7 @@ export class InMemoryCommBus {
     transport: TransportKind,
     sourceId?: string | null,
   ): void {
-    // Publish.
-    //
-    // Parameters:
-    // - `topicPath` — input value
-    // - `messageType` — input value
-    // - `value` — input value
-    // - `transport` — input value
-    //
-    // Returns:
-    // Nothing.
-    //
-    // Options:
-    // None.
-    //
-    // Example:
-
-    // const result = publish(topicPath, messageType, value, transport);
-
+    // Publish a message to subscribers and record it in the published log.
     if (this.faults.includes("NetworkOutage")) return;
     if (this.network.packetLoss > 0) {
       const hash = topicPath.length + messageType.length;
@@ -403,43 +77,12 @@ export class InMemoryCommBus {
 
   pushInbound(topicPath: string, value: RuntimeValue, sourceId?: string | null): void {
     // Push an inbound message with optional publisher identity into the topic buffer.
-    //
-    // Parameters:
-    // - `topicPath` — topic path
-    // - `value` — decoded payload
-    // - `sourceId` — optional publisher identity
-    //
-    // Returns:
-    // Nothing.
-    //
-    // Options:
-    // None.
-    //
-    // Example:
-
-    // pushInbound("/motion", velocity, "Navigator");
-
     if (!this.buffers.has(topicPath)) this.buffers.set(topicPath, []);
     this.buffers.get(topicPath)!.push({ value, sourceId: sourceId ?? null });
   }
 
   subscribe(topicPath: string, handler: string): void {
-    // Subscribe.
-    //
-    // Parameters:
-    // - `topicPath` — input value
-    // - `handler` — input value
-    //
-    // Returns:
-    // Nothing.
-    //
-    // Options:
-    // None.
-    //
-    // Example:
-
-    // const result = subscribe(topicPath, handler);
-
+    // Register a handler subscription for the given topic path.
     const subs = this.subscriptions.get(topicPath) ?? [];
     subs.push(handler);
     this.subscriptions.set(topicPath, subs);
@@ -448,59 +91,17 @@ export class InMemoryCommBus {
 
   receiveEnvelope(topicPath: string): CommEnvelope | null {
     // Receive the next inbound envelope including publisher source_id when present.
-    //
-    // Parameters:
-    // - `topicPath` — topic path
-    //
-    // Returns:
-    // CommEnvelope or null when the buffer is empty.
-    //
-    // Options:
-    // None.
-    //
-    // Example:
-
-    // const env = receiveEnvelope("/motion");
-
     const buf = this.buffers.get(topicPath);
     return buf?.shift() ?? null;
   }
 
   receive(topicPath: string): RuntimeValue | null {
-    // Receive.
-    //
-    // Parameters:
-    // - `topicPath` — input value
-    //
-    // Returns:
-    // Some value on success, otherwise none.
-    //
-    // Options:
-    // None.
-    //
-    // Example:
-
-    // const result = receive(topicPath);
-
+    // Receive the next inbound payload value from the topic buffer.
     return this.receiveEnvelope(topicPath)?.value ?? null;
   }
 
   callService(serviceType: string): RuntimeValue {
-    // CallService.
-    //
-    // Parameters:
-    // - `serviceType` — input value
-    //
-    // Returns:
-    // RuntimeValue.
-    //
-    // Options:
-    // None.
-    //
-    // Example:
-
-    // const result = callService(serviceType);
-
+    // Simulate a successful service call response for the given service type.
     return {
       kind: "object",
       typeName: serviceType,
@@ -509,21 +110,7 @@ export class InMemoryCommBus {
   }
 
   sendAction(actionType: string): RuntimeValue {
-    // SendAction.
-    //
-    // Parameters:
-    // - `actionType` — input value
-    //
-    // Returns:
-    // RuntimeValue.
-    //
-    // Options:
-    // None.
-    //
-    // Example:
-
-    // const result = sendAction(actionType);
-
+    // Simulate a successful action execution result for the given action type.
     return {
       kind: "object",
       typeName: actionType,
@@ -532,22 +119,7 @@ export class InMemoryCommBus {
   }
 
   discover(target: DiscoverTarget, filter: DiscoverFilter): string[] {
-    // Discover.
-    //
-    // Parameters:
-    // - `target` — input value
-    // - `filter` — input value
-    //
-    // Returns:
-    // string[].
-    //
-    // Options:
-    // None.
-    //
-    // Example:
-
-    // const result = discover(target, filter);
-
+    // Discover robots, agents, or devices optionally filtered by capability substring.
     const base =
       target === "robots"
         ? this.discoveredRobots
@@ -594,97 +166,22 @@ export class InMemoryCommBus {
 
   activeFaults(): string[] {
     // Return injected simulation faults currently affecting the comm bus.
-    //
-    // Parameters:
-    // None.
-    //
-    // Returns:
-    // Active fault names.
-    //
-    // Options:
-    // None.
-    //
-    // Example:
-
-    // const faults = activeFaults();
-
     return [...this.faults];
   }
 
   subscriptionPaths(): string[] {
     // List topic paths with active in-memory subscriptions.
-    //
-    // Parameters:
-    // None.
-    //
-    // Returns:
-    // Topic path strings.
-    //
-    // Options:
-    // None.
-    //
-    // Example:
-
-    // const paths = subscriptionPaths();
-
     return [...this.subscriptions.keys()];
   }
 }
 
-export const COMM_CAPABILITIES = ["subscribe", "publish", "call", "execute", "discover"] as const;
-
-export function isCommCapability(action: string): boolean {
-  // IsCommCapability.
-  //
-  // Parameters:
-  // - `action` — input value
-  //
-  // Returns:
-  // `true` or `false`.
-  //
-  // Options:
-  // None.
-  //
-  // Example:
-
-  // const result = isCommCapability(action);
-  return (COMM_CAPABILITIES as readonly string[]).includes(action);
-}
-
 export function estimateTopicBandwidthMbps(rateHz: number, messageSizeBytes: number): number {
-  // EstimateTopicBandwidthMbps.
-  //
-  // Parameters:
-  // - `rateHz` — input value
-  // - `messageSizeBytes` — input value
-  //
-  // Returns:
-  // Numeric result.
-  //
-  // Options:
-  // None.
-  //
-  // Example:
-
-  // const result = estimateTopicBandwidthMbps(rateHz, messageSizeBytes);
+  // Estimate topic bandwidth in megabits per second from rate and message size.
   return (rateHz * messageSizeBytes * 8) / 1_000_000;
 }
 
 export function defaultMessageSize(messageType: string): number {
-  // DefaultMessageSize.
-  //
-  // Parameters:
-  // - `messageType` — input value
-  //
-  // Returns:
-  // Numeric result.
-  //
-  // Options:
-  // None.
-  //
-  // Example:
-
-  // const result = defaultMessageSize(messageType);
+  // Return a default serialized message size in bytes for bandwidth estimation.
   switch (messageType) {
     case "Scan":
     case "LidarScan":

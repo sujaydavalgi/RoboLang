@@ -12,9 +12,9 @@ import type {
   RequiresNetworkDecl,
   ResourceBudgetDecl,
 } from "./foundations.js";
-import type { TransportKind } from "./comm/index.js";
-import type { CompatItem } from "./rust-bridge.js";
-import type { HardwareProfile } from "./hardware-profile.js";
+import type { TransportKind } from "./comm/decls.js";
+import type { CompatItem } from "./rust-bridge-types.js";
+import type { HardwareProfile } from "./hardware-profile-types.js";
 
 export type ConnectivityRequirement = "required" | "optional";
 

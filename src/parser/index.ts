@@ -62,8 +62,8 @@ import type {
   QosDecl,
   TopicRole,
   TransportKind,
-} from "../comm/index.js";
-import { transportFromIdent } from "../comm/index.js";
+} from "../comm/decls.js";
+import { transportFromIdent } from "../comm/decls.js";
 import type {
   CapabilityDecl,
   EnumDecl,

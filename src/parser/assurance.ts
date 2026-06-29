@@ -25,7 +25,7 @@ import type {
   ContinuityPolicyDecl,
   ContinuityPolicyBranch,
   StateEstimatorDecl,
-} from "../assurance_decl.js";
+} from "../ast/assurance-decls.js";
 import type { Span } from "../ast/nodes.js";
 import type { Token } from "../lexer/index.js";
 
