@@ -28,7 +28,7 @@ Phases **E1–E4** are shipped at **Experimental** tier with CI smoke (`scripts/
 | Item | Experimental (today) | Stable requires |
 |------|---------------------|-----------------|
 | REST v1 | Full E1–E4 surface | — (OpenAPI parity test in CI) |
-| gRPC | 59 RPCs (tonic) | **Shipped:** published proto semver policy (`GET /v1/version` → `grpc`) |
+| gRPC | 82 RPCs (tonic), proto semver 1.0.2 | **Shipped:** published proto semver policy (`GET /v1/version` → `grpc`) |
 | Remote CLI | `spanda control-center *` shortcuts | **Shipped:** OpenAPI parity test (`control_center_openapi_parity.rs`) |
 | Rate limits | `SPANDA_API_RATE_LIMIT_PER_MINUTE` | **Shipped:** tier defaults in [control-center-rate-limits.md](./control-center-rate-limits.md) |
 | Mutation audit | Hash-chained JSONL | **Shipped:** SIEM export (`GET /v1/audit/mutations/export`, `spanda-audit-siem`) |

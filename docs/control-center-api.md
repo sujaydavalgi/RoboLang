@@ -10,7 +10,7 @@ For the Rust/TypeScript **compiler crate index**, see [api-reference.md](./api-r
 |-----------|--------|
 | REST | `http://host:8080/v1/*` |
 | OpenAPI | `GET /v1/openapi.json` |
-| gRPC | `ControlCenter` service (see `proto/spanda/v1/control_center.proto`) — program ops: `EvaluateProgramReadiness`, `ListEntities`, … |
+| gRPC | `ControlCenter` service — **82 RPCs**, proto semver **1.0.2** (`proto/spanda/v1/control_center.proto`); pin via `GET /v1/version` → `grpc` |
 | WebSocket | `WS /v1/stream/telemetry` |
 | JSON-RPC gateway | `POST /v1/rpc` |
 
@@ -46,12 +46,43 @@ These endpoints delegate to the same Rust crates as CLI commands:
 
 ## Entity registry
 
-| Endpoint | Description |
-|----------|-------------|
-| `GET /v1/entities` | Humans + devices unified list |
-| `GET /v1/entities/{id}` | Entity by id |
-| `GET /v1/entities/{id}/health` | Device health |
-| `GET /v1/entities/{id}/trust` | Entity trust metadata |
+Read endpoints are unauthenticated by default; mutations require Bearer `SPANDA_API_KEY`.
+
+| Endpoint | Auth | Description |
+|----------|------|-------------|
+| `GET /v1/entities` | — | Unified entity inventory (optional query filters) |
+| `GET /v1/entities/graph` | — | Full entity graph |
+| `GET /v1/entities/traceability` | — | Unified traceability (entity + program graph) |
+| `POST /v1/entities/query` | — | Structured query body |
+| `GET /v1/entities/{id}` | — | Entity by id |
+| `GET /v1/entities/{id}/relationships` | — | Relationship edges and impact analysis |
+| `GET /v1/entities/{id}/health` | — | Health snapshot |
+| `GET /v1/entities/{id}/readiness` | — | Readiness snapshot |
+| `GET /v1/entities/{id}/trust` | — | Trust and security metadata |
+| `POST /v1/entities/register` | Bearer | Register or update entity overlay |
+| `POST /v1/entities/{id}/tags` | Bearer | Add or remove tags |
+| `POST /v1/entities/relationships` | Bearer | Relate two entities |
+| `POST /v1/entities/sync` | Bearer | Sync overlay to TOML fragments |
+
+### gRPC parity (`--grpc-bind`)
+
+| gRPC RPC | REST equivalent |
+|----------|-----------------|
+| `ListEntities` | `GET /v1/entities` |
+| `GetEntity` | `GET /v1/entities/{id}` |
+| `GetEntityHealth` | `GET /v1/entities/{id}/health` |
+| `GetEntityTrust` | `GET /v1/entities/{id}/trust` |
+| `GetEntityGraph` | `GET /v1/entities/graph` |
+| `GetEntityTraceability` | `GET /v1/entities/traceability` |
+| `QueryEntities` | `POST /v1/entities/query` |
+| `GetEntityRelationships` | `GET /v1/entities/{id}/relationships` |
+| `GetEntityReadiness` | `GET /v1/entities/{id}/readiness` |
+| `RegisterEntity` | `POST /v1/entities/register` |
+| `TagEntity` | `POST /v1/entities/{id}/tags` |
+| `RelateEntities` | `POST /v1/entities/relationships` |
+| `SyncEntities` | `POST /v1/entities/sync` |
+
+Rust `GrpcClient` (`spanda-sdk` `grpc` feature) mirrors these; mutations send Bearer from `SPANDA_API_KEY`. See [entity-model.md](./entity-model.md) and [sdk-rust.md](./sdk-rust.md).
 
 ## Device registry
 
@@ -87,13 +118,13 @@ SDK wrappers mirror these in each language (`spanda-sdk` types modules).
 ## Versioning
 
 - API version prefix: `/v1/`
-- Policy: `GET /v1/version`
+- Policy: `GET /v1/version` (includes `grpc.proto_semver` and `grpc.rpc_count`)
 - OpenAPI parity enforced by `crates/spanda-api/tests/openapi_parity_tests.rs`
 
 ## Authentication
 
 - Bearer token: `Authorization: Bearer $SPANDA_API_KEY`
-- RBAC enforced on mutations (provision, OTA, config approvals)
+- RBAC enforced on mutations (provision, OTA, config approvals, entity overlay writes)
 - Correlation: `X-Correlation-ID` header (optional, echoed in responses)
 
 ## JSON-RPC gateway (`POST /v1/rpc`)
@@ -107,7 +138,7 @@ gRPC-compatible JSON gateway for clients without tonic. Example:
 }
 ```
 
-Supported SDK methods include `ListEntities`, `GetEntity`, `GetEntityHealth`, `GetEntityTrust`, `EvaluateProgramReadiness`, `EvaluateProgramAssure`, `EvaluateProgramDiagnose`, `EvaluateProgramHeal`, `VerifyProgramHardware`, `VerifyProgramCapabilities`, `VerifyProgramMission`, `RunProgramSimulation`, `ReplayProgram`, and `GetTrustProgram`.
+Supported SDK methods include program ops (`EvaluateProgramReadiness`, `EvaluateProgramAssure`, `EvaluateProgramDiagnose`, `EvaluateProgramHeal`, `VerifyProgramHardware`, `VerifyProgramCapabilities`, `VerifyProgramMission`, `RunProgramSimulation`, `ReplayProgram`, `GetTrustProgram`) and entity reads (`ListEntities`, `GetEntity`, `GetEntityHealth`, `GetEntityTrust`, `GetEntityGraph`, `GetEntityTraceability`, `QueryEntities`, `GetEntityRelationships`, `GetEntityReadiness`). Entity mutations are **gRPC-only** (not exposed on the JSON-RPC gateway).
 
 ## Event types (WebSocket)
 

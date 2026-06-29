@@ -79,7 +79,7 @@ Enterprise operations pillars compose existing engines — they do **not** repla
 | 15 | **SRE** | Operate, Observe | Experimental | SLO/SLA, MTTR/MTBF, incident reporting |
 | 16 | **Reporting** | Govern, Audit | Experimental | Fleet, mission, compliance, executive exports (incl. PDF) |
 | 17 | **Compliance** | Verify, Govern, Audit | Experimental | Evidence packs, immutable audit trails |
-| 18 | **APIs** | All | Experimental | REST v1 + OpenAPI; JSON-RPC gateway; native gRPC (tonic) **Experimental** — `--grpc-bind`, 60 RPCs (full REST parity except `/v1/rpc`) |
+| 18 | **APIs** | All | Experimental | REST v1 + OpenAPI; JSON-RPC gateway; native gRPC (tonic) **Experimental** — `--grpc-bind`, 82 RPCs (full REST parity except `/v1/rpc`) |
 | 19 | **Observability** | Operate, Observe | Experimental | Metrics, logs, traces, events; OTLP export; correlation IDs |
 | 20 | **Digital Thread** | Build → Retire | Experimental | End-to-end traceability chain (v1 query) |
 
@@ -573,7 +573,7 @@ Official SDK surfaces for external systems to interact with Readiness, Assurance
 |-----|--------|-------|
 | **CLI** | **Stable** | Reference implementation; all capabilities |
 | **REST** | **Experimental** | `/v1/*` + OpenAPI 3.1 (`GET /v1/openapi.json`) |
-| **gRPC** | **Experimental** | Native tonic `ControlCenter` service (`--grpc-bind`, 16 RPCs); JSON-RPC gateway (`POST /v1/rpc`) also ships |
+| **gRPC** | **Experimental** | Native tonic `ControlCenter` service (`--grpc-bind`, 82 RPCs, proto semver 1.0.2); JSON-RPC gateway (`POST /v1/rpc`) also ships |
 | **WebSocket** | **Experimental** | `WS /v1/stream/telemetry` live telemetry |
 | **Python** | **Experimental** | `packages/sdk-python` (`pip install spanda-sdk`) |
 
@@ -639,7 +639,7 @@ REST and gRPC APIs with **CLI parity** — every `spanda` command maps to an end
 | REST `/v1/*` | **Experimental** |
 | OpenAPI 3.1 | **Experimental** |
 | JSON-RPC gateway | **Experimental** (`POST /v1/rpc`) |
-| Native gRPC (tonic) | **Experimental** | 60 RPCs; `--grpc-bind` |
+| Native gRPC (tonic) | **Experimental** | 82 RPCs; `--grpc-bind` |
 | API versioning | `/v1/` prefix; breaking changes require `/v2/` |
 
 ### 6.19 Observability
@@ -713,7 +713,7 @@ Builds on `spanda-capability` traceability matrices + `spanda-audit` + mission c
 | Deliverable | Component |
 |-------------|-----------|
 | Python SDK + REST OpenAPI | `spanda-sdk-python`, OpenAPI spec |
-| gRPC service | `spanda-api::grpc` — **shipped** (16 RPCs through E4 summaries + OTLP metrics) |
+| gRPC service | `spanda-api::grpc` — **shipped** (82 RPCs; E4 + program SDK + entity model parity; proto semver 1.0.2) |
 | OTLP metrics export | `spanda-ops::otlp_metrics`, `GET /v1/observability/otlp/metrics` — **shipped** |
 | Full drift detection (7 dimensions) | `detect_operational_drift_full` — **shipped** (config + program + agents + policy) |
 | OTA canary + phased rollout | `spanda-ota` |
