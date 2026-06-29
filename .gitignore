@@ -42,6 +42,7 @@ coverage/
 # cargo
 .cargo/config.toml
 crates/spanda-ros2-rclrs-native/Cargo.lock
+rust_out
 
 # spanda runtime artifacts
 .spanda-*.sd
