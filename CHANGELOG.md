@@ -9,7 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- **Docs sync:** gRPC entity RPC parity reflected in `control-center-api.md`, `test-plan.md`, `stable-hardening-enterprise-ops.md`, and `enterprise-operations-roadmap.md` (83 RPCs, proto semver 1.0.3).
+- **Driver ↔ certify decoupling (Phase 2):** Removed `spanda-certify` from `spanda-driver`; certification proof summaries live in `spanda-ota::build_deploy_plan`; runtime gate moved to `spanda-assurance` (`certify-runtime` feature) invoked from `spanda-interpreter`; strict verify certification merged in `spanda-config::verify_with_system_config`. Waivers `ARCH-001` and `ARCH-C01` removed.
+- **Platform lifecycle events (Phase 6):** `ReadinessChanged` emitted from `evaluate_entity_readiness` (Control Center audit sink); `MissionStarted` / `MissionCompleted` emitted from interpreter when audit runtime is active.
 - **Product roadmap restructure:** Canonical roadmap moved to root [ROADMAP.md](ROADMAP.md) — organized into 8 Platform Pillars, 14 Official Solution Blueprints, feature ownership model, dependency diagrams, and maturity-based timeline (Now / Next / Later / Long Term / Research). [docs/roadmap.md](docs/roadmap.md) is now a redirect; migration notes in [docs/roadmap-migration.md](docs/roadmap-migration.md). README navigation updated for product ecosystem presentation.
 - **README slim-down:** Root [README.md](README.md) now keeps only the landing intro, code sample, quick start, and doc links; detailed sections moved to [docs/overview/](docs/overview/README.md) subpages (flagship demos, audience paths, platform map, feature snapshot, signature capabilities, what Spanda is/is not).
 

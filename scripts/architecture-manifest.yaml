@@ -318,10 +318,6 @@ event_types:
 # Format: from -> to (from_layer depends on to_layer where to_layer >= from_layer).
 dependency_waivers:
   - from: spanda-driver
-    to: spanda-certify
-    reason: Compile pipeline invokes deploy certification during verify/run.
-    ticket: ARCH-001
-  - from: spanda-driver
     to: spanda-interpreter
     reason: Driver orchestrates tree-walking execution.
     ticket: ARCH-002
@@ -585,8 +581,6 @@ circular_dependency_waivers:
       - spanda-transport-websocket
     ticket: ARCH-SCC-001
     reason: Compile-run-verify mesh SCC — refactor tracked in ARCH-2xx roadmap.
-  - cycle: [spanda-driver, spanda-certify, spanda-driver]
-    ticket: ARCH-C01
   - cycle: [spanda-driver, spanda-hardware, spanda-driver]
     ticket: ARCH-C02
   - cycle: [spanda-driver, spanda-interpreter, spanda-assurance, spanda-capability, spanda-driver]

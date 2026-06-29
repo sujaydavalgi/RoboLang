@@ -701,12 +701,6 @@
   "dependency_waivers": [
     {
       "from": "spanda-driver",
-      "to": "spanda-certify",
-      "reason": "Compile pipeline invokes deploy certification during verify/run.",
-      "ticket": "ARCH-001"
-    },
-    {
-      "from": "spanda-driver",
       "to": "spanda-interpreter",
       "reason": "Driver orchestrates tree-walking execution.",
       "ticket": "ARCH-002"
@@ -1082,14 +1076,6 @@
       ],
       "ticket": "ARCH-SCC-001",
       "reason": "Compile-run-verify mesh SCC — refactor tracked in ARCH-2xx roadmap."
-    },
-    {
-      "cycle": [
-        "spanda-driver",
-        "spanda-certify",
-        "spanda-driver"
-      ],
-      "ticket": "ARCH-C01"
     },
     {
       "cycle": [

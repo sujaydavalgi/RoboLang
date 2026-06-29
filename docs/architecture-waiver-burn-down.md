@@ -10,7 +10,7 @@ Incremental refactor plan for Platform Architecture v2.0 baseline waivers.
 
 | Category | Waived | CI policy |
 |----------|--------|-----------|
-| Rust upward dependencies | 41 | Fail on new edges |
+| Rust upward dependencies | 40 | Fail on new edges |
 | Rust SCC (`ARCH-SCC-001`) | 27 crates | Fail on new SCC members |
 | TypeScript upward imports | 37 | Fail on new edges |
 | Blueprint paths | 8 roots | Fail on forbidden artifacts |
@@ -28,17 +28,17 @@ Validation: `python3 scripts/validate_architecture.py --check-manifest-sync` and
 
 ---
 
-## Phase 2 — Break the driver ↔ certify cycle
+## Phase 2 — Break the driver ↔ certify cycle (complete)
 
-**Target:** Remove `ARCH-C01`, `ARCH-001`, `ARCH-014`
+**Closed:** `ARCH-001`, `ARCH-C01`
 
-| Step | Action |
-|------|--------|
-| 1 | Extract certification checklist interface to `spanda-certify` traits consumed by CLI |
-| 2 | Make `spanda-driver` call certification via callback/trait object, not direct crate import |
-| 3 | Remove `spanda-certify` → `spanda-driver` edge (parse via `spanda-parser` + `spanda-ast` only) |
+| Step | Action | Status |
+|------|--------|--------|
+| 1 | Move `build_deploy_plan` certification wrapper to `spanda-ota` | Done |
+| 2 | Remove `spanda-certify` from `spanda-driver`; runtime gate via `spanda-assurance/certify-runtime` | Done |
+| 3 | Merge certification verify items in `spanda-config::verify_with_system_config` | Done |
 
-**Success:** `spanda-driver` and `spanda-certify` no longer in a 2-node cycle.
+**Success:** No production `spanda-driver` ↔ `spanda-certify` cycle; dev-test compile path may still use `spanda-driver` from certify tests only.
 
 ---
 
@@ -92,8 +92,8 @@ Recommended order:
 | Subsystem | Events | Status |
 |-----------|--------|--------|
 | Entity API mutations | `EntityCreated`, `EntityTagged`, `EntityRelated`, `EntityUpdated` | **Shipped** (`spanda-api` → `record_platform_event`) |
-| Readiness | `ReadinessChanged`, `ReadinessGateFailed` | Planned |
-| Interpreter | `MissionStarted`, `MissionCompleted` | Planned |
+| Readiness | `ReadinessChanged` | **Shipped** (`spanda-readiness` → Control Center audit on entity readiness GET) |
+| Interpreter | `MissionStarted`, `MissionCompleted` | **Shipped** (when program declares `audit` block) |
 | Telemetry store | Persist all platform events | Planned |
 
 See [event-model.md](./event-model.md).
