@@ -74,15 +74,25 @@ pub fn decrypt_snapshot_envelope(envelope: &EncryptedSnapshotEnvelope) -> Config
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
+pub(crate) mod snapshot_env_test {
     use std::sync::Mutex;
 
     static ENV_TEST_LOCK: Mutex<()> = Mutex::new(());
 
+    /// Serialize tests that mutate `SPANDA_CONFIG_SNAPSHOT_KEY` and related env vars.
+    pub fn lock() -> std::sync::MutexGuard<'static, ()> {
+        ENV_TEST_LOCK.lock().unwrap()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use super::snapshot_env_test::lock;
+
     #[test]
     fn encrypted_snapshot_roundtrip() {
-        let _guard = ENV_TEST_LOCK.lock().unwrap();
+        let _guard = lock();
         std::env::set_var("SPANDA_CONFIG_SNAPSHOT_KEY", "test-snapshot-key-material");
         let plaintext = br#"{"meta":{"id":"cfg-1"},"resolved":{}}"#;
         let envelope = encrypt_snapshot_bytes(plaintext).expect("encrypt");

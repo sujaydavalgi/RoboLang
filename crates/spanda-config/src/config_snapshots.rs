@@ -205,9 +205,8 @@ fn now_ms() -> f64 {
 mod tests {
     use super::*;
     use crate::resolver::ConfigResolver;
-    use std::sync::Mutex;
-
-    static ENV_TEST_LOCK: Mutex<()> = Mutex::new(());
+    use crate::snapshot_encryption::snapshot_env_test::lock;
+    use std::path::PathBuf;
 
     #[test]
     fn list_missing_dir_returns_empty() {
@@ -218,7 +217,7 @@ mod tests {
 
     #[test]
     fn encrypted_snapshot_save_and_load_roundtrip() {
-        let _guard = ENV_TEST_LOCK.lock().unwrap();
+        let _guard = lock();
         std::env::set_var("SPANDA_CONFIG_SNAPSHOT_KEY", "roundtrip-snapshot-key");
         let dir = tempfile::tempdir().unwrap();
         let example = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
