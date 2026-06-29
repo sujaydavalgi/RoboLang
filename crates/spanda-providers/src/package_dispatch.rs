@@ -4,7 +4,9 @@ use crate::anomaly_onnx::scan_learned_score;
 use crate::automotive_hub::{read_lidar_distance, read_radar_distance, read_ultrasonic_distance};
 use crate::iot_hub::{
     number_arg, publish_telemetry, read_canbus_frame, read_lora_payload, read_matter_cluster,
-    read_modbus_register, read_opcua_node, read_zigbee_attribute, register_device, send_command,
+    read_modbus_register, read_opcua_node, read_zigbee_attribute, read_bacnet_point,
+    read_knx_group, read_thread_endpoint, read_zwave_value, read_string_stub,
+    register_device, send_command,
     string_arg, update_shadow,
 };
 use spanda_runtime::fusion::{weight_for_sensor_type, weighted_confidence};
@@ -831,6 +833,154 @@ pub fn dispatch_official_package_call(
                 value,
                 unit: spanda_ast::nodes::UnitKind::None,
             })
+        }
+        ("iot.bacnet", "read_point") if registry.has_capability("iot.bacnet") => {
+            let device = string_arg(args, 0);
+            let object_id = string_arg(args, 1);
+            let value = read_bacnet_point(&device, &object_id);
+            record_call(
+                telemetry,
+                mission_trace,
+                sim_time_ms,
+                &key,
+                "iot",
+                module_path,
+                function_name,
+                started,
+                false,
+            );
+            Some(RuntimeValue::String { value })
+        }
+        ("iot.knx", "read_group_address") if registry.has_capability("iot.knx") => {
+            let address = string_arg(args, 0);
+            let value = read_knx_group(&address);
+            record_call(
+                telemetry,
+                mission_trace,
+                sim_time_ms,
+                &key,
+                "iot",
+                module_path,
+                function_name,
+                started,
+                false,
+            );
+            Some(RuntimeValue::String { value })
+        }
+        ("iot.thread", "read_endpoint") if registry.has_capability("iot.thread") => {
+            let device = string_arg(args, 0);
+            let value = read_thread_endpoint(&device);
+            record_call(
+                telemetry,
+                mission_trace,
+                sim_time_ms,
+                &key,
+                "iot",
+                module_path,
+                function_name,
+                started,
+                false,
+            );
+            Some(RuntimeValue::String { value })
+        }
+        ("iot.zwave", "read_value") if registry.has_capability("iot.zwave") => {
+            let device = string_arg(args, 0);
+            let command_class = string_arg(args, 1);
+            let value = read_zwave_value(&device, &command_class);
+            record_call(
+                telemetry,
+                mission_trace,
+                sim_time_ms,
+                &key,
+                "iot",
+                module_path,
+                function_name,
+                started,
+                false,
+            );
+            Some(RuntimeValue::String { value })
+        }
+        ("bridge.home_assistant", "get_state") if registry.has_capability("bridge.home_assistant")
+        =>
+        {
+            let entity_id = string_arg(args, 0);
+            let value = read_string_stub(&format!("home_assistant:{entity_id}"));
+            record_call(
+                telemetry,
+                mission_trace,
+                sim_time_ms,
+                &key,
+                "bridge",
+                module_path,
+                function_name,
+                started,
+                false,
+            );
+            Some(RuntimeValue::String { value })
+        }
+        ("energy.solar", "read_generation") if registry.has_capability("energy.solar") => {
+            let inverter_id = string_arg(args, 0);
+            let value = read_string_stub(&format!("energy:{inverter_id}"));
+            record_call(
+                telemetry,
+                mission_trace,
+                sim_time_ms,
+                &key,
+                "energy",
+                module_path,
+                function_name,
+                started,
+                false,
+            );
+            Some(RuntimeValue::String { value })
+        }
+        ("building.entity", "facility_readiness") if registry.has_capability("building.entity") => {
+            let facility_id = string_arg(args, 0);
+            let value = read_string_stub(&format!("building:{facility_id}"));
+            record_call(
+                telemetry,
+                mission_trace,
+                sim_time_ms,
+                &key,
+                "building",
+                module_path,
+                function_name,
+                started,
+                false,
+            );
+            Some(RuntimeValue::String { value })
+        }
+        ("access.lock", "lock_state") if registry.has_capability("access.lock") => {
+            let lock_id = string_arg(args, 0);
+            let value = read_string_stub(&format!("lock:{lock_id}"));
+            record_call(
+                telemetry,
+                mission_trace,
+                sim_time_ms,
+                &key,
+                "access",
+                module_path,
+                function_name,
+                started,
+                false,
+            );
+            Some(RuntimeValue::String { value })
+        }
+        ("environment.aq", "read_aq") if registry.has_capability("environment.aq") => {
+            let sensor_id = string_arg(args, 0);
+            let value = read_string_stub(&format!("environment:{sensor_id}"));
+            record_call(
+                telemetry,
+                mission_trace,
+                sim_time_ms,
+                &key,
+                "environment",
+                module_path,
+                function_name,
+                started,
+                false,
+            );
+            Some(RuntimeValue::String { value })
         }
         ("sensors.radar", "read") if registry.has_capability("sensors.radar.read") => {
             let sensor = if args.is_empty() {

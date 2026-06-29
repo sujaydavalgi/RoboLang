@@ -204,6 +204,37 @@ pub fn bootstrap_providers_for_packages(package_names: &[&str]) -> ProviderRegis
         registry.grant_capability("iot.canbus");
         crate::iot_hub::seed_protocol_demos();
     }
+    if names.contains("spanda-thread") {
+        registry.grant_capability("iot.thread");
+        crate::iot_hub::seed_protocol_demos();
+    }
+    if names.contains("spanda-zwave") {
+        registry.grant_capability("iot.zwave");
+        crate::iot_hub::seed_protocol_demos();
+    }
+    if names.contains("spanda-bacnet") {
+        registry.grant_capability("iot.bacnet");
+        crate::iot_hub::seed_protocol_demos();
+    }
+    if names.contains("spanda-knx") {
+        registry.grant_capability("iot.knx");
+        crate::iot_hub::seed_protocol_demos();
+    }
+    if names.contains("spanda-home-assistant") {
+        registry.grant_capability("bridge.home_assistant");
+    }
+    if names.contains("spanda-energy") {
+        registry.grant_capability("energy.solar");
+    }
+    if names.contains("spanda-building") {
+        registry.grant_capability("building.entity");
+    }
+    if names.contains("spanda-smart-locks") {
+        registry.grant_capability("access.lock");
+    }
+    if names.contains("spanda-environment") {
+        registry.grant_capability("environment.aq");
+    }
     if names.contains("spanda-radar") {
         registry.grant_capability("sensors.radar.read");
     }
@@ -274,6 +305,10 @@ pub fn bootstrap_providers_for_packages(package_names: &[&str]) -> ProviderRegis
         || names.contains("spanda-lora")
         || names.contains("spanda-matter")
         || names.contains("spanda-canbus")
+        || names.contains("spanda-thread")
+        || names.contains("spanda-zwave")
+        || names.contains("spanda-bacnet")
+        || names.contains("spanda-knx")
     {
         registry.grant_capability("iot.device");
     }

@@ -38,6 +38,11 @@ pub struct IotHub {
     lora_payloads: HashMap<String, String>,
     matter_clusters: HashMap<String, f64>,
     canbus_frames: HashMap<u32, f64>,
+    bacnet_points: HashMap<String, String>,
+    knx_groups: HashMap<String, String>,
+    thread_endpoints: HashMap<String, String>,
+    zwave_values: HashMap<String, String>,
+    string_stubs: HashMap<String, String>,
 }
 
 impl IotHub {
@@ -290,6 +295,44 @@ impl IotHub {
         self.canbus_frames.get(&can_id).copied().unwrap_or(0.0)
     }
 
+    pub fn read_bacnet_point(&self, device: &str, object_id: &str) -> String {
+        let key = format!("{device}:{object_id}");
+        self.bacnet_points
+            .get(&key)
+            .cloned()
+            .unwrap_or_else(|| format!("bacnet:{device}:{object_id}"))
+    }
+
+    pub fn read_knx_group(&self, address: &str) -> String {
+        self.knx_groups
+            .get(address)
+            .cloned()
+            .unwrap_or_else(|| format!("knx:{address}"))
+    }
+
+    pub fn read_thread_endpoint(&self, device: &str) -> String {
+        self.thread_endpoints
+            .get(device)
+            .cloned()
+            .unwrap_or_else(|| format!("thread:{device}"))
+    }
+
+    pub fn read_zwave_value(&self, device: &str, command_class: &str) -> String {
+        let key = format!("{device}:{command_class}");
+        self.zwave_values
+            .get(&key)
+            .or_else(|| self.zwave_values.get(device))
+            .cloned()
+            .unwrap_or_else(|| format!("zwave:{device}:{command_class}"))
+    }
+
+    pub fn read_string_stub(&self, key: &str) -> String {
+        self.string_stubs
+            .get(key)
+            .cloned()
+            .unwrap_or_else(|| format!("stub:{key}"))
+    }
+
     pub fn seed_protocol_demo(&mut self) {
         // Description:
         //     Seed protocol demo.
@@ -313,6 +356,26 @@ impl IotHub {
             .insert("node-a".into(), "payload:ok".into());
         self.matter_clusters.insert("light:onoff".into(), 1.0);
         self.canbus_frames.insert(0x100, 42.0);
+        self.bacnet_points
+            .insert("ahu-12:present-value".into(), "72.0".into());
+        self.knx_groups
+            .insert("1/2/3".into(), "occupied".into());
+        self.thread_endpoints
+            .insert("matter-hub-backup".into(), "online".into());
+        self.zwave_values
+            .insert("leak-basement".into(), "dry".into());
+        self.string_stubs.insert(
+            "energy:solar-001".into(),
+            "generation_kw:4.2".into(),
+        );
+        self.string_stubs.insert(
+            "building:tower-demo".into(),
+            "readiness:85".into(),
+        );
+        self.string_stubs.insert("lock:lock-front".into(), "locked".into());
+        self.string_stubs.insert("environment:co2-lobby".into(), "co2:620".into());
+        self.string_stubs
+            .insert("home_assistant:climate.living_room".into(), "heat".into());
     }
 
     pub fn device_count(&self) -> usize {
@@ -598,6 +661,26 @@ pub fn read_matter_cluster(node: &str, cluster: &str) -> f64 {
         return value;
     }
     hub().lock().unwrap().read_matter_cluster(node, cluster)
+}
+
+pub fn read_bacnet_point(device: &str, object_id: &str) -> String {
+    hub().lock().unwrap().read_bacnet_point(device, object_id)
+}
+
+pub fn read_knx_group(address: &str) -> String {
+    hub().lock().unwrap().read_knx_group(address)
+}
+
+pub fn read_thread_endpoint(device: &str) -> String {
+    hub().lock().unwrap().read_thread_endpoint(device)
+}
+
+pub fn read_zwave_value(device: &str, command_class: &str) -> String {
+    hub().lock().unwrap().read_zwave_value(device, command_class)
+}
+
+pub fn read_string_stub(key: &str) -> String {
+    hub().lock().unwrap().read_string_stub(key)
 }
 
 /// Seed demo protocol values for golden-path tests.
