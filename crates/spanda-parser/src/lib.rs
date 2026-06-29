@@ -1896,7 +1896,7 @@ impl Parser {
         //     let result = spanda_parser::parse_requires_connectivity(&mut self);
 
         use spanda_ast::foundations::RequiresConnectivityDecl;
-        use spanda_connectivity_runtime::ConnectivityRequirement;
+        use spanda_connectivity::ConnectivityRequirement;
         let start = self.advance();
         self.expect(
             TokenType::Lbrace,

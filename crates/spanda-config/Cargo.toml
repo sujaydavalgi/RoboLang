@@ -13,7 +13,9 @@ spanda-hardware = { path = "../spanda-hardware" }
 spanda-certify = { path = "../spanda-certify" }
 spanda-package = { path = "../spanda-package" }
 spanda-ast = { path = "../spanda-ast" }
-spanda-security = { path = "../spanda-security" }
+aes-gcm = "0.10"
+sha2 = "0.10"
+rand = "0.8"
 hex = "0.4"
 
 [dev-dependencies]

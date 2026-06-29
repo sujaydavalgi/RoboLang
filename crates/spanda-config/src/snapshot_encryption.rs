@@ -1,8 +1,8 @@
 //! AES-256-GCM encryption for configuration snapshots at rest.
 //!
 use crate::error::{ConfigError, ConfigResult};
+use crate::snapshot_wire_crypto::SnapshotWireCrypto;
 use serde::{Deserialize, Serialize};
-use spanda_security::WireCryptoSession;
 
 const ENVELOPE_FORMAT: &str = "spanda-config-snapshot-v1";
 
@@ -44,7 +44,7 @@ fn encryption_key_or_error() -> ConfigResult<String> {
 /// Encrypt snapshot JSON bytes for persistence.
 pub fn encrypt_snapshot_bytes(plaintext: &[u8]) -> ConfigResult<EncryptedSnapshotEnvelope> {
     let key = encryption_key_or_error()?;
-    let session = WireCryptoSession::from_material(&key);
+    let session = SnapshotWireCrypto::from_material(&key);
     let encrypted = session
         .encrypt(plaintext)
         .map_err(|error| ConfigError::SnapshotEncryption { detail: error })?;
@@ -63,7 +63,7 @@ pub fn decrypt_snapshot_envelope(envelope: &EncryptedSnapshotEnvelope) -> Config
         });
     }
     let key = encryption_key_or_error()?;
-    let session = WireCryptoSession::from_material(&key);
+    let session = SnapshotWireCrypto::from_material(&key);
     let ciphertext =
         hex::decode(&envelope.ciphertext).map_err(|error| ConfigError::SnapshotEncryption {
             detail: error.to_string(),

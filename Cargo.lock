@@ -2128,14 +2128,16 @@ dependencies = [
 name = "spanda-config"
 version = "0.4.0"
 dependencies = [
+ "aes-gcm",
  "hex",
+ "rand",
  "serde",
  "serde_json",
+ "sha2",
  "spanda-ast",
  "spanda-certify",
  "spanda-hardware",
  "spanda-package",
- "spanda-security",
  "tempfile",
  "thiserror 2.0.18",
  "toml",
@@ -2392,7 +2394,6 @@ name = "spanda-format"
 version = "0.4.0"
 dependencies = [
  "spanda-ast",
- "spanda-comm",
  "spanda-driver",
  "spanda-error",
  "spanda-lexer",
@@ -2596,7 +2597,7 @@ name = "spanda-parser"
 version = "0.4.0"
 dependencies = [
  "spanda-ast",
- "spanda-connectivity-runtime",
+ "spanda-connectivity",
  "spanda-error",
  "spanda-lexer",
  "spanda-regex-lang",
@@ -2782,6 +2783,7 @@ dependencies = [
  "spanda-ast",
  "spanda-audit",
  "spanda-comm",
+ "spanda-config",
  "spanda-error",
  "spanda-lexer",
  "spanda-parser",

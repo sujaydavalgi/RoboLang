@@ -10,7 +10,6 @@ homepage.workspace = true
 
 [dependencies]
 spanda-ast = { path = "../spanda-ast" }
-spanda-comm = { path = "../spanda-comm" }
 spanda-error = { path = "../spanda-error" }
 spanda-lexer = { path = "../spanda-lexer" }
 spanda-parser = { path = "../spanda-parser" }

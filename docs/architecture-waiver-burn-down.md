@@ -10,7 +10,7 @@ Incremental refactor plan for Platform Architecture v2.0 baseline waivers.
 
 | Category | Waived | CI policy |
 |----------|--------|-----------|
-| Rust upward dependencies | 19 | Fail on new edges |
+| Rust upward dependencies | 16 | Fail on new edges |
 | Rust SCC (`ARCH-SCC-001`) | 0 (dissolved) | Fail on any production SCC |
 | TypeScript upward imports | 0 | Fail on new edges |
 | Blueprint paths | 8 roots | Fail on forbidden artifacts |
@@ -113,7 +113,7 @@ See [event-model.md](./event-model.md).
 
 ## Phase 7 — Rust upward waiver burn-down (in progress)
 
-**Target:** Reduce remaining `ARCH-*` production upward edges (19 at baseline after Phase 7b)
+**Target:** Reduce remaining `ARCH-*` production upward edges (16 at baseline after Phase 7c)
 
 | Step | Action | Status |
 |------|--------|--------|
@@ -121,6 +121,7 @@ See [event-model.md](./event-model.md).
 | 2 | Remove dev-only orphan waivers (`ARCH-013`–`ARCH-014`, `ARCH-018`, `ARCH-212`) and fix corrupted `ARCH-013` YAML | Done |
 | 3 | Move `WireCryptoSession` to `spanda-runtime`; decouple `spanda-transport*` from `spanda-security` | Done — closed `ARCH-217`–`ARCH-221` |
 | 4 | Decouple `spanda-providers` from audit/telemetry-store via `DeviceTelemetrySink` + inline ledger stub | Done — closed `ARCH-025`–`ARCH-026` |
+| 5 | Point formatter/parser/config at compiler-layer types (`ARCH-211`, `ARCH-017`, `ARCH-202`) | Done — closed 3 edges (**19 → 16**) |
 
 **Success:** Monotonic reduction of Rust upward waivers without new violations.
 

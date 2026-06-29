@@ -741,12 +741,6 @@
       "ticket": "ARCH-016"
     },
     {
-      "from": "spanda-parser",
-      "to": "spanda-connectivity-runtime",
-      "reason": "Parser validates connectivity declarations against runtime types.",
-      "ticket": "ARCH-017"
-    },
-    {
       "from": "spanda-runtime-host",
       "to": "spanda-security",
       "reason": "RuntimeHost wires security providers.",
@@ -843,12 +837,6 @@
       "ticket": "ARCH-201"
     },
     {
-      "from": "spanda-config",
-      "to": "spanda-security",
-      "reason": "Config validation includes security policy fragments.",
-      "ticket": "ARCH-202"
-    },
-    {
       "from": "spanda-connectivity-runtime",
       "to": "spanda-hardware",
       "reason": "Connectivity runtime validates against hardware profiles.",
@@ -889,12 +877,6 @@
       "to": "spanda-telemetry-store",
       "reason": "Fleet coordination persists telemetry events.",
       "ticket": "ARCH-210"
-    },
-    {
-      "from": "spanda-format",
-      "to": "spanda-comm",
-      "reason": "Formatter preserves comm declaration layout.",
-      "ticket": "ARCH-211"
     },
     {
       "from": "spanda-llvm",

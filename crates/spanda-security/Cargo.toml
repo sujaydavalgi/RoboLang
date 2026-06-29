@@ -9,6 +9,7 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 thiserror = "2"
 spanda-audit = { path = "../spanda-audit" }
+spanda-config = { path = "../spanda-config" }
 spanda-ast = { path = "../spanda-ast" }
 spanda-comm = { path = "../spanda-comm" }
 spanda-error = { path = "../spanda-error" }

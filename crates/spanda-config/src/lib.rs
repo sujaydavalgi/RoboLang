@@ -25,6 +25,7 @@ pub mod entity_overlay;
 pub mod error;
 pub mod facility;
 pub mod human_entities;
+pub mod human_health;
 pub mod integration;
 pub mod json;
 pub mod layer;
@@ -38,6 +39,7 @@ pub mod reports;
 pub mod resolved;
 pub mod resolver;
 pub mod snapshot_encryption;
+pub mod snapshot_wire_crypto;
 pub mod system_context;
 pub mod validation;
 

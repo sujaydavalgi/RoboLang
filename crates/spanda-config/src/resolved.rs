@@ -79,14 +79,14 @@ impl ResolvedSystemConfig {
         self.raw.get("readiness")
     }
 
-    pub fn human_health_gate(&self) -> spanda_security::HumanHealthGate {
-        let settings: spanda_security::HumanHealthSettings = self
+    pub fn human_health_gate(&self) -> crate::human_health::HumanHealthGate {
+        let settings: crate::human_health::HumanHealthSettings = self
             .raw
             .get("security")
             .and_then(|security| security.get("human_health"))
             .and_then(|section| toml::from_str(&toml::to_string(section).unwrap_or_default()).ok())
             .unwrap_or_default();
-        spanda_security::HumanHealthGate::resolve(&settings)
+        crate::human_health::HumanHealthGate::resolve(&settings)
     }
 
     pub fn assurance_config(&self) -> Option<&toml::Value> {

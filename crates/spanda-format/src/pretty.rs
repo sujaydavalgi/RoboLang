@@ -1,8 +1,8 @@
 //! pretty support for Spanda.
 //!
+use spanda_ast::comm_decl::{DiscoverFilter, DiscoverTarget, MessageDecl};
 use spanda_ast::foundations::{CapabilityDecl, Visibility};
 use spanda_ast::nodes::*;
-use spanda_comm::{DiscoverFilter, DiscoverTarget};
 
 struct PrettyPrinter {
     out: String,
@@ -1612,7 +1612,7 @@ impl HasSpan for spanda_ast::foundations::SimulateCompatibilityDecl {
     }
 }
 
-impl HasSpan for spanda_comm::MessageDecl {
+impl HasSpan for MessageDecl {
     fn span(&self) -> &Span {
         // Description:
         //     Span.
@@ -1630,7 +1630,7 @@ impl HasSpan for spanda_comm::MessageDecl {
 
         // Dispatch based on the enum variant or current state.
         match self {
-            spanda_comm::MessageDecl::MessageDecl { span, .. } => span,
+            MessageDecl::MessageDecl { span, .. } => span,
         }
     }
 }
