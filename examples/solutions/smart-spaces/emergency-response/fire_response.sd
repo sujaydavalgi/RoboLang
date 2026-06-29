@@ -56,16 +56,16 @@ health_check EmergencyHealth for robot EmergencyOrchestrator {
 }
 
 continuity_policy EmergencyLighting {
-  on controller.failed {
-    failover to life_safety_panel;
-    resume mission Evacuation;
+  on sensor.failed {
+    verify remaining_capabilities;
+    mode degraded;
   }
 }
 
 recovery_policy FireRecovery {
-  on safety.fire_alarm {
-    escalate mission FireResponse;
-    notify operator;
+  on sensor.degraded {
+    reassign mission;
+    mode degraded;
   }
 }
 

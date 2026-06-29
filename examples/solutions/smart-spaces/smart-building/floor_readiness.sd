@@ -63,9 +63,9 @@ health_check FirePanelHealth for robot BuildingOrchestrator {
 }
 
 continuity_policy BuildingContinuity {
-  on robot.unavailable {
-    reassign alternate;
-    resume mission InspectionMission;
+  on robot.failed {
+    resume from checkpoint;
+    reassign mission;
   }
 }
 

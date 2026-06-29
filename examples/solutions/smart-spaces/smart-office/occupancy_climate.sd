@@ -47,9 +47,9 @@ health_check BmsHealth for robot OfficeOrchestrator {
 }
 
 continuity_policy OfficeContinuity {
-  on gateway.offline {
-    failover to backup;
-    resume mission OccupancyClimate;
+  on connectivity.lost {
+    reassign mission;
+    mode degraded;
   }
 }
 

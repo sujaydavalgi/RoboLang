@@ -45,13 +45,13 @@ robot CareOrchestrator {
 }
 
 health_policy PatientSafety {
-  on Degraded { notify operator; }
-  on Critical { escalate mission FallAlert; }
+  on Degraded { emergency_stop; }
+  on Critical { emergency_stop; }
 }
 
 recovery_policy CareRecovery {
-  on wearable.disconnected {
-    notify operator;
+  on connectivity.lost {
+    reassign mission;
     mode degraded;
   }
 }

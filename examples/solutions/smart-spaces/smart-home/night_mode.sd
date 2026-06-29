@@ -59,21 +59,21 @@ health_check GatewayHealth for robot HomeOrchestrator {
 }
 
 health_policy HomeSafety {
-  on Degraded { pause mission NightMode; }
+  on Degraded { emergency_stop; }
   on Critical { emergency_stop; }
 }
 
 continuity_policy NightContinuity {
-  on gateway.offline {
-    failover to backup;
-    resume mission NightMode;
+  on connectivity.lost {
+    reassign mission;
+    mode degraded;
   }
 }
 
 recovery_policy LeakRecovery {
-  on safety.water_leak {
-    escalate mission LeakResponse;
-    notify operator;
+  on sensor.degraded {
+    reassign mission;
+    mode degraded;
   }
 }
 

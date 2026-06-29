@@ -48,9 +48,9 @@ health_check EnergyHealth for robot EnergyOrchestrator {
 }
 
 continuity_policy EnergyContinuity {
-  on grid.outage {
-    activate mission PowerFailure;
-    preserve critical_loads;
+  on connectivity.lost {
+    reassign mission;
+    mode degraded;
   }
 }
 
