@@ -11,6 +11,8 @@ pub mod config;
 pub mod dashboard;
 pub mod diagnostics;
 pub mod engine;
+pub mod entity_health;
+pub mod entity_readiness;
 pub mod entity_verify;
 pub mod failure;
 pub mod fleet;
@@ -36,6 +38,14 @@ pub use auditor::{audit_program, audit_program_source, SafetyAuditReport};
 pub use dashboard::{FleetDashboard, HealthDashboard, MissionDashboard, ReadinessDashboard};
 pub use diagnostics::collect_readiness_diagnostics;
 pub use engine::{evaluate_readiness, evaluate_readiness_source, evaluate_readiness_with_runtime};
+pub use entity_health::{
+    evaluate_entity_health, EntityHealthDiagnostic, EntityHealthMetrics, EntityHealthOptions,
+    EntityHealthReport,
+};
+pub use entity_readiness::{
+    evaluate_entity_readiness, EntityReadinessFinding, EntityReadinessOptions,
+    EntityReadinessReport,
+};
 pub use entity_verify::{
     verify_entity, EntityVerifyFinding, EntityVerifyOptions, EntityVerifyReport,
 };
