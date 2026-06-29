@@ -133,6 +133,7 @@ Index of regression and promotion gates organized by **Platform Pillar** and **S
 | Enterprise ops Stable | `enterprise_ops_stable_promotion_gate.sh` | [enterprise-ops-stable-promotion.md](../../docs/enterprise-ops-stable-promotion.md) |
 | Entity model Stable | `entity_model_stable_promotion_gate.sh` | [entity-model-stable-promotion.md](../../docs/entity-model-stable-promotion.md) |
 | HRI Stable | `hri_stable_promotion_gate.sh` | [stable-hardening-human-interaction.md](../../docs/stable-hardening-human-interaction.md) |
+| Smart Spaces scaffold | `smart_spaces_promotion_gate.sh` | [stable-hardening-smart-spaces.md](../../docs/stable-hardening-smart-spaces.md) |
 
 ---
 

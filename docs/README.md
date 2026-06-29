@@ -177,6 +177,7 @@
 | [enterprise-ops-stable-promotion.md](./enterprise-ops-stable-promotion.md) | **Stable promotion runbook** (soak, audit prep, promotion gate) |
 | [stable-hardening-human-interaction.md](./stable-hardening-human-interaction.md) | **Experimental → Stable promotion checklist for Human Interaction (H1–H4)** |
 | [stable-hardening-adas.md](./stable-hardening-adas.md) | **Experimental → Stable promotion checklist for ADAS Solution Blueprint** |
+| [stable-hardening-smart-spaces.md](./stable-hardening-smart-spaces.md) | **Experimental → Stable promotion checklist for Smart Spaces Solution Blueprint** |
 | [field-soak-gate.md](./field-soak-gate.md) | **30-day field pilot gate before Stable promotion** |
 | [security-audit-third-party.md](./security-audit-third-party.md) | **Third-party security audit scope and prep workflow** |
 | [desktop-release-runbook.md](./desktop-release-runbook.md) | **Signed/notarized desktop builds and auto-update** |
