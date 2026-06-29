@@ -2938,6 +2938,7 @@ dependencies = [
  "serde",
  "serde_json",
  "spanda-ast",
+ "spanda-config",
  "spanda-lexer",
  "spanda-package",
  "spanda-parser",
