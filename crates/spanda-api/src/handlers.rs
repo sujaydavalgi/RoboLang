@@ -266,7 +266,7 @@ pub fn handle_request(
         );
         return (response, correlation_id);
     }
-    if let Some(response) = route_smart_spaces(state, path, &request.method) {
+    if let Some(response) = route_smart_spaces(state, path, &request.method, query) {
         e3::record_trace(
             state,
             &correlation_id,
@@ -998,7 +998,13 @@ fn route_humans(state: &ControlCenterState, path: &str, method: &str) -> Option<
     }
 }
 
-fn route_smart_spaces(state: &ControlCenterState, path: &str, method: &str) -> Option<HttpResponse> {
+fn route_smart_spaces(
+    state: &ControlCenterState,
+    path: &str,
+    method: &str,
+    query: &str,
+) -> Option<HttpResponse> {
+    let params = parse_query(query);
     if path == "/v1/facilities" && method == "GET" {
         return Some(crate::smart_spaces::facilities_list(state));
     }
@@ -1011,16 +1017,59 @@ fn route_smart_spaces(state: &ControlCenterState, path: &str, method: &str) -> O
     if path == "/v1/smart-spaces/summary" && method == "GET" {
         return Some(crate::smart_spaces::smart_spaces_summary(state));
     }
+    if path == "/v1/smart-spaces/devices" && method == "GET" {
+        let facility_id = params.get("facility_id").map(String::as_str);
+        return Some(crate::smart_spaces_panels::devices_inventory_get(
+            state,
+            facility_id,
+        ));
+    }
+    if path == "/v1/smart-spaces/gateways" && method == "GET" {
+        let facility_id = params.get("facility_id").map(String::as_str);
+        return Some(crate::smart_spaces_panels::gateway_status_list(
+            state,
+            facility_id,
+        ));
+    }
     if let Some(rest) = path.strip_prefix("/v1/facilities/") {
         let (facility_id, action) = rest.split_once('/').unwrap_or((rest, ""));
-        if action == "readiness" && method == "GET" {
-            return Some(crate::smart_spaces::facility_readiness_get(state, facility_id));
+        match (action, method) {
+            ("readiness", "GET") => {
+                return Some(crate::smart_spaces::facility_readiness_get(state, facility_id));
+            }
+            ("floor-map", "GET") => {
+                return Some(crate::smart_spaces_panels::facility_floor_map_get(
+                    state, facility_id,
+                ));
+            }
+            ("security", "GET") => {
+                return Some(crate::smart_spaces_panels::facility_security_get(
+                    state, facility_id,
+                ));
+            }
+            ("health", "GET") => {
+                return Some(crate::smart_spaces_panels::facility_health_get(
+                    state, facility_id,
+                ));
+            }
+            _ => {}
         }
     }
-    if let Some(zone_id) = path.strip_prefix("/v1/zones/") {
-        let zone_id = zone_id.strip_suffix("/occupancy").unwrap_or(zone_id);
-        if path.ends_with("/occupancy") && method == "GET" {
-            return Some(crate::smart_spaces::zone_occupancy_get(state, zone_id));
+    if let Some(rest) = path.strip_prefix("/v1/zones/") {
+        if let Some(zone_id) = rest.strip_suffix("/occupancy") {
+            if method == "GET" {
+                return Some(crate::smart_spaces::zone_occupancy_get(state, zone_id));
+            }
+        }
+        if let Some(zone_id) = rest.strip_suffix("/environment") {
+            if method == "GET" {
+                return Some(crate::smart_spaces_panels::zone_environment_get(state, zone_id));
+            }
+        }
+    }
+    if let Some(rest) = path.strip_prefix("/v1/energy/systems/") {
+        if method == "GET" && !rest.is_empty() {
+            return Some(crate::smart_spaces_panels::energy_system_get(state, rest));
         }
     }
     None

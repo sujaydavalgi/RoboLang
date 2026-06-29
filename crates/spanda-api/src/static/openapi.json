@@ -1048,6 +1048,54 @@
         "responses": { "200": { "description": "Smart Spaces summary" } }
       }
     },
+    "/v1/smart-spaces/devices": {
+      "get": {
+        "summary": "Smart Spaces IoT device inventory",
+        "parameters": [
+          { "name": "facility_id", "in": "query", "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Device inventory" } }
+      }
+    },
+    "/v1/smart-spaces/gateways": {
+      "get": {
+        "summary": "Smart Spaces gateway reachability status",
+        "parameters": [
+          { "name": "facility_id", "in": "query", "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Gateway status list" } }
+      }
+    },
+    "/v1/facilities/{id}/floor-map": {
+      "get": {
+        "summary": "Facility zone floor map tree",
+        "responses": { "200": { "description": "Floor map" } }
+      }
+    },
+    "/v1/facilities/{id}/security": {
+      "get": {
+        "summary": "Facility security and access control status",
+        "responses": { "200": { "description": "Security status" } }
+      }
+    },
+    "/v1/facilities/{id}/health": {
+      "get": {
+        "summary": "Facility device pool health rollup",
+        "responses": { "200": { "description": "Facility health" } }
+      }
+    },
+    "/v1/zones/{id}/environment": {
+      "get": {
+        "summary": "Zone environmental readings and baselines",
+        "responses": { "200": { "description": "Environmental status" } }
+      }
+    },
+    "/v1/energy/systems/{id}": {
+      "get": {
+        "summary": "Energy system detail (SOC, generation, EV session)",
+        "responses": { "200": { "description": "Energy system detail" } }
+      }
+    },
     "/v1/rpc": {
       "post": {
         "summary": "gRPC-compatible JSON gateway",

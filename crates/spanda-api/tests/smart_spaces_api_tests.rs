@@ -54,4 +54,27 @@ fn facilities_energy_and_emergency_from_smart_spaces_blueprint() {
     assert!(summary.body.contains("smart_spaces"));
     assert!(summary.body.contains("readiness_rollups"));
     assert!(summary.body.contains("robots"));
+
+    let devices = spanda_api::smart_spaces_panels::devices_inventory_get(&state, Some("tower-demo"));
+    assert_eq!(devices.status, 200);
+    assert!(devices.body.contains("bacnet-gw-primary"));
+
+    let health = spanda_api::smart_spaces_panels::facility_health_get(&state, "tower-demo");
+    assert_eq!(health.status, 200);
+    assert!(health.body.contains("device_pool"));
+
+    let security = spanda_api::smart_spaces_panels::facility_security_get(&state, "tower-demo");
+    assert_eq!(security.status, 200);
+    assert!(security.body.contains("locks_and_cameras"));
+
+    let environment = spanda_api::smart_spaces_panels::zone_environment_get(&state, "room-lobby");
+    assert_eq!(environment.status, 200);
+    assert!(environment.body.contains("co2_ppm"));
+
+    let energy = spanda_api::smart_spaces_panels::energy_system_get(&state, "battery-001");
+    assert_eq!(energy.status, 200);
+    assert!(energy.body.contains("soc_percent"));
+
+    let occupancy = spanda_api::smart_spaces::zone_occupancy_get(&state, "floor-12");
+    assert!(occupancy.body.contains("timeline"));
 }

@@ -23,6 +23,7 @@ pub mod report_scheduler;
 pub mod sdk_ops;
 pub mod server;
 pub mod smart_spaces;
+pub mod smart_spaces_panels;
 pub mod slo_burn_scheduler;
 pub mod state;
 pub mod versioning;

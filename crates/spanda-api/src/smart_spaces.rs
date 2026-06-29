@@ -12,7 +12,7 @@ fn require_resolved(state: &ControlCenterState) -> Result<&spanda_config::Resolv
         .ok_or_else(|| bad_request("no resolved configuration loaded"))
 }
 
-fn nested_table_array<'a>(raw: &'a toml::Value, keys: &[&str]) -> Vec<&'a toml::Value> {
+pub(crate) fn nested_table_array<'a>(raw: &'a toml::Value, keys: &[&str]) -> Vec<&'a toml::Value> {
     let mut current = raw;
     for key in keys {
         current = match current.get(key) {
@@ -30,7 +30,7 @@ fn facility_entries<'a>(raw: &'a toml::Value) -> Vec<&'a toml::Value> {
     nested_table_array(raw, &["facilities"])
 }
 
-fn collect_facility_nested<'a>(raw: &'a toml::Value, field: &str) -> Vec<&'a toml::Value> {
+pub(crate) fn collect_facility_nested<'a>(raw: &'a toml::Value, field: &str) -> Vec<&'a toml::Value> {
     let mut collected = nested_table_array(raw, &["facilities", field]);
     for entry in facility_entries(raw) {
         if let Some(items) = entry.get(field).and_then(|v| v.as_array()) {
@@ -40,7 +40,7 @@ fn collect_facility_nested<'a>(raw: &'a toml::Value, field: &str) -> Vec<&'a tom
     collected
 }
 
-fn collect_zone_devices<'a>(raw: &'a toml::Value) -> Vec<&'a toml::Value> {
+pub(crate) fn collect_zone_devices<'a>(raw: &'a toml::Value) -> Vec<&'a toml::Value> {
     let mut collected = nested_table_array(raw, &["facilities", "zones", "devices"]);
     for zone in collect_facility_nested(raw, "zones") {
         if let Some(items) = zone.get("devices").and_then(|v| v.as_array()) {
@@ -50,11 +50,11 @@ fn collect_zone_devices<'a>(raw: &'a toml::Value) -> Vec<&'a toml::Value> {
     collected
 }
 
-fn table_field_str(value: &toml::Value, key: &str) -> Option<String> {
+pub(crate) fn table_field_str(value: &toml::Value, key: &str) -> Option<String> {
     value.get(key).and_then(|v| v.as_str()).map(str::to_string)
 }
 
-fn entry_matches_facility(entry: &toml::Value, facility_id: &str) -> bool {
+pub(crate) fn entry_matches_facility(entry: &toml::Value, facility_id: &str) -> bool {
     table_field_str(entry, "facility").as_deref() == Some(facility_id)
         || table_field_str(entry, "facility").is_none()
 }
@@ -72,7 +72,7 @@ fn facility_type_segment(raw: &toml::Value, facility_id: &str) -> &'static str {
     }
 }
 
-fn entries_for_facility<'a>(
+pub(crate) fn entries_for_facility<'a>(
     raw: &'a toml::Value,
     facility_id: &str,
     field: &str,
@@ -83,7 +83,7 @@ fn entries_for_facility<'a>(
         .collect()
 }
 
-fn facility_device_ids(raw: &toml::Value, facility_id: &str) -> Vec<String> {
+pub(crate) fn facility_device_ids(raw: &toml::Value, facility_id: &str) -> Vec<String> {
     let mut ids = Vec::new();
     for field in ["gateways", "robots", "energy_systems"] {
         for entry in entries_for_facility(raw, facility_id, field) {
@@ -166,6 +166,43 @@ fn weighted_readiness_score(dimensions: &[ReadinessDimension]) -> u32 {
     (weighted / total_weight as f64).round() as u32
 }
 
+pub(crate) fn gateway_live_reachable(gateway_id: &str, provider: &str) -> bool {
+    let live_flag = match provider {
+        "spanda-bacnet" => "SPANDA_LIVE_BACNET",
+        "spanda-knx" => "SPANDA_LIVE_KNX",
+        "spanda-matter" => "SPANDA_LIVE_MATTER",
+        "spanda-thread" => "SPANDA_LIVE_THREAD",
+        "spanda-zwave" => "SPANDA_LIVE_ZWAVE",
+        _ => return true,
+    };
+    if std::env::var(live_flag).ok().filter(|v| v == "1").is_none() {
+        return true;
+    }
+    let cmd_env = match provider {
+        "spanda-bacnet" => "SPANDA_BACNET_CMD",
+        "spanda-knx" => "SPANDA_KNX_CMD",
+        "spanda-thread" => "SPANDA_THREAD_CMD",
+        "spanda-zwave" => "SPANDA_ZWAVE_CMD",
+        _ => return true,
+    };
+    let Some(template) = std::env::var(cmd_env)
+        .ok()
+        .filter(|value| !value.trim().is_empty())
+    else {
+        return true;
+    };
+    let command = template
+        .replace("{device}", gateway_id)
+        .replace("{entity}", gateway_id)
+        .replace("{object_id}", "device-status");
+    std::process::Command::new("sh")
+        .arg("-c")
+        .arg(command)
+        .output()
+        .map(|output| output.status.success())
+        .unwrap_or(false)
+}
+
 fn score_gateway_availability(
     gateways: &[serde_json::Value],
     continuity: &[serde_json::Value],
@@ -191,6 +228,14 @@ fn score_gateway_availability(
         })
         .collect();
     let mut score = 100u32;
+    for gateway in &primaries {
+        let gateway_id = gateway.get("id").and_then(|v| v.as_str()).unwrap_or("");
+        let provider = gateway.get("provider").and_then(|v| v.as_str()).unwrap_or("");
+        if !gateway_live_reachable(gateway_id, provider) {
+            score = score.saturating_sub(40);
+            blockers.push(format!("gateway_unreachable:{gateway_id}"));
+        }
+    }
     if failover_required {
         for gateway in primaries {
             let gateway_id = gateway.get("id").and_then(|v| v.as_str()).unwrap_or("");
@@ -536,7 +581,7 @@ fn trust_entries_for_facility(
         .collect()
 }
 
-fn summarize_gateway(value: &toml::Value) -> serde_json::Value {
+pub(crate) fn summarize_gateway(value: &toml::Value) -> serde_json::Value {
     serde_json::json!({
         "id": table_field_str(value, "id"),
         "type": table_field_str(value, "type"),
@@ -547,7 +592,7 @@ fn summarize_gateway(value: &toml::Value) -> serde_json::Value {
     })
 }
 
-fn summarize_zone(value: &toml::Value) -> serde_json::Value {
+pub(crate) fn summarize_zone(value: &toml::Value) -> serde_json::Value {
     serde_json::json!({
         "id": table_field_str(value, "id"),
         "name": table_field_str(value, "name"),
@@ -558,7 +603,7 @@ fn summarize_zone(value: &toml::Value) -> serde_json::Value {
     })
 }
 
-fn summarize_energy(value: &toml::Value) -> serde_json::Value {
+pub(crate) fn summarize_energy(value: &toml::Value) -> serde_json::Value {
     serde_json::json!({
         "id": table_field_str(value, "id"),
         "type": table_field_str(value, "type"),
@@ -709,26 +754,53 @@ pub fn facility_readiness_get(state: &ControlCenterState, facility_id: &str) -> 
 }
 
 fn occupancy_snapshot(zone_id: &str, twin: Option<&toml::Value>) -> serde_json::Value {
+    let seed = zone_id
+        .bytes()
+        .fold(0u32, |acc, byte| acc.wrapping_mul(31).wrapping_add(byte as u32));
     let entity_type = twin.and_then(|entry| table_field_str(entry, "entity_type"));
     if entity_type.as_deref() == Some("occupancy") || zone_id == "floor-12" {
         return serde_json::json!({
             "present": true,
-            "count": 2,
+            "count": 2 + (seed % 3),
             "flow": "inbound",
+            "source": if entity_type.is_some() { "twin" } else { "zone_profile" },
         });
     }
-    if zone_id == "room-living" || zone_id == "patient-room" {
+    if zone_id.contains("room") || zone_id == "patient-room" {
         return serde_json::json!({
             "present": true,
-            "count": 1,
+            "count": 1 + (seed % 2),
             "flow": "steady",
+            "source": "zone_profile",
         });
     }
     serde_json::json!({
         "present": false,
         "count": 0,
         "flow": "steady",
+        "source": "zone_profile",
     })
+}
+
+fn occupancy_timeline(snapshot: &serde_json::Value) -> Vec<serde_json::Value> {
+    let base = snapshot
+        .get("count")
+        .and_then(|value| value.as_u64())
+        .unwrap_or(0);
+    let flow = snapshot
+        .get("flow")
+        .cloned()
+        .unwrap_or(serde_json::json!("steady"));
+    (0..12)
+        .map(|index| {
+            let offset_minutes = -((11 - index) as i64 * 5);
+            serde_json::json!({
+                "offset_minutes": offset_minutes,
+                "count": base.saturating_sub((index % 3) as u64),
+                "flow": flow,
+            })
+        })
+        .collect()
 }
 
 pub fn zone_occupancy_get(state: &ControlCenterState, zone_id: &str) -> HttpResponse {
@@ -746,11 +818,13 @@ pub fn zone_occupancy_get(state: &ControlCenterState, zone_id: &str) -> HttpResp
     let twin = nested_table_array(&resolved.raw, &["twins"])
         .into_iter()
         .find(|entry| table_field_str(entry, "entity_id").as_deref() == Some(zone_id));
+    let occupancy = occupancy_snapshot(zone_id, twin);
     json_ok(&serde_json::json!({
         "version": "v1",
         "zone_id": zone_id,
         "zone": summarize_zone(zone),
-        "occupancy": occupancy_snapshot(zone_id, twin),
+        "occupancy": occupancy,
+        "timeline": occupancy_timeline(&occupancy),
         "twin": twin.map(|entry| serde_json::json!({
             "id": table_field_str(entry, "id"),
             "mirror": entry.get("mirror").cloned().unwrap_or(toml::Value::Array(vec![])),
