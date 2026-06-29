@@ -17,16 +17,7 @@ pub enum TamperFormat {
     Json,
 }
 
-/// Tamper severity aligned with platform maturity taxonomy.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
-pub enum TamperSeverity {
-    Info,
-    Low,
-    Medium,
-    High,
-    Critical,
-}
+pub use spanda_runtime::tamper_policy::TamperSeverity;
 
 /// Overall trust posture for a program artifact.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]

@@ -6,7 +6,9 @@ pub mod error;
 pub mod events;
 pub mod fusion;
 pub mod hal_config;
+pub mod hooks;
 pub mod host;
+pub mod operational_policy;
 pub mod provider_types;
 pub mod providers;
 pub mod reliability_runtime;
@@ -17,6 +19,7 @@ pub mod scheduler;
 pub mod serialize;
 pub mod state_machine;
 pub mod telemetry;
+pub mod tamper_policy;
 pub mod triggers;
 pub mod twin;
 pub mod value;
@@ -33,7 +36,12 @@ pub use fusion::{
     weighted_confidence, FusionPreview,
 };
 pub use hal_config::HalMemberConfig;
+pub use hooks::{NoopRuntimeHooks, RuntimeHooks, SharedRuntimeHooks};
 pub use host::{imports_enable_navigation, imports_enable_slam, RuntimeHost};
+pub use operational_policy::{
+    build_runtime_policy_monitor, check_runtime_policy_motion, RuntimePolicyMonitor,
+    RuntimePolicyViolation,
+};
 pub use provider_types::{
     ProviderCapability, ProviderCapabilitySet, ProviderError, ProviderId, ProviderMetadata,
     ProviderResult, ProviderSafetyLevel,
@@ -57,6 +65,10 @@ pub use robotics::{FleetRegistry, MissionRuntime, MissionState, ProgramSafetyZon
 pub use scheduler::{advance_wall_tick, elapsed_ms, sleep_until, SchedulerClock};
 pub use serialize::{deserialize_value, serialize_value};
 pub use state_machine::StateMachineRuntime;
+pub use tamper_policy::{
+    actions_for_tamper_event, extract_tamper_policies, tamper_policy_coverage, TamperPolicySpec,
+    TamperSeverity,
+};
 pub use telemetry::{
     ExecutionMetrics, PipelineMetrics, RuntimeTelemetry, SchedulerMetrics, TaskMetrics,
     TopicMetrics, TriggerMetrics, WatchdogMetrics,
