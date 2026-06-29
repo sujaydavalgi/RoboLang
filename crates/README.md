@@ -38,6 +38,9 @@ Optional (not in default workspace build): `spanda-ros2-rclrs-native` — in-pro
 
 ## Related docs
 
+- [docs/platform-architecture.md](../docs/platform-architecture.md) — **Platform Architecture v2.0** (layers, dependency rules, CI validation)
+- [docs/layered-architecture.md](../docs/layered-architecture.md) — layer stack and crate mapping
+- [docs/module-ownership.md](../docs/module-ownership.md) — ownership matrix
 - [docs/api-documentation.md](../docs/api-documentation.md) — language vs compiler vs JSON API hierarchy
 - [docs/api-reference.md](../docs/api-reference.md) — generated Rust/TypeScript symbol index (grouped by layer)
 - [docs/lean-core.md](../docs/lean-core.md) — principles and package-first model

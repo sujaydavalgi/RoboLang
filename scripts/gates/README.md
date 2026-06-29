@@ -2,6 +2,8 @@
 
 Index of regression and promotion gates organized by **Platform Pillar** and **Solution Blueprint**.
 
+**Architecture validation:** `python3 scripts/validate_architecture.py` (also runs in CI `rust` job)
+
 **Run all examples:** `./scripts/check_all_examples.sh`
 
 ---

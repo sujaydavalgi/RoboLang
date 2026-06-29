@@ -37,6 +37,13 @@
 | [spanda-101/README.md](./spanda-101/README.md) | **Spanda 101 — 10-lesson tutorial series (basics → end-to-end)** |
 | [installation.md](./installation.md) | **Prebuilt packages for Linux, macOS, and Windows** |
 | [architecture.md](./architecture.md) | **Compiler pipeline with diagrams** |
+| [platform-architecture.md](./platform-architecture.md) | **Platform Architecture v2.0 — layers, governance, validation** |
+| [layered-architecture.md](./layered-architecture.md) | **Official layer stack and crate mapping** |
+| [dependency-rules.md](./dependency-rules.md) | **Dependency rules, waivers, anti-patterns** |
+| [module-ownership.md](./module-ownership.md) | **Module ownership matrix** |
+| [platform-services.md](./platform-services.md) | **Platform service boundaries** |
+| [event-model.md](./event-model.md) | **Common event model** |
+| [design-principles.md](./design-principles.md) | **Architectural design principles** |
 | [lean-core.md](./lean-core.md) | **Lean-core workspace architecture (Phases 1–17)** |
 | [crates/README.md](../crates/README.md) | **Workspace crate index and dependency rules** |
 | [lean-core-roadmap.md](./lean-core-roadmap.md) | **Phased plan — Phases 1–35 complete; crate extraction and verification/DX** |

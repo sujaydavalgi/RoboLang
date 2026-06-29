@@ -2,7 +2,7 @@
 
 Technical architecture of the Spanda compiler, runtime, and tooling stack.
 
-For a shorter overview, see [spanda-architecture.md](./spanda-architecture.md). For the lean-core model, see [lean-core.md](./lean-core.md).
+For a shorter overview, see [spanda-architecture.md](./spanda-architecture.md). For the lean-core model, see [lean-core.md](./lean-core.md). For official platform layers and dependency governance, see [platform-architecture.md](./platform-architecture.md).
 
 ---
 

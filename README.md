@@ -67,6 +67,7 @@ Spanda is a **product ecosystem** — not only a language repository.
 | **[Platform Pillars](ROADMAP.md#platform-pillars)** | Language · Compiler & Runtime · Verification · Device & Fleet · Security · Operations · Developer · Packages |
 | **[Official Solution Blueprints](ROADMAP.md#official-solution-blueprints)** | Warehouse · Search & Rescue · Healthcare · ADAS · Smart Factory · Agriculture · Critical Infrastructure · Environmental · Maritime · Transportation · Space · Defense · Research · Spatial HRI |
 | **[Architecture overview](docs/platform-overview.md)** | Components, workflow, product family |
+| **[Platform Architecture v2.0](docs/platform-architecture.md)** | Layers, dependency rules, ownership, CI validation |
 | **[Full roadmap](ROADMAP.md)** | Ownership model, dependency maps, timeline (Now / Next / Later / Long Term / Research) |
 
 **Product family:** Spanda Language → Runtime → Verify → Readiness → Assurance → Diagnosis → Recovery → Trust → Control Center → Registry → SDKs
