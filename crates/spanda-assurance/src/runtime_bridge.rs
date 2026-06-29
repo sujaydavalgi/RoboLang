@@ -175,4 +175,32 @@ impl AssuranceRuntime for AssuranceBackedRuntime {
     fn parse_trigger(&self, s: &str) -> ContinuityTrigger {
         parse_trigger(s)
     }
+
+    fn evaluate_recovery_program(
+        &self,
+        program: &Program,
+    ) -> spanda_runtime::recovery_types::RecoveryReport {
+        // Delegate to the full assurance recovery evaluation with no external context.
+        crate::recovery::evaluate_recovery(program, None, None)
+    }
+}
+
+/// Register the real assurance runtime with the global OnceLock.
+///
+/// Parameters:
+/// None.
+///
+/// Returns:
+/// Unit; idempotent (subsequent calls are silently ignored).
+///
+/// Options:
+/// None.
+///
+/// Example:
+/// spanda_assurance::runtime_bridge::register();
+pub fn register() {
+    // Inject the real assurance engine into the global platform runtime slot.
+    spanda_runtime::assurance_runtime::set_platform_assurance_runtime(
+        std::sync::Arc::new(AssuranceBackedRuntime),
+    );
 }

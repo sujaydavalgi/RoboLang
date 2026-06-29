@@ -10,6 +10,7 @@ pub mod integrity;
 pub mod policy;
 pub mod remote_attestation;
 pub mod runtime;
+pub mod runtime_bridge;
 pub mod secure_boot;
 pub mod tpm;
 

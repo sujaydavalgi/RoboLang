@@ -19,6 +19,7 @@ pub mod serve;
 #[cfg(feature = "sqlite")]
 pub mod sqlite;
 pub mod device_runtime_bridge;
+pub mod fleet_runtime_bridge;
 pub mod runtime_bridge;
 pub mod store;
 

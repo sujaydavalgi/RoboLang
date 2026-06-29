@@ -24,6 +24,7 @@ pub mod platform_events;
 pub mod report;
 pub mod root_cause;
 pub mod runtime;
+pub mod runtime_bridge;
 pub mod safety_coverage;
 pub mod safety_report;
 pub mod spans;
