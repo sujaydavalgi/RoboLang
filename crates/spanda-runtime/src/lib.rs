@@ -14,6 +14,7 @@ pub mod provider_runtime;
 pub mod security_primitives;
 pub mod security_runtime;
 pub mod security_types;
+pub mod platform_event_runtime;
 pub mod device_telemetry_sink;
 pub mod telemetry_sink;
 pub mod wire_crypto;
@@ -98,6 +99,10 @@ pub use telemetry_sink::{
 pub use device_telemetry_sink::{
     device_telemetry_sink, set_device_telemetry_sink, DeviceTelemetrySink,
     NoopDeviceTelemetrySink,
+};
+pub use platform_event_runtime::{
+    platform_event_runtime, publish_platform_event, set_platform_event_runtime,
+    NoopPlatformEventRuntime, PlatformEventRuntime,
 };
 pub use wire_crypto::WireCryptoSession;
 pub use classification::{

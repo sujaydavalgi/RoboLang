@@ -20,6 +20,7 @@ pub mod serve;
 pub mod sqlite;
 pub mod device_runtime_bridge;
 pub mod fleet_runtime_bridge;
+pub mod platform_event_bridge;
 pub mod runtime_bridge;
 pub mod store;
 
@@ -47,6 +48,7 @@ pub use serve::{run_telemetry_server, TelemetryServeOptions};
 #[cfg(feature = "sqlite")]
 pub use sqlite::{default_sqlite_store_path, env_backend_sqlite, resolve_sqlite_path};
 pub use device_runtime_bridge::TelemetryStoreDeviceSink;
+pub use platform_event_bridge::register as register_platform_event_runtime;
 pub use runtime_bridge::TelemetryStoreSink;
 pub use store::{
     append_event, begin_run_session, configure_session_persist, default_heartbeat_index_path,
