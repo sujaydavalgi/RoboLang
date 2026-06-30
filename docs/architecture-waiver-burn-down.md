@@ -96,16 +96,21 @@ Validation: `python3 scripts/validate_architecture.py --check-manifest-sync` and
 
 ---
 
-## Phase 6 — Event model adoption
+## Phase 6 — Event model adoption (in progress)
 
-**Target:** Subsystems emit `spanda_audit::PlatformEvent` envelopes
+**Target:** Subsystems emit `spanda_audit::PlatformEvent` envelopes and persist via `publish_platform_event`.
 
 | Subsystem | Events | Status |
 |-----------|--------|--------|
 | Entity API mutations | `EntityCreated`, `EntityTagged`, `EntityRelated`, `EntityUpdated` | **Shipped** (`spanda-api` → `record_platform_event`) |
-| Readiness | `ReadinessChanged` | **Shipped** (`spanda-readiness` → Control Center audit on entity readiness GET) |
+| Readiness | `ReadinessChanged`, `ReadinessGateFailed` | **Shipped** (`spanda-readiness` → `publish_platform_event`) |
 | Interpreter | `MissionStarted`, `MissionCompleted` | **Shipped** (when program declares `audit` block) |
-| Telemetry store | Persist all platform events | **Shipped** (`record_platform_event` + `TelemetryEvent::Platform`) |
+| Telemetry store | Persist all platform events | **Shipped** (`PlatformEventRuntime` bridge + `TelemetryEvent::Platform`) |
+| Trust | `TrustUpdated`, `TrustGateFailed` | **Shipped** (`spanda-trust` entity evaluation) |
+| Tamper | `TamperDetected` | **Shipped** (`spanda-tamper` verify-time analysis) |
+| Fleet orchestration | `FleetMemberJoined` | **Shipped** (`spanda-fleet` orchestrator) |
+| OTA rollouts | `OtaRolloutStarted`, `OtaRolloutCompleted` | **Shipped** (`spanda-ota` plan + remote rollout) |
+| Health / recovery / package | `HealthChanged`, `RecoveryTriggered`, `PackageInstalled`, … | **Planned** — taxonomy documented; wiring next |
 
 See [event-model.md](./event-model.md).
 

@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Platform event wiring (Phase 6a):** Added `PlatformEventRuntime` + `publish_platform_event` in `spanda-runtime`, telemetry-store bridge, and CLI registration. Wired `TrustUpdated`/`TrustGateFailed`, `TamperDetected`, `ReadinessGateFailed`, `FleetMemberJoined`, and `OtaRolloutStarted`/`OtaRolloutCompleted` emitters in trust, tamper, readiness, fleet, and OTA crates.
 - **Documentation sync (Phase 8):** Updated platform architecture docs, README, crate indexes, `lean-core`/`architecture` pipeline descriptions, and regenerated `api-reference.md` for zero-waiver baseline, `spanda-core::hardware_verify`, and `spanda-ota` deploy plan ownership.
 - **TypeScript mirror alignment (Phase 5b):** Closed all remaining `TS-ARCH-*` waivers (0 TypeScript layer violations). Added compiler-layer type modules (`comm/decls`, `ast/assurance-decls`, `readiness-types`, `types/sensor-types`), `CheckerHost` injection for the type checker, CLI bridges for readiness/certify/hardware-verify, and reclassified `connectivity-positioning` to language runtime.
 - **TypeScript mirror alignment (Phase 5a):** Split compile from run (`src/cli/run-program.ts`); inject `TelemetrySink`, `SecurityRuntime`, `ProviderRuntime`, and `AdapterRuntime` at the CLI boundary with platform-service bridges; closed architecture waivers `TS-ARCH-002`–`TS-ARCH-006` and `TS-ARCH-021`–`TS-ARCH-028`.

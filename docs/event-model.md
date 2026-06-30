@@ -199,10 +199,12 @@ gRPC events mirror the same fields in proto messages where defined.
 | Publisher | Primary events | Consumers |
 |-----------|----------------|-----------|
 | `spanda-config` / API | Entity* | Control Center, audit (`PlatformEvent` via `record_platform_event`) |
-| `spanda-readiness` | Readiness* | CLI, API, assurance |
+| `spanda-readiness` | ReadinessChanged, ReadinessGateFailed | CLI, API, assurance (`publish_platform_event`) |
 | `spanda-interpreter` | Mission*, trace frames | Telemetry, replay |
-| `spanda-trust` | Trust* | Explain, scorecard |
-| `spanda-tamper` | Tamper*, Spoofing* | Trust, ops alerts |
+| `spanda-trust` | TrustUpdated, TrustGateFailed | Explain, scorecard, telemetry |
+| `spanda-tamper` | TamperDetected | Trust, ops alerts, telemetry |
+| `spanda-fleet` | FleetMemberJoined | Control Center, telemetry |
+| `spanda-ota` | OtaRolloutStarted, OtaRolloutCompleted | Control Center, telemetry |
 | `spanda-telemetry-store` | All (persisted) | Replay, Grafana, audit |
 | `spanda-ops` | Alert routing | PagerDuty, webhooks |
 
