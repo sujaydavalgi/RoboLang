@@ -287,6 +287,21 @@ jobs:
           export SPANDA_BIN="${{ github.workspace }}/target/release/spanda"
           ./scripts/smart_spaces_smoke.sh
 
+  smart-spaces-promotion-gate:
+    runs-on: ubuntu-latest
+    needs: smart-spaces-smoke
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - uses: ./.github/actions/install-protoc
+      - run: cargo build -p spanda --release
+      - run: chmod +x scripts/smart_spaces_promotion_gate.sh
+      - run: |
+          export PATH="${{ github.workspace }}/target/release:$PATH"
+          export SPANDA_BIN="${{ github.workspace }}/target/release/spanda"
+          SPANDA_SMART_SPACES_SKIP_SOAK=1 SPANDA_SMART_SPACES_SKIP_AUDIT=1 SPANDA_SMART_SPACES_SKIP_SMOKE=1 ./scripts/smart_spaces_promotion_gate.sh
+
   adas-promotion-gate:
     runs-on: ubuntu-latest
     needs: adas-smoke

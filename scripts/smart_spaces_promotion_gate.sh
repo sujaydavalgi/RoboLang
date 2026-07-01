@@ -12,6 +12,13 @@ CONFIG="$SS/spanda.toml"
 
 echo "== Smart Spaces promotion gate =="
 
+if [[ -z "${SPANDA_BIN:-}" ]]; then
+  SPANDA_BIN="$ROOT/target/release/spanda"
+  echo "--- Building control-center binary (release) ---"
+  cargo build -q -p spanda --release
+  export SPANDA_BIN
+fi
+
 SOAK_FILE="${SPANDA_SMART_SPACES_FIELD_SOAK_START_FILE:-$ROOT/.spanda/smart-spaces-field-soak-start.txt}"
 MIN_DAYS="${SPANDA_SMART_SPACES_FIELD_SOAK_MIN_DAYS:-30}"
 
@@ -55,8 +62,14 @@ if [[ "${SPANDA_SMART_SPACES_SKIP_AUDIT:-1}" != "1" ]]; then
     echo "Run: ./scripts/smart_spaces_security_self_audit.sh" >&2
     exit 1
   fi
-  python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); sys.exit(0 if d.get("signed_off") or all(c.get("passed") for c in d.get("checks",[])) else 1)' "$SELF_AUDIT_FILE"
+  python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); sys.exit(0 if all(c.get("passed") for c in d.get("checks",[])) else 1)' "$SELF_AUDIT_FILE"
   echo "Smart Spaces security self-audit checks passed"
+  if [[ "${SPANDA_SMART_SPACES_AUDIT_SIGNED_OFF:-0}" != "1" ]]; then
+    if ! python3 -c 'import json,sys; sys.exit(0 if json.load(open(sys.argv[1])).get("signed_off") else 1)' "$SELF_AUDIT_FILE" 2>/dev/null; then
+      echo "Smart Spaces third-party security sign-off required (set SPANDA_SMART_SPACES_AUDIT_SIGNED_OFF=1 after human review)" >&2
+      exit 1
+    fi
+  fi
 else
   echo "Skipping audit prep check (SPANDA_SMART_SPACES_SKIP_AUDIT=1)"
 fi
