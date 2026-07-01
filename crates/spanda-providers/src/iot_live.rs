@@ -331,27 +331,31 @@ pub fn read_bacnet_point_live(device: &str, object_id: &str) -> Option<String> {
     if !live_bacnet_enabled() {
         return None;
     }
-    read_string_via_external_cmd_pair("SPANDA_BACNET_CMD", device, object_id).or_else(|| {
-        read_string_via_python_bridge(
-            "bacnet_read_point",
-            vec![
-                serde_json::Value::String(device.to_string()),
-                serde_json::Value::String(object_id.to_string()),
-            ],
-        )
-    })
+    read_string_via_external_cmd_pair("SPANDA_BACNET_CMD", device, object_id)
+        .or_else(|| read_bacnet_via_registry_script(device, object_id))
+        .or_else(|| {
+            read_string_via_python_bridge(
+                "bacnet_read_point",
+                vec![
+                    serde_json::Value::String(device.to_string()),
+                    serde_json::Value::String(object_id.to_string()),
+                ],
+            )
+        })
 }
 
 pub fn read_knx_group_live(address: &str) -> Option<String> {
     if !live_knx_enabled() {
         return None;
     }
-    read_string_via_external_cmd_single("SPANDA_KNX_CMD", address).or_else(|| {
-        read_string_via_python_bridge(
-            "knx_read_group",
-            vec![serde_json::Value::String(address.to_string())],
-        )
-    })
+    read_string_via_external_cmd_single("SPANDA_KNX_CMD", address)
+        .or_else(|| read_knx_via_registry_script(address))
+        .or_else(|| {
+            read_string_via_python_bridge(
+                "knx_read_group",
+                vec![serde_json::Value::String(address.to_string())],
+            )
+        })
 }
 
 pub fn read_thread_endpoint_live(device: &str) -> Option<String> {
@@ -385,12 +389,14 @@ pub fn read_home_assistant_state_live(entity_id: &str) -> Option<String> {
     if !live_home_assistant_enabled() {
         return None;
     }
-    read_string_via_external_cmd_single("SPANDA_HOME_ASSISTANT_CMD", entity_id).or_else(|| {
-        read_string_via_python_bridge(
-            "home_assistant_get_state",
-            vec![serde_json::Value::String(entity_id.to_string())],
-        )
-    })
+    read_string_via_external_cmd_single("SPANDA_HOME_ASSISTANT_CMD", entity_id)
+        .or_else(|| read_home_assistant_via_registry_script(entity_id))
+        .or_else(|| {
+            read_string_via_python_bridge(
+                "home_assistant_get_state",
+                vec![serde_json::Value::String(entity_id.to_string())],
+            )
+        })
 }
 
 pub fn read_canbus_frame_live(can_id: u32) -> Option<f64> {
@@ -524,6 +530,118 @@ fn read_command_stdout(command: &str) -> Option<String> {
         .trim()
         .to_string();
     if line.is_empty() { None } else { Some(line) }
+}
+
+fn registry_script_path(candidates: &[String]) -> Option<String> {
+    for candidate in candidates {
+        if std::path::Path::new(candidate).is_file() {
+            return Some(candidate.clone());
+        }
+    }
+    None
+}
+
+fn run_registry_python_script(script: &str, args: &[&str]) -> Option<String> {
+    let python = std::env::var("SPANDA_PYTHON").unwrap_or_else(|_| "python3".into());
+    let output = Command::new(python)
+        .arg(script)
+        .args(args)
+        .output()
+        .ok()?;
+    if !output.status.success() {
+        return None;
+    }
+    let line = String::from_utf8_lossy(&output.stdout)
+        .lines()
+        .next()?
+        .trim()
+        .to_string();
+    if line.is_empty() { None } else { Some(line) }
+}
+
+#[cfg(feature = "live-building")]
+fn bacnet_registry_script_candidates() -> Vec<String> {
+    let mut candidates = Vec::new();
+    if let Ok(path) = std::env::var("SPANDA_BACNET_READ_SCRIPT") {
+        candidates.push(path);
+    }
+    if let Ok(root) = std::env::var("SPANDA_ROOT") {
+        candidates.push(format!(
+            "{root}/packages/registry/spanda-bacnet/scripts/read_point.py"
+        ));
+    }
+    candidates.push("packages/registry/spanda-bacnet/scripts/read_point.py".into());
+    candidates.push(format!(
+        "{}/../../packages/registry/spanda-bacnet/scripts/read_point.py",
+        env!("CARGO_MANIFEST_DIR")
+    ));
+    candidates
+}
+
+#[cfg(feature = "live-building")]
+fn knx_registry_script_candidates() -> Vec<String> {
+    let mut candidates = Vec::new();
+    if let Ok(path) = std::env::var("SPANDA_KNX_READ_SCRIPT") {
+        candidates.push(path);
+    }
+    if let Ok(root) = std::env::var("SPANDA_ROOT") {
+        candidates.push(format!(
+            "{root}/packages/registry/spanda-knx/scripts/read_group.py"
+        ));
+    }
+    candidates.push("packages/registry/spanda-knx/scripts/read_group.py".into());
+    candidates.push(format!(
+        "{}/../../packages/registry/spanda-knx/scripts/read_group.py",
+        env!("CARGO_MANIFEST_DIR")
+    ));
+    candidates
+}
+
+fn homeassistant_registry_script_candidates() -> Vec<String> {
+    let mut candidates = Vec::new();
+    if let Ok(path) = std::env::var("SPANDA_HOME_ASSISTANT_READ_SCRIPT") {
+        candidates.push(path);
+    }
+    if let Ok(root) = std::env::var("SPANDA_ROOT") {
+        candidates.push(format!(
+            "{root}/packages/registry/spanda-home-assistant/scripts/get_state.py"
+        ));
+    }
+    candidates.push(
+        "packages/registry/spanda-home-assistant/scripts/get_state.py".into(),
+    );
+    candidates.push(format!(
+        "{}/../../packages/registry/spanda-home-assistant/scripts/get_state.py",
+        env!("CARGO_MANIFEST_DIR")
+    ));
+    candidates
+}
+
+fn read_home_assistant_via_registry_script(entity_id: &str) -> Option<String> {
+    let script = registry_script_path(&homeassistant_registry_script_candidates())?;
+    run_registry_python_script(&script, &[entity_id])
+}
+
+#[cfg(feature = "live-building")]
+fn read_bacnet_via_registry_script(device: &str, object_id: &str) -> Option<String> {
+    let script = registry_script_path(&bacnet_registry_script_candidates())?;
+    run_registry_python_script(&script, &[device, object_id])
+}
+
+#[cfg(not(feature = "live-building"))]
+fn read_bacnet_via_registry_script(_device: &str, _object_id: &str) -> Option<String> {
+    None
+}
+
+#[cfg(feature = "live-building")]
+fn read_knx_via_registry_script(address: &str) -> Option<String> {
+    let script = registry_script_path(&knx_registry_script_candidates())?;
+    run_registry_python_script(&script, &[address])
+}
+
+#[cfg(not(feature = "live-building"))]
+fn read_knx_via_registry_script(_address: &str) -> Option<String> {
+    None
 }
 
 fn read_string_via_python_bridge(fn_name: &str, args: Vec<serde_json::Value>) -> Option<String> {
@@ -822,5 +940,29 @@ mod tests {
         );
         std::env::remove_var("SPANDA_LIVE_BACNET");
         std::env::remove_var("SPANDA_BACNET_CMD");
+    }
+
+    #[cfg(feature = "live-building")]
+    #[test]
+    fn live_bacnet_registry_script_reads_mock_stdout() {
+        std::env::remove_var("SPANDA_LIVE_BACNET");
+        std::env::remove_var("SPANDA_BACNET_CMD");
+        std::env::remove_var("SPANDA_BACNET_READ_SCRIPT");
+        std::env::set_var("SPANDA_LIVE_BACNET", "1");
+        std::env::set_var("SPANDA_BACNET_FORCE_MOCK", "1");
+        let script = format!(
+            "{}/../../packages/registry/spanda-bacnet/scripts/read_point.py",
+            env!("CARGO_MANIFEST_DIR")
+        );
+        if std::path::Path::new(&script).is_file() {
+            std::env::set_var("SPANDA_BACNET_READ_SCRIPT", &script);
+            assert_eq!(
+                read_bacnet_point_live("ahu-12", "analog-value,1"),
+                Some("mock-bacnet:ahu-12:analog-value,1".into())
+            );
+        }
+        std::env::remove_var("SPANDA_LIVE_BACNET");
+        std::env::remove_var("SPANDA_BACNET_FORCE_MOCK");
+        std::env::remove_var("SPANDA_BACNET_READ_SCRIPT");
     }
 }

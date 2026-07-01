@@ -27,6 +27,7 @@ libc = "0.2"
 [features]
 default = []
 live-iot = ["dep:modbus"]
+live-building = []
 
 [dev-dependencies]
 spanda-transport-routing = { path = "../spanda-transport-routing" }
