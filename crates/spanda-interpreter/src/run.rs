@@ -1,7 +1,7 @@
 //! High-level run helpers for parsed Spanda programs.
 //!
 use crate::options::{RunOptions, RunResult, TestRunResult};
-use crate::platform_events::emit_mission_completed;
+use crate::platform_events::{emit_mission_aborted, emit_mission_completed};
 use crate::runtime::{Interpreter, InterpreterOptions, RobotBackend};
 use crate::simulator::{create_default_simulator, Obstacle, SimulatorConfig};
 use spanda_ast::nodes::Program;
@@ -134,8 +134,15 @@ pub fn run_program(program: &Program, options: RunOptions) -> Result<RunResult, 
     );
     let trace_source = options.trace_source.clone();
     let run_outcome = interp.run(program, options.entry_behavior.as_deref());
-    if run_outcome.is_err() {
+    if let Err(error) = &run_outcome {
         let telemetry = interp.shared_telemetry_sink();
+        emit_mission_aborted(
+            interp.audit_runtime_mut(),
+            telemetry.as_ref(),
+            program,
+            trace_source.as_deref(),
+            Some(&error.to_string()),
+        );
         emit_mission_completed(
             interp.audit_runtime_mut(),
             telemetry.as_ref(),

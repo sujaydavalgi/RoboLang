@@ -59,6 +59,39 @@ pub(crate) fn emit_mission_started(
     );
 }
 
+pub(crate) fn emit_mission_aborted(
+    audit: Option<&mut AuditRuntime>,
+    telemetry: &dyn TelemetrySink,
+    program: &Program,
+    trace_source: Option<&str>,
+    reason: Option<&str>,
+) {
+    let mission_key = trace_source
+        .map(str::to_string)
+        .or_else(|| first_robot_name(program))
+        .unwrap_or_else(|| "program".into());
+    let event = PlatformEvent::new(
+        names::MISSION_ABORTED,
+        "spanda-interpreter",
+        json!({
+            "mission": mission_key,
+            "reason": reason.unwrap_or("runtime_error"),
+            "robot_count": robot_count(program),
+        }),
+    )
+    .with_entity_id(format!("mission/{mission_key}"));
+    if let Some(rt) = audit {
+        let _ = rt.record_platform_event(&event);
+    }
+    telemetry.record_platform_event(
+        event.event_type.as_str(),
+        &event.source,
+        event.entity_id.as_deref(),
+        event.payload.clone(),
+        event.timestamp.timestamp_millis() as f64,
+    );
+}
+
 pub(crate) fn emit_mission_completed(
     audit: Option<&mut AuditRuntime>,
     telemetry: &dyn TelemetrySink,

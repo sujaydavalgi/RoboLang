@@ -18,3 +18,17 @@ pub fn record_fleet_member_joined(fleet_id: &str, member_id: &str) {
     .with_entity_id(format!("fleet/{fleet_id}"));
     publish_platform_event(None, &event);
 }
+
+/// Record `FleetMemberLeft` when a robot leaves a fleet group or registry.
+pub fn record_fleet_member_left(fleet_id: &str, member_id: &str) {
+    let event = PlatformEvent::new(
+        names::FLEET_MEMBER_LEFT,
+        "spanda-fleet",
+        json!({
+            "fleet_id": fleet_id,
+            "member_id": member_id,
+        }),
+    )
+    .with_entity_id(format!("fleet/{fleet_id}"));
+    publish_platform_event(None, &event);
+}

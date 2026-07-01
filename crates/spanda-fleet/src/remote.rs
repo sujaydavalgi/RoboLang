@@ -1,5 +1,6 @@
 //! Remote fleet peer relay via HTTP fleet agents.
 //!
+use crate::platform_events::record_fleet_member_left;
 use crate::PeerDelivery;
 use serde::{Deserialize, Serialize};
 use spanda_deploy_http::{http_request, parse_http_url, HttpResponse};
@@ -134,6 +135,13 @@ pub fn register_fleet_agent(
     //     let result = spanda_fleet::remote::register_fleet_agent(registry, robot_name, rl, oken);
 
     parse_http_url(&url)?;
+    let replaced = registry
+        .agents
+        .iter()
+        .any(|entry| entry.robot_name == robot_name);
+    if replaced {
+        record_fleet_member_left("registry", &robot_name);
+    }
     registry
         .agents
         .retain(|entry| entry.robot_name != robot_name);
@@ -146,6 +154,21 @@ pub fn register_fleet_agent(
         .agents
         .sort_by(|a, b| a.robot_name.cmp(&b.robot_name));
     Ok(())
+}
+
+/// Remove a fleet agent from the registry and emit `FleetMemberLeft` when present.
+pub fn deregister_fleet_agent(registry: &mut FleetAgentRegistry, robot_name: &str) -> bool {
+    let had = registry
+        .agents
+        .iter()
+        .any(|entry| entry.robot_name == robot_name);
+    if had {
+        record_fleet_member_left("registry", robot_name);
+    }
+    registry
+        .agents
+        .retain(|entry| entry.robot_name != robot_name);
+    had
 }
 
 pub fn lookup_fleet_agent<'a>(
