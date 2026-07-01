@@ -13,7 +13,9 @@ Register handlers below or extend this module for project-specific bindings.
 
 from __future__ import annotations
 
+import asyncio
 import json
+import os
 import sys
 from typing import Any, Callable
 
@@ -766,14 +768,121 @@ def _matter_read_cluster(node: str, cluster: str) -> float:
     return float((hash(f"{node}:{cluster}") % 100) + 1)
 
 
-def _bacnet_read_point(device: str, object_id: str) -> str:
-    """Read BACnet object present-value (mock when no bacpypes)."""
+def _bacnet_mock(device: str, object_id: str) -> str:
+    """Return deterministic mock BACnet value when live libraries or network are unavailable."""
     return f"mock-bacnet:{device}:{object_id}"
 
 
+def _bacnet_parse_object_id(object_id: str) -> tuple[str, str]:
+    """Split BACnet object identifier and property name from the bridge argument."""
+    prop = "present-value"
+    normalized = object_id.strip().replace(":", ",")
+    if "," in normalized and any(
+        normalized.startswith(prefix)
+        for prefix in (
+            "analog-",
+            "binary-",
+            "multi-",
+            "device",
+            "characterstring-",
+            "character-string-",
+        )
+    ):
+        return normalized, prop
+    if " " in normalized:
+        objid, maybe_prop = normalized.split(" ", 1)
+        return objid.replace(":", ","), maybe_prop or prop
+    objid = os.environ.get("SPANDA_BACNET_OBJECT", "analog-value,1").replace(":", ",")
+    if object_id and object_id not in ("present-value", "presentValue"):
+        prop = object_id
+    return objid, prop
+
+
+def _bacnet_target_host(device: str) -> str:
+    """Resolve remote BACnet/IP host from env or device argument."""
+    target = os.environ.get("SPANDA_BACNET_TARGET", "").strip()
+    if target:
+        return target.split(":")[0]
+    if "." in device:
+        return device.split(":")[0]
+    raise ValueError("SPANDA_BACNET_TARGET or BACnet device host required for live read")
+
+
+async def _bacnet_read_point_async(device: str, object_id: str) -> str:
+    """Read one BACnet property via bacpypes3 when installed."""
+    from bacpypes3.app import Application
+    from bacpypes3.pdu import IPv4Address
+    from bacpypes3.primitivedata import ObjectIdentifier
+
+    network = os.environ.get("SPANDA_BACNET_NETWORK", "0.0.0.0/0")
+    instance = int(os.environ.get("SPANDA_BACNET_INSTANCE", "599"))
+    app = Application.from_args(
+        {
+            "name": "SpandaBACnetClient",
+            "instance": instance,
+            "network": {"type": "ipv4", "address": network},
+        }
+    )
+    host = _bacnet_target_host(device)
+    objid_str, prop = _bacnet_parse_object_id(object_id)
+    value = await app.read_property(
+        address=IPv4Address(host),
+        objid=ObjectIdentifier(objid_str),
+        prop=prop,
+    )
+    return str(value)
+
+
+def _bacnet_read_point(device: str, object_id: str) -> str:
+    """Read BACnet object property via bacpypes3, falling back to mock."""
+    mock = _bacnet_mock(device, object_id)
+    if os.environ.get("SPANDA_BACNET_FORCE_MOCK", "").lower() in ("1", "true"):
+        return mock
+    try:
+        return asyncio.run(_bacnet_read_point_async(device, object_id))
+    except ImportError:
+        return mock
+    except Exception:
+        return mock
+
+
+async def _knx_read_group_async(address: str) -> str:
+    """Read one KNX group address via xknx when installed."""
+    from xknx import XKNX
+    from xknx.io import ConnectionConfig, ConnectionType
+    from xknx.tools import read_group_value
+
+    gateway = os.environ.get("SPANDA_KNX_GATEWAY", "").strip()
+    if not gateway:
+        raise ValueError("SPANDA_KNX_GATEWAY required for live KNX read")
+    connection_kwargs: dict[str, Any] = {
+        "connection_type": ConnectionType.TUNNELING,
+        "gateway_ip": gateway,
+    }
+    local_ip = os.environ.get("SPANDA_KNX_LOCAL_IP", "").strip()
+    if local_ip:
+        connection_kwargs["local_ip"] = local_ip
+    value_type = os.environ.get("SPANDA_KNX_VALUE_TYPE", "").strip() or None
+    xknx = XKNX(connection_config=ConnectionConfig(**connection_kwargs))
+    async with xknx:
+        if value_type:
+            result = await read_group_value(xknx, address, value_type=value_type)
+        else:
+            result = await read_group_value(xknx, address)
+    return str(result)
+
+
 def _knx_read_group(address: str) -> str:
-    """Read KNX group address value (mock when no xknx)."""
-    return f"mock-knx:{address}"
+    """Read KNX group address via xknx, falling back to mock."""
+    mock = f"mock-knx:{address}"
+    if os.environ.get("SPANDA_KNX_FORCE_MOCK", "").lower() in ("1", "true"):
+        return mock
+    try:
+        return asyncio.run(_knx_read_group_async(address))
+    except ImportError:
+        return mock
+    except Exception:
+        return mock
 
 
 def _thread_read_endpoint(device: str) -> str:
