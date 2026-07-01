@@ -1,6 +1,7 @@
 //! Unified spoof-check report generation for programs and mission traces.
 
 use crate::coverage::{analyze_spoofing_coverage, SpoofingCoverageCheck};
+use crate::platform_events::record_spoofing_platform_events;
 use crate::trace::{
     analyze_trace_spoofing, MissionTrace, SpoofingAlert, SpoofingSeverity,
     DEFAULT_MAX_GROUND_SPEED_M_S,
@@ -96,7 +97,7 @@ pub fn generate_program_spoof_check(program: &Program, source_label: &str) -> Sp
             .map(|check| check.passed)
             .unwrap_or(false);
 
-    SpoofingReport {
+    let report = SpoofingReport {
         source: source_label.into(),
         kind: SpoofingSourceKind::Program,
         coverage_score: Some(coverage_score),
@@ -106,7 +107,9 @@ pub fn generate_program_spoof_check(program: &Program, source_label: &str) -> Sp
         ml_alerts_merged: 0,
         suppressed_low_confidence: 0,
         requires_operator_confirmation: false,
-    }
+    };
+    record_spoofing_platform_events(&report);
+    report
 }
 
 /// Run spoof-check on a mission trace file (runtime plausibility analysis).
@@ -140,7 +143,7 @@ pub fn generate_trace_spoof_check(trace: &MissionTrace, source_label: &str) -> S
         )
     });
 
-    SpoofingReport {
+    let report = SpoofingReport {
         source: source_label.into(),
         kind: SpoofingSourceKind::Trace,
         coverage_score: None,
@@ -150,7 +153,9 @@ pub fn generate_trace_spoof_check(trace: &MissionTrace, source_label: &str) -> S
         ml_alerts_merged,
         suppressed_low_confidence,
         requires_operator_confirmation,
-    }
+    };
+    record_spoofing_platform_events(&report);
+    report
 }
 
 /// Load a path and run the appropriate spoof-check analysis.

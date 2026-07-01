@@ -9,6 +9,7 @@ pub mod error;
 pub mod human_health;
 pub mod identity;
 pub mod permissions;
+pub mod platform_events;
 pub mod policy;
 pub mod rate_limit;
 pub mod rbac;
@@ -35,6 +36,7 @@ pub use error::{SecurityError, SecurityResult};
 pub use human_health::{HumanHealthGate, HumanHealthSettings};
 pub use identity::RobotIdentity;
 pub use permissions::PackagePermissions;
+pub use platform_events::{record_auth_failed, record_secret_rotated};
 pub use policy::{
     AuthenticationMode, BusSecurityConfig, EncryptionMode, IntegrityMode, SecureCommPolicy,
 };

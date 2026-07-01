@@ -114,6 +114,7 @@ impl ManagedSecretVault {
             },
         });
         self.metadata.insert(name.to_string(), meta.clone());
+        crate::platform_events::record_secret_rotated(name, meta.rotation_count);
         Ok(meta)
     }
 }

@@ -1,6 +1,6 @@
 //! Entity mutation REST handlers — register, tag, relate, and TOML sync.
 //!
-use crate::handlers::{bad_request, json_ok, unauthorized};
+use crate::handlers::{bad_request, ensure_rbac, json_ok};
 use crate::state::ControlCenterState;
 use spanda_audit::platform_event::{names, PlatformEvent};
 use spanda_config::{
@@ -9,7 +9,7 @@ use spanda_config::{
     EntityRelateRequest, EntityTagRequest,
 };
 use spanda_deploy_http::HttpResponse;
-use spanda_security::{ApiKeyStore, RbacAction, RbacContext};
+use spanda_security::{RbacAction, RbacContext};
 
 const API_VERSION: &str = "v1";
 
@@ -42,8 +42,8 @@ pub fn entity_register(
     body: &str,
     ctx: Option<&RbacContext>,
 ) -> HttpResponse {
-    if !ApiKeyStore::check(ctx, RbacAction::Provision) {
-        return unauthorized();
+    if let Err(response) = ensure_rbac(ctx, RbacAction::Provision) {
+        return response;
     }
     let request: EntityRegisterRequest = match serde_json::from_str(body) {
         Ok(value) => value,
@@ -80,8 +80,8 @@ pub fn entity_tag(
     body: &str,
     ctx: Option<&RbacContext>,
 ) -> HttpResponse {
-    if !ApiKeyStore::check(ctx, RbacAction::Provision) {
-        return unauthorized();
+    if let Err(response) = ensure_rbac(ctx, RbacAction::Provision) {
+        return response;
     }
     let request: EntityTagRequest = serde_json::from_str(body).unwrap_or_default();
     if state.entity_overlay.entities.contains_key(entity_id) {
@@ -137,8 +137,8 @@ pub fn entity_relate(
     body: &str,
     ctx: Option<&RbacContext>,
 ) -> HttpResponse {
-    if !ApiKeyStore::check(ctx, RbacAction::Provision) {
-        return unauthorized();
+    if let Err(response) = ensure_rbac(ctx, RbacAction::Provision) {
+        return response;
     }
     let request: EntityRelateRequest = match serde_json::from_str(body) {
         Ok(value) => value,
@@ -173,8 +173,8 @@ pub fn entity_relate(
 
 /// POST /v1/entities/sync — flush overlay entities to TOML fragments.
 pub fn entity_sync(state: &mut ControlCenterState, ctx: Option<&RbacContext>) -> HttpResponse {
-    if !ApiKeyStore::check(ctx, RbacAction::Provision) {
-        return unauthorized();
+    if let Err(response) = ensure_rbac(ctx, RbacAction::Provision) {
+        return response;
     }
     match run_entity_sync(state) {
         Ok(result) => {

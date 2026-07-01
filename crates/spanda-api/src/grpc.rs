@@ -43,6 +43,20 @@ impl GrpcControlCenter {
         guard.api_keys.authenticate(token.as_deref())
     }
 
+    fn ensure_grpc_rbac(
+        ctx: Option<RbacContext>,
+        action: spanda_security::RbacAction,
+    ) -> Result<Option<RbacContext>, Status> {
+        if ctx.is_none() {
+            spanda_security::record_auth_failed("missing_or_invalid_token", None);
+            return Err(Status::permission_denied("bearer token required"));
+        }
+        if !spanda_security::ApiKeyStore::check(ctx.as_ref(), action) {
+            return Err(Status::permission_denied("insufficient permissions"));
+        }
+        Ok(ctx)
+    }
+
     fn with_state<F>(&self, f: F) -> Result<JsonResponse, Status>
     where
         F: FnOnce(&crate::state::ControlCenterState) -> String,
@@ -311,11 +325,10 @@ impl ControlCenter for GrpcControlCenter {
         request: Request<JsonBodyRequest>,
     ) -> Result<Response<JsonResponse>, Status> {
         self.guard_request(&request)?;
-        let ctx = self.rbac_from_request(&request);
-        if !spanda_security::ApiKeyStore::check(ctx.as_ref(), spanda_security::RbacAction::Operate)
-        {
-            return Err(Status::permission_denied("bearer token required"));
-        }
+        let ctx = Self::ensure_grpc_rbac(
+            self.rbac_from_request(&request),
+            spanda_security::RbacAction::Operate,
+        )?;
         let body = request.into_inner().body_json;
         let response = self.with_state_mut(|state| {
             crate::handlers::sre_incidents_create_json(state, &body, ctx.as_ref())
@@ -329,11 +342,10 @@ impl ControlCenter for GrpcControlCenter {
         request: Request<IncidentBodyRequest>,
     ) -> Result<Response<JsonResponse>, Status> {
         self.guard_request(&request)?;
-        let ctx = self.rbac_from_request(&request);
-        if !spanda_security::ApiKeyStore::check(ctx.as_ref(), spanda_security::RbacAction::Operate)
-        {
-            return Err(Status::permission_denied("bearer token required"));
-        }
+        let ctx = Self::ensure_grpc_rbac(
+            self.rbac_from_request(&request),
+            spanda_security::RbacAction::Operate,
+        )?;
         let inner = request.into_inner();
         let response = self.with_state_mut(|state| {
             crate::handlers::sre_incident_ack_json(
@@ -352,11 +364,10 @@ impl ControlCenter for GrpcControlCenter {
         request: Request<IncidentIdRequest>,
     ) -> Result<Response<JsonResponse>, Status> {
         self.guard_request(&request)?;
-        let ctx = self.rbac_from_request(&request);
-        if !spanda_security::ApiKeyStore::check(ctx.as_ref(), spanda_security::RbacAction::Operate)
-        {
-            return Err(Status::permission_denied("bearer token required"));
-        }
+        let ctx = Self::ensure_grpc_rbac(
+            self.rbac_from_request(&request),
+            spanda_security::RbacAction::Operate,
+        )?;
         let incident_id = request.into_inner().incident_id;
         let response = self.with_state_mut(|state| {
             crate::handlers::sre_incident_resolve_json(state, &incident_id, ctx.as_ref())

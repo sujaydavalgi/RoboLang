@@ -15,7 +15,7 @@ use spanda_config::{
 use spanda_deploy_http::{HttpRequest, HttpResponse};
 use spanda_fleet::remote::{default_fleet_agents_path, load_fleet_agent_registry};
 use spanda_ops::{Alert, AlertSeverity, AlertType};
-use spanda_security::{ApiKeyStore, RbacAction, RbacContext};
+use spanda_security::{record_auth_failed, ApiKeyStore, RbacAction, RbacContext};
 
 const API_VERSION: &str = "v1";
 
@@ -1459,6 +1459,18 @@ pub(crate) fn unauthorized() -> HttpResponse {
         status: 401,
         body: serde_json::json!({ "ok": false, "error": "unauthorized" }).to_string(),
     }
+}
+
+/// Reject a mutation when RBAC context is missing or insufficient; emits `AuthFailed` on missing auth.
+pub(crate) fn ensure_rbac(ctx: Option<&RbacContext>, action: RbacAction) -> Result<(), HttpResponse> {
+    if ctx.is_none() {
+        record_auth_failed("missing_or_invalid_token", None);
+        return Err(unauthorized());
+    }
+    if !ApiKeyStore::check(ctx, action) {
+        return Err(unauthorized());
+    }
+    Ok(())
 }
 
 fn not_found() -> HttpResponse {
