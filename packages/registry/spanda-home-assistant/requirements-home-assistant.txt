@@ -1,0 +1,3 @@
+# Optional Home Assistant REST reads for scripts/spanda_python_bridge.py.
+# Install: pip install -r requirements-home-assistant.txt
+# (stdlib only — no extra packages required)

@@ -896,8 +896,34 @@ def _zwave_read_value(device: str, command_class: str) -> str:
 
 
 def _home_assistant_get_state(entity_id: str) -> str:
-    """Read Home Assistant entity state (mock when no HA REST token)."""
-    return f"mock-ha:{entity_id}"
+    """Read Home Assistant entity state via REST API or mock."""
+    mock = f"mock-ha:{entity_id}"
+    if os.environ.get("SPANDA_HOME_ASSISTANT_FORCE_MOCK", "").lower() in ("1", "true"):
+        return mock
+    base = os.environ.get("SPANDA_HOME_ASSISTANT_URL", "").strip().rstrip("/")
+    token = os.environ.get("SPANDA_HOME_ASSISTANT_TOKEN", "").strip()
+    if not base or not token:
+        return mock
+    try:
+        import urllib.request
+
+        url = f"{base}/api/states/{entity_id}"
+        req = urllib.request.Request(
+            url,
+            headers={
+                "Authorization": f"Bearer {token}",
+                "Content-Type": "application/json",
+            },
+            method="GET",
+        )
+        with urllib.request.urlopen(req, timeout=15) as resp:  # noqa: S310
+            data = json.loads(resp.read().decode())
+        state = data.get("state")
+        if state is None:
+            return mock
+        return str(state)
+    except Exception:
+        return mock
 
 
 def _canbus_read_frame(can_id: int) -> float:
