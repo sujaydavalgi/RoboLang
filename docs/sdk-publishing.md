@@ -18,6 +18,25 @@ Version numbers live in:
 
 Tag suffix must match the version you intend to ship (for example `sdk-python-v0.4.0` when `version = "0.4.0"`).
 
+### Control Center desktop (GitHub Releases)
+
+| App | Source path | Distribution | Release tag pattern |
+|-----|-------------|--------------|---------------------|
+| Tauri shell | `packages/control-center-desktop/` | GitHub Release + workflow artifacts | `desktop-vX.Y.Z` |
+
+Keep these three files on the same semver before tagging:
+
+- `packages/control-center-desktop/package.json` → `"version"`
+- `packages/control-center-desktop/src-tauri/Cargo.toml` → `version`
+- `packages/control-center-desktop/src-tauri/tauri.conf.json` → `"version"`
+
+```bash
+./scripts/verify_desktop_release_ready.sh
+git tag desktop-v0.4.2 && git push origin desktop-v0.4.2
+```
+
+Workflow: [desktop-release.yml](../.github/workflows/desktop-release.yml). Optional secrets: `TAURI_UPDATER_PUBKEY`, `TAURI_SIGNING_PRIVATE_KEY`, `APPLE_SIGNING_IDENTITY`, `APPLE_NOTARIZE_PROFILE`. See [desktop-release-runbook.md](./desktop-release-runbook.md).
+
 ## One-time setup: GitHub secrets
 
 Both publish workflows read **repository secrets** (not committed files).
@@ -285,6 +304,7 @@ If a token was exposed (chat, log, commit), **revoke it immediately** on PyPI/np
 | [publish-sdk-python.yml](../.github/workflows/publish-sdk-python.yml) | `sdk-python-v*` | `spanda-sdk` (PyPI) |
 | [publish-sdk-typescript.yml](../.github/workflows/publish-sdk-typescript.yml) | `npm-sdk-v*` | `@davalgi-spanda/sdk` |
 | [publish-npm-web.yml](../.github/workflows/publish-npm-web.yml) | `npm-web-v*` | `@davalgi-spanda/web` |
+| [desktop-release.yml](../.github/workflows/desktop-release.yml) | `desktop-v*` | `@spanda/control-center-desktop` (GitHub Release) |
 
 Legacy Python enterprise client: `packages/sdk-python` — not published by the canonical SDK workflow.
 

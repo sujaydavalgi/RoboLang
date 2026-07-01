@@ -232,7 +232,7 @@ See [tier-3-experimental.md](./tier-3-experimental.md) and [tier-3-golden-paths.
 
 See [enterprise-operations-roadmap.md](./enterprise-operations-roadmap.md) · [control-center.md](./control-center.md) · [stable-hardening-enterprise-ops.md](./stable-hardening-enterprise-ops.md)
 
-**Stable promotion (2026-06-28):** All 20 enterprise operations pillars promoted to **Stable** after `enterprise_ops_stable_promotion_gate.sh` (implementation checks). Ongoing organizational gates — 30-day field soak ([field-soak-gate.md](./field-soak-gate.md)) and third-party security audit sign-off — tracked in [enterprise-ops-stable-promotion.md](./enterprise-ops-stable-promotion.md).
+**Stable promotion (2026-06-28):** All 20 enterprise operations pillars promoted to **Stable** after `enterprise_ops_stable_promotion_gate.sh` (implementation checks). SDK **0.4.2** and desktop **0.4.2** (`desktop-v0.4.2`) published. Ongoing organizational gates — 30-day field soak ([field-soak-gate.md](./field-soak-gate.md)) and third-party security audit sign-off — tracked in [enterprise-ops-stable-promotion.md](./enterprise-ops-stable-promotion.md).
 
 ---
 

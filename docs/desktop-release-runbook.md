@@ -8,7 +8,31 @@ Signed, notarized macOS builds and active auto-update for `@spanda/control-cente
 |----------|----------------|
 | macOS | Apple Developer ID, `APPLE_SIGNING_IDENTITY`, notarytool profile |
 | Windows | Authenticode cert in `WINDOWS_SIGNING_CERT` (optional CI secret) |
-| Updates | Tauri updater signing keypair (`TAURI_UPDATER_PUBKEY`) |
+| Updates | Tauri updater signing keypair (`TAURI_UPDATER_PUBKEY`, `TAURI_SIGNING_PRIVATE_KEY`) |
+
+## Version sync
+
+Keep these three files on the **same semver** before tagging:
+
+| File | Field |
+|------|-------|
+| `packages/control-center-desktop/package.json` | `"version"` |
+| `packages/control-center-desktop/src-tauri/Cargo.toml` | `version` |
+| `packages/control-center-desktop/src-tauri/tauri.conf.json` | `"version"` |
+
+```bash
+./scripts/verify_desktop_release_ready.sh
+```
+
+## Release tag
+
+```bash
+# After version bump + verify script passes:
+git tag desktop-v0.4.2
+git push origin desktop-v0.4.2
+```
+
+Tag pattern **`desktop-v*`** triggers `.github/workflows/desktop-release.yml`, uploads macOS bundle artifacts, and creates a GitHub Release with `.dmg` / `.app.tar.gz` when present.
 
 ## Build
 

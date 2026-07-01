@@ -65,7 +65,7 @@ SPANDA_ENTERPRISE_OPS_SKIP_AUDIT=1 \
 | Gate | Action |
 |------|--------|
 | Third-party audit | Engage reviewer using `security-audit-prep.json` packet; record sign-off in change management |
-| Production releases | ✅ SDK **0.4.2** on crates.io, PyPI, npm; desktop tags per [desktop-release-runbook.md](./desktop-release-runbook.md) remain optional |
+| Production releases | ✅ SDK **0.4.2** on crates.io, PyPI, npm; ✅ desktop **0.4.2** (`desktop-v0.4.2` → GitHub Release) |
 | Feature status | ✅ **Done** (2026-06-28) — all enterprise ops pillars **Stable** |
 
 ---

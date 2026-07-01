@@ -123,7 +123,7 @@ When promoting a pillar from **Experimental** → **Stable**, verify:
 
 1. **30-day field soak** — [field-soak-gate.md](./field-soak-gate.md) (`scripts/enterprise_ops_field_soak_init.sh`, `scripts/field_soak_gate.sh`)
 2. **Third-party security audit sign-off** — [security-audit-third-party.md](./security-audit-third-party.md) (`scripts/security_audit_prep.sh`)
-3. **Desktop production releases** — signed/notarized tags per [desktop-release-runbook.md](./desktop-release-runbook.md)
+3. **Desktop production releases** — ✅ **0.4.2** via `desktop-v0.4.2` ([desktop-release-runbook.md](./desktop-release-runbook.md)); optional Apple signing secrets upgrade unsigned CI bundles to notarized builds
 
 **Runbook:** [enterprise-ops-stable-promotion.md](./enterprise-ops-stable-promotion.md)
 

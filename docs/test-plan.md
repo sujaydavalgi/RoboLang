@@ -75,6 +75,7 @@
 | `scripts/hri_security_audit_prep.sh` | HRI security audit intake artifact |
 | `scripts/security_audit_prep.sh` | Third-party audit intake artifact |
 | `scripts/verify_sdk_publish_ready.sh` | PyPI + npm pack readiness (no publish) |
+| `scripts/verify_desktop_release_ready.sh` | Desktop version sync + Tauri compile smoke |
 
 ## CLI verification
 

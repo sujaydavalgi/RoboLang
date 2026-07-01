@@ -572,7 +572,7 @@ Default: log to stderr.
 
 ## Stable promotion
 
-Enterprise operations E1–E4 are **Experimental** with full stable-hardening checklist items **shipped in code**. Remaining gates before **Stable** tier: third-party security audit sign-off, 30-day field soak, and first production SDK/desktop releases. See [stable-hardening-enterprise-ops.md](./stable-hardening-enterprise-ops.md) · [field-soak-gate.md](./field-soak-gate.md) · [security-audit-third-party.md](./security-audit-third-party.md) · [desktop-release-runbook.md](./desktop-release-runbook.md).
+Enterprise operations E1–E4 are **Stable** with full stable-hardening checklist items **shipped in code**. SDKs **0.4.2** and Control Center desktop **0.4.2** (`desktop-v0.4.2`) are published via registry tags and GitHub Releases. Remaining organizational gates: third-party security audit sign-off and 30-day field soak. See [stable-hardening-enterprise-ops.md](./stable-hardening-enterprise-ops.md) · [field-soak-gate.md](./field-soak-gate.md) · [security-audit-third-party.md](./security-audit-third-party.md) · [desktop-release-runbook.md](./desktop-release-runbook.md).
 
 ---
 
