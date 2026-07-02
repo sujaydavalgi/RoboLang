@@ -1,5 +1,5 @@
 syntax = "proto3";
-// Spanda Control Center gRPC API — proto semver 1.0.8 (package spanda.v1).
+// Spanda Control Center gRPC API — proto semver 1.0.9 (package spanda.v1).
 package spanda.v1;
 
 message Empty {}
@@ -188,4 +188,22 @@ service ControlCenter {
   rpc GetRecoveryGraph(QueryRequest) returns (JsonResponse);
   rpc ListRecoveryPolicies(Empty) returns (JsonResponse);
   rpc ExplainRecovery(JsonBodyRequest) returns (JsonResponse);
+  // Administration and mission control (mirrors /v1/admin/* and /v1/operator/missions)
+  rpc ListAdminApiKeys(Empty) returns (JsonResponse);
+  rpc CreateAdminApiKey(JsonBodyRequest) returns (JsonResponse);
+  rpc PatchAdminApiKey(JsonBodyRequest) returns (JsonResponse);
+  rpc DeleteAdminApiKey(JsonBodyRequest) returns (JsonResponse);
+  rpc ListAdminUsers(Empty) returns (JsonResponse);
+  rpc CreateAdminUser(JsonBodyRequest) returns (JsonResponse);
+  rpc PatchAdminUser(JsonBodyRequest) returns (JsonResponse);
+  rpc DeleteAdminUser(JsonBodyRequest) returns (JsonResponse);
+  rpc GetAdminIntegrations(Empty) returns (JsonResponse);
+  rpc GetAlertChannels(Empty) returns (JsonResponse);
+  rpc UpdateAlertChannels(JsonBodyRequest) returns (JsonResponse);
+  rpc ListOperatorMissions(Empty) returns (JsonResponse);
+  rpc ListOperatorMissionApprovals(Empty) returns (JsonResponse);
+  rpc OperatorMissionPause(JsonBodyRequest) returns (JsonResponse);
+  rpc OperatorMissionResume(JsonBodyRequest) returns (JsonResponse);
+  rpc OperatorMissionCancel(JsonBodyRequest) returns (JsonResponse);
+  rpc ListProgramTraces(QueryRequest) returns (JsonResponse);
 }

@@ -1486,6 +1486,224 @@ impl ControlCenter for GrpcControlCenter {
         self.with_state(|state| crate::recovery_ops::recovery_explain_json(state, &body))
             .map(Response::new)
     }
+
+    async fn list_admin_api_keys(
+        &self,
+        request: Request<Empty>,
+    ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
+        let ctx = self.rbac_from_request(&request);
+        self.with_state(|state| crate::admin_ops::admin_api_keys_list_json(state, ctx.as_ref()))
+            .map(Response::new)
+    }
+
+    async fn create_admin_api_key(
+        &self,
+        request: Request<JsonBodyRequest>,
+    ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
+        let ctx = self.rbac_from_request(&request);
+        let body = request.into_inner().body_json;
+        self.with_state_mut(|state| {
+            crate::admin_ops::admin_api_keys_create_json(state, &body, ctx.as_ref())
+        })
+        .map(Response::new)
+    }
+
+    async fn patch_admin_api_key(
+        &self,
+        request: Request<JsonBodyRequest>,
+    ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
+        let ctx = self.rbac_from_request(&request);
+        let body = request.into_inner().body_json;
+        let key_id = serde_json::from_str::<serde_json::Value>(&body)
+            .ok()
+            .and_then(|v| v.get("key_id").and_then(|id| id.as_str()).map(String::from))
+            .ok_or_else(|| Status::invalid_argument("key_id required in body_json"))?;
+        self.with_state_mut(|state| {
+            crate::admin_ops::admin_api_keys_patch_json(state, &key_id, &body, ctx.as_ref())
+        })
+        .map(Response::new)
+    }
+
+    async fn delete_admin_api_key(
+        &self,
+        request: Request<JsonBodyRequest>,
+    ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
+        let ctx = self.rbac_from_request(&request);
+        let body = request.into_inner().body_json;
+        let key_id = serde_json::from_str::<serde_json::Value>(&body)
+            .ok()
+            .and_then(|v| v.get("key_id").and_then(|id| id.as_str()).map(String::from))
+            .ok_or_else(|| Status::invalid_argument("key_id required in body_json"))?;
+        self.with_state_mut(|state| {
+            crate::admin_ops::admin_api_keys_delete_json(state, &key_id, ctx.as_ref())
+        })
+        .map(Response::new)
+    }
+
+    async fn list_admin_users(
+        &self,
+        request: Request<Empty>,
+    ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
+        let ctx = self.rbac_from_request(&request);
+        self.with_state_mut(|state| crate::admin_users::admin_users_list_json(state, ctx.as_ref()))
+            .map(Response::new)
+    }
+
+    async fn create_admin_user(
+        &self,
+        request: Request<JsonBodyRequest>,
+    ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
+        let ctx = self.rbac_from_request(&request);
+        let body = request.into_inner().body_json;
+        self.with_state_mut(|state| {
+            crate::admin_users::admin_users_create(state, &body, ctx.as_ref()).body
+        })
+        .map(Response::new)
+    }
+
+    async fn patch_admin_user(
+        &self,
+        request: Request<JsonBodyRequest>,
+    ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
+        let ctx = self.rbac_from_request(&request);
+        let body = request.into_inner().body_json;
+        let user_id = serde_json::from_str::<serde_json::Value>(&body)
+            .ok()
+            .and_then(|v| v.get("user_id").and_then(|id| id.as_str()).map(String::from))
+            .ok_or_else(|| Status::invalid_argument("user_id required in body_json"))?;
+        self.with_state_mut(|state| {
+            crate::admin_users::admin_users_patch(state, &user_id, &body, ctx.as_ref()).body
+        })
+        .map(Response::new)
+    }
+
+    async fn delete_admin_user(
+        &self,
+        request: Request<JsonBodyRequest>,
+    ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
+        let ctx = self.rbac_from_request(&request);
+        let body = request.into_inner().body_json;
+        let user_id = serde_json::from_str::<serde_json::Value>(&body)
+            .ok()
+            .and_then(|v| v.get("user_id").and_then(|id| id.as_str()).map(String::from))
+            .ok_or_else(|| Status::invalid_argument("user_id required in body_json"))?;
+        self.with_state_mut(|state| {
+            crate::admin_users::admin_users_delete(state, &user_id, ctx.as_ref()).body
+        })
+        .map(Response::new)
+    }
+
+    async fn get_admin_integrations(
+        &self,
+        request: Request<Empty>,
+    ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
+        let ctx = self.rbac_from_request(&request);
+        self.with_state(|state| {
+            crate::admin_ops::admin_integrations_summary_json(state, ctx.as_ref())
+        })
+        .map(Response::new)
+    }
+
+    async fn get_alert_channels(
+        &self,
+        request: Request<Empty>,
+    ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
+        let ctx = self.rbac_from_request(&request);
+        self.with_state(|state| {
+            crate::alert_channels::admin_alert_channels_get_json(state, ctx.as_ref())
+        })
+        .map(Response::new)
+    }
+
+    async fn update_alert_channels(
+        &self,
+        request: Request<JsonBodyRequest>,
+    ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
+        let ctx = self.rbac_from_request(&request);
+        let body = request.into_inner().body_json;
+        self.with_state_mut(|state| {
+            crate::alert_channels::admin_alert_channels_put_json(state, &body, ctx.as_ref())
+        })
+        .map(Response::new)
+    }
+
+    async fn list_operator_missions(
+        &self,
+        request: Request<Empty>,
+    ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
+        self.with_state(crate::admin_ops::operator_missions_list_json)
+            .map(Response::new)
+    }
+
+    async fn list_operator_mission_approvals(
+        &self,
+        request: Request<Empty>,
+    ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
+        self.with_state(|state| crate::e3::mission_approvals_list(state).body)
+            .map(Response::new)
+    }
+
+    async fn operator_mission_pause(
+        &self,
+        request: Request<JsonBodyRequest>,
+    ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
+        let ctx = self.rbac_from_request(&request);
+        let body = request.into_inner().body_json;
+        self.with_state_mut(|state| {
+            crate::admin_ops::operator_mission_pause_json(state, &body, ctx.as_ref())
+        })
+        .map(Response::new)
+    }
+
+    async fn operator_mission_resume(
+        &self,
+        request: Request<JsonBodyRequest>,
+    ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
+        let ctx = self.rbac_from_request(&request);
+        let body = request.into_inner().body_json;
+        self.with_state_mut(|state| {
+            crate::admin_ops::operator_mission_resume_json(state, &body, ctx.as_ref())
+        })
+        .map(Response::new)
+    }
+
+    async fn operator_mission_cancel(
+        &self,
+        request: Request<JsonBodyRequest>,
+    ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
+        let ctx = self.rbac_from_request(&request);
+        let body = request.into_inner().body_json;
+        self.with_state_mut(|state| {
+            crate::admin_ops::operator_mission_cancel_json(state, &body, ctx.as_ref())
+        })
+        .map(Response::new)
+    }
+
+    async fn list_program_traces(
+        &self,
+        request: Request<QueryRequest>,
+    ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
+        let query = request.into_inner().query;
+        self.with_state(|state| crate::sdk_ops::program_traces_list_json(state, &query))
+            .map(Response::new)
+    }
 }
 
 /// Start tonic gRPC server on `bind` (blocks the current thread's tokio runtime).
