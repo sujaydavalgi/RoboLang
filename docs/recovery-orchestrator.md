@@ -83,8 +83,18 @@ spanda recovery explain rover.sd --entity robot-1 --failure gps_loss
 - **Diagnosis** — failure classification feeds decision engine
 - **Mission Continuity** — delegation, takeover, succession strategies
 - **Fleet** — fleet redistribution playbooks
-- **Plugins** — custom strategies, validators, playbooks
+- **Plugins** — `[recovery.extensions]` in `spanda.plugin.toml`; `on_recovery_completed` hook after execute
+- **gRPC** — proto **1.0.8** mirrors REST (`ListRecoveryPlans`, `PlanRecovery`, …)
 - **Control Center** — Recovery dashboard and graph visualization
+
+## CI & promotion
+
+```bash
+./scripts/recovery_orchestrator_smoke.sh
+./scripts/recovery_orchestrator_stable_promotion_gate.sh
+```
+
+See [stable-hardening-recovery-orchestrator.md](./stable-hardening-recovery-orchestrator.md).
 
 ## See also
 

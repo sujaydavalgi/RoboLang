@@ -188,6 +188,7 @@
 | [differentiation-roadmap.md](./differentiation-roadmap.md) | **Signature capabilities — mission contracts, explainability, coverage, risk (15 areas)** |
 | [platform-maturity-roadmap.md](./platform-maturity-roadmap.md) | **Platform maturity expansion — adoption, trust, operations (16 areas)** |
 | [enterprise-operations-roadmap.md](./enterprise-operations-roadmap.md) | **Enterprise operations — Control Center, Device Pool, RBAC, APIs, observability (20 pillars)** |
+| [stable-hardening-recovery-orchestrator.md](./stable-hardening-recovery-orchestrator.md) | **Stable promotion checklist for Recovery Orchestrator** |
 | [stable-hardening-enterprise-ops.md](./stable-hardening-enterprise-ops.md) | **Stable promotion checklist for enterprise operations (E1–E4 promoted)** |
 | [enterprise-ops-stable-promotion.md](./enterprise-ops-stable-promotion.md) | **Stable promotion runbook** (soak, audit prep, SDK/desktop releases) |
 | [stable-hardening-human-interaction.md](./stable-hardening-human-interaction.md) | **Experimental → Stable promotion checklist for Human Interaction (H1–H4)** |

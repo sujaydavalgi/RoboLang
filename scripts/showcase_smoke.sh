@@ -31,6 +31,10 @@ echo "== showcase smoke: self-healing =="
 chmod +x scripts/self_healing_smoke.sh
 ./scripts/self_healing_smoke.sh
 
+echo "== showcase smoke: recovery orchestrator =="
+chmod +x scripts/recovery_orchestrator_smoke.sh
+./scripts/recovery_orchestrator_smoke.sh
+
 echo "== showcase smoke: continuity =="
 chmod +x scripts/continuity_smoke.sh
 ./scripts/continuity_smoke.sh

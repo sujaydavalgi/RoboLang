@@ -19,6 +19,8 @@ Index of regression and promotion gates organized by **Platform Pillar** and **S
 | `assurance_smoke.sh` | Assurance CLI suite |
 | `continuity_smoke.sh` | Takeover, delegation, succession |
 | `self_healing_smoke.sh` | Recovery planner, heal/recover |
+| `recovery_orchestrator_smoke.sh` | Recovery Orchestrator CLI, REST, gRPC, crate tests |
+| `recovery_orchestrator_stable_promotion_gate.sh` | Stable gate + Control Center `/v1/recovery/*` probe |
 | `readiness_smoke.sh` | Readiness engine |
 | `decision_explain_smoke.sh` | Explain + decision trace |
 | `distributed_decisions_smoke.sh` | Decision tree runtime traces, CLI inspect, sim audit |
