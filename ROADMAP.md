@@ -276,8 +276,9 @@ Full analysis: [docs/differentiation-roadmap.md](docs/differentiation-roadmap.md
 | Four-layer model (reflex / local / fleet / control center) | **Stable** |
 | `decision_tree`, `offline_policy`, entity `local_decision_authority` | **Stable** |
 | Escalation, consensus, conflict resolution | **Stable** |
+| Runtime policy gates + live v3 trace emission | **Stable** |
 | CLI (`spanda decision list|inspect|simulate|trace|explain|policy|security-audit`) | **Stable** |
-| REST `/v1/decisions*`, SDK methods, Control Center Decisions tab | **Stable** |
+| REST `/v1/decisions*`, `/v1/decisions/traces`, SDK methods, Control Center Decisions tab | **Stable** |
 | Examples `examples/showcase/distributed_decisions/` | **Stable** |
 
 **Self-healing detail:**

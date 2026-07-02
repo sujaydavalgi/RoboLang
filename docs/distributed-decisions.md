@@ -69,6 +69,7 @@ During `run` / `sim` with `SPANDA_DECISION_TRACE=1` or `--record`:
 | `emergency_stop` | reflex | `emergency_stop` statement or scheduler halt |
 | `safety_validate_rejected` | reflex | `safety.validate()` rejects a proposal |
 | `decision_tree_eval` | local / fleet | Live tree match on health-fault injection or scheduler poll |
+| `decision_action_blocked` / `decision_escalation_pending` | local / control_center | Offline policy or `requires_central_approval` gate at action dispatch |
 | `continuity_takeover` | local / fleet | Continuity handoff |
 | `fleet_mesh_continuity` / `fleet_mesh_recovery` | group_fleet | Fleet mesh relay with consensus trace |
 
@@ -95,6 +96,9 @@ spanda decision security-audit
 | POST | `/v1/decisions/simulate` | Simulate under failure scenarios |
 | POST | `/v1/decisions/escalate` | Approve pending escalation |
 | GET | `/v1/decision-policies` | List cached policies |
+| GET | `/v1/decisions/traces` | List v3 decision frames from mission trace (`?file=` or `?trace=`) |
+
+Env knobs for runtime gates in sim: `SPANDA_CENTRAL_CONNECTED`, `SPANDA_OFFLINE_MINUTES`, `SPANDA_DECISION_ESCALATION_APPROVED`.
 
 ## SDK
 
