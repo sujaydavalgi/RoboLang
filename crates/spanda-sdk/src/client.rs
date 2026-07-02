@@ -309,6 +309,27 @@ impl SpandaClient {
         self.request("GET", "/v1/decision-policies", None, false)
     }
 
+    /// List v3 decision trace frames from a mission trace file.
+    pub fn list_decision_traces(
+        &self,
+        file: Option<&str>,
+        trace: Option<&str>,
+    ) -> SpandaResult<Value> {
+        let mut query = Vec::new();
+        if let Some(f) = file {
+            query.push(format!("file={f}"));
+        }
+        if let Some(t) = trace {
+            query.push(format!("trace={t}"));
+        }
+        let path = if query.is_empty() {
+            "/v1/decisions/traces".to_string()
+        } else {
+            format!("/v1/decisions/traces?{}", query.join("&"))
+        };
+        self.request("GET", &path, None, false)
+    }
+
     /// Unified verification for any entity kind (hardware, mission, fleet, device pool).
     pub fn entity_verify(&self, id: &str, body: Option<&Value>) -> SpandaResult<Value> {
         self.request("POST", &format!("/v1/entities/{id}/verify"), body, false)

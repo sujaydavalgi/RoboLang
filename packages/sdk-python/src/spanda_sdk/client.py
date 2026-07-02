@@ -274,6 +274,35 @@ class ControlCenterClient:
     def list_audit_mutations(self) -> Any:
         return self._request("GET", "/v1/audit/mutations", auth=True)
 
+    def list_decisions(self) -> Any:
+        return self._request("GET", "/v1/decisions")
+
+    def get_entity_decisions(self, entity_id: str) -> Any:
+        return self._request("GET", f"/v1/entities/{entity_id}/decisions")
+
+    def simulate_decision(self, body: Mapping[str, Any]) -> Any:
+        return self._request("POST", "/v1/decisions/simulate", body)
+
+    def approve_escalation(self, body: Mapping[str, Any]) -> Any:
+        return self._request("POST", "/v1/decisions/escalate", body, auth=True)
+
+    def list_decision_policies(self) -> Any:
+        return self._request("GET", "/v1/decision-policies")
+
+    def list_decision_traces(
+        self,
+        *,
+        file: Optional[str] = None,
+        trace: Optional[str] = None,
+    ) -> Any:
+        params: list[str] = []
+        if file:
+            params.append(f"file={file}")
+        if trace:
+            params.append(f"trace={trace}")
+        query = f"?{'&'.join(params)}" if params else ""
+        return self._request("GET", f"/v1/decisions/traces{query}")
+
     def rpc(self, method: str, params: Optional[Mapping[str, Any]] = None) -> Any:
         return self._request(
             "POST",

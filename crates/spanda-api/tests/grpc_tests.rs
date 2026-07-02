@@ -620,3 +620,75 @@ async fn grpc_smart_spaces_endpoints_with_blueprint_config() {
         .into_inner();
     assert!(energy_detail.json.contains("soc_percent"));
 }
+
+#[tokio::test]
+async fn grpc_decision_endpoints_with_showcase_program() {
+    let _guard = GRPC_TEST_LOCK.lock().unwrap();
+    let program = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .unwrap()
+        .parent()
+        .unwrap()
+        .join("examples/showcase/distributed_decisions/smoke.sd");
+    let http_port = pick_port();
+    let grpc_port = pick_port();
+    let options = ControlCenterOptions {
+        bind: format!("127.0.0.1:{http_port}"),
+        grpc_bind: Some(format!("127.0.0.1:{grpc_port}")),
+        program_path: Some(program),
+        once: true,
+        timeout_ms: 500,
+        ..Default::default()
+    };
+    let grpc_bind = spawn_control_center(options);
+    let mut client = connect(&grpc_bind).await;
+
+    let decisions = client
+        .list_decisions(QueryRequest {
+            query: String::new(),
+        })
+        .await
+        .expect("list decisions")
+        .into_inner();
+    assert!(decisions.json.contains("decision_trees"));
+
+    let policies = client
+        .list_decision_policies(QueryRequest {
+            query: String::new(),
+        })
+        .await
+        .expect("list decision policies")
+        .into_inner();
+    assert!(policies.json.contains("offline_policies"));
+
+    let entity = client
+        .get_entity_decisions(EntityIdRequest {
+            entity_id: "Rover001".into(),
+        })
+        .await
+        .expect("entity decisions")
+        .into_inner();
+    assert!(entity.json.contains("Rover001") || entity.json.contains("entity_id"));
+
+    let simulate = client
+        .simulate_decisions(spanda_api::grpc::spanda_v1::JsonBodyRequest {
+            body_json: r#"{"offline":true,"entity_id":"Rover001"}"#.into(),
+        })
+        .await
+        .expect("simulate decisions")
+        .into_inner();
+    assert!(simulate.json.contains("simulation") || simulate.json.contains("records"));
+
+    let traces = client
+        .list_decision_traces(QueryRequest {
+            query: String::new(),
+        })
+        .await
+        .expect("list decision traces")
+        .into_inner();
+    assert!(
+        traces.json.contains("trace not found") || traces.json.contains("\"frames\""),
+        "unexpected traces body: {}",
+        traces.json
+    );
+}
