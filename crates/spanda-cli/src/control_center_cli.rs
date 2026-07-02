@@ -186,19 +186,8 @@ fn cmd_status(args: &[String]) {
         client_from_args(args)
     };
     let base_url = client.base_url().to_string();
-    match client.get("/v1/instance", false) {
-        Ok(response) => {
-            if response.status >= 400 {
-                eprintln!("HTTP {}", response.status);
-                eprintln!("{}", response.body);
-                process::exit(1);
-            }
-            let value: serde_json::Value = serde_json::from_str(&response.body).unwrap_or_else(|error| {
-                eprintln!("invalid /v1/instance JSON: {error}");
-                process::exit(1);
-            });
-            print_instance_status(&base_url, &value, json);
-        }
+    match fetch_instance_status(&base_url) {
+        Ok(value) => print_instance_status(&base_url, &value, json),
         Err(error) => {
             eprintln!("{error}");
             eprintln!();
