@@ -19,6 +19,13 @@ continuity_policy SwarmConsensus {
     }
 }
 
+fleet InspectionFleet {
+    SwarmBot001;
+    SwarmBot002;
+    SwarmBot003;
+}
+
 swarm InspectionSwarm {
-    robots [SwarmBot001, SwarmBot002, SwarmBot003];
+    fleet InspectionFleet;
+    policy round_robin;
 }

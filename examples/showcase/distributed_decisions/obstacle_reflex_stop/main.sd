@@ -2,7 +2,12 @@
 
 robot Rover001 {
     local_decision_authority [emergency_stop, obstacle_avoidance];
-    actuator drive { type Motor; }
+    actuator drive: DifferentialDrive;
+    mode safe { }
+    safety { max_speed = 1.0 m/s; }
+    behavior idle() {
+        loop every 50ms { }
+    }
 }
 
 decision_tree ObstacleReflexStop reflex {

@@ -16,9 +16,11 @@ continuity_policy FleetTakeover {
 }
 
 fleet PatrolFleet {
-    robots [Rover001, Rover002];
+    Rover001;
+    Rover002;
 }
 
 mission_plan PatrolMission {
-    steps [patrol_route_a, patrol_route_b];
+    step patrol_route_a;
+    step patrol_route_b;
 }

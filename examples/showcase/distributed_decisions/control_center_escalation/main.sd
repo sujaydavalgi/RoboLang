@@ -20,5 +20,5 @@ continuity_policy ControlCenterEscalation {
 }
 
 mission_plan HighRiskMission {
-    steps [inspect_hazard_zone];
+    step inspect_hazard_zone;
 }

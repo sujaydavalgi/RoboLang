@@ -20,5 +20,5 @@ offline_policy RoverOffline {
 }
 
 mission_plan PatrolMission {
-    steps [patrol_route_a];
+    step patrol_route_a;
 }
