@@ -56,6 +56,12 @@ pub struct ProgramRequest {
     /// When true, `program_replay` applies trace frames via playback (no re-run).
     #[serde(default)]
     pub playback: bool,
+    /// When true, emit v3 distributed decision trace frames during simulation.
+    #[serde(default)]
+    pub decision_trace: bool,
+    /// When true, write a mission trace file alongside the program.
+    #[serde(default)]
+    pub record_trace: bool,
 }
 
 fn resolve_program_path(state: &ControlCenterState, file: Option<&str>) -> Result<PathBuf, String> {
@@ -731,8 +737,21 @@ pub fn program_simulation(state: &ControlCenterState, body: &str) -> HttpRespons
         Ok(s) => s,
         Err(e) => return bad_request(&format!("read {} failed: {e}", path.display())),
     };
+    if req.decision_trace || req.record_trace {
+        std::env::set_var("SPANDA_DECISION_TRACE", "1");
+    }
+    let trace_path = path.with_extension("trace");
     let options = spanda_interpreter::RunOptions {
         max_loop_iterations: 20,
+        inject_health_faults: req.inject_health_faults,
+        decision_trace: req.decision_trace || req.record_trace,
+        record_trace: req.record_trace,
+        trace_output: if req.record_trace {
+            Some(trace_path.to_string_lossy().into_owned())
+        } else {
+            None
+        },
+        decision_runtime: Some(std::sync::Arc::new(spanda_decision::DecisionBackedRuntime)),
         trace_source: Some(path.to_string_lossy().into_owned()),
         ..Default::default()
     };
@@ -745,7 +764,9 @@ pub fn program_simulation(state: &ControlCenterState, body: &str) -> HttpRespons
                 "status": "completed",
                 "event_count": result.events.len(),
                 "log_count": result.logs.len(),
-                "has_trace": result.mission_trace.is_some(),
+                "has_trace": result.mission_trace.is_some() || trace_path.exists(),
+                "trace_path": if req.record_trace { Some(trace_path.display().to_string()) } else { None },
+                "decision_trace": req.decision_trace || req.record_trace,
                 "result": result,
             },
         })),

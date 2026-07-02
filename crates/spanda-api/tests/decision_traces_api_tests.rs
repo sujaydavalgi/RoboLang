@@ -1,7 +1,8 @@
 //! REST API tests for distributed decision trace listing.
 
-use spanda_api::decision_ops::list_decision_traces;
+use spanda_api::decision_ops::{list_decision_policy_cache, list_decision_traces};
 use spanda_api::handlers::handle_request;
+use spanda_api::sdk_ops::program_simulation;
 use spanda_api::state::ControlCenterState;
 use spanda_decision::DecisionBackedRuntime;
 use spanda_deploy_http::HttpRequest;
@@ -62,5 +63,31 @@ fn list_decision_traces_returns_v3_frames_after_sim() {
     );
     assert_eq!(http.status, 200);
     assert!(http.body.contains("\"frames\""));
+    let _ = std::fs::remove_file(&trace_path);
+}
+
+#[test]
+fn list_decision_policy_cache_returns_json() {
+    let response = list_decision_policy_cache(&ControlCenterState::new(), "");
+    assert_eq!(response.status, 200, "{}", response.body);
+    let json: serde_json::Value = serde_json::from_str(&response.body).unwrap();
+    assert_eq!(json["api_version"], "v1");
+    assert!(json["policies"].is_object());
+}
+
+#[test]
+fn program_simulation_emits_decision_trace_for_showcase() {
+    let root = showcase_root().join("obstacle_reflex_stop");
+    let source_path = root.join("main.sd");
+    let trace_path = root.join("main.trace");
+    let _ = std::fs::remove_file(&trace_path);
+    let mut state = ControlCenterState::new().with_config_path(root.clone());
+    state.program_path = Some(source_path.clone());
+    let body = r#"{"execute":true,"decision_trace":true,"record_trace":true,"inject_health_faults":true}"#;
+    let response = program_simulation(&state, body);
+    assert_eq!(response.status, 200, "{}", response.body);
+    let json: serde_json::Value = serde_json::from_str(&response.body).unwrap();
+    assert_eq!(json["simulation"]["decision_trace"], true);
+    assert!(json["simulation"]["has_trace"].as_bool().unwrap_or(false));
     let _ = std::fs::remove_file(&trace_path);
 }

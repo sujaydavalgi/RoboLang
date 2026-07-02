@@ -6,8 +6,8 @@ use crate::state::ControlCenterState;
 use serde::Deserialize;
 use spanda_decision::{
     approve_escalation, evaluate_distributed_decisions, extract_decision_authorities,
-    extract_decision_trees, extract_offline_policies, simulate_distributed_decisions,
-    DecisionContext, DecisionLayer, SimulationOptions,
+    extract_decision_trees, extract_offline_policies, load_persisted_policy_cache,
+    simulate_distributed_decisions, DecisionContext, DecisionLayer, SimulationOptions,
 };
 use spanda_deploy_http::HttpResponse;
 use std::collections::HashMap;
@@ -221,6 +221,22 @@ pub fn list_decision_traces(state: &ControlCenterState, query: &str) -> HttpResp
     }))
 }
 
+/// GET /v1/decision-policy-cache — persisted signed offline policy cache on disk.
+pub fn list_decision_policy_cache(_state: &ControlCenterState, query: &str) -> HttpResponse {
+    let cache_path = parse_query_param(query, "cache").map(std::path::PathBuf::from);
+    let cache = load_persisted_policy_cache(cache_path.as_deref());
+    let path = cache_path
+        .map(|p| p.display().to_string())
+        .unwrap_or_else(|| spanda_decision::default_policy_cache_path().display().to_string());
+    json_ok(&serde_json::json!({
+        "api_version": API_VERSION,
+        "cache_path": path,
+        "policy_count": cache.policies.len(),
+        "updated_at_ms": cache.updated_at_ms,
+        "policies": cache.policies,
+    }))
+}
+
 fn parse_query_param(query: &str, key: &str) -> Option<String> {
     query.split('&').find_map(|pair| {
         let (k, v) = pair.split_once('=')?;
@@ -250,6 +266,11 @@ pub fn simulate_decisions_json(state: &ControlCenterState, body: &str) -> String
 /// JSON string helper for gRPC parity.
 pub fn list_decision_traces_json(state: &ControlCenterState, query: &str) -> String {
     list_decision_traces(state, query).body
+}
+
+/// JSON string helper for gRPC parity.
+pub fn list_decision_policy_cache_json(state: &ControlCenterState, query: &str) -> String {
+    list_decision_policy_cache(state, query).body
 }
 
 /// JSON string helper for gRPC parity.

@@ -301,6 +301,9 @@ pub fn handle_request(
         ("/v1/decisions/traces", "GET") => {
             crate::decision_ops::list_decision_traces(state, query)
         }
+        ("/v1/decision-policy-cache", "GET") => {
+            crate::decision_ops::list_decision_policy_cache(state, query)
+        }
         ("/v1/device-reports", "GET") => device_reports_get(state),
         ("/v1/failover/chains", "GET") => failover_chains_get(state),
         ("/v1/devices", "GET") => devices_list(state),

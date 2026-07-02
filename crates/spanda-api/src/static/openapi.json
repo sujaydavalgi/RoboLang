@@ -524,6 +524,93 @@
         "responses": { "200": { "description": "Entity trust" } }
       }
     },
+    "/v1/entities/{id}/decisions": {
+      "get": {
+        "summary": "Distributed decision architecture for an entity",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Entity decision metadata" } }
+      }
+    },
+    "/v1/decisions": {
+      "get": {
+        "summary": "List decision architecture for loaded program",
+        "parameters": [
+          { "name": "file", "in": "query", "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Authorities, trees, offline policies" } }
+      }
+    },
+    "/v1/decisions/simulate": {
+      "post": {
+        "summary": "Simulate distributed decisions (CLI parity)",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": { "type": "string" },
+                  "entity_id": { "type": "string" },
+                  "offline": { "type": "boolean", "default": false }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Simulation report" } }
+      }
+    },
+    "/v1/decisions/escalate": {
+      "post": {
+        "summary": "Approve a pending decision escalation",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["escalation_id", "approver"],
+                "properties": {
+                  "escalation_id": { "type": "string" },
+                  "approver": { "type": "string" },
+                  "entity_id": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Escalation result" } }
+      }
+    },
+    "/v1/decision-policies": {
+      "get": {
+        "summary": "Offline policy specs from loaded program",
+        "parameters": [
+          { "name": "file", "in": "query", "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Offline policies" } }
+      }
+    },
+    "/v1/decisions/traces": {
+      "get": {
+        "summary": "List v3 distributed decision trace frames",
+        "parameters": [
+          { "name": "trace", "in": "query", "schema": { "type": "string" } },
+          { "name": "file", "in": "query", "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Decision trace frames" } }
+      }
+    },
+    "/v1/decision-policy-cache": {
+      "get": {
+        "summary": "Persisted signed offline policy cache on disk",
+        "parameters": [
+          { "name": "cache", "in": "query", "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Policy cache entries" } }
+      }
+    },
     "/v1/programs/readiness": {
       "post": {
         "summary": "Evaluate program readiness (CLI parity)",
@@ -656,7 +743,10 @@
                 "type": "object",
                 "properties": {
                   "file": { "type": "string" },
-                  "execute": { "type": "boolean", "default": false, "description": "Run driver when true" }
+                  "execute": { "type": "boolean", "default": false, "description": "Run driver when true" },
+                  "decision_trace": { "type": "boolean", "default": false, "description": "Emit v3 decision trace frames" },
+                  "record_trace": { "type": "boolean", "default": false, "description": "Write mission trace file" },
+                  "inject_health_faults": { "type": "boolean", "default": false }
                 }
               }
             }

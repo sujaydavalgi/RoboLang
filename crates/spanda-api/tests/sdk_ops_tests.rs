@@ -10,6 +10,8 @@ fn program_request_parses_defaults() {
     assert!(!req.execute);
     assert!(!req.deterministic);
     assert!(!req.playback);
+    assert!(!req.decision_trace);
+    assert!(!req.record_trace);
 }
 
 #[test]
