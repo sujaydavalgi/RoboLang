@@ -235,17 +235,19 @@ spanda verify examples/your_example.sd     # if it has deploy targets
 
 Spanda uses [Semantic Versioning](https://semver.org/). User-facing changes belong in `CHANGELOG.md` under `## [Unreleased]` in the same PR as the feature or fix.
 
+**When to bump:** See [docs/versioning.md](docs/versioning.md) — all product streams (workspace, SDKs, desktop) share the same semver and bump together on patch, minor, or major releases.
+
 ### Automatic releases (preferred)
 
 After CI passes on `main`, the **Auto release** workflow bumps the workspace version and pushes a `vX.Y.Z` tag when the **merged** pull request has one of these labels:
 
 | Label | When to use |
 |-------|-------------|
-| `release:major` | Breaking changes or large milestone releases |
-| `release:minor` | New features and substantial updates (most feature PRs) |
-| `release:patch` | Bug fixes and small, non-breaking updates |
+| `release:major` | v1.0 positioning or breaking language/API/SDK changes |
+| `release:minor` | Roadmap release milestone complete (v0.5, …) or substantial additive platform release |
+| `release:patch` | Bug fixes, stable promotions, and small updates within the current release line |
 
-Create the labels in the GitHub repo if they do not exist yet (`release:major`, `release:minor`, `release:patch`). Apply **one** release label before merging. The tag triggers **Release** (cargo-dist), which builds installers and publishes a GitHub Release.
+Create the labels in the GitHub repo if they do not exist yet (`release:major`, `release:minor`, `release:patch`). Apply **one** release label before merging. The workflow pushes five tags (`v*`, `crates-sdk-v*`, `sdk-python-v*`, `npm-sdk-v*`, `desktop-v*`) that trigger CLI, SDK, and desktop release workflows.
 
 ### Manual release
 

@@ -2,6 +2,8 @@
 
 How to publish **Spanda Rust, Python, and TypeScript** SDKs from this repository using GitHub Actions.
 
+**Version policy:** SDK, desktop, and workspace share the same semver — see [versioning.md](./versioning.md). `python3 scripts/bump_version.py` updates all manifests; push all five tags together (`v*`, `crates-sdk-v*`, `sdk-python-v*`, `npm-sdk-v*`, `desktop-v*`).
+
 ## Packages and registries
 
 | SDK | Source path | Registry package | Release tag pattern |
@@ -10,13 +12,13 @@ How to publish **Spanda Rust, Python, and TypeScript** SDKs from this repository
 | Python | `sdk/python/` | [`spanda-sdk`](https://pypi.org/project/spanda-sdk/) | `sdk-python-vX.Y.Z` |
 | TypeScript | `sdk/typescript/` | [`@davalgi-spanda/sdk`](https://www.npmjs.com/package/@davalgi-spanda/sdk) | `npm-sdk-vX.Y.Z` |
 
-Version numbers live in:
+Version numbers live in (updated together by `scripts/bump_version.py`):
 
-- `Cargo.toml` workspace version → `crates/spanda-sdk`
+- `crates/spanda-sdk/Cargo.toml` → `version`
 - `sdk/python/pyproject.toml` → `[project].version`
 - `sdk/typescript/package.json` → `"version"`
 
-Tag suffix must match the version you intend to ship (for example `sdk-python-v0.4.0` when `version = "0.4.0"`).
+Tag suffix must match the version you intend to ship (for example `sdk-python-v0.5.0` when `version = "0.5.0"`).
 
 ### Control Center desktop (GitHub Releases)
 
@@ -32,7 +34,7 @@ Keep these three files on the same semver before tagging:
 
 ```bash
 ./scripts/verify_desktop_release_ready.sh
-git tag desktop-v0.4.2 && git push origin desktop-v0.4.2
+git tag desktop-v0.5.0 && git push origin desktop-v0.5.0
 ```
 
 Workflow: [desktop-release.yml](../.github/workflows/desktop-release.yml). Optional secrets: `TAURI_UPDATER_PUBKEY`, `TAURI_SIGNING_PRIVATE_KEY`, `APPLE_SIGNING_IDENTITY`, `APPLE_NOTARIZE_PROFILE`. See [desktop-release-runbook.md](./desktop-release-runbook.md).

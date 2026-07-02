@@ -2,7 +2,7 @@
 
 Production macOS builds and optional signed auto-update for `@spanda/control-center-desktop`.
 
-**Current release:** **0.4.2** — tag [`desktop-v0.4.2`](https://github.com/Davalgi/Spanda/releases/tag/desktop-v0.4.2) (GitHub Release + workflow artifacts).
+**Current release:** **0.5.0** — tag [`desktop-v0.5.0`](https://github.com/Davalgi/Spanda/releases/tag/desktop-v0.5.0) (GitHub Release + workflow artifacts).
 
 ---
 

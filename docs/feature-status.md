@@ -1,6 +1,6 @@
 # Feature Status
 
-Honest snapshot of **Spanda Platform** capabilities as of **v0.4.0**. The Spanda Language (`.sd`) is one component; this matrix covers verification, simulation, fleet, packages, and tooling as well. Use this document to understand what is production-ready, experimental, planned, or deprecated.
+Honest snapshot of **Spanda Platform** capabilities as of **v0.5.0**. The Spanda Language (`.sd`) is one component; this matrix covers verification, simulation, fleet, packages, and tooling as well. Use this document to understand what is production-ready, experimental, planned, or deprecated.
 
 Platform overview: [platform-overview.md](./platform-overview.md)
 
@@ -9,7 +9,16 @@ Platform overview: [platform-overview.md](./platform-overview.md)
 
 ---
 
-## v0.4.0 — Deploy & tooling (current)
+## v0.5.0 — Beta credibility (current)
+
+| Area | Status |
+|------|--------|
+| **Differentiation NOW** | `spanda demo differentiation`, what-if, risk, trust-graph, readiness forecast, scorecard — Stable / Experimental per item |
+| **Distributed decisions** | Decision trees, offline policy, trace emission, Control Center Decisions tab — Experimental |
+| **Enterprise operations** | Control Center E1–E4, device pool, gRPC parity — Stable |
+| **Solution blueprints** | ADAS, Smart Spaces, Spatial Computing — Stable (organizational soak gates separate) |
+
+## v0.4.0 — Deploy & tooling
 
 | Area | Status |
 |------|--------|

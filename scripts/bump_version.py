@@ -2,7 +2,8 @@
 """Bump the Spanda workspace semver (major, minor, or patch).
 
 Updates Cargo.toml [workspace.package].version, npm package.json files,
-and finalizes CHANGELOG.md [Unreleased] into a dated release section.
+official SDK manifests (Rust, Python, TypeScript), Control Center desktop
+manifests, and finalizes CHANGELOG.md [Unreleased] into a dated release section.
 
 Usage:
   python3 scripts/bump_version.py patch
@@ -25,6 +26,15 @@ NPM_ROOTS = [
     ROOT,
     ROOT / "editor" / "vscode",
 ]
+SDK_RUST_CARGO = ROOT / "crates" / "spanda-sdk" / "Cargo.toml"
+SDK_PYTHON_PYPROJECTS = [
+    ROOT / "sdk" / "python" / "pyproject.toml",
+    ROOT / "packages" / "sdk-python" / "pyproject.toml",
+]
+SDK_TYPESCRIPT_DIR = ROOT / "sdk" / "typescript"
+DESKTOP_DIR = ROOT / "packages" / "control-center-desktop"
+DESKTOP_TAURI_CARGO = DESKTOP_DIR / "src-tauri" / "Cargo.toml"
+DESKTOP_TAURI_CONF = DESKTOP_DIR / "src-tauri" / "tauri.conf.json"
 
 
 def _workspace_package_body(text: str) -> str | None:
@@ -592,6 +602,82 @@ def write_workspace_version(new_version: str) -> None:
     if not replaced:
         raise SystemExit("failed to update [workspace.package].version in Cargo.toml")
     CARGO_TOML.write_text("".join(lines), encoding="utf-8")
+
+
+def _set_toml_version(path: Path, new_version: str) -> None:
+    text = path.read_text(encoding="utf-8")
+    new_text, count = re.subn(
+        r'^(version\s*=\s*")[^"]+("\s*)$',
+        rf'\g<1>{new_version}\2',
+        text,
+        count=1,
+        flags=re.MULTILINE,
+    )
+    if count != 1:
+        raise SystemExit(f"could not update version in {path}")
+    path.write_text(new_text, encoding="utf-8")
+
+
+def _set_pyproject_version(path: Path, new_version: str) -> None:
+    text = path.read_text(encoding="utf-8")
+    new_text, count = re.subn(
+        r'(^version\s*=\s*")[^"]+(")',
+        rf'\g<1>{new_version}\2',
+        text,
+        count=1,
+        flags=re.MULTILINE,
+    )
+    if count != 1:
+        raise SystemExit(f"could not update [project].version in {path}")
+    path.write_text(new_text, encoding="utf-8")
+
+
+def _set_json_version(path: Path, new_version: str) -> None:
+    text = path.read_text(encoding="utf-8")
+    new_text, count = re.subn(
+        r'("version"\s*:\s*")[^"]+(")',
+        rf'\g<1>{new_version}\2',
+        text,
+        count=1,
+    )
+    if count != 1:
+        raise SystemExit(f"could not update version in {path}")
+    path.write_text(new_text, encoding="utf-8")
+
+
+def release_stream_paths() -> list[Path]:
+    paths = [SDK_RUST_CARGO, *SDK_PYTHON_PYPROJECTS, DESKTOP_TAURI_CARGO, DESKTOP_TAURI_CONF]
+    paths.extend(p for p in npm_package_json_paths() if p.parent == DESKTOP_DIR)
+    return paths
+
+
+def write_release_stream_versions(new_version: str) -> None:
+    # Align official SDK and desktop manifests with the workspace release version.
+    _set_toml_version(SDK_RUST_CARGO, new_version)
+    for path in SDK_PYTHON_PYPROJECTS:
+        if path.is_file():
+            _set_pyproject_version(path, new_version)
+    _set_toml_version(DESKTOP_TAURI_CARGO, new_version)
+    _set_json_version(DESKTOP_TAURI_CONF, new_version)
+
+
+def refresh_sdk_typescript_version(new_version: str, dry_run: bool) -> None:
+    if dry_run:
+        print(f"would set {SDK_TYPESCRIPT_DIR.relative_to(ROOT)}/package.json version -> {new_version}")
+        return
+    subprocess.run(
+        [
+            "npm",
+            "version",
+            new_version,
+            "--no-git-tag-version",
+            "--allow-same-version",
+            "--prefix",
+            str(SDK_TYPESCRIPT_DIR),
+        ],
+        check=True,
+        cwd=ROOT,
+    )
 
 
 def _unreleased_span(text: str) -> tuple[int, int]:
@@ -1860,16 +1946,24 @@ def main() -> None:
         for path in npm_package_json_paths():
             print(f"would set {path.relative_to(ROOT)} version -> {new_version}")
         refresh_npm_versions(new_version, dry_run=True)
+        for path in release_stream_paths():
+            print(f"would set {path.relative_to(ROOT)} version -> {new_version}")
+        refresh_sdk_typescript_version(new_version, dry_run=True)
         print(f"would update {CARGO_TOML.relative_to(ROOT)}")
         print(f"would update {CHANGELOG.relative_to(ROOT)}")
+        print(f"  tags: v{new_version}, crates-sdk-v{new_version}, sdk-python-v{new_version}, "
+              f"npm-sdk-v{new_version}, desktop-v{new_version}")
         return
 
     write_workspace_version(new_version)
     refresh_npm_versions(new_version, dry_run=False)
+    write_release_stream_versions(new_version)
+    refresh_sdk_typescript_version(new_version, dry_run=False)
     bump_changelog(new_version, release_date, allow_empty=args.allow_empty_changelog)
     write_github_output(args.github_output, "version", new_version)
     print(f"✓ bumped {current} -> {new_version}")
-    print(f"  tag: v{new_version}")
+    print(f"  tags: v{new_version}, crates-sdk-v{new_version}, sdk-python-v{new_version}, "
+          f"npm-sdk-v{new_version}, desktop-v{new_version}")
 
 
 if __name__ == "__main__":

@@ -4,8 +4,8 @@
 
 | | |
 |---|---|
-| **Current release** | v0.4.0 (tagged 2026-06-22) |
-| **Next** | v0.5 beta (Q4 2026) |
+| **Current release** | v0.5.0 (tagged 2026-07-02) |
+| **Next** | v1.0 production positioning |
 | **Last audited** | 2026-06-28 — [docs/roadmap-codebase-audit-2026-06.md](docs/roadmap-codebase-audit-2026-06.md) |
 | **Feature truth table** | [docs/feature-status.md](docs/feature-status.md) |
 | **Platform overview** | [docs/platform-overview.md](docs/platform-overview.md) |
@@ -1006,7 +1006,9 @@ Maturity-based horizons — **not arbitrary calendar dates**.
 
 ## Release milestones
 
-### v0.4 — Deploy path (current tag)
+Version bump policy: [docs/versioning.md](docs/versioning.md). Bump **minor** when a milestone’s exit criteria are met; **patch** for fixes and in-line stable promotions; **major** for v1.0 or breaking contracts.
+
+### v0.4 — Deploy path
 
 **Theme:** Native binaries, ROS2 polish, distributed fleet docs.  
 **Tagged:** 2026-06-22.
@@ -1020,10 +1022,11 @@ Maturity-based horizons — **not arbitrary calendar dates**.
 | Mission continuity runtime | **Stable** (post-v0.4.0 on `main`) |
 | Persistent telemetry + OTLP/fleet aggregation | **Stable** (post-v0.4.0 on `main`) |
 
-### v0.5 — Beta credibility (next)
+### v0.5 — Beta credibility (current tag)
 
 **Theme:** Close adoption blockers; differentiation NOW capabilities.  
-**Target:** Q4 2026.
+**Tagged:** 2026-07-02.  
+**Version:** **0.5.0** (minor bump from v0.4 deploy path).
 
 | Item | Status |
 |------|--------|
@@ -1041,6 +1044,8 @@ Maturity-based horizons — **not arbitrary calendar dates**.
 See [docs/product-strategy.md](docs/product-strategy.md) and [docs/tier-3-priority-plan.md](docs/tier-3-priority-plan.md).
 
 ### v1.0 — Production positioning
+
+**Version bump:** **major** → `1.0.0` when exit criteria below are stable-tier and tagged.
 
 | Item | Tier |
 |------|------|

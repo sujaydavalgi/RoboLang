@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-07-02
+
+### Changed
+
+- **Release v0.5.0:** Unified semver across workspace, official SDKs (Rust/Python/TypeScript), and Control Center desktop — v0.5 beta credibility milestone.
+
 ### Added
 
 - **Control Center instance status:** `GET /v1/instance` returns bind address, config/program paths, tenant, and pool summary; `spanda control-center status [--json] [--url <base>] [--discover]` queries a running server (or scans local `spanda` listeners with `--discover`).
@@ -44,6 +50,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Smart Spaces native BACnet/KNX:** bacpypes3 and xknx reads in `spanda_python_bridge.py` with mock fallback; package `read_point` / `read_group` scripts and optional `requirements-*.txt`; hardware smoke via `SPANDA_LIVE_IOT_HARDWARE=1`.
 - **Smart Spaces live-building Rust dispatch:** `live-building` feature on `spanda-cli` / `spanda-providers` routes BACnet/KNX reads through registry package scripts before the Python bridge; env `SPANDA_ROOT`, `SPANDA_BACNET_READ_SCRIPT`, `SPANDA_KNX_READ_SCRIPT`.
 - **Smart Spaces BMS sidecar:** Home Assistant REST reads in `spanda_python_bridge.py`; `spanda-home-assistant` `get_state.py` / `get_state.sh`; [smart-space-bms-bridge.md](docs/smart-space-bms-bridge.md); `scripts/smart_spaces_bms_sidecar_smoke.sh`.
+
+### Added
+
+- **Versioning policy:** [docs/versioning.md](docs/versioning.md) — milestone → semver mapping (patch / minor / major), version streams (workspace, SDKs, desktop, gRPC proto), and release checklists; linked from [CONTRIBUTING.md](CONTRIBUTING.md) and [ROADMAP.md](ROADMAP.md).
 
 ### Changed
 

@@ -168,6 +168,7 @@
 | [sdk-python.md](./sdk-python.md) | Python SDK (`spanda-sdk`) |
 | [sdk-typescript.md](./sdk-typescript.md) | TypeScript SDK (`@davalgi-spanda/sdk`) |
 | [sdk-publishing.md](./sdk-publishing.md) | **Publishing SDKs** — PyPI/npm tokens, GitHub secrets, release tags |
+| [versioning.md](./versioning.md) | **Versioning policy** — milestone → semver (patch/minor/major), release streams, checklists |
 | [api-contract.json](./api-contract.json) | JSON schema for diagnostics, run results, and verify output |
 | [standard-library.md](./standard-library.md) | Standard library overview and design |
 | [robotics-platform.md](./robotics-platform.md) | **Robotics platform: missions, fleet, safety zones, navigation, fusion, package strategy** |
