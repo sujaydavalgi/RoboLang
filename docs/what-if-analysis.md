@@ -1,6 +1,6 @@
 # What-If Analysis
 
-**Status:** Planned · **Horizon:** NEXT (3–6 months) · **Priority:** P1
+**Status:** Experimental · **Horizon:** NEXT (3–6 months) · **Priority:** P1
 
 Predict mission outcomes under failure scenarios without executing on hardware.
 

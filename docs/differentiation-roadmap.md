@@ -67,7 +67,7 @@ These six capabilities define Spanda's market identity. Protect them in every re
 
 | # | Area | CLI (target) | Crate | Status |
 |---|------|--------------|-------|--------|
-| 6 | What-If Analysis | `spanda what-if <file>` | `spanda-whatif` | **Planned** |
+| 6 | What-If Analysis | `spanda what-if <file>` | `spanda-whatif` | **Experimental** |
 | 7 | Mission Risk Analysis | `spanda risk <file>` | `spanda-risk` | **Planned** |
 | 8 | Readiness Forecasting | `spanda readiness forecast` | extends `spanda-readiness` | **Planned** |
 | 9 | Trust Graph | `spanda trust-graph <file>` | `spanda-graph` + `spanda-trust` | **Planned** |
