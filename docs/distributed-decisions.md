@@ -59,6 +59,21 @@ offline_policy RoverOffline {
 }
 ```
 
+## Runtime emission
+
+During `run` / `sim` with `SPANDA_DECISION_TRACE=1` or `--record`:
+
+| Event | Layer | When |
+|-------|-------|------|
+| `kill_switch_activated` | reflex | Kill switch activation |
+| `emergency_stop` | reflex | `emergency_stop` statement or scheduler halt |
+| `safety_validate_rejected` | reflex | `safety.validate()` rejects a proposal |
+| `decision_tree_eval` | local / fleet | Live tree match on health-fault injection or scheduler poll |
+| `continuity_takeover` | local / fleet | Continuity handoff |
+| `fleet_mesh_continuity` / `fleet_mesh_recovery` | group_fleet | Fleet mesh relay with consensus trace |
+
+`DecisionRuntime` is injected from CLI (`DecisionBackedRuntime`); TypeScript `collectDecisionDiagnostics` mirrors Rust `collect_decision_diagnostics` for `spanda check --readiness-json`.
+
 ## CLI
 
 ```bash

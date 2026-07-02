@@ -15,7 +15,8 @@
 | Integration | all `examples/*.sd` compile + run | `tests/integration.rs` |
 | Continuity | runtime takeover, checkpoints, CLI JSON, auto-trigger | `crates/spanda-interpreter/tests/continuity_runtime.rs`, `crates/spanda-cli/tests/continuity_cli.rs`, `crates/spanda-assurance/src/continuity_checkpoint.rs` |
 | Distributed decisions | decision trees, offline policy, authority, simulation | `crates/spanda-decision/tests/distributed.rs`, `spanda decision list|inspect|simulate` |
-| Decision trace emission | v3 payloads at continuity/recovery when `SPANDA_DECISION_TRACE=1` | `crates/spanda-runtime/src/decision_trace.rs`, interpreter `record_decision_trace` |
+| Decision trace emission | v3 payloads at continuity/recovery/reflex/kill-switch, live decision trees, fleet mesh consensus when `SPANDA_DECISION_TRACE=1` | `crates/spanda-runtime/src/decision_trace.rs`, `runtime_decision.rs`, `tests/decision-diagnostics.test.ts` |
+| Decision diagnostics | `decision_tree` / `offline_policy` / authority parity Rust ↔ TS | `crates/spanda-decision/src/diagnostics.rs`, `src/decision-diagnostics.ts` |
 | Swarm continuity | member-lost handoff + mesh relay | `crates/spanda-fleet/src/swarm_continuity.rs`, `crates/spanda-fleet/tests/mesh_integration.rs` |
 | Self-healing runtime | auto-trigger, approval retry, mesh relay | `crates/spanda-interpreter/tests/recovery_runtime.rs`, `scripts/self_healing_smoke.sh` |
 | Fleet field validation | multi-process agents + mesh orchestrate | `scripts/fleet_field_validation.sh` |
