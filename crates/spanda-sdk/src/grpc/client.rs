@@ -527,4 +527,60 @@ impl GrpcClient {
             .map_err(|e| SpandaError::connection(e.to_string()))?;
         Self::parse_json(resp.into_inner().json)
     }
+
+    /// Mission twin via `GetAnalyticsMissionTwin`.
+    pub async fn analytics_mission_twin(&mut self) -> SpandaResult<Value> {
+        let resp = self
+            .inner
+            .get_analytics_mission_twin(spanda_v1::Empty {})
+            .await
+            .map_err(|e| SpandaError::connection(e.to_string()))?;
+        Self::parse_json(resp.into_inner().json)
+    }
+
+    /// Certification pack via `GetAnalyticsCertificationPack`.
+    pub async fn analytics_certification_pack(&mut self, query: &str) -> SpandaResult<Value> {
+        let resp = self
+            .inner
+            .get_analytics_certification_pack(spanda_v1::QueryRequest {
+                query: query.into(),
+            })
+            .await
+            .map_err(|e| SpandaError::connection(e.to_string()))?;
+        Self::parse_json(resp.into_inner().json)
+    }
+
+    /// Time travel via `GetAnalyticsTimeTravel`.
+    pub async fn analytics_time_travel(&mut self, query: &str) -> SpandaResult<Value> {
+        let resp = self
+            .inner
+            .get_analytics_time_travel(spanda_v1::QueryRequest {
+                query: query.into(),
+            })
+            .await
+            .map_err(|e| SpandaError::connection(e.to_string()))?;
+        Self::parse_json(resp.into_inner().json)
+    }
+
+    /// Human teaming via `GetAnalyticsHumanTeaming`.
+    pub async fn analytics_human_teaming(&mut self) -> SpandaResult<Value> {
+        let resp = self
+            .inner
+            .get_analytics_human_teaming(spanda_v1::Empty {})
+            .await
+            .map_err(|e| SpandaError::connection(e.to_string()))?;
+        Self::parse_json(resp.into_inner().json)
+    }
+
+    /// Governance via `GetAnalyticsGovernance`.
+    pub async fn analytics_governance(&mut self, query: &str) -> SpandaResult<Value> {
+        let resp = self
+            .inner
+            .get_analytics_governance(spanda_v1::QueryRequest {
+                query: query.into(),
+            })
+            .await
+            .map_err(|e| SpandaError::connection(e.to_string()))?;
+        Self::parse_json(resp.into_inner().json)
+    }
 }

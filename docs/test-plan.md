@@ -29,7 +29,7 @@
 | Scorecard rollup | executive multi-pillar score | `scripts/scorecard_smoke.sh`, `examples/showcase/scorecard/executive.sd` |
 | Differentiation analytics API | what-if, risk, forecast, trust graph REST | `crates/spanda-api/tests/differentiation_analytics_api_tests.rs` |
 | Differentiation analytics gRPC | GetAnalytics* RPC parity | `crates/spanda-api/tests/grpc_tests.rs` (`grpc_analytics_endpoints_with_forecast_program`) |
-| Differentiation analytics SDK | REST + gRPC analytics wrappers | `crates/spanda-sdk`, `sdk/python`, `sdk/typescript` client tests |
+| Differentiation analytics SDK | REST + gRPC analytics wrappers (NEXT + LATER) | `crates/spanda-sdk`, `sdk/python`, `sdk/typescript` client tests |
 | LATER differentiation | twin mission, certify pack, team verify, governance, replay time travel | `scripts/later_differentiation_smoke.sh`, `crates/spanda-runtime/tests/time_travel_tests.rs` |
 | LATER analytics API | mission twin, certification pack, time travel, human teaming, governance REST + gRPC | `crates/spanda-api/tests/later_analytics_api_tests.rs`, `scripts/later_analytics_smoke.sh` |
 | Differentiation promotion gate | 15 pillars smoke + showcase check + topic guides | `scripts/differentiation_promotion_gate.sh` |

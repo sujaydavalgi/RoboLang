@@ -346,6 +346,40 @@ class SpandaClient:
         query = f"?format={format}" if format else ""
         return self._request("GET", f"/v1/analytics/trust-graph{query}")
 
+    def analytics_mission_twin(self) -> Any:
+        return self._request("GET", "/v1/analytics/mission-twin")
+
+    def analytics_certification_pack(self, *, strict: bool = False) -> Any:
+        path = "/v1/analytics/certification-pack"
+        if strict:
+            path = f"{path}?strict=1"
+        return self._request("GET", path)
+
+    def analytics_time_travel(
+        self,
+        *,
+        at: str,
+        inspect: Optional[str] = None,
+        trace: Optional[str] = None,
+    ) -> Any:
+        from urllib.parse import urlencode
+
+        params: dict[str, str] = {"at": at}
+        if inspect:
+            params["inspect"] = inspect
+        if trace:
+            params["trace"] = trace
+        return self._request("GET", f"/v1/analytics/time-travel?{urlencode(params)}")
+
+    def analytics_human_teaming(self) -> Any:
+        return self._request("GET", "/v1/analytics/human-teaming")
+
+    def analytics_governance(self, *, policy: Optional[str] = None) -> Any:
+        path = "/v1/analytics/governance"
+        if policy:
+            path = f"{path}?policy={policy}"
+        return self._request("GET", path)
+
     def rpc(self, method: str, params: Optional[Mapping[str, Any]] = None) -> Any:
         payload = self._request(
             "POST",

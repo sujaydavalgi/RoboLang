@@ -85,6 +85,22 @@ describe("SpandaClient", () => {
     await client.analyticsWhatIf({ scenario: "gps_failure", all: true });
     expect(captured).toBe("/v1/analytics/what-if?all=1&scenario=gps_failure");
   });
+
+  it("analyticsTimeTravel encodes timestamp query", async () => {
+    const client = SpandaClient.local();
+    let captured = "";
+    (client as unknown as { request: typeof client["request"] }).request = async (
+      _method,
+      path,
+    ) => {
+      captured = path;
+      return {};
+    };
+    await client.analyticsTimeTravel({ at: "T+00:01", inspect: "decisions" });
+    expect(captured).toBe(
+      "/v1/analytics/time-travel?at=T%2B00%3A01&inspect=decisions",
+    );
+  });
 });
 
 describe("ReadinessReport", () => {

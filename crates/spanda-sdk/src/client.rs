@@ -653,6 +653,53 @@ impl SpandaClient {
         self.request("GET", &path, None, false)
     }
 
+    /// Digital mission twin report (`GET /v1/analytics/mission-twin`).
+    pub fn analytics_mission_twin(&self) -> SpandaResult<Value> {
+        self.request("GET", "/v1/analytics/mission-twin", None, false)
+    }
+
+    /// Certification evidence pack (`GET /v1/analytics/certification-pack`).
+    pub fn analytics_certification_pack(&self, strict: bool) -> SpandaResult<Value> {
+        let path = if strict {
+            "/v1/analytics/certification-pack?strict=1".to_string()
+        } else {
+            "/v1/analytics/certification-pack".to_string()
+        };
+        self.request("GET", &path, None, false)
+    }
+
+    /// Mission time travel trace inspection (`GET /v1/analytics/time-travel`).
+    pub fn analytics_time_travel(
+        &self,
+        at: &str,
+        inspect: Option<&str>,
+        trace: Option<&str>,
+    ) -> SpandaResult<Value> {
+        let mut params = vec![("at", at)];
+        if let Some(value) = inspect.filter(|s| !s.is_empty()) {
+            params.push(("inspect", value));
+        }
+        if let Some(value) = trace.filter(|s| !s.is_empty()) {
+            params.push(("trace", value));
+        }
+        let path = Self::analytics_query_path("/v1/analytics/time-travel", &params);
+        self.request("GET", &path, None, false)
+    }
+
+    /// Human/robot teaming verification (`GET /v1/analytics/human-teaming`).
+    pub fn analytics_human_teaming(&self) -> SpandaResult<Value> {
+        self.request("GET", "/v1/analytics/human-teaming", None, false)
+    }
+
+    /// Autonomous governance policy evaluation (`GET /v1/analytics/governance`).
+    pub fn analytics_governance(&self, policy: Option<&str>) -> SpandaResult<Value> {
+        let path = match policy.filter(|s| !s.is_empty()) {
+            Some(name) => Self::analytics_query_path("/v1/analytics/governance", &[("policy", name)]),
+            None => "/v1/analytics/governance".to_string(),
+        };
+        self.request("GET", &path, None, false)
+    }
+
     fn analytics_path(base: &str, named: Option<(&str, &str)>, all: bool) -> String {
         let mut params = Vec::new();
         if all {
@@ -666,6 +713,33 @@ impl SpandaClient {
         } else {
             format!("{base}?{}", params.join("&"))
         }
+    }
+
+    fn analytics_query_path(base: &str, params: &[(&str, &str)]) -> String {
+        if params.is_empty() {
+            return base.to_string();
+        }
+        let query: Vec<String> = params
+            .iter()
+            .map(|(key, value)| {
+                format!(
+                    "{}={}",
+                    Self::encode_query_component(key),
+                    Self::encode_query_component(value)
+                )
+            })
+            .collect();
+        format!("{base}?{}", query.join("&"))
+    }
+
+    fn encode_query_component(raw: &str) -> String {
+        raw.chars()
+            .map(|ch| match ch {
+                'A'..='Z' | 'a'..='z' | '0'..='9' | '-' | '_' | '.' | '~' => ch.to_string(),
+                ' ' => "+".into(),
+                _ => format!("%{:02X}", ch as u32),
+            })
+            .collect()
     }
 
     /// Call JSON-RPC gateway (`POST /v1/rpc`) with a gRPC-style method name.
@@ -708,5 +782,17 @@ mod tests {
             true,
         );
         assert_eq!(path, "/v1/analytics/what-if?all=1&scenario=gps_failure");
+    }
+
+    #[test]
+    fn analytics_time_travel_path_encodes_timestamp() {
+        let path = SpandaClient::analytics_query_path(
+            "/v1/analytics/time-travel",
+            &[("at", "T+00:01"), ("inspect", "decisions")],
+        );
+        assert_eq!(
+            path,
+            "/v1/analytics/time-travel?at=T%2B00%3A01&inspect=decisions"
+        );
     }
 }

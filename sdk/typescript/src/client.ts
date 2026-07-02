@@ -396,6 +396,36 @@ export class SpandaClient {
     return this.request("GET", `/v1/analytics/trust-graph${qs}`);
   }
 
+  async analyticsMissionTwin(): Promise<JsonValue> {
+    return this.request("GET", "/v1/analytics/mission-twin");
+  }
+
+  async analyticsCertificationPack(options: { strict?: boolean } = {}): Promise<JsonValue> {
+    const qs = options.strict ? "?strict=1" : "";
+    return this.request("GET", `/v1/analytics/certification-pack${qs}`);
+  }
+
+  async analyticsTimeTravel(options: {
+    at: string;
+    inspect?: string;
+    trace?: string;
+  }): Promise<JsonValue> {
+    const params = new URLSearchParams();
+    params.set("at", options.at);
+    if (options.inspect) params.set("inspect", options.inspect);
+    if (options.trace) params.set("trace", options.trace);
+    return this.request("GET", `/v1/analytics/time-travel?${params.toString()}`);
+  }
+
+  async analyticsHumanTeaming(): Promise<JsonValue> {
+    return this.request("GET", "/v1/analytics/human-teaming");
+  }
+
+  async analyticsGovernance(policy?: string): Promise<JsonValue> {
+    const qs = policy ? `?policy=${encodeURIComponent(policy)}` : "";
+    return this.request("GET", `/v1/analytics/governance${qs}`);
+  }
+
   async rpc(method: string, params: JsonValue = {}): Promise<JsonValue> {
     const payload = await this.request("POST", "/v1/rpc", {
       method,

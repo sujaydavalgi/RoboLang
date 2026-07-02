@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **All LATER differentiation pillars promoted to Stable:** mission time travel, digital mission twin, certification packs, human/robot teaming, autonomous governance — stable-hardening guides, `scripts/later_differentiation_stable_promotion_gate.sh`, `scripts/later_field_soak_init.sh`, CI job `later-differentiation-stable-gates`.
 - **Trust Framework promoted to Stable:** composite program trust (`spanda trust`, `/v1/trust/program`, gRPC `GetTrustProgram`); `scripts/trust_framework_stable_promotion_gate.sh`, field soak + audit prep scripts, CI job `trust-framework-stable-gate`.
 - **LATER Control Center analytics parity:** REST `/v1/analytics/{mission-twin,certification-pack,time-travel,human-teaming,governance}`; gRPC `GetAnalytics*` LATER RPCs (proto **1.0.7**); Analytics tab extended in embedded UI and `ControlCenterPanel`; `scripts/later_analytics_smoke.sh`.
+- **SDK LATER analytics wrappers (0.5.1):** Rust REST/gRPC, Python, and TypeScript clients for mission twin, certification pack, time travel, human teaming, and governance analytics endpoints.
 
 ## [0.5.0] - 2026-07-02
 
