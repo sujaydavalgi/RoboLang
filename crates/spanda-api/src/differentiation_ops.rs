@@ -103,12 +103,7 @@ pub fn analytics_trust_graph(state: &ControlCenterState, query: &str) -> HttpRes
         .get("format")
         .map(|value| GraphFormat::parse(value))
         .unwrap_or(GraphFormat::Json);
-    let graph = build_trust_graph(
-        &program,
-        &source,
-        &label,
-        state.resolved.as_ref(),
-    );
+    let graph = build_trust_graph(&program, &source, &label, state.resolved.as_ref());
     if format == GraphFormat::Json {
         return json_ok(&serde_json::json!({
             "version": "v1",

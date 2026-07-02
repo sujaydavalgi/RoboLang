@@ -108,6 +108,9 @@ pub fn format_simulation_report(sim: &SimulationReport, json: bool) -> String {
     for n in &sim.notes {
         out.push_str(&format!("  NOTE: {n}\n"));
     }
-    out.push_str(&crate::engine::format_distributed_report(&sim.report, false));
+    out.push_str(&crate::engine::format_distributed_report(
+        &sim.report,
+        false,
+    ));
     out
 }

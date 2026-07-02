@@ -1135,7 +1135,10 @@ impl Parser {
                 break;
             }
         }
-        self.expect(TokenType::Rbracket, &format!("Expected ']' after {kind} list"))?;
+        self.expect(
+            TokenType::Rbracket,
+            &format!("Expected ']' after {kind} list"),
+        )?;
         if self.check(TokenType::Semicolon) {
             self.advance();
         }
@@ -3949,12 +3952,18 @@ impl Parser {
                 resource_watches.push(self.parse_resource_watch()?);
             } else if self.check(TokenType::Ident) && self.peek().lexeme == "restart_policy" {
                 restart_policies.push(self.parse_restart_policy()?);
-            } else if self.check(TokenType::Ident) && self.peek().lexeme == "local_decision_authority" {
+            } else if self.check(TokenType::Ident)
+                && self.peek().lexeme == "local_decision_authority"
+            {
                 self.advance();
-                local_decision_authority = self.parse_hardware_type_list("local_decision_authority")?;
-            } else if self.check(TokenType::Ident) && self.peek().lexeme == "requires_central_approval" {
+                local_decision_authority =
+                    self.parse_hardware_type_list("local_decision_authority")?;
+            } else if self.check(TokenType::Ident)
+                && self.peek().lexeme == "requires_central_approval"
+            {
                 self.advance();
-                requires_central_approval = self.parse_hardware_type_list("requires_central_approval")?;
+                requires_central_approval =
+                    self.parse_hardware_type_list("requires_central_approval")?;
             } else {
                 let t = self.peek();
                 return Err(SpandaError::Parse {
@@ -10160,7 +10169,8 @@ impl Parser {
                     max_duration_minutes = num_tok.lexeme.parse().unwrap_or(30);
                 } else if self.check(TokenType::UnitLiteral) {
                     let num_tok = self.advance();
-                    max_duration_minutes = num_tok.lexeme
+                    max_duration_minutes = num_tok
+                        .lexeme
                         .chars()
                         .take_while(|c| c.is_ascii_digit())
                         .collect::<String>()

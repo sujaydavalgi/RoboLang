@@ -5,7 +5,9 @@ use spanda_error::SpandaError;
 use spanda_runtime::decision_runtime::DecisionActionVerdict;
 
 impl<B: RobotBackend> Interpreter<B> {
-    pub(super) fn decision_runtime(&self) -> spanda_runtime::decision_runtime::SharedDecisionRuntime {
+    pub(super) fn decision_runtime(
+        &self,
+    ) -> spanda_runtime::decision_runtime::SharedDecisionRuntime {
         self.decision_runtime.clone()
     }
 
@@ -55,9 +57,7 @@ impl<B: RobotBackend> Interpreter<B> {
     fn escalation_approved(&self, escalation_id: &str) -> bool {
         self.granted_decision_escalations.contains(escalation_id)
             || std::env::var("SPANDA_DECISION_ESCALATION_APPROVED")
-                .map(|v| {
-                    matches!(v.as_str(), "1" | "true" | "yes") || v == escalation_id
-                })
+                .map(|v| matches!(v.as_str(), "1" | "true" | "yes") || v == escalation_id)
                 .unwrap_or(false)
     }
 
@@ -158,7 +158,8 @@ impl<B: RobotBackend> Interpreter<B> {
                     "offline_minutes": self.offline_minutes(),
                 }),
             );
-            if let Err(err) = self.dispatch_decision_tree_actions(&program, &entity, &result.actions)
+            if let Err(err) =
+                self.dispatch_decision_tree_actions(&program, &entity, &result.actions)
             {
                 self.log(format!("decision_tree: action dispatch error: {err}"));
             }
@@ -243,10 +244,7 @@ impl<B: RobotBackend> Interpreter<B> {
                         continue;
                     }
                 } else {
-                    self.log(format!(
-                        "decision: blocked '{action}' — {}",
-                        verdict.reason
-                    ));
+                    self.log(format!("decision: blocked '{action}' — {}", verdict.reason));
                     continue;
                 }
             }
@@ -273,12 +271,7 @@ impl<B: RobotBackend> Interpreter<B> {
     }
 
     fn signal_matches_tree(&self, changed: &str, condition: &str) -> bool {
-        condition.contains(changed)
-            || self
-                .decision_signals
-                .get(changed)
-                .copied()
-                .unwrap_or(false)
+        condition.contains(changed) || self.decision_signals.get(changed).copied().unwrap_or(false)
     }
 
     /// Record fleet mesh consensus decision after coordinator relay.
@@ -293,20 +286,31 @@ impl<B: RobotBackend> Interpreter<B> {
         let votes: Vec<(String, String, f64)> = members
             .iter()
             .enumerate()
-            .map(|(i, m)| (m.clone(), selected_action.to_string(), 1.0 - (i as f64 * 0.1)))
+            .map(|(i, m)| {
+                (
+                    m.clone(),
+                    selected_action.to_string(),
+                    1.0 - (i as f64 * 0.1),
+                )
+            })
             .collect();
         let quorum = if members.is_empty() {
             0.5
         } else {
             (relayed as f64 / members.len() as f64).clamp(0.0, 1.0)
         };
-        let consensus = self.decision_runtime().resolve_fleet_consensus(&votes, quorum);
+        let consensus = self
+            .decision_runtime()
+            .resolve_fleet_consensus(&votes, quorum);
         self.record_decision_trace(
             event,
             "fleet_consensus",
             &format!(
                 "{} → {} (quorum={}, votes={})",
-                consensus.strategy, consensus.selected_action, consensus.quorum_met, consensus.vote_count
+                consensus.strategy,
+                consensus.selected_action,
+                consensus.quorum_met,
+                consensus.vote_count
             ),
             "group_fleet",
             "fleet_coordinator",

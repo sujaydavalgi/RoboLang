@@ -677,8 +677,18 @@ fn demo_continuity(root: &Path) {
 
 fn demo_distributed_decisions(root: &Path) {
     let main_path = showcase(root, &["distributed_decisions", "main.sd"]);
-    let reflex_path = showcase(root, &["distributed_decisions", "obstacle_reflex_stop", "main.sd"]);
-    let offline_path = showcase(root, &["distributed_decisions", "offline_mission_continue", "main.sd"]);
+    let reflex_path = showcase(
+        root,
+        &["distributed_decisions", "obstacle_reflex_stop", "main.sd"],
+    );
+    let offline_path = showcase(
+        root,
+        &[
+            "distributed_decisions",
+            "offline_mission_continue",
+            "main.sd",
+        ],
+    );
     let main_sd = require_file(&main_path);
     let reflex_sd = require_file(&reflex_path);
     let offline_sd = require_file(&offline_path);
@@ -700,7 +710,10 @@ fn demo_distributed_decisions(root: &Path) {
         "emergency_stop",
     ]);
     run_spanda_args(&["decision", "simulate", main_file, "--offline"]);
-    std::env::set_var("SPANDA_DECISION_POLICY_SIGNING_KEY", "demo-offline-signing-key");
+    std::env::set_var(
+        "SPANDA_DECISION_POLICY_SIGNING_KEY",
+        "demo-offline-signing-key",
+    );
     run_spanda_args(&[
         "decision",
         "sign-policy",
@@ -802,7 +815,9 @@ fn demo_mission_twin(root: &Path) {
     run_spanda_args(&["twin", "mission", sd]);
     run_spanda_args(&["twin", "mission", sd, "--json"]);
 
-    println!("\nDemo complete. See examples/showcase/mission_twin/ and docs/differentiation-roadmap.md");
+    println!(
+        "\nDemo complete. See examples/showcase/mission_twin/ and docs/differentiation-roadmap.md"
+    );
 }
 
 fn demo_certify_pack(root: &Path) {
@@ -836,7 +851,9 @@ fn demo_team(root: &Path) {
     run_spanda_args(&["team", "verify", sd]);
     run_spanda_args(&["team", "verify", sd, "--json"]);
 
-    println!("\nDemo complete. See examples/showcase/human_robot/ and docs/differentiation-roadmap.md");
+    println!(
+        "\nDemo complete. See examples/showcase/human_robot/ and docs/differentiation-roadmap.md"
+    );
 }
 
 fn demo_governance(root: &Path) {
@@ -849,12 +866,18 @@ fn demo_governance(root: &Path) {
     run_spanda_args(&["governance", sd, "--policy", "NightOps"]);
     run_spanda_args(&["governance", sd, "--policy", "NightOps", "--json"]);
 
-    println!("\nDemo complete. See examples/showcase/governance/ and docs/differentiation-roadmap.md");
+    println!(
+        "\nDemo complete. See examples/showcase/governance/ and docs/differentiation-roadmap.md"
+    );
 }
 
 fn demo_time_travel(_root: &Path) {
-    let diff_root = repo_root_containing_showcase(&["differentiation", "decision_trail", "main.sd"]);
-    let trail_path = showcase(&diff_root, &["differentiation", "decision_trail", "main.sd"]);
+    let diff_root =
+        repo_root_containing_showcase(&["differentiation", "decision_trail", "main.sd"]);
+    let trail_path = showcase(
+        &diff_root,
+        &["differentiation", "decision_trail", "main.sd"],
+    );
     let trail = require_file(&trail_path);
     let trace_path = trail.with_extension("trace");
 
@@ -924,8 +947,12 @@ fn demo_assurance(root: &Path) {
 
 fn demo_differentiation(root: &Path) {
     let warehouse_path = showcase(root, &["differentiation", "warehouse.sd"]);
-    let diff_root = repo_root_containing_showcase(&["differentiation", "decision_trail", "main.sd"]);
-    let trail_path = showcase(&diff_root, &["differentiation", "decision_trail", "main.sd"]);
+    let diff_root =
+        repo_root_containing_showcase(&["differentiation", "decision_trail", "main.sd"]);
+    let trail_path = showcase(
+        &diff_root,
+        &["differentiation", "decision_trail", "main.sd"],
+    );
     let warehouse = require_file(&warehouse_path);
     let trail = require_file(&trail_path);
     let warehouse_file = warehouse.to_str().unwrap();
@@ -1478,9 +1505,7 @@ pub fn demo_dispatch(args: &[String]) {
         "risk" | "mission-risk" => demo_risk(&root),
         "trust-graph" | "trust_graph" | "trustgraph" => demo_trust_graph(&root),
         "scorecard" | "score" => demo_scorecard(&root),
-        "forecast" | "readiness-forecast" | "readiness_forecast" => {
-            demo_readiness_forecast(&root)
-        }
+        "forecast" | "readiness-forecast" | "readiness_forecast" => demo_readiness_forecast(&root),
         "differentiation" | "diff" => demo_differentiation(&root),
         "mission-twin" | "mission_twin" | "twin-mission" => demo_mission_twin(&root),
         "certify-pack" | "certify_pack" | "cert-pack" => demo_certify_pack(&root),

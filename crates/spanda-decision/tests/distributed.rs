@@ -40,7 +40,9 @@ fn extracts_entity_decision_authority() {
     let authorities = extract_decision_authorities(&program);
     assert_eq!(authorities.len(), 1);
     assert_eq!(authorities[0].entity_id, "Rover001");
-    assert!(authorities[0].local_actions.contains(&"emergency_stop".into()));
+    assert!(authorities[0]
+        .local_actions
+        .contains(&"emergency_stop".into()));
     assert!(authorities[0]
         .requires_central_approval
         .contains(&"update_firmware".into()));
@@ -170,13 +172,7 @@ fn signed_offline_policy_verifies_with_trust_key() {
     assert!(verify_offline_policy_signature(&policies[0], signing_key));
     assert!(validate_offline_policy_trust(&policies[0]).is_ok());
     let runtime = DecisionBackedRuntime;
-    let verdict = runtime.authorize_action(
-        &program,
-        "Rover001",
-        "pause_mission",
-        5,
-        false,
-    );
+    let verdict = runtime.authorize_action(&program, "Rover001", "pause_mission", 5, false);
     assert!(verdict.permitted, "{}", verdict.reason);
     clear_offline_policy_env();
 }
@@ -197,15 +193,12 @@ fn unsigned_offline_policy_blocked_when_signature_required() {
         "#,
     );
     std::env::set_var("SPANDA_DECISION_REQUIRE_SIGNED_OFFLINE_POLICY", "1");
-    std::env::set_var("SPANDA_DECISION_POLICY_TRUST_KEY", "offline-policy-test-key");
-    let runtime = DecisionBackedRuntime;
-    let verdict = runtime.authorize_action(
-        &program,
-        "Rover001",
-        "pause_mission",
-        5,
-        false,
+    std::env::set_var(
+        "SPANDA_DECISION_POLICY_TRUST_KEY",
+        "offline-policy-test-key",
     );
+    let runtime = DecisionBackedRuntime;
+    let verdict = runtime.authorize_action(&program, "Rover001", "pause_mission", 5, false);
     assert!(!verdict.permitted);
     assert!(verdict.reason.contains("signed"));
     clear_offline_policy_env();
@@ -217,8 +210,8 @@ fn persisted_policy_cache_merges_signatures_at_runtime() {
     clear_offline_policy_env();
     use spanda_decision::{
         extract_offline_policies, merge_offline_policies_with_cache, resolve_offline_policies,
-        sign_offline_policy, DecisionBackedRuntime, PersistedPolicyCache,
-        save_persisted_policy_cache,
+        save_persisted_policy_cache, sign_offline_policy, DecisionBackedRuntime,
+        PersistedPolicyCache,
     };
     use spanda_runtime::decision_runtime::DecisionRuntime;
     let program = parse_sd(
@@ -239,7 +232,10 @@ fn persisted_policy_cache_merges_signatures_at_runtime() {
     let temp = tempfile::tempdir().expect("tempdir");
     let cache_path = temp.path().join("decision-policy-cache.json");
     save_persisted_policy_cache(&mut cache, Some(&cache_path)).expect("save cache");
-    std::env::set_var("SPANDA_DECISION_POLICY_CACHE", cache_path.display().to_string());
+    std::env::set_var(
+        "SPANDA_DECISION_POLICY_CACHE",
+        cache_path.display().to_string(),
+    );
     std::env::set_var("SPANDA_DECISION_POLICY_TRUST_KEY", signing_key);
     std::env::set_var("SPANDA_DECISION_REQUIRE_SIGNED_OFFLINE_POLICY", "1");
     let merged = merge_offline_policies_with_cache(extract_offline_policies(&program), &cache);

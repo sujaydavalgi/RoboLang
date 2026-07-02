@@ -131,7 +131,9 @@ pub fn run_what_if_analysis(
 /// Format a what-if report for CLI output.
 pub fn format_what_if_report(report: &WhatIfReport, format: WhatIfFormat) -> String {
     match format {
-        WhatIfFormat::Json => serde_json::to_string_pretty(report).unwrap_or_else(|e| e.to_string()),
+        WhatIfFormat::Json => {
+            serde_json::to_string_pretty(report).unwrap_or_else(|e| e.to_string())
+        }
         WhatIfFormat::Text => format_what_if_text(report),
     }
 }
@@ -270,10 +272,7 @@ fn format_recovery_plan(recovery: &RecoveryReport) -> String {
         return format!("{} → {}", plan.name, action);
     }
     if let Some(entry) = recovery.knowledge.entries.first() {
-        return format!(
-            "{} → {}",
-            entry.failure_pattern, entry.recovery_pattern
-        );
+        return format!("{} → {}", entry.failure_pattern, entry.recovery_pattern);
     }
     "no_recovery_plan".into()
 }
@@ -295,12 +294,12 @@ fn estimate_probability(
         _ => 0.15,
     };
     let recovery_penalty = (1.0 - recovery.assurance.success_rate) * 0.35;
-    let readiness_penalty = if readiness.mission_ready {
-        0.0
+    let readiness_penalty = if readiness.mission_ready { 0.0 } else { 0.12 };
+    let completion_adjust = if mission_completion_likely {
+        -0.05
     } else {
-        0.12
+        0.15
     };
-    let completion_adjust = if mission_completion_likely { -0.05 } else { 0.15 };
     (base + recovery_penalty + readiness_penalty + completion_adjust).clamp(0.05, 0.95)
 }
 

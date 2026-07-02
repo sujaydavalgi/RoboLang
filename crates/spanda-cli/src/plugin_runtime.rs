@@ -22,8 +22,10 @@ impl CompositePlatformEventRuntime {
     pub fn new() -> Self {
         Self {
             telemetry: TelemetryStorePlatformEventRuntime,
-            project_root: find_project_root(&env::current_dir().unwrap_or_else(|_| PathBuf::from(".")))
-                .unwrap_or_else(|| env::current_dir().unwrap_or_else(|_| PathBuf::from("."))),
+            project_root: find_project_root(
+                &env::current_dir().unwrap_or_else(|_| PathBuf::from(".")),
+            )
+            .unwrap_or_else(|| env::current_dir().unwrap_or_else(|_| PathBuf::from("."))),
         }
     }
 }
@@ -57,8 +59,9 @@ pub fn dispatch_report_hook(path: &str) {
     let Some(hook) = spanda_plugin::bridge::hook_for_report_request(path) else {
         return;
     };
-    let project_root = find_project_root(&env::current_dir().unwrap_or_else(|_| PathBuf::from(".")))
-        .unwrap_or_else(|| env::current_dir().unwrap_or_else(|_| PathBuf::from(".")));
+    let project_root =
+        find_project_root(&env::current_dir().unwrap_or_else(|_| PathBuf::from(".")))
+            .unwrap_or_else(|| env::current_dir().unwrap_or_else(|_| PathBuf::from(".")));
     if let Ok(mut manager) = PluginManager::open(&project_root, HOST_VERSION) {
         let _ = manager.dispatch_hook_to_enabled(hook, serde_json::json!({ "path": path }));
     }

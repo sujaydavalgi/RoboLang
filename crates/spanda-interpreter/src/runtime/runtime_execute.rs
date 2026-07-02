@@ -412,7 +412,10 @@ impl<B: RobotBackend> Interpreter<B> {
                     "safety_reflex",
                     "Emergency stop triggered",
                     "reflex",
-                    &self.active_robot_name.clone().unwrap_or_else(|| "robot".into()),
+                    &self
+                        .active_robot_name
+                        .clone()
+                        .unwrap_or_else(|| "robot".into()),
                     serde_json::json!({ "source": "emergency_stop_stmt" }),
                 );
             }

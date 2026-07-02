@@ -29,7 +29,11 @@ impl PluginApiHost {
         self
     }
 
-    pub fn context_for(&self, plugin_name: &str, capabilities: CapabilitySet) -> PluginApiHostContext {
+    pub fn context_for(
+        &self,
+        plugin_name: &str,
+        capabilities: CapabilitySet,
+    ) -> PluginApiHostContext {
         PluginApiHostContext {
             inner: PluginApiContext::new(plugin_name, capabilities),
             host: self.clone(),

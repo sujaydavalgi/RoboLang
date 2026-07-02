@@ -6,7 +6,8 @@ use spanda_deploy_http::HttpRequest;
 use std::path::PathBuf;
 
 fn forecast_program() -> PathBuf {
-    PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../examples/showcase/forecast/degradation.sd")
+    PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("../../examples/showcase/forecast/degradation.sd")
 }
 
 fn handle_get(state: &mut ControlCenterState, path: &str) -> spanda_deploy_http::HttpResponse {

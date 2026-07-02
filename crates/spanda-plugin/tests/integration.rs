@@ -223,10 +223,11 @@ fn cli_command_matching_and_dispatch() {
         .store_mut()
         .install_from_dir(&example, "0.4.0", true)
         .unwrap();
-    manager.store_mut().enable("spanda-plugin-readiness-example").unwrap();
-    assert!(manager
-        .try_cli_command("healthcare", "check")
-        .is_some());
+    manager
+        .store_mut()
+        .enable("spanda-plugin-readiness-example")
+        .unwrap();
+    assert!(manager.try_cli_command("healthcare", "check").is_some());
     let result = manager
         .run_cli_command("healthcare", "check", &[])
         .unwrap()

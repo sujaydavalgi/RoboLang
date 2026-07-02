@@ -33,7 +33,11 @@ pub fn route_twin_cloud(
 }
 
 fn list_twins(state: &ControlCenterState) -> HttpResponse {
-    json_ok(&state.twin_cloud_store.list_response(Some(state.tenant_id.as_str())))
+    json_ok(
+        &state
+            .twin_cloud_store
+            .list_response(Some(state.tenant_id.as_str())),
+    )
 }
 
 fn get_twin(state: &ControlCenterState, twin_id: &str) -> HttpResponse {
@@ -83,12 +87,7 @@ fn sync_twin(state: &mut ControlCenterState, query: &str) -> HttpResponse {
         Ok(value) => value,
         Err(message) => return bad_request(&message),
     };
-    let snapshot = build_snapshot_from_program(
-        &program,
-        &label,
-        twin_id,
-        state.tenant_id.as_str(),
-    );
+    let snapshot = build_snapshot_from_program(&program, &label, twin_id, state.tenant_id.as_str());
     let stored = state.twin_cloud_store.upsert(snapshot);
     json_ok(&TwinCloudSyncResponse {
         version: TWIN_CLOUD_API_VERSION.into(),

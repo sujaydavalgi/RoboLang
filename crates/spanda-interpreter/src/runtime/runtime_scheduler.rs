@@ -401,7 +401,10 @@ impl<B: RobotBackend> Interpreter<B> {
                     "safety_reflex",
                     "Scheduled task halted by emergency stop",
                     "reflex",
-                    &self.active_robot_name.clone().unwrap_or_else(|| "robot".into()),
+                    &self
+                        .active_robot_name
+                        .clone()
+                        .unwrap_or_else(|| "robot".into()),
                     serde_json::json!({ "task": task_name }),
                 );
                 break;

@@ -1,10 +1,8 @@
 //! CLI for what-if failure scenario analysis.
 //!
-use spanda_whatif::{
-    format_what_if_report, run_what_if_analysis, WhatIfFormat, WhatIfOptions,
-};
 use spanda_lexer::tokenize;
 use spanda_parser::parse;
+use spanda_whatif::{format_what_if_report, run_what_if_analysis, WhatIfFormat, WhatIfOptions};
 use std::fs;
 use std::path::Path;
 use std::process;
@@ -34,9 +32,7 @@ fn file_arg(args: &[String]) -> String {
             _ => index += 1,
         }
     }
-    eprintln!(
-        "Usage: spanda what-if <file.sd> [--scenario gps_failure] [--all] [--json]"
-    );
+    eprintln!("Usage: spanda what-if <file.sd> [--scenario gps_failure] [--all] [--json]");
     process::exit(1);
 }
 

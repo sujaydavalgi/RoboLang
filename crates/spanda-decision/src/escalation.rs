@@ -45,7 +45,9 @@ pub fn build_escalation_chain(
             (DecisionLayer::LocalEntity, DecisionLayer::GroupFleet),
             (DecisionLayer::GroupFleet, DecisionLayer::ControlCenter),
         ],
-        DecisionLayer::GroupFleet => vec![(DecisionLayer::GroupFleet, DecisionLayer::ControlCenter)],
+        DecisionLayer::GroupFleet => {
+            vec![(DecisionLayer::GroupFleet, DecisionLayer::ControlCenter)]
+        }
         DecisionLayer::ControlCenter => vec![],
     };
     layers

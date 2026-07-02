@@ -118,18 +118,17 @@ fn category_score_map(trust: &CompositeTrustReport) -> HashMap<String, u32> {
         .collect()
 }
 
-fn node_trust_score(
-    kind: GraphNodeKind,
-    categories: &HashMap<String, u32>,
-    composite: u32,
-) -> u32 {
+fn node_trust_score(kind: GraphNodeKind, categories: &HashMap<String, u32>, composite: u32) -> u32 {
     let key = match kind {
         GraphNodeKind::Package => "package_trust",
         GraphNodeKind::Provider => "package_trust",
         GraphNodeKind::Hardware => "device_integrity",
         GraphNodeKind::Capability => "safety_integrity",
         GraphNodeKind::Safety => "safety_integrity",
-        GraphNodeKind::Mission | GraphNodeKind::Robot | GraphNodeKind::Sensor | GraphNodeKind::Actuator => {
+        GraphNodeKind::Mission
+        | GraphNodeKind::Robot
+        | GraphNodeKind::Sensor
+        | GraphNodeKind::Actuator => {
             return composite;
         }
     };
@@ -182,7 +181,11 @@ fn enumerate_trust_paths(
     paths
 }
 
-fn bfs_path(start: &str, end: &str, adjacency: &HashMap<String, Vec<String>>) -> Option<Vec<String>> {
+fn bfs_path(
+    start: &str,
+    end: &str,
+    adjacency: &HashMap<String, Vec<String>>,
+) -> Option<Vec<String>> {
     let mut queue = VecDeque::from([(start.to_string(), vec![start.to_string()])]);
     while let Some((current, path)) = queue.pop_front() {
         if current == end {

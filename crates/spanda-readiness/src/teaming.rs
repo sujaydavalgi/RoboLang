@@ -89,7 +89,8 @@ fn extract_fallback_actions(program: &Program) -> Vec<String> {
         let RecoveryPolicyDecl::RecoveryPolicyDecl { branches, .. } = policy;
         for branch in branches {
             for action in &branch.actions {
-                if action.contains("safe") || action.contains("degraded") || action.contains("mode") {
+                if action.contains("safe") || action.contains("degraded") || action.contains("mode")
+                {
                     actions.push(format!("recovery:{} -> {}", branch.condition, action));
                 }
             }

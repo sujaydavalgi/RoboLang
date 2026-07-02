@@ -18,11 +18,11 @@ pub fn plugin_registry_tarball_url(name: &str, version: &str) -> Option<String> 
 /// Local example plugin directory for bundled registry names.
 pub fn local_example_plugin_dir(name: &str) -> Option<PathBuf> {
     let slug = name.strip_prefix("spanda-plugin-").unwrap_or(name);
-    for root in std::env::current_dir().ok().into_iter().flat_map(|cwd| {
-        cwd.ancestors()
-            .map(Path::to_path_buf)
-            .collect::<Vec<_>>()
-    }) {
+    for root in std::env::current_dir()
+        .ok()
+        .into_iter()
+        .flat_map(|cwd| cwd.ancestors().map(Path::to_path_buf).collect::<Vec<_>>())
+    {
         let direct = root.join("examples/plugins").join(slug);
         if direct.is_dir() {
             return Some(direct);
@@ -36,7 +36,11 @@ pub fn local_example_plugin_dir(name: &str) -> Option<PathBuf> {
 }
 
 /// Fetch plugin sources into a temporary directory for install.
-pub fn fetch_plugin_sources(name: &str, version: &str, project_root: &Path) -> PluginResult<PathBuf> {
+pub fn fetch_plugin_sources(
+    name: &str,
+    version: &str,
+    project_root: &Path,
+) -> PluginResult<PathBuf> {
     if let Some(example) = local_example_plugin_dir(name) {
         return Ok(example);
     }
@@ -89,7 +93,10 @@ fn fetch_plugin_tarball(
     fetch_url_to_file(url, &archive)
         .map_err(|e| PluginError::Registry(format!("download failed: {e}")))?;
     let entry = lookup_plugin_entry(name);
-    if let (Some(entry), Some(digest)) = (entry.as_ref(), entry.as_ref().and_then(|e| e.version_sha256(version))) {
+    if let (Some(entry), Some(digest)) = (
+        entry.as_ref(),
+        entry.as_ref().and_then(|e| e.version_sha256(version)),
+    ) {
         verify_plugin_digest(name, version, &archive, digest, entry)?;
     }
     let extract_dir = cache_dir.join(format!("{name}-{version}"));

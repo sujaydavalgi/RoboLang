@@ -8,10 +8,10 @@ use std::collections::HashMap;
 use std::sync::Arc;
 
 use crate::{
-    build_escalation_chain, default_safety_boundaries, entity_may_decide_locally,
-    evaluate_tree, extract_decision_authorities, extract_decision_trees, resolve_offline_policies,
-    resolve_consensus, validate_offline_action, ConsensusStrategy,
-    ConsensusVote, DecisionLayer, EscalationReason,
+    build_escalation_chain, default_safety_boundaries, entity_may_decide_locally, evaluate_tree,
+    extract_decision_authorities, extract_decision_trees, resolve_consensus,
+    resolve_offline_policies, validate_offline_action, ConsensusStrategy, ConsensusVote,
+    DecisionLayer, EscalationReason,
 };
 
 fn normalize_decision_action_key(action: &str) -> String {
@@ -35,7 +35,9 @@ fn normalize_decision_action_key(action: &str) -> String {
 
 /// Register the full decision runtime for fleet agents and platform callers.
 pub fn register_platform_runtime() {
-    spanda_runtime::decision_runtime::set_platform_decision_runtime(Arc::new(DecisionBackedRuntime));
+    spanda_runtime::decision_runtime::set_platform_decision_runtime(Arc::new(
+        DecisionBackedRuntime,
+    ));
 }
 
 /// Full distributed decision runtime delegating to `spanda-decision`.
@@ -110,8 +112,7 @@ impl DecisionRuntime for DecisionBackedRuntime {
                         policy_version: Some(policy.policy_version.clone()),
                     };
                 }
-                if let Err(reason) =
-                    validate_offline_action(&policy, &action_key, offline_minutes)
+                if let Err(reason) = validate_offline_action(&policy, &action_key, offline_minutes)
                 {
                     return DecisionActionVerdict {
                         permitted: false,

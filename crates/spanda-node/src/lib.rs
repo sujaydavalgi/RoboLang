@@ -4,8 +4,8 @@
 
 use napi::bindgen_prelude::*;
 use napi_derive::napi;
-use spanda_driver::{check, lower_to_sir, run, RunOptions};
 use spanda_core::verify_compatibility;
+use spanda_driver::{check, lower_to_sir, run, RunOptions};
 use spanda_error::SpandaError;
 use spanda_format::format_source;
 use spanda_hardware::VerifyOptions;

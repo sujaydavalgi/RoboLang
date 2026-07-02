@@ -11,9 +11,9 @@ pub fn hook_for_platform_event(event_type: &str) -> Option<PluginHook> {
         | names::ENTITY_TAGGED
         | names::ENTITY_RELATED
         | names::ENTITY_DELETED => Some(PluginHook::OnEntityEvent),
-        names::HEALTH_CHANGED
-        | names::HEALTH_CHECK_FAILED
-        | names::DEGRADED_MODE_ENTERED => Some(PluginHook::OnHealthChanged),
+        names::HEALTH_CHANGED | names::HEALTH_CHECK_FAILED | names::DEGRADED_MODE_ENTERED => {
+            Some(PluginHook::OnHealthChanged)
+        }
         names::READINESS_CHANGED | names::READINESS_GATE_FAILED => {
             Some(PluginHook::OnReadinessCompleted)
         }

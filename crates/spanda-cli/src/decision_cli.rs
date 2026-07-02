@@ -4,9 +4,9 @@ use spanda_decision::{
     audit_decisions_from_trace, evaluate_distributed_decisions, extract_decision_authorities,
     extract_decision_trees, extract_offline_policies, format_decision_audit,
     format_decision_explanations, format_distributed_report, format_simulation_report,
-    load_persisted_policy_cache, save_persisted_policy_cache, security_audit,
-    sign_offline_policy, simulate_distributed_decisions, threat_model_summary, AttackScenario,
-    DecisionContext, DecisionLayer, OfflinePolicySpec, PersistedPolicyCache, SimulationOptions,
+    load_persisted_policy_cache, save_persisted_policy_cache, security_audit, sign_offline_policy,
+    simulate_distributed_decisions, threat_model_summary, AttackScenario, DecisionContext,
+    DecisionLayer, OfflinePolicySpec, PersistedPolicyCache, SimulationOptions,
 };
 use spanda_lexer::tokenize;
 use spanda_parser::parse;
@@ -83,7 +83,12 @@ pub fn cmd_decision_list(args: &[String]) {
         }
         println!("  Decision trees: {}", trees.len());
         for t in &trees {
-            println!("    {} ({:?}, {} branches)", t.name, t.layer, t.branches.len());
+            println!(
+                "    {} ({:?}, {} branches)",
+                t.name,
+                t.layer,
+                t.branches.len()
+            );
         }
         println!("  Offline policies: {}", offline.len());
         for o in &offline {
@@ -434,7 +439,10 @@ pub fn decision_cache_dispatch(args: &[String]) {
 pub fn cmd_decision_security_audit(args: &[String]) {
     let findings = security_audit();
     if json_output(args) {
-        println!("{}", serde_json::to_string_pretty(&findings).unwrap_or_default());
+        println!(
+            "{}",
+            serde_json::to_string_pretty(&findings).unwrap_or_default()
+        );
     } else {
         for f in &findings {
             println!(
@@ -469,7 +477,10 @@ pub fn cmd_decision_simulate_attack(args: &[String]) {
     };
     let finding = spanda_decision::simulate_attack(scenario);
     if json_output(args) {
-        println!("{}", serde_json::to_string_pretty(&finding).unwrap_or_default());
+        println!(
+            "{}",
+            serde_json::to_string_pretty(&finding).unwrap_or_default()
+        );
     } else {
         println!("Attack simulation: {:?}", finding.scenario);
         println!("  detected: {}", finding.detected);

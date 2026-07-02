@@ -3,13 +3,10 @@
 pub mod build;
 pub mod digital_thread;
 pub mod entity_alignment;
-pub mod trust_graph;
 pub mod format;
+pub mod trust_graph;
 
 pub use build::{build_dependency_graph, DependencyGraph, GraphEdge, GraphNode, GraphNodeKind};
-pub use trust_graph::{
-    build_trust_graph, format_trust_graph, TrustDependency, TrustGraph, TrustGraphNode, TrustPath,
-};
 pub use digital_thread::{
     query_digital_thread, DigitalThreadDeviceLink, DigitalThreadQuery, DigitalThreadReport,
     LifecyclePhase, LifecycleRow,
@@ -19,3 +16,6 @@ pub use entity_alignment::{
     resolve_entity_id, EntityAlignmentContext, ProgramGraphEntityEdge,
 };
 pub use format::{format_dependency_graph, GraphFormat};
+pub use trust_graph::{
+    build_trust_graph, format_trust_graph, TrustDependency, TrustGraph, TrustGraphNode, TrustPath,
+};

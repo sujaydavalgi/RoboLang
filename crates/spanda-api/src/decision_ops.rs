@@ -21,7 +21,10 @@ fn entity_not_found(message: &str) -> HttpResponse {
     }
 }
 
-fn load_program(state: &ControlCenterState, file: Option<&str>) -> Result<spanda_ast::nodes::Program, HttpResponse> {
+fn load_program(
+    state: &ControlCenterState,
+    file: Option<&str>,
+) -> Result<spanda_ast::nodes::Program, HttpResponse> {
     let path = if let Some(path_str) = file {
         if let Some(root) = state.project_root() {
             root.join(path_str)
@@ -34,7 +37,10 @@ fn load_program(state: &ControlCenterState, file: Option<&str>) -> Result<spanda
         return Err(bad_request("no program file specified"));
     };
     if !path.exists() {
-        return Err(entity_not_found(&format!("program not found: {}", path.display())));
+        return Err(entity_not_found(&format!(
+            "program not found: {}",
+            path.display()
+        )));
     }
     let (program, _, _) = parse_program_file(&path).map_err(|e| bad_request(&e))?;
     Ok(program)
@@ -97,7 +103,8 @@ pub fn entity_decisions(state: &ControlCenterState, entity_id: &str, query: &str
         offline_minutes: parse_query_param(query, "offline_minutes")
             .and_then(|v| v.parse().ok())
             .unwrap_or(0),
-        policy_version: parse_query_param(query, "policy_version").unwrap_or_else(|| "1.0.0".into()),
+        policy_version: parse_query_param(query, "policy_version")
+            .unwrap_or_else(|| "1.0.0".into()),
     };
     let report = evaluate_distributed_decisions(&program, &ctx);
     json_ok(&serde_json::json!({
@@ -227,7 +234,11 @@ pub fn list_decision_policy_cache(_state: &ControlCenterState, query: &str) -> H
     let cache = load_persisted_policy_cache(cache_path.as_deref());
     let path = cache_path
         .map(|p| p.display().to_string())
-        .unwrap_or_else(|| spanda_decision::default_policy_cache_path().display().to_string());
+        .unwrap_or_else(|| {
+            spanda_decision::default_policy_cache_path()
+                .display()
+                .to_string()
+        });
     json_ok(&serde_json::json!({
         "api_version": API_VERSION,
         "cache_path": path,

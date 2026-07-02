@@ -1,9 +1,9 @@
 //! Certification proof and evidence pack CLI (`spanda certify prove|pack`).
 
-use spanda_certify::build_certification_proof;
 use crate::certify_pack::{
     build_certification_pack, format_certification_pack, write_certification_bundle,
 };
+use spanda_certify::build_certification_proof;
 use spanda_driver::compile;
 use spanda_hardware::CompatSeverity;
 use std::fs;

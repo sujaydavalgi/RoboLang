@@ -254,7 +254,10 @@ fn cmd_stop(args: &[String]) {
         match stop_listener_pid(listener.pid, force) {
             Ok(()) => stopped.push(listener),
             Err(error) => {
-                eprintln!("failed to stop pid {} ({}): {error}", listener.pid, listener.url);
+                eprintln!(
+                    "failed to stop pid {} ({}): {error}",
+                    listener.pid, listener.url
+                );
                 process::exit(1);
             }
         }
@@ -277,7 +280,10 @@ fn cmd_stop(args: &[String]) {
         return;
     }
     for listener in &stopped {
-        println!("Stopped Control Center pid {} ({})", listener.pid, listener.url);
+        println!(
+            "Stopped Control Center pid {} ({})",
+            listener.pid, listener.url
+        );
     }
     if stopped.is_empty() {
         println!("No local Control Center listeners found.");
@@ -295,7 +301,8 @@ fn fetch_instance_status(base_url: &str) -> Result<serde_json::Value, String> {
     if response.status >= 400 {
         return Err(format!("HTTP {}: {}", response.status, response.body));
     }
-    serde_json::from_str(&response.body).map_err(|error| format!("invalid /v1/instance JSON: {error}"))
+    serde_json::from_str(&response.body)
+        .map_err(|error| format!("invalid /v1/instance JSON: {error}"))
 }
 
 fn fetch_legacy_instance_status(client: &ControlCenterClient) -> Result<serde_json::Value, String> {
@@ -401,7 +408,9 @@ fn print_instance_status(base_url: &str, value: &serde_json::Value, json: bool) 
     let pool = value.get("device_pool");
     let total = pool.and_then(|v| v.get("total")).and_then(|v| v.as_u64());
     let healthy = pool.and_then(|v| v.get("healthy")).and_then(|v| v.as_u64());
-    let degraded = pool.and_then(|v| v.get("degraded")).and_then(|v| v.as_u64());
+    let degraded = pool
+        .and_then(|v| v.get("degraded"))
+        .and_then(|v| v.as_u64());
     let failed = pool.and_then(|v| v.get("failed")).and_then(|v| v.as_u64());
 
     println!("Spanda Control Center @ {base_url}");
@@ -527,7 +536,6 @@ fn parse_lsof_listener_line(line: &str) -> Option<LocalSpandaListener> {
 fn stop_listener_pid(pid: u32, force: bool) -> Result<(), String> {
     #[cfg(unix)]
     {
-        
         if force {
             return signal_pid(pid, "KILL");
         }

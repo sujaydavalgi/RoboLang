@@ -312,9 +312,20 @@ impl<B: RobotBackend> Interpreter<B> {
         self.record_decision_trace(
             "continuity_takeover",
             "continuity_handoff",
-            &format!("takeover {:?} from {} to {}", report.mode, report.failed_entity, report.successor),
-            if name.is_empty() { "group_fleet" } else { "local_entity" },
-            if name.is_empty() { &report.successor } else { name },
+            &format!(
+                "takeover {:?} from {} to {}",
+                report.mode, report.failed_entity, report.successor
+            ),
+            if name.is_empty() {
+                "group_fleet"
+            } else {
+                "local_entity"
+            },
+            if name.is_empty() {
+                &report.successor
+            } else {
+                name
+            },
             serde_json::json!({
                 "successor": report.successor,
                 "failed": report.failed_entity,

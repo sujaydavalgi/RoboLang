@@ -125,10 +125,7 @@ pub fn evaluate_mission_risk(
             "trust",
             15,
             trust_risk,
-            &format!(
-                "composite trust {}/100 tier={}",
-                trust.score, trust.tier
-            ),
+            &format!("composite trust {}/100 tier={}", trust.score, trust.tier),
         ),
         factor(
             "mission_contract",
@@ -193,7 +190,10 @@ pub fn evaluate_mission_risk(
 
     MissionRiskAssessment {
         program: source_label.into(),
-        score: MissionRiskScore { total: weighted, tier },
+        score: MissionRiskScore {
+            total: weighted,
+            tier,
+        },
         factors,
         mitigations,
     }
@@ -224,7 +224,11 @@ fn weighted_risk(factors: &[MissionRiskFactor]) -> u32 {
         .filter(|f| f.weight > 0)
         .map(|f| f.score.saturating_mul(f.weight))
         .sum();
-    let weight_total: u32 = factors.iter().filter(|f| f.weight > 0).map(|f| f.weight).sum();
+    let weight_total: u32 = factors
+        .iter()
+        .filter(|f| f.weight > 0)
+        .map(|f| f.weight)
+        .sum();
     if weight_total == 0 {
         return 0;
     }

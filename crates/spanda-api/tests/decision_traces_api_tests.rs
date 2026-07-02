@@ -13,8 +13,7 @@ use std::path::PathBuf;
 use std::sync::Arc;
 
 fn showcase_root() -> PathBuf {
-    PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("../../examples/showcase/distributed_decisions")
+    PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../examples/showcase/distributed_decisions")
 }
 
 #[test]
@@ -49,7 +48,9 @@ fn list_decision_traces_returns_v3_frames_after_sim() {
     let json: serde_json::Value = serde_json::from_str(&response.body).unwrap();
     assert!(json["count"].as_u64().unwrap_or(0) > 0);
     let frames = json["frames"].as_array().expect("frames array");
-    assert!(frames.iter().any(|f| f["payload"]["version"].as_u64() == Some(3)));
+    assert!(frames
+        .iter()
+        .any(|f| f["payload"]["version"].as_u64() == Some(3)));
 
     let (http, _) = handle_request(
         &mut state,
@@ -83,7 +84,8 @@ fn program_simulation_emits_decision_trace_for_showcase() {
     let _ = std::fs::remove_file(&trace_path);
     let mut state = ControlCenterState::new().with_config_path(root.clone());
     state.program_path = Some(source_path.clone());
-    let body = r#"{"execute":true,"decision_trace":true,"record_trace":true,"inject_health_faults":true}"#;
+    let body =
+        r#"{"execute":true,"decision_trace":true,"record_trace":true,"inject_health_faults":true}"#;
     let response = program_simulation(&state, body);
     assert_eq!(response.status, 200, "{}", response.body);
     let json: serde_json::Value = serde_json::from_str(&response.body).unwrap();

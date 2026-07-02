@@ -55,15 +55,14 @@ pub fn v3_decision_payload_with_extras(
     let policy_version = extras
         .policy_version
         .clone()
-        .or_else(|| {
-            evidence
-                .get("tree_hash")
-                .and_then(|_| Some("1.0.0".into()))
-        })
+        .or_else(|| evidence.get("tree_hash").and_then(|_| Some("1.0.0".into())))
         .unwrap_or_else(|| "1.0.0".into());
-    let tree_hash = extras
-        .tree_hash
-        .or_else(|| evidence.get("tree_hash").and_then(|v| v.as_str()).map(str::to_string));
+    let tree_hash = extras.tree_hash.or_else(|| {
+        evidence
+            .get("tree_hash")
+            .and_then(|v| v.as_str())
+            .map(str::to_string)
+    });
     let sim_ms = extras.sim_time_ms.unwrap_or(0.0);
     let nonce = format!("n-{sim_ms:.0}-{decision_id}");
     json!({

@@ -143,7 +143,9 @@ fn cmd_twin_cloud_pull(args: &[String]) {
                     out_path = Some(args[index].clone());
                 }
             }
-            other if !other.starts_with('-') && twin_id.is_none() => twin_id = Some(other.to_string()),
+            other if !other.starts_with('-') && twin_id.is_none() => {
+                twin_id = Some(other.to_string())
+            }
             other => {
                 eprintln!("Unknown argument: {other}");
                 process::exit(1);

@@ -67,7 +67,10 @@ fn later_time_travel_endpoint_inspects_program_trace() {
     assert!(trace.exists());
     let mut state = ControlCenterState::new();
     state.program_path = Some(program);
-    let response = handle_get(&mut state, "/v1/analytics/time-travel?at=T%2B00%3A01&inspect=decisions");
+    let response = handle_get(
+        &mut state,
+        "/v1/analytics/time-travel?at=T%2B00%3A01&inspect=decisions",
+    );
     assert_eq!(response.status, 200, "{}", response.body);
     let json: serde_json::Value = serde_json::from_str(&response.body).unwrap();
     assert_eq!(json["version"], "v1");

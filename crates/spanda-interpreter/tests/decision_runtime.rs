@@ -16,8 +16,10 @@ fn decision_frames(trace: &MissionTrace) -> Vec<&TraceFrame> {
 }
 
 fn run_with_decision_trace(source: &str, options: RunOptions) -> MissionTrace {
-    let trace_path =
-        std::env::temp_dir().join(format!("spanda_decision_runtime_{}.trace", std::process::id()));
+    let trace_path = std::env::temp_dir().join(format!(
+        "spanda_decision_runtime_{}.trace",
+        std::process::id()
+    ));
     let _ = std::fs::remove_file(&trace_path);
     let program = parse(tokenize(source).unwrap()).unwrap();
     let mut opts = options;
@@ -157,7 +159,10 @@ robot Rover {
     )
     .expect("run");
     assert!(
-        result.logs.iter().any(|l| l.contains("mode: entered") && l.contains("degraded")),
+        result
+            .logs
+            .iter()
+            .any(|l| l.contains("mode: entered") && l.contains("degraded")),
         "expected degraded mode entry from decision tree actions, logs: {:?}",
         result.logs
     );
@@ -205,10 +210,9 @@ decision_tree OfflineBlock local {
     )
     .expect("run");
     assert!(
-        result
-            .logs
-            .iter()
-            .any(|l| l.contains("decision_action_blocked") || l.contains("blocked 'disable_safety'")),
+        result.logs.iter().any(
+            |l| l.contains("decision_action_blocked") || l.contains("blocked 'disable_safety'")
+        ),
         "expected offline policy block, logs: {:?}",
         result.logs
     );
@@ -251,8 +255,11 @@ decision_tree FirmwareGate local {
     )
     .expect("run");
     assert!(
-        blocked.logs.iter().any(|l| l.contains("decision_escalation_pending")
-            || l.contains("blocked 'update_firmware'")),
+        blocked
+            .logs
+            .iter()
+            .any(|l| l.contains("decision_escalation_pending")
+                || l.contains("blocked 'update_firmware'")),
         "expected escalation pending, logs: {:?}",
         blocked.logs
     );

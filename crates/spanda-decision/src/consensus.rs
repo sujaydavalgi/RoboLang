@@ -70,8 +70,8 @@ pub fn resolve_consensus(
             .or_else(|| votes.first().map(|v| v.action.clone()))
             .unwrap_or_else(|| "promote_backup".into()),
     };
-    let quorum_met = !votes.is_empty()
-        && (votes.len() as f64 / votes.len().max(1) as f64) >= quorum_fraction;
+    let quorum_met =
+        !votes.is_empty() && (votes.len() as f64 / votes.len().max(1) as f64) >= quorum_fraction;
     ConsensusResult {
         strategy,
         selected_action: selected,

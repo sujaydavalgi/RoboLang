@@ -18,9 +18,7 @@ pub struct DecisionTreeResult {
 
 /// Extract decision trees from a program AST.
 pub fn extract_decision_trees(program: &Program) -> Vec<DecisionTreeSpec> {
-    let Program::Program {
-        decision_trees, ..
-    } = program;
+    let Program::Program { decision_trees, .. } = program;
     decision_trees
         .iter()
         .map(|decl| {
@@ -79,7 +77,10 @@ pub fn tree_hash(spec: &DecisionTreeSpec) -> String {
 }
 
 /// Evaluate a decision tree against a signal map (condition key → bool).
-pub fn evaluate_tree(spec: &DecisionTreeSpec, signals: &std::collections::HashMap<String, bool>) -> Option<DecisionTreeResult> {
+pub fn evaluate_tree(
+    spec: &DecisionTreeSpec,
+    signals: &std::collections::HashMap<String, bool>,
+) -> Option<DecisionTreeResult> {
     for branch in &spec.branches {
         if signals.get(&branch.condition).copied().unwrap_or(false) {
             for nested in &branch.nested {

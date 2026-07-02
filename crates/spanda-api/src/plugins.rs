@@ -1,6 +1,6 @@
 //! REST handlers for installed Control Center and CLI plugins.
 
-use crate::handlers::{json_ok, bad_request};
+use crate::handlers::{bad_request, json_ok};
 use crate::state::ControlCenterState;
 use spanda_deploy_http::HttpResponse;
 use spanda_plugin::runtime::PluginManager;

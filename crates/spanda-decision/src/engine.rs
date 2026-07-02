@@ -1,6 +1,8 @@
 //! Distributed decision engine — orchestrates layers, trees, and traceability.
 
-use crate::authority::{default_safety_boundaries, extract_decision_authorities, validate_against_policy};
+use crate::authority::{
+    default_safety_boundaries, extract_decision_authorities, validate_against_policy,
+};
 use crate::escalation::{build_escalation_chain, EscalationReason};
 use crate::offline::extract_offline_policies;
 use crate::policy_cache::build_policy_cache;
@@ -96,7 +98,10 @@ pub fn evaluate_distributed_decisions(
         }
     }
 
-    if let Some(auth) = authorities.iter().find(|a| a.entity_id == context.entity_id) {
+    if let Some(auth) = authorities
+        .iter()
+        .find(|a| a.entity_id == context.entity_id)
+    {
         if !crate::authority::entity_may_decide_locally(auth, &context.action) {
             passed = false;
             messages.push(format!(
@@ -129,9 +134,11 @@ pub fn evaluate_distributed_decisions(
 
     if context.offline_minutes > 0 {
         for op in &offline_policies {
-            if let Err(e) =
-                crate::offline::validate_offline_action(op, &context.action, context.offline_minutes)
-            {
+            if let Err(e) = crate::offline::validate_offline_action(
+                op,
+                &context.action,
+                context.offline_minutes,
+            ) {
                 passed = false;
                 messages.push(e);
             }
@@ -168,7 +175,11 @@ fn build_decision_record(
 ) -> DistributedDecisionRecord {
     let now = context.policy_version.parse::<f64>().unwrap_or(0.0);
     DistributedDecisionRecord {
-        decision_id: format!("dd-{}-{}", context.entity_id, selected_action.replace(' ', "_")),
+        decision_id: format!(
+            "dd-{}-{}",
+            context.entity_id,
+            selected_action.replace(' ', "_")
+        ),
         layer: context.layer,
         decision_type,
         entity_id: context.entity_id.clone(),

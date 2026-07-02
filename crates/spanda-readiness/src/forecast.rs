@@ -115,9 +115,7 @@ pub fn evaluate_readiness_forecast(
             let predicted_score = history_forecast
                 .as_ref()
                 .map(|f| f.predicted_score)
-                .unwrap_or_else(|| {
-                    project_score(current_score, degradation_per_day, *days)
-                });
+                .unwrap_or_else(|| project_score(current_score, degradation_per_day, *days));
             let risk_warning = predicted_score < options.minimum_score;
             let mut horizon_risks = projected_risks.clone();
             if let Some(ReadinessForecast { message, .. }) = history_forecast {
@@ -235,7 +233,11 @@ fn projected_risks(readiness: &ReadinessReport, safety_coverage_pct: u32) -> Vec
         ));
     }
     for issue in readiness.issues.iter().take(3) {
-        risks.push(format!("{}: {}", format!("{:?}", issue.severity), issue.message));
+        risks.push(format!(
+            "{}: {}",
+            format!("{:?}", issue.severity),
+            issue.message
+        ));
     }
     risks
 }

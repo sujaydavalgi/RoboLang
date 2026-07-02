@@ -1,7 +1,9 @@
 //! Digital mission twin — live mission state mirror composing readiness and mission verification.
 
 use crate::engine::evaluate_readiness;
-use crate::forecast::{evaluate_readiness_forecast, ReadinessForecastOptions, ReadinessForecastReport};
+use crate::forecast::{
+    evaluate_readiness_forecast, ReadinessForecastOptions, ReadinessForecastReport,
+};
 use crate::mission::verify_mission;
 use crate::types::{ReadinessOptions, ReadinessReport};
 use serde::{Deserialize, Serialize};

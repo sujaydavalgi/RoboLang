@@ -60,7 +60,11 @@ pub fn entity_may_decide_locally(authority: &DecisionAuthority, action: &str) ->
     // Example:
     // let ok = entity_may_decide_locally(&auth, "emergency_stop");
 
-    if authority.requires_central_approval.iter().any(|a| a == action) {
+    if authority
+        .requires_central_approval
+        .iter()
+        .any(|a| a == action)
+    {
         return false;
     }
     authority.local_actions.iter().any(|a| a == action)
@@ -120,7 +124,10 @@ pub fn validate_against_policy(
     // validate_against_policy(&policy, "pause_mission", DecisionLayer::LocalEntity)?;
 
     if policy.forbidden_actions.iter().any(|a| a == action) {
-        return Err(format!("action '{action}' is forbidden by policy '{}'", policy.name));
+        return Err(format!(
+            "action '{action}' is forbidden by policy '{}'",
+            policy.name
+        ));
     }
     if layer as u8 > policy.layer as u8 {
         return Err(format!(

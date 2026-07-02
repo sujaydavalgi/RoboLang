@@ -6,11 +6,11 @@ mod authority;
 mod conflict;
 mod consensus;
 mod diagnostics;
+mod emit;
 mod engine;
 mod escalation;
 mod offline;
 mod policy_cache;
-mod emit;
 mod report;
 mod runtime_bridge;
 mod security;
@@ -26,11 +26,11 @@ pub use authority::{
 pub use conflict::{resolve_conflict, CompetingDecision, ConflictResolution};
 pub use consensus::{resolve_consensus, ConsensusResult, ConsensusStrategy, ConsensusVote};
 pub use diagnostics::collect_decision_diagnostics;
+pub use emit::{decision_trace_enabled, v3_decision_payload};
 pub use engine::{
     evaluate_distributed_decisions, format_distributed_report, DecisionContext,
     DistributedDecisionReport,
 };
-pub use emit::{decision_trace_enabled, v3_decision_payload};
 pub use escalation::{approve_escalation, build_escalation_chain, EscalationReason};
 pub use offline::{
     extract_offline_policies, offline_policy_signing_payload, offline_to_decision_policy,
@@ -42,11 +42,11 @@ pub use policy_cache::{
     merge_offline_policies_with_cache, save_persisted_policy_cache, LocalPolicyCache,
     PersistedPolicyCache,
 };
-pub use runtime_bridge::{register_platform_runtime, DecisionBackedRuntime};
 pub use report::{
     format_decision_audit, format_decision_explanations, DecisionAuditReport, DecisionChain,
     DecisionEvidence, DecisionRecord, DecisionTimeline,
 };
+pub use runtime_bridge::{register_platform_runtime, DecisionBackedRuntime};
 pub use security::{
     security_audit, simulate_attack, threat_model_summary, validate_security_envelope,
     AttackScenario, SecurityAuditFinding,

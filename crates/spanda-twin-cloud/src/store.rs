@@ -27,9 +27,7 @@ impl TwinCloudStore {
     pub fn list(&self, tenant_id: Option<&str>) -> Vec<TwinCloudSummary> {
         self.latest
             .values()
-            .filter(|snapshot| {
-                tenant_id.is_none_or(|tenant| snapshot.tenant_id.as_str() == tenant)
-            })
+            .filter(|snapshot| tenant_id.is_none_or(|tenant| snapshot.tenant_id.as_str() == tenant))
             .map(TwinCloudSnapshot::summary)
             .collect()
     }

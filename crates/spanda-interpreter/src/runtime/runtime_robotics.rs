@@ -375,7 +375,10 @@ impl<B: RobotBackend> Interpreter<B> {
                     "safety_reflex",
                     &reason,
                     "reflex",
-                    &self.active_robot_name.clone().unwrap_or_else(|| "robot".into()),
+                    &self
+                        .active_robot_name
+                        .clone()
+                        .unwrap_or_else(|| "robot".into()),
                     serde_json::json!({
                         "reason": reason,
                         "linear": proposal.linear,

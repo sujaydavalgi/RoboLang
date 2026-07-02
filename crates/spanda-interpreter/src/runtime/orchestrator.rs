@@ -17,9 +17,7 @@ use spanda_hal::HardwareMonitor;
 use spanda_runtime::assurance_runtime::{
     default_assurance_runtime, AssuranceRuntime, SharedAssuranceRuntime,
 };
-use spanda_runtime::decision_runtime::{
-    default_decision_runtime, SharedDecisionRuntime,
-};
+use spanda_runtime::decision_runtime::{default_decision_runtime, SharedDecisionRuntime};
 use spanda_runtime::events::EventBus;
 use spanda_runtime::fault_runtime::{default_fault_runtime, FaultRuntime, SharedFaultRuntime};
 use spanda_runtime::provider_runtime::{
@@ -2143,10 +2141,10 @@ mod runtime_builtins;
 mod runtime_connectivity;
 #[path = "runtime_continuity.rs"]
 mod runtime_continuity;
-#[path = "runtime_declarations.rs"]
-mod runtime_declarations;
 #[path = "runtime_decision.rs"]
 mod runtime_decision;
+#[path = "runtime_declarations.rs"]
+mod runtime_declarations;
 #[path = "runtime_eval.rs"]
 mod runtime_eval;
 #[path = "runtime_execute.rs"]

@@ -80,7 +80,11 @@ pub fn inspect_mission_at(
             collect_labeled(frame, &["health", "fault", "degraded"], &mut health_events);
         }
         if inspect_all || inspect.contains(&TimeTravelInspect::Readiness) {
-            collect_labeled(frame, &["readiness", "mission_ready"], &mut readiness_events);
+            collect_labeled(
+                frame,
+                &["readiness", "mission_ready"],
+                &mut readiness_events,
+            );
         }
         if inspect_all || inspect.contains(&TimeTravelInspect::Safety) {
             collect_labeled(
@@ -139,7 +143,10 @@ fn collect_decisions(frame: &TraceFrame, out: &mut Vec<serde_json::Value>) {
 fn collect_labeled(frame: &TraceFrame, labels: &[&str], out: &mut Vec<String>) {
     let haystack = format!("{} {}", frame.event, frame.payload).to_ascii_lowercase();
     if labels.iter().any(|label| haystack.contains(label)) {
-        out.push(format!("t={:.1}ms {} {:?}", frame.sim_time_ms, frame.event, frame.payload));
+        out.push(format!(
+            "t={:.1}ms {} {:?}",
+            frame.sim_time_ms, frame.event, frame.payload
+        ));
     }
 }
 
@@ -160,7 +167,9 @@ fn parse_clock_time_ms(raw: &str) -> Option<f64> {
 }
 
 fn parse_iso_against_trace(raw: &str, trace: &MissionTrace) -> Option<f64> {
-    let target = chrono::DateTime::parse_from_rfc3339(raw).ok()?.with_timezone(&chrono::Utc);
+    let target = chrono::DateTime::parse_from_rfc3339(raw)
+        .ok()?
+        .with_timezone(&chrono::Utc);
     for frame in &trace.frames {
         if let Some(recorded) = frame.payload.get("recorded_at").and_then(|v| v.as_str()) {
             if let Ok(at) = chrono::DateTime::parse_from_rfc3339(recorded) {
@@ -196,7 +205,10 @@ pub fn format_timeline_explorer(explorer: &TimelineExplorer, json: bool) -> Stri
         lines.push(format!("Health signals: {}", state.health_events.len()));
     }
     if !state.readiness_events.is_empty() {
-        lines.push(format!("Readiness signals: {}", state.readiness_events.len()));
+        lines.push(format!(
+            "Readiness signals: {}",
+            state.readiness_events.len()
+        ));
     }
     if !state.safety_events.is_empty() {
         lines.push(format!("Safety signals: {}", state.safety_events.len()));

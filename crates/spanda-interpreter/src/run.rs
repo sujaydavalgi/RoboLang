@@ -78,8 +78,7 @@ pub fn run_program(program: &Program, options: RunOptions) -> Result<RunResult, 
     let logs_cb = logs.clone();
     let trace_realtime = options.trace_realtime;
     let record_trace = options.record_trace;
-    let decision_trace = options.decision_trace
-        || spanda_runtime::decision_trace_enabled();
+    let decision_trace = options.decision_trace || spanda_runtime::decision_trace_enabled();
     let scheduler_clock = if options.replay_deterministic {
         SchedulerClock::Sim
     } else {

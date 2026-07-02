@@ -7,11 +7,7 @@ use spanda_runtime::{
 #[test]
 fn inspects_decisions_at_offset() {
     let mut trace = MissionTrace::new("rover.sd");
-    trace.record(
-        0.0,
-        "tick",
-        serde_json::json!({"health": "ok"}),
-    );
+    trace.record(0.0, "tick", serde_json::json!({"health": "ok"}));
     trace.record(
         1000.0,
         "decision_trace",

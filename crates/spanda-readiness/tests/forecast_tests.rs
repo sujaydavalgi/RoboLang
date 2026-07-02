@@ -1,11 +1,11 @@
 //! Tests for readiness forecasting.
 
-use spanda_readiness::{
-    evaluate_readiness_forecast, ReadinessForecastOptions, ReadinessHistory,
-    ReadinessHistoryEntry, ReadinessFactorScore,
-};
 use spanda_lexer::tokenize;
 use spanda_parser::parse;
+use spanda_readiness::{
+    evaluate_readiness_forecast, ReadinessFactorScore, ReadinessForecastOptions, ReadinessHistory,
+    ReadinessHistoryEntry,
+};
 use std::path::PathBuf;
 
 fn parse_program(source: &str) -> spanda_ast::nodes::Program {

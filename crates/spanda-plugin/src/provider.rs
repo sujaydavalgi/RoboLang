@@ -13,7 +13,9 @@ pub struct ProviderPluginRecord {
     pub install_path: String,
 }
 
-pub fn list_enabled_provider_plugins(project_root: &Path) -> PluginResult<Vec<ProviderPluginRecord>> {
+pub fn list_enabled_provider_plugins(
+    project_root: &Path,
+) -> PluginResult<Vec<ProviderPluginRecord>> {
     let manager = PluginManager::open(project_root, env!("CARGO_PKG_VERSION"))?;
     Ok(manager
         .store()

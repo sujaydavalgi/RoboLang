@@ -105,7 +105,10 @@ impl<B: RobotBackend> Interpreter<B> {
             "safety_reflex",
             &format!("kill_switch '{name}' activated"),
             "reflex",
-            &self.active_robot_name.clone().unwrap_or_else(|| "robot".into()),
+            &self
+                .active_robot_name
+                .clone()
+                .unwrap_or_else(|| "robot".into()),
             serde_json::json!({
                 "kill_switch": name,
                 "remote_signed": remote_signed,

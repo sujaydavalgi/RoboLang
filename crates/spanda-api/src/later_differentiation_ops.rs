@@ -24,7 +24,10 @@ fn load_program(
     parse_program_file(path).map(|(program, source, label)| (program, source, label))
 }
 
-fn resolve_trace_path(state: &ControlCenterState, params: &std::collections::HashMap<String, String>) -> Result<PathBuf, String> {
+fn resolve_trace_path(
+    state: &ControlCenterState,
+    params: &std::collections::HashMap<String, String>,
+) -> Result<PathBuf, String> {
     if let Some(raw) = params.get("trace") {
         let candidates = trace_candidates(state, raw);
         for candidate in candidates {
@@ -40,7 +43,10 @@ fn resolve_trace_path(state: &ControlCenterState, params: &std::collections::Has
             return Ok(auto);
         }
     }
-    Err("missing trace query parameter; pass trace=<path> or record a .trace beside the program".into())
+    Err(
+        "missing trace query parameter; pass trace=<path> or record a .trace beside the program"
+            .into(),
+    )
 }
 
 fn trace_candidates(state: &ControlCenterState, raw: &str) -> Vec<PathBuf> {
@@ -78,7 +84,9 @@ pub fn analytics_mission_twin(state: &ControlCenterState) -> HttpResponse {
 /// `GET /v1/analytics/certification-pack?strict=0`
 pub fn analytics_certification_pack(state: &ControlCenterState, query: &str) -> HttpResponse {
     let params = parse_query(query);
-    let strict = params.get("strict").is_some_and(|v| v == "1" || v == "true");
+    let strict = params
+        .get("strict")
+        .is_some_and(|v| v == "1" || v == "true");
     let (program, source, label) = match load_program(state) {
         Ok(value) => value,
         Err(message) => return bad_request(&message),

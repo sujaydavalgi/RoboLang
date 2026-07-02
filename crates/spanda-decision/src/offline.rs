@@ -41,9 +41,7 @@ pub fn extract_offline_policies(program: &Program) -> Vec<OfflinePolicySpec> {
                 max_duration_minutes: *max_duration_minutes,
                 allowed_actions: allowed_actions.clone(),
                 forbidden_actions: forbidden_actions.clone(),
-                policy_version: policy_version
-                    .clone()
-                    .unwrap_or_else(|| "1.0.0".into()),
+                policy_version: policy_version.clone().unwrap_or_else(|| "1.0.0".into()),
                 signature: signature.clone(),
                 expires_at_ms: *expires_at_ms,
             }
@@ -80,11 +78,7 @@ pub fn verify_offline_policy_signature(spec: &OfflinePolicySpec, trust_key: &str
     let Some(signature) = spec.signature.as_ref().filter(|s| !s.is_empty()) else {
         return false;
     };
-    verify_signature(
-        &offline_policy_signing_payload(spec),
-        signature,
-        trust_key,
-    )
+    verify_signature(&offline_policy_signing_payload(spec), signature, trust_key)
 }
 
 fn require_signed_offline_policies() -> bool {

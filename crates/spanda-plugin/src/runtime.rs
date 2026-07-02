@@ -78,9 +78,7 @@ impl PluginStore {
 
     pub fn persist_audit_log(&self) -> PluginResult<()> {
         let path = self.root.join(crate::registry_fetch::AUDIT_LOG_FILENAME);
-        self.audit
-            .append_to_file(&path)
-            .map_err(PluginError::from)
+        self.audit.append_to_file(&path).map_err(PluginError::from)
     }
 
     pub fn enabled_plugin_names(&self) -> Vec<String> {
@@ -143,7 +141,11 @@ impl PluginStore {
         Ok(out)
     }
 
-    pub fn cli_command_matches(&self, namespace: &str, command: &str) -> Option<PluginInspectReport> {
+    pub fn cli_command_matches(
+        &self,
+        namespace: &str,
+        command: &str,
+    ) -> Option<PluginInspectReport> {
         for record in self.list() {
             if record.state != PluginState::Enabled {
                 continue;
@@ -430,11 +432,7 @@ impl PluginManager {
         self.store.list_control_center_plugins()
     }
 
-    pub fn try_cli_command(
-        &self,
-        namespace: &str,
-        command: &str,
-    ) -> Option<PluginInspectReport> {
+    pub fn try_cli_command(&self, namespace: &str, command: &str) -> Option<PluginInspectReport> {
         self.store.cli_command_matches(namespace, command)
     }
 

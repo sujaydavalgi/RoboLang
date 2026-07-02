@@ -58,7 +58,7 @@ pub use failure::{analyze_failure, analyze_failure_source, FailureAnalysisReport
 pub use fleet::evaluate_fleet_readiness;
 pub use fleet_verify::{verify_fleet, verify_fleet_source, FleetVerifyReport};
 pub use forecast::{
-    evaluate_readiness_forecast, format_readiness_forecast, forecast_history_path,
+    evaluate_readiness_forecast, forecast_history_path, format_readiness_forecast,
     ReadinessForecastOptions, ReadinessForecastReport, ReadinessPrediction,
 };
 pub use gates::{
@@ -92,7 +92,9 @@ pub use safety_coverage::{
 };
 pub use safety_report::{generate_safety_report, generate_safety_report_source, SafetyCaseReport};
 pub use target::{default_deploy_target, readiness_options_from_flags};
-pub use teaming::{evaluate_human_teaming, format_human_teaming, HumanEscalation, HumanTeamingReport};
+pub use teaming::{
+    evaluate_human_teaming, format_human_teaming, HumanEscalation, HumanTeamingReport,
+};
 pub use traceability::{readiness_traceability, ReadinessTraceRow};
 pub use trends::{
     analyze_readiness_trends, default_readiness_history_path, format_readiness_trends,

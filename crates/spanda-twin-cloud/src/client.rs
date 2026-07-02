@@ -37,9 +37,13 @@ impl TwinCloudClient {
         &self.config.base_url
     }
 
-    pub fn push_snapshot(&self, snapshot: &TwinCloudSnapshot) -> Result<TwinCloudSyncResponse, TwinCloudError> {
+    pub fn push_snapshot(
+        &self,
+        snapshot: &TwinCloudSnapshot,
+    ) -> Result<TwinCloudSyncResponse, TwinCloudError> {
         let path = format!("/v1/twins/{}/snapshots", snapshot.twin_id);
-        let body = serde_json::to_value(snapshot).map_err(|err| TwinCloudError::Parse(err.to_string()))?;
+        let body =
+            serde_json::to_value(snapshot).map_err(|err| TwinCloudError::Parse(err.to_string()))?;
         let value: serde_json::Value = self.request_json("POST", &path, Some(body))?;
         if let Ok(response) = serde_json::from_value::<TwinCloudSyncResponse>(value.clone()) {
             return Ok(response);
