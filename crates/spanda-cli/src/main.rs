@@ -3,6 +3,7 @@
 mod adr_cli;
 mod assurance_cli;
 mod assurance_runtime;
+mod decision_runtime;
 mod bundled_registry;
 mod certify_cli;
 mod chaos_cli;
@@ -2311,6 +2312,7 @@ fn main() {
                             spanda_readiness::collect_readiness_diagnostics(&program, &options);
                         diags.extend(spanda_assurance::collect_recovery_diagnostics(&program));
                         diags.extend(spanda_assurance::collect_continuity_diagnostics(&program));
+                        diags.extend(spanda_decision::collect_decision_diagnostics(&program));
                         Some(diags)
                     } else {
                         None

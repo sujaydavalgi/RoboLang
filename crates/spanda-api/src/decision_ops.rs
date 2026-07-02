@@ -131,9 +131,10 @@ pub fn simulate_decisions(state: &ControlCenterState, body: &str) -> HttpRespons
 
 /// POST /v1/decisions/escalate — approve a pending escalation.
 pub fn escalate_decision(_state: &ControlCenterState, body: &str) -> HttpResponse {
-    let req: DecisionEscalateRequest = serde_json::from_str(body).unwrap_or_else(|e| {
-        return bad_request(&format!("invalid body: {e}"));
-    });
+    let req: DecisionEscalateRequest = match serde_json::from_str(body) {
+        Ok(req) => req,
+        Err(e) => return bad_request(&format!("invalid body: {e}")),
+    };
     let mut escalation = spanda_decision::DecisionEscalation {
         from_layer: DecisionLayer::LocalEntity,
         to_layer: DecisionLayer::ControlCenter,

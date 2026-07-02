@@ -45,6 +45,9 @@ pub fn apply_system_config_to_run_options(
     if opts.assurance_runtime.is_none() {
         opts.assurance_runtime = Some(crate::assurance_runtime::default_assurance_runtime());
     }
+    if opts.decision_runtime.is_none() {
+        opts.decision_runtime = Some(crate::decision_runtime::default_decision_runtime());
+    }
     if opts.telemetry_sink.is_none() {
         opts.telemetry_sink = Some(crate::telemetry_runtime::default_telemetry_sink());
     }
