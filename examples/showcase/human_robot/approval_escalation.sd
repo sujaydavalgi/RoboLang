@@ -1,0 +1,42 @@
+// Human/robot teaming — approval and escalation paths.
+//
+//   spanda team verify examples/showcase/human_robot/approval_escalation.sd
+//   spanda team verify examples/showcase/human_robot/approval_escalation.sd --json
+
+hardware RoverV1 {
+  sensors [ GPS, Lidar ];
+  actuators [ DifferentialDrive ];
+}
+
+robot Rover {
+  uses hardware RoverV1;
+  sensor gps: GPS;
+  sensor lidar: Lidar;
+  actuator wheels: DifferentialDrive;
+
+  mission Patrol {
+    requires approval Operator for: open_gate, resume_mission;
+    patrol;
+  }
+
+  mode safe_mode { wheels.drive(linear: 0.0 m/s, angular: 0.0 rad/s); }
+
+  behavior patrol() {
+    wheels.drive(linear: 0.2 m/s, angular: 0.0 rad/s);
+  }
+}
+
+recovery_policy OperatorEscalation {
+    on robot.failed {
+        reassign mission;
+    }
+    on connectivity.loss {
+        enter degraded mode;
+    }
+}
+
+health_policy RoverPolicy {
+    on Degraded { enter safe_mode; }
+}
+
+deploy Rover to RoverV1;
