@@ -230,7 +230,7 @@ See [tier-3-experimental.md](./tier-3-experimental.md) and [tier-3-golden-paths.
 
 | Pillar | Status | Key surfaces |
 |--------|--------|--------------|
-| **Control Center** | **Stable** | `spanda control-center serve`, embedded HTML + `@davalgi-spanda/web` panel (drift, trust, compliance, SRE, executive); Tauri desktop **0.4.2** (`desktop-v0.4.2`) |
+| **Control Center** | **Stable** | `spanda control-center serve`, embedded HTML + `@davalgi-spanda/web` panel (RBAC-aware tabs, Administration user/key/alert config, Mission/Simulation/Replay, drift, trust, compliance, SRE, executive); Tauri desktop **0.4.2** (`desktop-v0.4.2`) |
 | **Device Pool** | **Stable** | Lifecycle states, assign/trust/quarantine/retire, failover chains; multi-tenant API key scoping |
 | **Device Discovery** | **Stable** | Subnet, mDNS, BLE, USB, CAN, MQTT, ROS2 host probes; production TLS policy (`SPANDA_DISCOVERY_REQUIRE_TLS`, `spanda-discovery-tls`) |
 | **Provisioning** | **Stable** | `POST /v1/provision`, discover → ready workflow |

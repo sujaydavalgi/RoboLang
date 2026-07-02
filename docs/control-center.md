@@ -47,8 +47,8 @@ CI smoke scripts source [`scripts/lib/control_center_smoke_lib.sh`](../scripts/l
 | Method | How |
 |--------|-----|
 | **Embedded UI** | Open `http://127.0.0.1:8080/` in a browser (default bind address) |
-| **Web package** | Use the **Control Center** view in `@davalgi-spanda/web`; set the API URL to your serve address |
-| **Desktop (Tauri)** | Start the API first, then `npm run control-center:desktop:dev` (Vite on port **5174**); optional `VITE_CONTROL_CENTER_URL=http://host:port` |
+| **Web package** | Use the **Control Center** view in `@davalgi-spanda/web`; set the API URL to your serve address. Paste a Bearer token in-panel (or set `VITE_SPANDA_API_KEY` at build time). Role-aware tabs and an **Administration** console match the embedded UI. |
+| **Desktop (Tauri)** | Start the API first, then `npm run control-center:desktop:dev` (Vite on port **5174**); optional `VITE_CONTROL_CENTER_URL=http://host:port`. Sign in via the in-app token banner — no rebuild required for operator keys. |
 | **Remote CLI** | `export SPANDA_CONTROL_CENTER_URL=http://127.0.0.1:8080` then `spanda control-center dashboard` (see [Remote CLI](#remote-cli-rest-parity)) |
 
 Read-only views and `GET /v1/*` endpoints work without authentication. Mutations (`POST`, `PATCH`, `DELETE`) require a Bearer token — configure keys on the server before calling those endpoints.
@@ -153,7 +153,62 @@ Keys from `SPANDA_API_KEYS_FILE` are **merged** with any key from `SPANDA_API_KE
 | `auditor` | Read-only (no mutations) |
 | `guest` | Read-only (no mutations) |
 
-Inspect the live permission matrix: `GET /v1/rbac/matrix`. After pasting a Bearer token in the embedded UI, `GET /v1/rbac/me` returns your `role`, `key_id`, `tenant_id`, and allowed mutation `permissions` — the UI uses this to show your role badge and enable action buttons per tab.
+Inspect the live permission matrix: `GET /v1/rbac/matrix`. After pasting a Bearer token in the UI (embedded HTML or `@davalgi-spanda/web` / Tauri desktop), `GET /v1/rbac/me` returns your `role`, `key_id`, `tenant_id`, and allowed mutation `permissions` — the UI uses this to show your role badge, filter tabs by role, and enable action buttons per permission.
+
+### Administration (administrator role)
+
+The **Administration** tab (administrator role only) manages operator keys and integrations:
+
+| Endpoint | Description |
+|----------|-------------|
+| `GET /v1/admin/api-keys` | List key metadata (no token values) |
+| `POST /v1/admin/api-keys` | Create a key — response includes `token` once |
+| `PATCH /v1/admin/api-keys/{key_id}` | Update role or label |
+| `DELETE /v1/admin/api-keys/{key_id}` | Revoke a file-backed key (`env-default` from `SPANDA_API_KEY` cannot be revoked via API) |
+| `GET /v1/admin/integrations` | Alert channels and observability backend summary |
+
+File-backed keys persist to `SPANDA_API_KEYS_FILE` or `.spanda/api-keys.json`.
+
+### User directory
+
+| Endpoint | Description |
+|----------|-------------|
+| `GET /v1/admin/users` | List operator accounts (seeds from `[[humans]]` in config when empty) |
+| `POST /v1/admin/users` | Create user |
+| `PATCH /v1/admin/users/{user_id}` | Update display name, email, role, linked API key, enabled flag |
+| `DELETE /v1/admin/users/{user_id}` | Remove user |
+
+Persisted to `.spanda/admin-users.json`.
+
+### Alert channels
+
+| Endpoint | Description |
+|----------|-------------|
+| `GET /v1/admin/alert-channels` | Current dispatcher channels |
+| `PUT /v1/admin/alert-channels` | Replace channels (webhook, email, PagerDuty, Teams, log) |
+
+Persisted to `.spanda/alert-channels.json`. When unset, channels load from `SPANDA_ALERT_*` environment variables.
+
+### Simulation and Replay
+
+| Endpoint | Description |
+|----------|-------------|
+| `GET /v1/programs/traces` | List `.trace` files under the project root |
+| `POST /v1/programs/simulation` | Plan or execute simulation (`execute`, `inject_health_faults`, `record_trace`, `decision_trace`) |
+| `POST /v1/programs/replay` | Inspect, deterministic replay, or playback |
+
+Control Center **Simulation** and **Replay** tabs expose these workflows in the desktop and web panel.
+
+### Mission control
+
+| Endpoint | Description |
+|----------|-------------|
+| `GET /v1/operator/missions` | Mission entities from the loaded program |
+| `POST /v1/operator/mission/pause` | Pause mission (Operate) |
+| `POST /v1/operator/mission/resume` | Resume mission (Operate) |
+| `POST /v1/operator/mission/cancel` | Cancel mission (Shutdown) |
+| `GET /v1/operator/mission/approvals` | Pending approval queue |
+| `POST /v1/operator/mission/approve` | Approve or reject (Approve) |
 
 ### What requires authentication
 

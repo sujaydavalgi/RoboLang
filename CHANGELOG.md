@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Control Center administrator console:** `Administration` tab — API key CRUD, **user directory** (`/v1/admin/users`), **alert channel config** (`PUT /v1/admin/alert-channels`), secrets metadata, report schedules, integrations summary. **Simulation** and **Replay** tabs with program sim execute, trace library (`GET /v1/programs/traces`), deterministic replay and playback. Desktop/web RBAC parity (token banner, role tabs, permission-gated actions). gRPC proto **1.0.9** adds 17 administration/mission/replay RPCs.
 - **Recovery Orchestrator CI:** `scripts/recovery_orchestrator_smoke.sh`, `scripts/recovery_orchestrator_stable_promotion_gate.sh`; wired into `scripts/showcase_smoke.sh`; [stable-hardening-recovery-orchestrator.md](docs/stable-hardening-recovery-orchestrator.md).
 - **Twin Cloud persistence:** snapshots saved to `control-center-twins.json`; survive Control Center restart.
 - **Twin Cloud SDK (0.5.3):** `list_twins`, `get_twin`, `sync_twin`, `push_twin_snapshot` in Rust/Python/TypeScript SDKs.

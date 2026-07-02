@@ -230,7 +230,7 @@ flowchart TB
 | **Simulation** | Active sim sessions, twin state | Launch sim, inject faults |
 | **Replay** | Trace library, deterministic playback | Replay, time-travel scrub |
 | **Audit** | Decision audit trail, compliance evidence | Export evidence packs |
-| **Administration** | RBAC, secrets metadata, API keys | Manage users, roles, integrations |
+| **Administration** | RBAC, secrets metadata, API keys | Manage users, roles, integrations — **Shipped (v0.6+):** user directory, API key CRUD, alert channel config UI, secrets/schedules; no external IdP sync yet |
 
 ### Evolution from current UI
 
