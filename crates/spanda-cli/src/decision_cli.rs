@@ -280,6 +280,156 @@ fn cache_path_display() -> String {
         .into_owned()
 }
 
+fn cache_path_from_flag(args: &[String]) -> Option<std::path::PathBuf> {
+    flag_value(args, "--cache").map(std::path::PathBuf::from)
+}
+
+/// `spanda decision cache show [--cache <path>] [--json]`
+pub fn cmd_decision_cache_show(args: &[String]) {
+    let cache = load_persisted_policy_cache(cache_path_from_flag(args).as_deref());
+    if json_output(args) {
+        println!(
+            "{}",
+            serde_json::to_string_pretty(&serde_json::json!({
+                "cache_path": cache_path_from_flag(args)
+                    .map(|p| p.to_string_lossy().into_owned())
+                    .unwrap_or_else(cache_path_display),
+                "policy_count": cache.policies.len(),
+                "updated_at_ms": cache.updated_at_ms,
+                "policies": cache.policies,
+            }))
+            .unwrap_or_default()
+        );
+        return;
+    }
+    println!(
+        "Decision policy cache ({}) — {} policies",
+        cache_path_from_flag(args)
+            .map(|p| p.display().to_string())
+            .unwrap_or_else(cache_path_display),
+        cache.policies.len()
+    );
+    for (name, policy) in &cache.policies {
+        let signed = policy
+            .signature
+            .as_ref()
+            .map(|s| if s.is_empty() { "unsigned" } else { "signed" })
+            .unwrap_or("unsigned");
+        println!(
+            "  {name} — v{} max {}m [{signed}]",
+            policy.policy_version, policy.max_duration_minutes
+        );
+    }
+}
+
+/// `spanda decision cache sync <file.sd> [--sign] [--key <material>] [--cache <path>] [--json]`
+pub fn cmd_decision_cache_sync(args: &[String]) {
+    let path = file_arg(args);
+    let program = read_and_parse(&path);
+    let policies = extract_offline_policies(&program);
+    if policies.is_empty() {
+        eprintln!("No offline_policy declarations in {path}");
+        process::exit(1);
+    }
+    let cache_path = cache_path_from_flag(args);
+    let mut cache = load_persisted_policy_cache(cache_path.as_deref());
+    let should_sign = args.iter().any(|a| a == "--sign");
+    let signing_key = if should_sign {
+        Some(
+            flag_value(args, "--key")
+                .or_else(|| std::env::var("SPANDA_DECISION_POLICY_SIGNING_KEY").ok())
+                .unwrap_or_else(|| {
+                    eprintln!(
+                        "Missing signing key for --sign: pass --key or set SPANDA_DECISION_POLICY_SIGNING_KEY"
+                    );
+                    process::exit(1);
+                }),
+        )
+    } else {
+        None
+    };
+    let mut synced = Vec::new();
+    for mut spec in policies {
+        if let Some(key) = &signing_key {
+            spec.signature = Some(sign_offline_policy(&spec, key));
+        }
+        cache.upsert_offline_policy(spec.clone());
+        synced.push(spec);
+    }
+    if let Err(err) = save_persisted_policy_cache(&mut cache, cache_path.as_deref()) {
+        eprintln!("{err}");
+        process::exit(1);
+    }
+    if json_output(args) {
+        println!(
+            "{}",
+            serde_json::to_string_pretty(&serde_json::json!({
+                "synced": synced,
+                "cache_path": cache_path
+                    .map(|p| p.to_string_lossy().into_owned())
+                    .unwrap_or_else(cache_path_display),
+            }))
+            .unwrap_or_default()
+        );
+    } else {
+        println!(
+            "Synced {} offline policies to {}",
+            synced.len(),
+            cache_path
+                .map(|p| p.display().to_string())
+                .unwrap_or_else(cache_path_display)
+        );
+    }
+}
+
+/// `spanda decision cache clear [--policy <name>] [--cache <path>]`
+pub fn cmd_decision_cache_clear(args: &[String]) {
+    let cache_path = cache_path_from_flag(args).unwrap_or_else(default_policy_cache_path);
+    if let Some(name) = flag_value(args, "--policy") {
+        let mut cache = load_persisted_policy_cache(Some(&cache_path));
+        if cache.policies.remove(&name).is_none() {
+            eprintln!("Policy '{name}' not in cache");
+            process::exit(1);
+        }
+        if let Err(err) = save_persisted_policy_cache(&mut cache, Some(&cache_path)) {
+            eprintln!("{err}");
+            process::exit(1);
+        }
+        println!("Removed '{name}' from {}", cache_path.display());
+        return;
+    }
+    if cache_path.exists() {
+        std::fs::remove_file(&cache_path).unwrap_or_else(|e| {
+            eprintln!("Failed to remove {}: {e}", cache_path.display());
+            process::exit(1);
+        });
+    }
+    println!("Cleared decision policy cache at {}", cache_path.display());
+}
+
+fn default_policy_cache_path() -> std::path::PathBuf {
+    spanda_decision::default_policy_cache_path()
+}
+
+/// Dispatch `spanda decision cache` subcommands.
+pub fn decision_cache_dispatch(args: &[String]) {
+    let sub = args.first().map(String::as_str).unwrap_or("");
+    match sub {
+        "show" => cmd_decision_cache_show(&args[1..]),
+        "sync" => cmd_decision_cache_sync(&args[1..]),
+        "clear" => cmd_decision_cache_clear(&args[1..]),
+        _ => {
+            eprintln!(
+                "Usage:\n  \
+                 spanda decision cache show [--cache <path>] [--json]\n  \
+                 spanda decision cache sync <file.sd> [--sign] [--key <material>] [--cache <path>]\n  \
+                 spanda decision cache clear [--policy <name>] [--cache <path>]"
+            );
+            process::exit(1);
+        }
+    }
+}
+
 /// `spanda decision security-audit [--json]`
 pub fn cmd_decision_security_audit(args: &[String]) {
     let findings = security_audit();
@@ -348,6 +498,7 @@ pub fn decision_dispatch(args: &[String]) {
         "explain" => cmd_decision_explain(&args[1..]),
         "policy" => cmd_decision_policy(&args[1..]),
         "sign-policy" => cmd_decision_sign_policy(&args[1..]),
+        "cache" => decision_cache_dispatch(&args[1..]),
         "security-audit" => cmd_decision_security_audit(&args[1..]),
         "threat-model" => cmd_decision_threat_model(&args[1..]),
         "simulate-attack" => cmd_decision_simulate_attack(&args[1..]),
@@ -361,6 +512,7 @@ pub fn decision_dispatch(args: &[String]) {
                  spanda decision explain <mission.trace>\n  \
                  spanda decision policy <file.sd> [--json]\n  \
                  spanda decision sign-policy <file.sd> [--policy <name>] [--key <material>] [--write-cache] [--json]\n  \
+                 spanda decision cache show|sync|clear ...\n  \
                  spanda decision security-audit [--json]\n  \
                  spanda decision threat-model\n  \
                  spanda decision simulate-attack <scenario>"
