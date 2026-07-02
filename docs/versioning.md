@@ -1,85 +1,80 @@
 # Versioning policy
 
-Spanda follows [Semantic Versioning 2.0.0](https://semver.org/). Version numbers are bumped **when milestones or important phases complete**, not on every merge.
+Spanda follows [Semantic Versioning 2.0.0](https://semver.org/). Each **release stream** has its own version line — bump **only the stream whose area changed**.
 
 **Canonical roadmap milestones:** [ROADMAP.md](../ROADMAP.md#release-milestones)
 
-## Unified release streams
+## Independent release streams
 
-All **product release streams** share the **same semver** and bump together on each release. `scripts/bump_version.py` updates every manifest in one step.
+| Stream | When to bump | Manifests | Release tag(s) |
+|--------|--------------|-----------|----------------|
+| **Workspace / CLI** | Language, compiler, runtime, CLI, core platform milestones | `Cargo.toml` `[workspace.package].version`, root `package.json`, `editor/vscode/`, `packages/lsp`, `packages/native`, `packages/web` | `vX.Y.Z` |
+| **Official SDKs** | New or changed REST/gRPC client methods; SDK API fixes (Rust + Python + TS bump **together**) | `crates/spanda-sdk/Cargo.toml`, `sdk/python/pyproject.toml`, `sdk/typescript/package.json`, `packages/sdk-python/pyproject.toml` | `crates-sdk-vX.Y.Z`, `sdk-python-vX.Y.Z`, `npm-sdk-vX.Y.Z` |
+| **Control Center desktop** | Tauri shell, embedded UI packaging, desktop-only fixes | `packages/control-center-desktop/package.json`, `src-tauri/Cargo.toml`, `tauri.conf.json` | `desktop-vX.Y.Z` |
+| **gRPC proto** | Additive or breaking RPC changes | `crates/spanda-api/proto/spanda/v1/control_center.proto` | *(no tag — pin via `GET /v1/version`)* |
 
-| Stream | Manifests | Release tag |
-|--------|-----------|-------------|
-| **Workspace / CLI** | `Cargo.toml` `[workspace.package].version`, root `package.json`, `editor/vscode/`, `packages/lsp`, `packages/native`, `packages/web` | `vX.Y.Z` |
-| **Rust SDK** | `crates/spanda-sdk/Cargo.toml` | `crates-sdk-vX.Y.Z` |
-| **Python SDK** | `sdk/python/pyproject.toml`, `packages/sdk-python/pyproject.toml` | `sdk-python-vX.Y.Z` |
-| **TypeScript SDK** | `sdk/typescript/package.json` | `npm-sdk-vX.Y.Z` |
-| **Control Center desktop** | `packages/control-center-desktop/package.json`, `src-tauri/Cargo.toml`, `tauri.conf.json` | `desktop-vX.Y.Z` |
-| **gRPC proto** | `crates/spanda-api/proto/spanda/v1/control_center.proto` | *(no tag — pin via `GET /v1/version`)* |
+**Rule:** Do **not** bump SDK or desktop when only the workspace changes, and vice versa. Streams may diverge (for example workspace `0.5.0`, SDK `0.5.1`, desktop `0.4.2`).
 
-**Rule:** On every workspace release (`patch`, `minor`, or `major`), bump **all five streams** to the same `X.Y.Z`, then push all five tags. SDK-only hotfixes without a workspace release are rare; prefer a workspace **patch** so versions stay aligned.
+## Semver component guide (per stream)
 
-## Semver component guide
+| Component | Increment when |
+|-----------|----------------|
+| **Patch** | Bug fixes, regressions, small non-breaking polish **within that stream's current release line** |
+| **Minor** | Substantial additive features for that stream, or a **roadmap milestone** for workspace |
+| **Major** | Breaking public contracts for that stream; workspace **v1.0** positioning |
 
-| Component | Increment when | Applies to |
-|-----------|----------------|------------|
-| **Patch** (`0.5.0` → `0.5.1`) | Bug fixes, regressions, docs-only releases, smoke hardening, small non-breaking CLI/SDK polish **within** the current roadmap release line | **All streams** |
-| **Minor** (`0.4.x` → `0.5.0`) | A **roadmap release milestone** completes (exit criteria met) or substantial additive platform features | **All streams** |
-| **Major** (`0.5.x` → `1.0.0`) | **v1.0 production positioning** or breaking language, `/v1` API, proto, or SDK contracts | **All streams** |
+### Workspace-specific milestones
 
-Pre-1.0: **minor** carries roadmap themes (`0.4` → `0.5` → …). Reserve **major** for v1.0 and explicit breaking-change releases.
+| Milestone / phase | Bump |
+|-------------------|------|
+| Bug fix in CLI / language / runtime | **patch** (workspace) |
+| Architecture hardening phase (no user-visible theme) | **patch** or defer |
+| **Roadmap release milestone** (v0.5, v1.0, …) | **minor** (workspace) |
+| Breaking language syntax or default CLI behavior | **major** (workspace) |
 
-## Milestone → bump mapping
+### SDK-specific
 
-| Milestone / phase | Bump | Streams |
-|-------------------|------|---------|
-| Single bug fix or regression | **patch** | All five |
-| Architecture / hardening phase (no new release theme) | **patch** or defer to next milestone | All five if releasing |
-| Stable tier promotion (within current release line) | **patch** | All five |
-| SDK/API parity (new REST/gRPC methods, no milestone) | **patch** | All five |
-| **Roadmap release milestone** exit criteria met (v0.5, v1.0, …) | **minor** | All five |
-| **Breaking** public contract | **major** | All five |
-| gRPC additive RPCs only | proto **minor** | Proto only (product streams unchanged unless shipping) |
+| Change | Bump |
+|--------|------|
+| New REST route wrappers / gRPC client methods (all three SDKs) | **minor** or **patch** |
+| SDK-only bug fix | **patch** |
+| Breaking public SDK API | **major** |
 
-### Current milestone status (2026-07-02)
+### Desktop-specific
 
-| Milestone | Version | Tags |
-|-----------|---------|------|
-| v0.4 — Deploy path | **0.4.0** | `v0.4.0` |
-| v0.5 — Beta credibility | **0.5.0** | `v0.5.0`, `crates-sdk-v0.5.0`, `sdk-python-v0.5.0`, `npm-sdk-v0.5.0`, `desktop-v0.5.0` |
+| Change | Bump |
+|--------|------|
+| Tauri shell, updater, packaging, desktop UI wiring | **patch** or **minor** |
+| Breaking desktop install/upgrade path | **major** |
 
-## Release workflow
-
-### 1. Prepare
-
-1. Ensure `CHANGELOG.md` has `[Unreleased]` entries for the milestone.
-2. Dry run:
+## Bump commands
 
 ```bash
-python3 scripts/bump_version.py minor --dry-run   # or patch / major
+# Workspace (CLI / platform) — updates CHANGELOG [Unreleased] → dated section
+python3 scripts/bump_version.py minor --dry-run
+python3 scripts/bump_version.py patch
+
+# Official SDKs only (Rust + Python + TypeScript together)
+python3 scripts/bump_version.py patch --stream sdk --dry-run
+python3 scripts/bump_version.py minor --stream sdk
+
+# Control Center desktop only
+python3 scripts/bump_version.py patch --stream desktop --dry-run
+python3 scripts/bump_version.py minor --stream desktop
 ```
 
-3. Verify desktop and SDK readiness:
+## Tag and push (only the stream you bumped)
 
 ```bash
-./scripts/verify_desktop_release_ready.sh
-./scripts/verify_sdk_publish_ready.sh
-```
+# Workspace release
+git tag v0.5.1 && git push origin v0.5.1
 
-### 2. Bump (local or CI)
+# SDK release (push all three tags)
+git tag crates-sdk-v0.5.1 sdk-python-v0.5.1 npm-sdk-v0.5.1
+git push origin crates-sdk-v0.5.1 sdk-python-v0.5.1 npm-sdk-v0.5.1
 
-```bash
-python3 scripts/bump_version.py minor
-```
-
-Or merge with label `release:minor` / `release:patch` / `release:major` (triggers **Auto release** → `scripts/bump_version.py`).
-
-### 3. Tag and push (all five streams)
-
-```bash
-git push origin main
-git tag v0.5.0 crates-sdk-v0.5.0 sdk-python-v0.5.0 npm-sdk-v0.5.0 desktop-v0.5.0
-git push origin v0.5.0 crates-sdk-v0.5.0 sdk-python-v0.5.0 npm-sdk-v0.5.0 desktop-v0.5.0
+# Desktop release
+git tag desktop-v0.5.1 && git push origin desktop-v0.5.1
 ```
 
 | Tag | Triggers |
@@ -90,18 +85,31 @@ git push origin v0.5.0 crates-sdk-v0.5.0 sdk-python-v0.5.0 npm-sdk-v0.5.0 deskto
 | `npm-sdk-vX.Y.Z` | [publish-sdk-typescript.yml](../.github/workflows/publish-sdk-typescript.yml) |
 | `desktop-vX.Y.Z` | [desktop-release.yml](../.github/workflows/desktop-release.yml) |
 
-## Checklist after a milestone
+Pre-release checks:
 
-- [ ] Choose bump level (patch / minor / major)
-- [ ] Run `python3 scripts/bump_version.py <component>`
-- [ ] Update `ROADMAP.md` **Current release**
-- [ ] Update `docs/feature-status.md` if tiers changed
-- [ ] Push **all five** release tags
-- [ ] Do not bump version in the same commit as unrelated WIP unless the milestone is complete
+```bash
+./scripts/verify_sdk_publish_ready.sh      # before SDK tags
+./scripts/verify_desktop_release_ready.sh  # before desktop tag
+```
+
+## Current versions (2026-07-02)
+
+| Stream | Version | Last tag |
+|--------|---------|----------|
+| Workspace / CLI | **0.5.0** | `v0.5.0` |
+| Official SDKs | **0.5.0** | `crates-sdk-v0.5.0`, `sdk-python-v0.5.0`, `npm-sdk-v0.5.0` |
+| Control Center desktop | **0.5.0** | `desktop-v0.5.0` |
+
+## Checklist
+
+- [ ] Identify which stream(s) actually changed
+- [ ] Bump **only** those streams (`--stream workspace|sdk|desktop`)
+- [ ] Add `CHANGELOG.md` notes for workspace releases; optional SDK/desktop notes under `[Unreleased]`
+- [ ] Push **only** the tag(s) for the stream you released
+- [ ] Do not bump a stream for unrelated work in another area
 
 ## Related docs
 
-- [CONTRIBUTING.md](../CONTRIBUTING.md#releases) — PR labels and CI auto release
-- [sdk-publishing.md](./sdk-publishing.md) — registry secrets and workflows
-- [desktop-release-runbook.md](./desktop-release-runbook.md) — Tauri signing and artifacts
-- [design-principles.md](./design-principles.md) — API surface versioning
+- [CONTRIBUTING.md](../CONTRIBUTING.md#releases) — workspace auto release via PR labels
+- [sdk-publishing.md](./sdk-publishing.md) — SDK registry secrets
+- [desktop-release-runbook.md](./desktop-release-runbook.md) — Tauri release

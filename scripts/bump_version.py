@@ -1,13 +1,17 @@
 #!/usr/bin/env python3
-"""Bump the Spanda workspace semver (major, minor, or patch).
+"""Bump Spanda semver for an independent release stream (major, minor, or patch).
 
-Updates Cargo.toml [workspace.package].version, npm package.json files,
-official SDK manifests (Rust, Python, TypeScript), Control Center desktop
-manifests, and finalizes CHANGELOG.md [Unreleased] into a dated release section.
+Each stream has its own version line — bump only the stream whose area changed.
+
+Streams:
+  workspace (default) — CLI, language, core platform (Cargo.toml, workspace npm, CHANGELOG)
+  sdk                 — official Rust/Python/TypeScript SDK manifests
+  desktop             — Control Center Tauri app (three manifests)
 
 Usage:
   python3 scripts/bump_version.py patch
-  python3 scripts/bump_version.py minor --dry-run
+  python3 scripts/bump_version.py minor --stream sdk --dry-run
+  python3 scripts/bump_version.py patch --stream desktop
   python3 scripts/bump_version.py major --github-output "$GITHUB_OUTPUT"
 """
 
@@ -645,25 +649,50 @@ def _set_json_version(path: Path, new_version: str) -> None:
     path.write_text(new_text, encoding="utf-8")
 
 
-def release_stream_paths() -> list[Path]:
-    paths = [SDK_RUST_CARGO, *SDK_PYTHON_PYPROJECTS, DESKTOP_TAURI_CARGO, DESKTOP_TAURI_CONF]
-    paths.extend(p for p in npm_package_json_paths() if p.parent == DESKTOP_DIR)
-    return paths
+def read_toml_package_version(path: Path) -> str:
+    for line in path.read_text(encoding="utf-8").splitlines():
+        match = re.match(r'^version\s*=\s*"([^"]+)"\s*$', line.strip())
+        if match:
+            return match.group(1)
+    raise SystemExit(f"could not find version in {path}")
 
 
-def write_release_stream_versions(new_version: str) -> None:
-    # Align official SDK and desktop manifests with the workspace release version.
+def read_json_version(path: Path) -> str:
+    for line in path.read_text(encoding="utf-8").splitlines():
+        match = re.match(r'^\s*"version"\s*:\s*"([^"]+)"', line)
+        if match:
+            return match.group(1)
+    raise SystemExit(f"could not find version in {path}")
+
+
+def read_stream_version(stream: str) -> str:
+    if stream == "workspace":
+        return read_workspace_version()
+    if stream == "sdk":
+        return read_toml_package_version(SDK_RUST_CARGO)
+    if stream == "desktop":
+        return read_json_version(DESKTOP_DIR / "package.json")
+    raise SystemExit(f"unknown stream: {stream!r}")
+
+
+def write_sdk_versions(new_version: str) -> None:
+    # Keep Rust, Python, and TypeScript SDK manifests on the same SDK semver.
     _set_toml_version(SDK_RUST_CARGO, new_version)
     for path in SDK_PYTHON_PYPROJECTS:
         if path.is_file():
             _set_pyproject_version(path, new_version)
+
+
+def write_desktop_versions(new_version: str) -> None:
+    _set_json_version(DESKTOP_DIR / "package.json", new_version)
     _set_toml_version(DESKTOP_TAURI_CARGO, new_version)
     _set_json_version(DESKTOP_TAURI_CONF, new_version)
 
 
-def refresh_sdk_typescript_version(new_version: str, dry_run: bool) -> None:
+def refresh_npm_package_version(package_dir: Path, new_version: str, dry_run: bool) -> None:
+    rel = package_dir.relative_to(ROOT)
     if dry_run:
-        print(f"would set {SDK_TYPESCRIPT_DIR.relative_to(ROOT)}/package.json version -> {new_version}")
+        print(f"would set {rel}/package.json version -> {new_version}")
         return
     subprocess.run(
         [
@@ -673,11 +702,25 @@ def refresh_sdk_typescript_version(new_version: str, dry_run: bool) -> None:
             "--no-git-tag-version",
             "--allow-same-version",
             "--prefix",
-            str(SDK_TYPESCRIPT_DIR),
+            str(package_dir),
         ],
         check=True,
         cwd=ROOT,
     )
+
+
+def stream_release_tags(stream: str, new_version: str) -> list[str]:
+    if stream == "workspace":
+        return [f"v{new_version}"]
+    if stream == "sdk":
+        return [
+            f"crates-sdk-v{new_version}",
+            f"sdk-python-v{new_version}",
+            f"npm-sdk-v{new_version}",
+        ]
+    if stream == "desktop":
+        return [f"desktop-v{new_version}"]
+    raise SystemExit(f"unknown stream: {stream!r}")
 
 
 def _unreleased_span(text: str) -> tuple[int, int]:
@@ -1375,7 +1418,11 @@ def npm_package_json_paths() -> list[Path]:
 
     """
     paths = [root / "package.json" for root in NPM_ROOTS]
-    paths.extend(sorted((ROOT / "packages").glob("*/package.json")))
+    for pkg in sorted((ROOT / "packages").glob("*/package.json")):
+        # Desktop ships on its own semver line (`--stream desktop`).
+        if pkg.parent.name == "control-center-desktop":
+            continue
+        paths.append(pkg)
     return paths
 
 
@@ -1807,6 +1854,12 @@ def parse_args() -> argparse.Namespace:
         help="semver component to increment",
     )
     parser.add_argument(
+        "--stream",
+        choices=("workspace", "sdk", "desktop"),
+        default="workspace",
+        help="release stream to bump (default: workspace)",
+    )
+    parser.add_argument(
         "--dry-run",
         action="store_true",
         help="print planned changes without writing files",
@@ -1931,39 +1984,58 @@ def main() -> None:
 
     """
     args = parse_args()
-    current = read_workspace_version()
+    stream = args.stream
+    current = read_stream_version(stream)
     new_version = bump_semver(current, args.component)
     release_date = date.today().isoformat()
+    tags = stream_release_tags(stream, new_version)
 
-    changelog_text = CHANGELOG.read_text(encoding="utf-8")
-    if not unreleased_has_content(changelog_text) and not args.allow_empty_changelog:
-        raise SystemExit(
-            "CHANGELOG.md: ## [Unreleased] is empty; add release notes or pass --allow-empty-changelog"
-        )
+    if stream == "workspace":
+        changelog_text = CHANGELOG.read_text(encoding="utf-8")
+        if not unreleased_has_content(changelog_text) and not args.allow_empty_changelog:
+            raise SystemExit(
+                "CHANGELOG.md: ## [Unreleased] is empty; add release notes or pass --allow-empty-changelog"
+            )
 
     if args.dry_run:
-        print(f"{current} -> {new_version} ({args.component})")
-        for path in npm_package_json_paths():
-            print(f"would set {path.relative_to(ROOT)} version -> {new_version}")
-        refresh_npm_versions(new_version, dry_run=True)
-        for path in release_stream_paths():
-            print(f"would set {path.relative_to(ROOT)} version -> {new_version}")
-        refresh_sdk_typescript_version(new_version, dry_run=True)
-        print(f"would update {CARGO_TOML.relative_to(ROOT)}")
-        print(f"would update {CHANGELOG.relative_to(ROOT)}")
-        print(f"  tags: v{new_version}, crates-sdk-v{new_version}, sdk-python-v{new_version}, "
-              f"npm-sdk-v{new_version}, desktop-v{new_version}")
+        print(f"[{stream}] {current} -> {new_version} ({args.component})")
+        if stream == "workspace":
+            for path in npm_package_json_paths():
+                print(f"would set {path.relative_to(ROOT)} version -> {new_version}")
+            refresh_npm_versions(new_version, dry_run=True)
+            print(f"would update {CARGO_TOML.relative_to(ROOT)}")
+            print(f"would update {CHANGELOG.relative_to(ROOT)}")
+        elif stream == "sdk":
+            for path in [SDK_RUST_CARGO, *SDK_PYTHON_PYPROJECTS]:
+                if path.is_file():
+                    print(f"would set {path.relative_to(ROOT)} version -> {new_version}")
+            refresh_npm_package_version(SDK_TYPESCRIPT_DIR, new_version, dry_run=True)
+        elif stream == "desktop":
+            for path in [
+                DESKTOP_DIR / "package.json",
+                DESKTOP_TAURI_CARGO,
+                DESKTOP_TAURI_CONF,
+            ]:
+                print(f"would set {path.relative_to(ROOT)} version -> {new_version}")
+            refresh_npm_package_version(DESKTOP_DIR, new_version, dry_run=True)
+        print(f"  tags: {', '.join(tags)}")
         return
 
-    write_workspace_version(new_version)
-    refresh_npm_versions(new_version, dry_run=False)
-    write_release_stream_versions(new_version)
-    refresh_sdk_typescript_version(new_version, dry_run=False)
-    bump_changelog(new_version, release_date, allow_empty=args.allow_empty_changelog)
+    if stream == "workspace":
+        write_workspace_version(new_version)
+        refresh_npm_versions(new_version, dry_run=False)
+        bump_changelog(new_version, release_date, allow_empty=args.allow_empty_changelog)
+    elif stream == "sdk":
+        write_sdk_versions(new_version)
+        refresh_npm_package_version(SDK_TYPESCRIPT_DIR, new_version, dry_run=False)
+    elif stream == "desktop":
+        write_desktop_versions(new_version)
+        refresh_npm_package_version(DESKTOP_DIR, new_version, dry_run=False)
+
     write_github_output(args.github_output, "version", new_version)
-    print(f"✓ bumped {current} -> {new_version}")
-    print(f"  tags: v{new_version}, crates-sdk-v{new_version}, sdk-python-v{new_version}, "
-          f"npm-sdk-v{new_version}, desktop-v{new_version}")
+    write_github_output(args.github_output, "stream", stream)
+    print(f"✓ bumped [{stream}] {current} -> {new_version}")
+    print(f"  tags: {', '.join(tags)}")
 
 
 if __name__ == "__main__":

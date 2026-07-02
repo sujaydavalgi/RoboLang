@@ -235,7 +235,7 @@ spanda verify examples/your_example.sd     # if it has deploy targets
 
 Spanda uses [Semantic Versioning](https://semver.org/). User-facing changes belong in `CHANGELOG.md` under `## [Unreleased]` in the same PR as the feature or fix.
 
-**When to bump:** See [docs/versioning.md](docs/versioning.md) — all product streams (workspace, SDKs, desktop) share the same semver and bump together on patch, minor, or major releases.
+**When to bump:** See [docs/versioning.md](docs/versioning.md) — each stream (workspace, SDKs, desktop) has its own semver; bump **only** the stream whose area changed.
 
 ### Automatic releases (preferred)
 
@@ -247,7 +247,7 @@ After CI passes on `main`, the **Auto release** workflow bumps the workspace ver
 | `release:minor` | Roadmap release milestone complete (v0.5, …) or substantial additive platform release |
 | `release:patch` | Bug fixes, stable promotions, and small updates within the current release line |
 
-Create the labels in the GitHub repo if they do not exist yet (`release:major`, `release:minor`, `release:patch`). Apply **one** release label before merging. The workflow pushes five tags (`v*`, `crates-sdk-v*`, `sdk-python-v*`, `npm-sdk-v*`, `desktop-v*`) that trigger CLI, SDK, and desktop release workflows.
+Create the labels in the GitHub repo if they do not exist yet (`release:major`, `release:minor`, `release:patch`). Apply **one** release label before merging. The workflow bumps **workspace only** and pushes a `v*` tag that triggers cargo-dist **Release**. SDK and desktop releases use `--stream sdk` / `--stream desktop` locally and their own tags — see [docs/versioning.md](docs/versioning.md).
 
 ### Manual release
 

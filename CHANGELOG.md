@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- **Release v0.5.0:** Unified semver across workspace, official SDKs (Rust/Python/TypeScript), and Control Center desktop — v0.5 beta credibility milestone.
+- **Release v0.5.0:** Workspace semver bump for v0.5 beta credibility milestone (differentiation exit criteria, distributed decisions, plugins, stable tier promotions). SDK and desktop streams use independent semver — see [docs/versioning.md](docs/versioning.md).
 
 ### Added
 

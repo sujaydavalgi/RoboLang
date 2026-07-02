@@ -2,7 +2,7 @@
 
 How to publish **Spanda Rust, Python, and TypeScript** SDKs from this repository using GitHub Actions.
 
-**Version policy:** SDK, desktop, and workspace share the same semver — see [versioning.md](./versioning.md). `python3 scripts/bump_version.py` updates all manifests; push all five tags together (`v*`, `crates-sdk-v*`, `sdk-python-v*`, `npm-sdk-v*`, `desktop-v*`).
+**Version policy:** SDKs use an **independent semver line** from workspace and desktop — bump with `python3 scripts/bump_version.py patch --stream sdk` only when SDK client APIs change. See [versioning.md](./versioning.md).
 
 ## Packages and registries
 
@@ -12,13 +12,13 @@ How to publish **Spanda Rust, Python, and TypeScript** SDKs from this repository
 | Python | `sdk/python/` | [`spanda-sdk`](https://pypi.org/project/spanda-sdk/) | `sdk-python-vX.Y.Z` |
 | TypeScript | `sdk/typescript/` | [`@davalgi-spanda/sdk`](https://www.npmjs.com/package/@davalgi-spanda/sdk) | `npm-sdk-vX.Y.Z` |
 
-Version numbers live in (updated together by `scripts/bump_version.py`):
+Version numbers live in (bump together via `--stream sdk`):
 
 - `crates/spanda-sdk/Cargo.toml` → `version`
 - `sdk/python/pyproject.toml` → `[project].version`
 - `sdk/typescript/package.json` → `"version"`
 
-Tag suffix must match the version you intend to ship (for example `sdk-python-v0.5.0` when `version = "0.5.0"`).
+Tag suffix must match the SDK version (for example `sdk-python-v0.5.1` when SDK `version = "0.5.1"`).
 
 ### Control Center desktop (GitHub Releases)
 

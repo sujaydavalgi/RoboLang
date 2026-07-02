@@ -1006,7 +1006,7 @@ Maturity-based horizons — **not arbitrary calendar dates**.
 
 ## Release milestones
 
-Version bump policy: [docs/versioning.md](docs/versioning.md). Bump **minor** when a milestone’s exit criteria are met; **patch** for fixes and in-line stable promotions; **major** for v1.0 or breaking contracts.
+Version bump policy: [docs/versioning.md](docs/versioning.md). Each stream (workspace, SDK, desktop) bumps independently when its area changes.
 
 ### v0.4 — Deploy path
 
