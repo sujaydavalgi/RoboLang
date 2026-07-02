@@ -251,6 +251,26 @@ pub const REST_V1_ROUTES: &[ApiRoute] = &[
         path: "/v1/entities/{id}/trust",
     },
     ApiRoute {
+        method: "GET",
+        path: "/v1/entities/{id}/decisions",
+    },
+    ApiRoute {
+        method: "GET",
+        path: "/v1/decisions",
+    },
+    ApiRoute {
+        method: "POST",
+        path: "/v1/decisions/simulate",
+    },
+    ApiRoute {
+        method: "POST",
+        path: "/v1/decisions/escalate",
+    },
+    ApiRoute {
+        method: "GET",
+        path: "/v1/decision-policies",
+    },
+    ApiRoute {
         method: "POST",
         path: "/v1/programs/readiness",
     },

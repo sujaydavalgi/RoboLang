@@ -1828,6 +1828,12 @@ fn main() {
         return;
     }
 
+    if command == "decision" {
+        decision_cli::decision_dispatch(&args[2..]);
+        let _ = io::stdout().flush();
+        return;
+    }
+
     if command == "recover" {
         recovery_cli::cmd_recover(&args[2..]);
         let _ = io::stdout().flush();
@@ -2420,6 +2426,11 @@ fn main() {
                     trace_providers: trace_providers || trace_realtime,
                     trace_realtime,
                     record_trace: record_trace || (command == "sim" && replay_trace),
+                    decision_trace: record_trace
+                        || (command == "sim" && replay_trace)
+                        || std::env::var("SPANDA_DECISION_TRACE")
+                            .map(|v| matches!(v.as_str(), "1" | "true" | "yes" | "on"))
+                            .unwrap_or(false),
                     trace_source: Some(file.clone()),
                     trace_output,
                     metrics_json,

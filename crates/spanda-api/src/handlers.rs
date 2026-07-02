@@ -288,6 +288,16 @@ pub fn handle_request(
         ("/v1/fleets", "GET") => fleets_list(state),
         ("/v1/device-tree", "GET") => device_tree_get(state),
         ("/v1/readiness/run", "POST") => readiness_run(state, &request.body),
+        ("/v1/decisions", "GET") => crate::decision_ops::list_decisions(state, query),
+        ("/v1/decisions/simulate", "POST") => {
+            crate::decision_ops::simulate_decisions(state, &request.body)
+        }
+        ("/v1/decisions/escalate", "POST") => {
+            crate::decision_ops::escalate_decision(state, &request.body)
+        }
+        ("/v1/decision-policies", "GET") => {
+            crate::decision_ops::list_decision_policies(state, query)
+        }
         ("/v1/device-reports", "GET") => device_reports_get(state),
         ("/v1/failover/chains", "GET") => failover_chains_get(state),
         ("/v1/devices", "GET") => devices_list(state),
@@ -962,6 +972,9 @@ fn route_sdk_entities(
             ("health", "GET") => Some(crate::sdk_ops::entity_health(state, entity_id)),
             ("readiness", "GET") => Some(crate::sdk_ops::entity_readiness(state, entity_id)),
             ("trust", "GET") => Some(crate::sdk_ops::entity_trust(state, entity_id)),
+            ("decisions", "GET") => {
+                Some(crate::decision_ops::entity_decisions(state, entity_id, query))
+            }
             ("verify", "POST") => Some(crate::sdk_ops::entity_verify(state, entity_id, body)),
             ("relationships", "GET") => {
                 Some(crate::sdk_ops::entity_relationships(state, entity_id))

@@ -284,6 +284,31 @@ impl SpandaClient {
         Ok(TrustReport { raw: value })
     }
 
+    /// Distributed decision report for an entity.
+    pub fn get_entity_decisions(&self, id: &str) -> SpandaResult<Value> {
+        self.request("GET", &format!("/v1/entities/{id}/decisions"), None, false)
+    }
+
+    /// List decision architecture (authorities, trees, offline policies).
+    pub fn list_decisions(&self) -> SpandaResult<Value> {
+        self.request("GET", "/v1/decisions", None, false)
+    }
+
+    /// Simulate distributed decisions under failure scenarios.
+    pub fn simulate_decision(&self, body: &Value) -> SpandaResult<Value> {
+        self.request("POST", "/v1/decisions/simulate", Some(body), false)
+    }
+
+    /// Approve a pending decision escalation.
+    pub fn approve_escalation(&self, body: &Value) -> SpandaResult<Value> {
+        self.request("POST", "/v1/decisions/escalate", Some(body), true)
+    }
+
+    /// List decision policies from the loaded program.
+    pub fn list_decision_policies(&self) -> SpandaResult<Value> {
+        self.request("GET", "/v1/decision-policies", None, false)
+    }
+
     /// Unified verification for any entity kind (hardware, mission, fleet, device pool).
     pub fn entity_verify(&self, id: &str, body: Option<&Value>) -> SpandaResult<Value> {
         self.request("POST", &format!("/v1/entities/{id}/verify"), body, false)

@@ -79,6 +79,7 @@ type Tab =
   | "sre"
   | "compliance"
   | "audit"
+  | "decisions"
   | "digital-thread"
   | "adas"
   | "humans"
@@ -142,6 +143,7 @@ export function ControlCenterPanel({ apiBase }: Props) {
     { name: string; description?: string; verified?: boolean }[]
   >([]);
   const [auditData, setAuditData] = useState<Record<string, unknown> | null>(null);
+  const [decisionData, setDecisionData] = useState<Record<string, unknown> | null>(null);
   const [scorecard, setScorecard] = useState<Record<string, unknown> | null>(null);
   const [digitalThread, setDigitalThread] = useState<Record<string, unknown> | null>(null);
   const [threadCapabilityFilter, setThreadCapabilityFilter] = useState("");
@@ -489,6 +491,7 @@ export function ControlCenterPanel({ apiBase }: Props) {
     if (tab === "ota") void loadOta();
     if (tab === "compliance") void loadComplianceProfiles();
     if (tab === "audit") void loadAudit();
+    if (tab === "decisions") void loadDecisions();
     if (tab === "executive") void loadExecutive();
     if (tab === "digital-thread") void loadDigitalThread();
     if (tab === "entities") void loadEntities();
@@ -983,6 +986,23 @@ export function ControlCenterPanel({ apiBase }: Props) {
     }
   };
 
+  const loadDecisions = async () => {
+    setBusy(true);
+    try {
+      const [listRes, policiesRes] = await Promise.all([
+        fetch(`${base}/v1/decisions`),
+        fetch(`${base}/v1/decision-policies`),
+      ]);
+      const list = listRes.ok ? await listRes.json() : null;
+      const policies = policiesRes.ok ? await policiesRes.json() : null;
+      setDecisionData({ list, policies });
+    } catch (e) {
+      setError(String(e));
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const loadExecutive = async () => {
     setBusy(true);
     try {
@@ -1085,6 +1105,7 @@ export function ControlCenterPanel({ apiBase }: Props) {
     "sre",
     "compliance",
     "audit",
+    "decisions",
     "digital-thread",
     "adas",
     "humans",
@@ -1599,6 +1620,26 @@ export function ControlCenterPanel({ apiBase }: Props) {
             Load mutation audit
           </button>
           {auditData && <pre>{JSON.stringify(auditData, null, 2)}</pre>}
+        </div>
+      )}
+
+      {tab === "decisions" && (
+        <div>
+          <p className="demo-hint">
+            Distributed decision architecture — local authorities, decision trees, offline policies,
+            escalations, and policy versions.
+          </p>
+          <button type="button" onClick={() => void loadDecisions()} disabled={busy}>
+            Refresh decisions
+          </button>
+          {decisionData && (
+            <>
+              <h3>Decision architecture</h3>
+              <pre>{JSON.stringify(decisionData.list, null, 2)}</pre>
+              <h3>Decision policies</h3>
+              <pre>{JSON.stringify(decisionData.policies, null, 2)}</pre>
+            </>
+          )}
         </div>
       )}
 

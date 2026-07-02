@@ -16,6 +16,7 @@ spanda-audit = { path = "../spanda-audit" }
 spanda-certify = { path = "../spanda-certify" }
 spanda-compliance = { path = "../spanda-compliance" }
 spanda-config = { path = "../spanda-config" }
+spanda-decision = { path = "../spanda-decision" }
 spanda-deploy-http = { path = "../spanda-deploy-http" }
 spanda-fleet = { path = "../spanda-fleet" }
 spanda-graph = { path = "../spanda-graph" }
