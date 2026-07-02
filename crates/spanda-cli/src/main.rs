@@ -32,6 +32,7 @@ mod integrity_cli;
 mod network_cli;
 mod package;
 mod plugin_cli;
+mod plugin_runtime;
 mod provider_runtime;
 mod readiness_cli;
 mod recovery_cli;
@@ -1514,6 +1515,12 @@ fn main() {
         usage();
         process::exit(if args.len() < 2 { 1 } else { 0 });
     }
+
+    if args.len() >= 3 && plugin_cli::try_dispatch_namespaced_command(&args[1..]) {
+        let _ = io::stdout().flush();
+        return;
+    }
+
     let command = args[1].as_str();
 
     if command == "demo" {

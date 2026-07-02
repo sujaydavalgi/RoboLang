@@ -50,6 +50,7 @@ spanda-readiness = { path = "../spanda-readiness" }
 spanda-config = { path = "../spanda-config" }
 spanda-runtime-faults = { path = "../spanda-runtime-faults" }
 spanda-assurance = { path = "../spanda-assurance", features = ["certify-runtime"] }
+spanda-audit = { path = "../spanda-audit" }
 spanda-contract = { path = "../spanda-contract" }
 spanda-explain = { path = "../spanda-explain" }
 spanda-graph = { path = "../spanda-graph" }
@@ -74,7 +75,7 @@ spanda-llvm = { path = "../spanda-llvm", optional = true }
 spanda-modules = { path = "../spanda-modules" }
 spanda-ota = { path = "../spanda-ota" }
 spanda-package = { path = "../spanda-package" }
-spanda-plugin = { path = "../spanda-plugin" }
+spanda-plugin = { path = "../spanda-plugin", features = ["wasm-loader", "api-host"] }
 spanda-parser = { path = "../spanda-parser" }
 spanda-providers = { path = "../spanda-providers" }
 spanda-runtime = { path = "../spanda-runtime" }

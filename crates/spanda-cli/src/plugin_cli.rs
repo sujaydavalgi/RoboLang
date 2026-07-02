@@ -98,40 +98,62 @@ fn cmd_install(args: &[String]) {
         }
         i += 1;
     }
-    let source = if let Some(p) = path {
-        p
-    } else if let Some(name) = &name {
-        if std::path::Path::new(name).is_dir() {
-            PathBuf::from(name)
-        } else if let Some(entry) = lookup_plugin_entry(name) {
-            let examples = resolve_project_root().ancestors().find_map(|root| {
-                let slug = name
-                    .strip_prefix("spanda-plugin-")
-                    .unwrap_or(name.as_str())
-                    .replace('-', "_");
-                let candidate = root.join("examples/plugins").join(slug);
-                if candidate.is_dir() {
-                    Some(candidate)
-                } else {
-                    None
-                }
-            });
-            examples.unwrap_or_else(|| {
-                eprintln!(
-                    "Plugin '{name}' found in registry ({}). Provide --path for local install.",
-                    entry.latest_version().unwrap_or("?")
-                );
-                process::exit(1);
-            })
-        } else {
-            eprintln!("Plugin not found in registry: {name}. Use --path <dir>.");
-            process::exit(1);
-        }
-    } else {
+
+    if let Some(p) = path {
+        install_from_path(p, approve_dangerous);
+        return;
+    }
+
+    let Some(name) = name else {
         eprintln!("Missing plugin name or --path <dir>");
         process::exit(1);
     };
 
+    if std::path::Path::new(&name).is_dir() {
+        install_from_path(PathBuf::from(&name), approve_dangerous);
+        return;
+    }
+
+    if lookup_plugin_entry(&name).is_some() {
+        let mut manager = open_manager();
+        let root = resolve_project_root();
+        match manager.install_from_registry(&name, None, &root, approve_dangerous) {
+            Ok(record) => {
+                println!(
+                    "✓ Installed plugin {}@{} ({})",
+                    record.name, record.version, record.plugin_type
+                );
+                return;
+            }
+            Err(err) => {
+                eprintln!("Registry install failed ({err}); trying local example path…");
+            }
+        }
+    }
+
+    let examples = resolve_project_root().ancestors().find_map(|root| {
+        let slug = name
+            .strip_prefix("spanda-plugin-")
+            .unwrap_or(name.as_str())
+            .replace('-', "_");
+        let candidate = root.join("examples/plugins").join(&slug);
+        if candidate.is_dir() {
+            Some(candidate)
+        } else {
+            None
+        }
+    });
+
+    if let Some(source) = examples {
+        install_from_path(source, approve_dangerous);
+        return;
+    }
+
+    eprintln!("Plugin not found: {name}. Use --path <dir> or install from registry.");
+    process::exit(1);
+}
+
+fn install_from_path(source: PathBuf, approve_dangerous: bool) {
     let mut manager = open_manager();
     let host_version = manager.host_version().to_string();
     match manager
@@ -146,6 +168,37 @@ fn cmd_install(args: &[String]) {
         }
         Err(e) => {
             eprintln!("Install failed: {e}");
+            process::exit(1);
+        }
+    }
+}
+
+/// Dispatch `spanda <namespace> <command> …` when an enabled plugin declares the command.
+pub fn try_dispatch_namespaced_command(args: &[String]) -> bool {
+    if args.len() < 2 {
+        return false;
+    }
+    let namespace = args[0].as_str();
+    let command = args[1].as_str();
+    let rest: Vec<String> = args[2..].to_vec();
+    let mut manager = open_manager();
+    match manager.run_cli_command(namespace, command, &rest) {
+        Ok(Some(result)) => {
+            if let Some(output) = result.output {
+                println!(
+                    "{}",
+                    serde_json::to_string_pretty(&output).unwrap_or_else(|_| output.to_string())
+                );
+            } else if let Some(message) = result.message {
+                println!("{message}");
+            } else {
+                println!("✓ Plugin command {namespace} {command} completed");
+            }
+            true
+        }
+        Ok(None) => false,
+        Err(err) => {
+            eprintln!("Plugin command failed: {err}");
             process::exit(1);
         }
     }
