@@ -13,7 +13,7 @@ spanda twin mission (local)                In-memory snapshot store (dev)
 GET /v1/analytics/mission-twin             GET /v1/twins/{id}
 ```
 
-Production deployments point `SPANDA_TWIN_CLOUD_URL` at a hosted Control Center or dedicated twin-cloud service. The open-source Control Center embeds the **Twin Cloud backend** for development and field pilots.
+Production deployments point `SPANDA_TWIN_CLOUD_URL` at a hosted Control Center or dedicated twin-cloud service. The open-source Control Center embeds the **Twin Cloud backend** for development and field pilots. Snapshots persist to `.spanda/control-center-twins.json` (override with `SPANDA_CONTROL_CENTER_STATE_DIR`).
 
 ## Environment
 
@@ -51,6 +51,15 @@ spanda twin cloud pull patrol --out patrol-twin.json
 ## Registry package
 
 `packages/registry/spanda-twin-cloud` — import surface for Spanda programs (`import twin.cloud`).
+
+## SDK (0.5.3)
+
+Rust (`spanda-sdk`), Python (`spanda_sdk`), and TypeScript (`@davalgi/spanda-sdk`) expose:
+
+- `list_twins` / `listTwins`
+- `get_twin` / `getTwin`
+- `sync_twin` / `syncTwin`
+- `push_twin_snapshot` / `pushTwinSnapshot`
 
 ## Tests
 

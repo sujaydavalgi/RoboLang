@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Recovery Orchestrator CI:** `scripts/recovery_orchestrator_smoke.sh`, `scripts/recovery_orchestrator_stable_promotion_gate.sh`; wired into `scripts/showcase_smoke.sh`; [stable-hardening-recovery-orchestrator.md](docs/stable-hardening-recovery-orchestrator.md).
+- **Twin Cloud persistence:** snapshots saved to `control-center-twins.json`; survive Control Center restart.
+- **Twin Cloud SDK (0.5.3):** `list_twins`, `get_twin`, `sync_twin`, `push_twin_snapshot` in Rust/Python/TypeScript SDKs.
+- **Control Center Twin Cloud tab:** list and sync twins in UI (`/v1/twins`).
+
 ## [0.6.0] - 2026-07-02
 
 ### Added
