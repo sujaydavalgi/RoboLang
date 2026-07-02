@@ -21,6 +21,7 @@ pub mod forecast;
 pub mod gates;
 pub mod human;
 pub mod mission;
+pub mod mission_twin;
 pub mod platform_events;
 pub mod report;
 pub mod root_cause;
@@ -30,6 +31,7 @@ pub mod safety_coverage;
 pub mod safety_report;
 pub mod spans;
 pub mod target;
+pub mod teaming;
 pub mod traceability;
 pub mod trends;
 pub mod twin;
@@ -67,6 +69,10 @@ pub use human::{
     HumanReadinessReport, HumanReadinessWeights,
 };
 pub use mission::{verify_mission, verify_mission_source, MissionVerificationReport};
+pub use mission_twin::{
+    evaluate_mission_twin, format_mission_twin, MissionRiskModel, MissionStateModel,
+    MissionTwinReport,
+};
 pub use platform_events::{
     record_entity_health_platform_events, record_readiness_platform_event,
     reset_health_status_cache_for_tests, reset_platform_event_caches_for_tests,
@@ -86,6 +92,7 @@ pub use safety_coverage::{
 };
 pub use safety_report::{generate_safety_report, generate_safety_report_source, SafetyCaseReport};
 pub use target::{default_deploy_target, readiness_options_from_flags};
+pub use teaming::{evaluate_human_teaming, format_human_teaming, HumanEscalation, HumanTeamingReport};
 pub use traceability::{readiness_traceability, ReadinessTraceRow};
 pub use trends::{
     analyze_readiness_trends, default_readiness_history_path, format_readiness_trends,

@@ -1,0 +1,42 @@
+// Digital mission twin showcase.
+//
+//   spanda twin mission examples/showcase/mission_twin/patrol.sd
+//   spanda twin mission examples/showcase/mission_twin/patrol.sd --json
+
+hardware RoverV1 {
+  sensors [ GPS, Lidar ];
+  actuators [ DifferentialDrive ];
+}
+
+mission_plan PatrolPlan {
+    step depart_dock;
+    step patrol_aisle;
+    step return_dock;
+}
+
+robot Rover {
+  uses hardware RoverV1;
+  sensor gps: GPS;
+  sensor lidar: Lidar;
+  actuator wheels: DifferentialDrive;
+
+  exposes capabilities [ gps_navigation, obstacle_avoidance ];
+
+  mission Patrol {
+    requires capabilities [ gps_navigation, obstacle_avoidance ];
+    patrol_loop;
+  }
+
+  safety {
+    max_speed = 0.8 m/s;
+    stop_if lidar.nearest_distance < 0.5 m;
+  }
+
+  behavior patrol_loop() {
+    loop every 100ms {
+      wheels.drive(linear: 0.2 m/s, angular: 0.0 rad/s);
+    }
+  }
+}
+
+deploy Rover to RoverV1;

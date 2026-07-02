@@ -14,9 +14,10 @@ use spanda_ota::{
 use spanda_parser::parse;
 use spanda_readiness::{
     analyze_failure, analyze_readiness_trends, audit_program, build_runtime_context_with_config,
-    default_readiness_history_path, evaluate_fleet_readiness, evaluate_readiness_forecast,
-    evaluate_readiness_with_runtime, evaluate_safety_coverage, evaluate_twin_readiness, format_audit,
-    format_failure_analysis, format_fleet_readiness, format_mission_verification, format_readiness,
+    default_readiness_history_path, evaluate_fleet_readiness, evaluate_mission_twin,
+    evaluate_readiness_forecast, evaluate_readiness_with_runtime, evaluate_safety_coverage,
+    evaluate_twin_readiness, format_audit, format_failure_analysis, format_fleet_readiness,
+    format_mission_twin, format_mission_verification, format_readiness,
     format_readiness_forecast, format_readiness_trends, format_safety_coverage, format_safety_report,
     generate_safety_report, load_readiness_history, parse_forecast_horizon,
     readiness_options_from_flags, record_readiness_snapshot, verify_approvals, verify_fleet,
@@ -1010,6 +1011,23 @@ pub fn cmd_readiness_forecast(args: &[String]) {
     if report.predictions.iter().any(|p| p.risk_warning) {
         process::exit(1);
     }
+}
+
+/// `spanda twin mission <file.sd> [--json]`
+pub fn cmd_mission_twin(args: &[String]) {
+    let json = args.iter().any(|a| a == "--json");
+    let file = args
+        .iter()
+        .find(|a| !a.starts_with('-'))
+        .cloned()
+        .unwrap_or_else(|| {
+            eprintln!("Usage: spanda twin mission <file.sd> [--json]");
+            process::exit(1);
+        });
+    let source = read_file(&file);
+    let program = parse_program(&source);
+    let report = evaluate_mission_twin(&program, &file);
+    println!("{}", format_mission_twin(&report, json));
 }
 
 /// Top-level readiness dispatch for subcommands.
