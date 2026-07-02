@@ -3,8 +3,14 @@
 use crate::correlation::TraceLog;
 use crate::state::ControlCenterState;
 use spanda_ops::{Alert, AlertStore, Incident, IncidentStore};
+use spanda_twin_cloud::TwinCloudSnapshot;
 use std::fs;
 use std::path::{Path, PathBuf};
+
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
+struct PersistedTwins {
+    snapshots: Vec<TwinCloudSnapshot>,
+}
 
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
 struct PersistedAlerts {
@@ -43,6 +49,10 @@ fn incidents_path(dir: &Path) -> PathBuf {
     dir.join("control-center-incidents.json")
 }
 
+fn twins_path(dir: &Path) -> PathBuf {
+    dir.join("control-center-twins.json")
+}
+
 /// Load alerts and traces from disk into runtime state.
 pub fn hydrate_runtime_state(state: &mut ControlCenterState) {
     let dir = default_state_dir();
@@ -60,6 +70,11 @@ pub fn hydrate_runtime_state(state: &mut ControlCenterState) {
         if let Ok(persisted) = serde_json::from_str::<PersistedIncidents>(&content) {
             state.incident_store =
                 IncidentStore::from_records(persisted.max_entries, persisted.incidents);
+        }
+    }
+    if let Ok(content) = fs::read_to_string(twins_path(&dir)) {
+        if let Ok(persisted) = serde_json::from_str::<PersistedTwins>(&content) {
+            state.twin_cloud_store = spanda_twin_cloud::TwinCloudStore::from_records(persisted.snapshots);
         }
     }
     crate::drift_scheduler::hydrate_drift_scans(state);
@@ -95,6 +110,14 @@ pub fn persist_runtime_state(state: &ControlCenterState) -> Result<(), String> {
     fs::write(
         incidents_path(&dir),
         serde_json::to_string_pretty(&incidents).map_err(|error| error.to_string())?,
+    )
+    .map_err(|error| error.to_string())?;
+    let twins = PersistedTwins {
+        snapshots: state.twin_cloud_store.list_owned(),
+    };
+    fs::write(
+        twins_path(&dir),
+        serde_json::to_string_pretty(&twins).map_err(|error| error.to_string())?,
     )
     .map_err(|error| error.to_string())?;
     Ok(())

@@ -1,6 +1,7 @@
 //! Twin Cloud SaaS REST handlers — mission twin snapshot registry.
 
 use crate::handlers::{bad_request, json_ok, parse_query};
+use crate::persistence::persist_runtime_state;
 use crate::program::parse_program_file;
 use crate::state::ControlCenterState;
 use spanda_deploy_http::HttpResponse;
@@ -72,6 +73,7 @@ fn push_snapshot(state: &mut ControlCenterState, twin_id: &str, body: &str) -> H
         snapshot.tenant_id = state.tenant_id.clone();
     }
     let stored = state.twin_cloud_store.upsert(snapshot);
+    let _ = persist_runtime_state(state);
     json_ok(&TwinCloudSyncResponse {
         version: TWIN_CLOUD_API_VERSION.into(),
         twin_id: stored.twin_id.clone(),
@@ -89,6 +91,7 @@ fn sync_twin(state: &mut ControlCenterState, query: &str) -> HttpResponse {
     };
     let snapshot = build_snapshot_from_program(&program, &label, twin_id, state.tenant_id.as_str());
     let stored = state.twin_cloud_store.upsert(snapshot);
+    let _ = persist_runtime_state(state);
     json_ok(&TwinCloudSyncResponse {
         version: TWIN_CLOUD_API_VERSION.into(),
         twin_id: stored.twin_id.clone(),

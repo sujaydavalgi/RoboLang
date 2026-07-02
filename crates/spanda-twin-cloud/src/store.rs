@@ -14,6 +14,15 @@ impl TwinCloudStore {
         Self::default()
     }
 
+    /// Rebuild store from persisted snapshot records.
+    pub fn from_records(snapshots: Vec<TwinCloudSnapshot>) -> Self {
+        let mut store = Self::new();
+        for snapshot in snapshots {
+            store.upsert(snapshot);
+        }
+        store
+    }
+
     pub fn upsert(&mut self, snapshot: TwinCloudSnapshot) -> TwinCloudSnapshot {
         let twin_id = snapshot.twin_id.clone();
         self.latest.insert(twin_id, snapshot.clone());
@@ -37,5 +46,10 @@ impl TwinCloudStore {
             version: TWIN_CLOUD_API_VERSION.into(),
             twins: self.list(tenant_id),
         }
+    }
+
+    /// Clone all stored snapshots for persistence.
+    pub fn list_owned(&self) -> Vec<TwinCloudSnapshot> {
+        self.latest.values().cloned().collect()
     }
 }

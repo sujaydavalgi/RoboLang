@@ -6,6 +6,7 @@ use spanda_api::state::ControlCenterState;
 use spanda_deploy_http::HttpRequest;
 use spanda_ops::{Alert, AlertSeverity, AlertType};
 use spanda_security::{ApiKeyStore, Role};
+use std::path::PathBuf;
 use std::sync::Mutex;
 use tempfile::TempDir;
 
@@ -84,6 +85,40 @@ fn runtime_state_persists_alerts_and_traces() {
     assert_eq!(reloaded.alert_store.list_owned().len(), 1);
     assert_eq!(reloaded.trace_log.list_owned().len(), 1);
     assert_eq!(reloaded.alert_store.list_owned()[0].id, "persist-alert-1");
+}
+
+#[test]
+fn runtime_state_persists_twin_cloud_snapshots() {
+    let _guard = ENV_TEST_LOCK.lock().unwrap();
+    let dir = TempDir::new().expect("temp dir");
+    std::env::set_var(
+        "SPANDA_CONTROL_CENTER_STATE_DIR",
+        dir.path().to_string_lossy().to_string(),
+    );
+
+    let program = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("../../examples/showcase/mission_twin/patrol.sd");
+    let mut state = ControlCenterState::new();
+    state.program_path = Some(program);
+    let (response, _) = handle_request(
+        &mut state,
+        &HttpRequest {
+            method: "POST".into(),
+            path: "/v1/twins/sync".into(),
+            body: "{}".into(),
+            authorization: None,
+        },
+        "",
+    );
+    assert_eq!(response.status, 200, "{}", response.body);
+    persist_runtime_state(&state).expect("persist");
+
+    let reloaded = ControlCenterState::new();
+    assert_eq!(reloaded.twin_cloud_store.list_owned().len(), 1);
+    assert_eq!(
+        reloaded.twin_cloud_store.get("patrol").expect("patrol").twin_id,
+        "patrol"
+    );
 }
 
 #[test]
