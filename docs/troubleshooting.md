@@ -248,7 +248,10 @@ Manual dev key: `export SPANDA_API_KEY="my-local-dev-key"`. Same value as `Autho
 | Issue | What to try |
 |-------|-------------|
 | Port already in use | `spanda control-center status --discover`; stop orphans with `spanda control-center stop`, or `--bind 127.0.0.1:9090` for a new server |
-| Mutations 401/403 | Set `SPANDA_API_KEY` on server; paste token in embedded UI banner |
+| Mutations 401/403 | Set `SPANDA_API_KEY` or `SPANDA_API_KEYS_FILE` on server; paste token in embedded UI banner |
+| Token not remembered after refresh | Ensure **Remember on this browser** is checked before saving; token is scoped per `host:port` (`spanda.control_center.bearer_token.v1:<host>`) — a new bind port needs a fresh paste; private/incognito mode may block `localStorage` |
+| Clear stored browser token | Click **Forget token** in the UI banner, or DevTools → Application → Local Storage → remove `spanda.control_center.bearer_token.v1:<host>` |
+| Token save fails in UI | Server must accept the token (`POST /v1/alerts/test`); restart `serve` after changing `SPANDA_API_KEYS_FILE`; reinstall CLI if embedded HTML is stale (`cargo install --path crates/spanda-cli --force`) |
 | Remote CLI cannot reach API | `export SPANDA_CONTROL_CENTER_URL=http://host:port` |
 | Desktop app blank | Start API first; `VITE_CONTROL_CENTER_URL` — [control-center.md](./control-center.md#access-the-ui) |
 | gRPC client fails | Start with `--grpc-bind 127.0.0.1:50051`; check firewall |

@@ -80,7 +80,9 @@ When `SPANDA_API_KEY` is unset and no `SPANDA_API_KEYS_FILE` is loaded, `control
 
 If `generate` fails with `Unknown argument: generate` and top-level help has no `control-center` section, reinstall the CLI — see [troubleshooting.md — Unknown argument: generate](./troubleshooting.md#unknown-argument-generate-misleading-error).
 
-The embedded Control Center UI shows an **Operator API key** banner when no token is configured in the browser. Paste a token registered on the server (`SPANDA_API_KEYS_FILE` or `SPANDA_API_KEY` at `serve` time). With **Remember on this browser** checked, the token is stored in `localStorage` scoped to the Control Center origin (`host:port`) and restored on refresh; use **Forget token** to clear it. The UI verifies the token with `POST /v1/alerts/test` before saving. Same-origin XSS could read a stored token — use **Forget** on shared machines. The `@davalgi-spanda/web` panel uses `VITE_SPANDA_API_KEY` at dev/build time instead.
+The embedded Control Center UI shows an **Operator API key** banner when no token is configured in the browser. Paste a token registered on the server (`SPANDA_API_KEYS_FILE` or `SPANDA_API_KEY` at `serve` time). With **Remember on this browser** checked (default), the token is stored in `localStorage` scoped to the Control Center origin (`host:port`) and restored on refresh; use **Forget token** to clear it. The UI verifies the token with `POST /v1/alerts/test` before saving. Same-origin XSS could read a stored token — use **Forget** on shared machines. The `@davalgi-spanda/web` panel uses `VITE_SPANDA_API_KEY` at dev/build time instead.
+
+**Browser storage key:** `spanda.control_center.bearer_token.v1:<host>` (for example `spanda.control_center.bearer_token.v1:127.0.0.1:8080`). Each `host:port` has its own entry; changing bind port or hostname requires pasting the token again unless you migrate the key in DevTools → Application → Local Storage.
 
 ### Single operator key (local dev)
 
@@ -151,7 +153,7 @@ Keys from `SPANDA_API_KEYS_FILE` are **merged** with any key from `SPANDA_API_KE
 | `auditor` | Read-only (no mutations) |
 | `guest` | Read-only (no mutations) |
 
-Inspect the live permission matrix: `GET /v1/rbac/matrix`.
+Inspect the live permission matrix: `GET /v1/rbac/matrix`. After pasting a Bearer token in the embedded UI, `GET /v1/rbac/me` returns your `role`, `key_id`, `tenant_id`, and allowed mutation `permissions` — the UI uses this to show your role badge and enable action buttons per tab.
 
 ### What requires authentication
 
@@ -164,7 +166,7 @@ Inspect the live permission matrix: `GET /v1/rbac/matrix`.
 
 **Multi-tenant isolation:** Set `SPANDA_TENANT_ID` on the Control Center instance (default `default`). Each key may include a `tenant_id` field; authenticated requests with a mismatched tenant return `403`.
 
-**Storage:** Tokens are matched as plain strings (not hashed). Treat them like passwords — restrict file permissions on `SPANDA_API_KEYS_FILE` and rotate on compromise. The embedded UI may optionally persist a pasted Bearer token in browser `localStorage` (per `host:port`, opt-in via **Remember on this browser**); this does not register the key on the server and is readable by any script on the same origin.
+**Storage:** Server-side keys are matched as plain strings (not hashed). Treat them like passwords — restrict file permissions on `SPANDA_API_KEYS_FILE` and rotate on compromise. The embedded UI may optionally persist a pasted Bearer token in browser `localStorage` under `spanda.control_center.bearer_token.v1:<host>` (per `host:port`, opt-in via **Remember on this browser**); this does not register the key on the server and is readable by any script on the same origin. Clear with **Forget token** or remove the key in browser DevTools.
 
 ### ADAS dashboard
 
@@ -413,6 +415,7 @@ grpcurl -plaintext -import-path crates/spanda-api/proto -proto spanda/v1/control
 | `/v1/alerts/test` | POST | Bearer | Dispatch test alert |
 | `/v1/secrets` | GET | Bearer | Secret metadata (no values) |
 | `/v1/rbac/matrix` | GET | — | Role permission matrix |
+| `/v1/rbac/me` | GET | Bearer | Authenticated operator role and permissions |
 | `/v1/provision` | POST | Bearer | Run discover → ready workflow |
 | `/v1/discovery` | GET | — | Package-backed discovery (`?transport=mdns` or `subnet`); response includes `tls` policy summary |
 | `/v1/config/snapshots` | GET/POST | POST: Bearer | List or save configuration snapshots (`encrypt: true` + `SPANDA_CONFIG_SNAPSHOT_KEY` for AES-256-GCM at rest) |
@@ -494,6 +497,8 @@ spanda control-center serve --config spanda.toml --program rover.sd
 ---
 
 ## Control Center UI sections
+
+The embedded HTML at `/` and the `@davalgi-spanda/web` Control Center panel share the same operational tabs. After signing in with a Bearer token, `GET /v1/rbac/me` drives **role-aware navigation**: each role (administrator, supervisor, developer, operator, safety_officer, auditor, guest) sees a tailored tab set, dashboard workspace panel, per-tab hints, and action buttons gated by RBAC permissions (`Deploy`, `Operate`, `Approve`, `Provision`, etc.).
 
 The `@davalgi-spanda/web` Control Center panel includes:
 
