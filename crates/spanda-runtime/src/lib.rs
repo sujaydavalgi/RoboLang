@@ -4,6 +4,7 @@ pub mod assurance_runtime;
 pub mod classification;
 pub mod continuity_primitives;
 pub mod continuity_types;
+pub mod decision_runtime;
 pub mod decision_trace;
 pub mod device_telemetry_sink;
 pub mod environment;
@@ -63,6 +64,11 @@ pub use continuity_types::{
     ContinuationDecision, ContinuityCheckpointStore, ContinuityContext, ContinuityEvidence,
     ContinuityPolicySpec, ContinuityTrigger, MissionCheckpoint, MissionExecutionState,
     MissionStateSnapshot, MissionStateTransfer, SuccessionScope, TakeoverMode, TakeoverReport,
+};
+pub use decision_runtime::{
+    default_decision_runtime, platform_decision_runtime, set_platform_decision_runtime,
+    BuiltinDecisionRuntime, DecisionRuntime, DecisionTreeEvalResult, FleetConsensusEvalResult,
+    SharedDecisionRuntime,
 };
 pub use decision_trace::{decision_trace_enabled, v3_decision_payload};
 pub use device_telemetry_sink::{

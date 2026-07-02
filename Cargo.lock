@@ -2802,6 +2802,7 @@ dependencies = [
  "serde",
  "serde_json",
  "spanda-ast",
+ "spanda-capability",
  "spanda-lexer",
  "spanda-parser",
  "spanda-runtime",

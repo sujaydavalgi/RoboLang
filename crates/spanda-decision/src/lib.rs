@@ -5,12 +5,14 @@
 mod authority;
 mod conflict;
 mod consensus;
+mod diagnostics;
 mod engine;
 mod escalation;
 mod offline;
 mod policy_cache;
 mod emit;
 mod report;
+mod runtime_bridge;
 mod security;
 mod simulate;
 mod trace;
@@ -23,6 +25,7 @@ pub use authority::{
 };
 pub use conflict::{resolve_conflict, CompetingDecision, ConflictResolution};
 pub use consensus::{resolve_consensus, ConsensusResult, ConsensusStrategy, ConsensusVote};
+pub use diagnostics::collect_decision_diagnostics;
 pub use engine::{
     evaluate_distributed_decisions, format_distributed_report, DecisionContext,
     DistributedDecisionReport,
@@ -34,6 +37,7 @@ pub use offline::{
     OfflinePolicySpec,
 };
 pub use policy_cache::{build_policy_cache, LocalPolicyCache};
+pub use runtime_bridge::DecisionBackedRuntime;
 pub use report::{
     format_decision_audit, format_decision_explanations, DecisionAuditReport, DecisionChain,
     DecisionEvidence, DecisionRecord, DecisionTimeline,
