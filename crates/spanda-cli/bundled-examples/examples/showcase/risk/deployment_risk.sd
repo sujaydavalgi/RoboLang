@@ -1,0 +1,84 @@
+// Mission deployment risk showcase — fleet warehouse with coverage and contract signals.
+//
+//   spanda risk examples/showcase/risk/deployment_risk.sd
+//   spanda risk examples/showcase/risk/deployment_risk.sd --json
+
+hardware RoverV1 {
+    sensors [GPS, Camera, Lidar];
+    actuators [DifferentialDrive];
+    connectivity [WiFi];
+}
+
+mission_plan WarehouseInventoryScan {
+    step navigate_to_aisle;
+    step scan_shelf_a;
+    step scan_shelf_b;
+    step scan_shelf_c;
+    step return_to_dock;
+    constraint battery.level >= 20%;
+}
+
+fleet WarehouseFleet {
+    ScannerAlpha;
+    ScannerBeta;
+    ScannerGamma;
+}
+
+recovery_policy ContinuityRecovery {
+    on robot.failed {
+        reassign mission;
+        promote backup coordinator;
+    }
+    on connectivity.loss {
+        enter degraded mode;
+        restart connectivity;
+    }
+}
+
+continuity_policy WarehouseContinuity {
+    on robot.failed {
+        resume from checkpoint;
+        reassign mission;
+    }
+}
+
+mitigation ProviderFallback {
+    if provider.timeout {
+        switch to mock provider;
+    }
+}
+
+operating_mode NormalMode { normal; }
+operating_mode DegradedMode { degraded; }
+operating_mode SafeMode { safe; }
+operating_mode RecoveryMode { recovery; }
+
+robot ScannerAlpha {
+    sensor gps: GPS;
+    sensor camera: Camera;
+    sensor lidar: Lidar;
+    actuator wheels: DifferentialDrive;
+    safety {
+        max_speed = 1.0 m/s;
+        stop_if lidar.nearest_distance < 0.5 m;
+    }
+    behavior scan() { wheels.drive(0.3 m/s); }
+}
+
+robot ScannerBeta {
+    sensor gps: GPS;
+    sensor camera: Camera;
+    sensor lidar: Lidar;
+    actuator wheels: DifferentialDrive;
+    safety { max_speed = 1.0 m/s; }
+    behavior scan() { wheels.drive(0.3 m/s); }
+}
+
+robot ScannerGamma {
+    sensor gps: GPS;
+    sensor camera: Camera;
+    sensor lidar: Lidar;
+    actuator wheels: DifferentialDrive;
+    safety { max_speed = 1.0 m/s; }
+    behavior scan() { wheels.drive(0.3 m/s); }
+}

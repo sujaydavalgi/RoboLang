@@ -737,6 +737,19 @@ fn demo_what_if(root: &Path) {
     println!("\nDemo complete. See examples/showcase/what_if/ and docs/what-if-analysis.md");
 }
 
+fn demo_risk(root: &Path) {
+    let path = showcase(root, &["risk", "deployment_risk.sd"]);
+    let file = require_file(&path);
+    let sd = file.to_str().unwrap();
+
+    println!("== Mission risk — deployment score before field operation ==\n");
+    run_spanda("check", file, &[]);
+    run_spanda_args(&["risk", sd]);
+    run_spanda_args(&["risk", sd, "--json"]);
+
+    println!("\nDemo complete. See examples/showcase/risk/ and docs/mission-risk-analysis.md");
+}
+
 fn demo_assurance(root: &Path) {
     // Description:
     //     Demo assurance.
@@ -1323,6 +1336,7 @@ pub fn demo_dispatch(args: &[String]) {
             demo_distributed_decisions(&root)
         }
         "what-if" | "whatif" => demo_what_if(&root),
+        "risk" | "mission-risk" => demo_risk(&root),
         "differentiation" | "diff" => demo_differentiation(&root),
         "maturity" | "platform-maturity" => demo_maturity(&root),
         "trust" | "tamper" | "security-trust" => demo_trust(&root),
@@ -1351,6 +1365,7 @@ pub fn demo_dispatch(args: &[String]) {
                    continuity — mission continuity, takeover, delegation, succession\n\
                    distributed-decisions — decision trees, offline policy, traces, policy cache\n\
                    what-if — failure scenario impact, risk, and recovery predictions\n\
+                   risk — mission deployment risk score and mitigations\n\
                    differentiation — mission contracts, safety/recovery coverage, explain\n\
                    maturity — Phase A graph, explain, trust, deployment gates\n\
                    trust — package/mission tampering, spoofing, runtime intrusion, tamper_policy\n\

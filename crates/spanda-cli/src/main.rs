@@ -7,6 +7,7 @@ mod decision_runtime;
 mod bundled_registry;
 mod certify_cli;
 mod chaos_cli;
+mod risk_cli;
 mod whatif_cli;
 mod comm_bus_runtime;
 mod compliance_cli;
@@ -290,6 +291,7 @@ fn usage() {
            spanda score <file.sd> [--json] [--format markdown] [--config <spanda.toml>]\n\
            spanda chaos <file.sd> [--inject gps-failure,...] [--json]\n\
            spanda what-if <file.sd> [--scenario gps_failure] [--all] [--json]\n\
+           spanda risk <file.sd> [--json]\n\
            spanda estimate <file.sd> [--target <profile>] [--json]\n\
            spanda adr <file.sd> [--json] [--out <dir>]\n\
            spanda tamper-check <file.sd|file.trace> [--runtime] [--json]\n\
@@ -1684,6 +1686,12 @@ fn main() {
 
     if command == "what-if" {
         whatif_cli::what_if_dispatch(&args[2..]);
+        let _ = io::stdout().flush();
+        return;
+    }
+
+    if command == "risk" {
+        risk_cli::risk_dispatch(&args[2..]);
         let _ = io::stdout().flush();
         return;
     }
