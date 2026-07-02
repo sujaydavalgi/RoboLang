@@ -1,0 +1,44 @@
+//! What-if GPS failure — recovery and readiness under navigation loss.
+
+hardware RoverV1 {
+    sensors [GPS, IMU, Lidar];
+    actuators [DifferentialDrive];
+    connectivity [WiFi];
+}
+
+recovery_policy GpsRecovery {
+    on gps.failed {
+        switch_to imu_dead_reckoning;
+        enter degraded_mode;
+    }
+    on connectivity.loss {
+        enter degraded_mode;
+    }
+}
+
+robot Rover001 {
+    local_decision_authority [degraded_mode, return_home];
+    sensor gps: GPS;
+    sensor imu: IMU;
+    sensor lidar: Lidar;
+    actuator drive: DifferentialDrive;
+    mode degraded { }
+    safety { max_speed = 1.0 m/s; }
+    behavior patrol() {
+        loop every 50ms { }
+    }
+}
+
+decision_tree GPSLossRecovery local {
+    version = "1.0.0";
+    when gps.status == Failed {
+        enter degraded_mode;
+        reduce_speed 0.5 m/s;
+    }
+}
+
+offline_policy RoverOffline {
+    max_duration = 20 min;
+    allowed_actions [pause_mission, return_home];
+    forbidden_actions [disable_safety];
+}

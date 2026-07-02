@@ -20,6 +20,7 @@ Start here when evaluating Spanda as a **professional autonomous-systems platfor
 | `spanda demo self-healing` | Recovery policies, heal/recover/sim, fleet recovery |
 | `spanda demo continuity` | Mission continuity, takeover, delegation, succession |
 | `spanda demo distributed-decisions` | Decision trees, offline policy, traces, signed policy cache |
+| `spanda demo what-if` | Failure scenario impact, risk, recovery plan predictions |
 | `spanda demo maturity` | Phase A graph, explain, trust, deployment gates |
 | `spanda demo trust` | Tamper/trust showcases — package tampering, integrity, spoofing, runtime intrusion |
 | `spanda demo compliance` | Industry profile verification (defense, medical, ISO 26262, ISO 13849, IEC 61508) |

@@ -59,6 +59,7 @@ spanda-diff = { path = "../spanda-diff" }
 spanda-score = { path = "../spanda-score" }
 spanda-policy = { path = "../spanda-policy" }
 spanda-chaos = { path = "../spanda-chaos" }
+spanda-whatif = { path = "../spanda-whatif" }
 spanda-estimate = { path = "../spanda-estimate" }
 spanda-compliance = { path = "../spanda-compliance" }
 spanda-generate = { path = "../spanda-generate" }

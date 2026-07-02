@@ -724,6 +724,19 @@ fn demo_distributed_decisions(root: &Path) {
     );
 }
 
+fn demo_what_if(root: &Path) {
+    let path = showcase(root, &["what_if", "gps_failure.sd"]);
+    let file = require_file(&path);
+    let sd = file.to_str().unwrap();
+
+    println!("== What-if analysis — predicted outcomes under failure ==\n");
+    run_spanda("check", file, &[]);
+    run_spanda_args(&["what-if", sd]);
+    run_spanda_args(&["what-if", sd, "--scenario", "gps_failure", "--json"]);
+
+    println!("\nDemo complete. See examples/showcase/what_if/ and docs/what-if-analysis.md");
+}
+
 fn demo_assurance(root: &Path) {
     // Description:
     //     Demo assurance.
@@ -1309,6 +1322,7 @@ pub fn demo_dispatch(args: &[String]) {
         "distributed-decisions" | "distributed_decisions" | "decisions" => {
             demo_distributed_decisions(&root)
         }
+        "what-if" | "whatif" => demo_what_if(&root),
         "differentiation" | "diff" => demo_differentiation(&root),
         "maturity" | "platform-maturity" => demo_maturity(&root),
         "trust" | "tamper" | "security-trust" => demo_trust(&root),
@@ -1336,6 +1350,7 @@ pub fn demo_dispatch(args: &[String]) {
                    self-healing — recovery policies, heal/recover/sim, fleet recovery\n\
                    continuity — mission continuity, takeover, delegation, succession\n\
                    distributed-decisions — decision trees, offline policy, traces, policy cache\n\
+                   what-if — failure scenario impact, risk, and recovery predictions\n\
                    differentiation — mission contracts, safety/recovery coverage, explain\n\
                    maturity — Phase A graph, explain, trust, deployment gates\n\
                    trust — package/mission tampering, spoofing, runtime intrusion, tamper_policy\n\
