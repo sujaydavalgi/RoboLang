@@ -9,6 +9,7 @@ crate-type = ["cdylib"]
 
 [dependencies]
 spanda-driver = { path = "../spanda-driver" }
+spanda-core = { path = "../spanda-core", default-features = false }
 spanda-error = { path = "../spanda-error" }
 spanda-format = { path = "../spanda-format" }
 spanda-hardware = { path = "../spanda-hardware" }
