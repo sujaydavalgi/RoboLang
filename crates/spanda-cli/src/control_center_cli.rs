@@ -527,7 +527,7 @@ fn parse_lsof_listener_line(line: &str) -> Option<LocalSpandaListener> {
 fn stop_listener_pid(pid: u32, force: bool) -> Result<(), String> {
     #[cfg(unix)]
     {
-        use std::process::Command;
+        
         if force {
             return signal_pid(pid, "KILL");
         }

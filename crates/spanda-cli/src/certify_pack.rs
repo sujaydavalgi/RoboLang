@@ -3,7 +3,7 @@
 use std::fs;
 use std::path::Path;
 
-pub use spanda_assurance::{build_certification_pack, CertificationEvidence, CertificationPack};
+pub use spanda_assurance::{build_certification_pack, CertificationPack};
 
 /// Persist a certification pack to a JSON file or directory bundle path.
 pub fn write_certification_bundle(pack: &CertificationPack, path: &Path) -> std::io::Result<()> {

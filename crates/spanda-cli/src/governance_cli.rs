@@ -6,7 +6,7 @@ use spanda_policy::{evaluate_policy, format_policy_report, list_policies};
 use std::fs;
 use std::process;
 
-fn parse_program(path: &str, source: &str) -> spanda_ast::nodes::Program {
+fn parse_program(_path: &str, source: &str) -> spanda_ast::nodes::Program {
     let tokens = tokenize(source).unwrap_or_else(|e| {
         eprintln!("{e}");
         process::exit(1);
