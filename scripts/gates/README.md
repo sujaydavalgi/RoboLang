@@ -147,6 +147,7 @@ Index of regression and promotion gates organized by **Platform Pillar** and **S
 | Trust Graph Stable | `trust_graph_stable_promotion_gate.sh` | [stable-hardening-trust-graph.md](../../docs/stable-hardening-trust-graph.md) |
 | Scorecards Stable | `scorecard_stable_promotion_gate.sh` | [stable-hardening-scorecards.md](../../docs/stable-hardening-scorecards.md) |
 | LATER Stable | `later_differentiation_stable_promotion_gate.sh` | [stable-hardening-mission-time-travel.md](../../docs/stable-hardening-mission-time-travel.md) (+ sibling LATER guides) |
+| LATER analytics REST | `later_analytics_smoke.sh` | — |
 | Trust Framework Stable | `trust_framework_stable_promotion_gate.sh` | [stable-hardening-trust-framework.md](../../docs/stable-hardening-trust-framework.md) |
 | Differentiation Experimental | `differentiation_promotion_gate.sh` | [differentiation-roadmap.md](../../docs/differentiation-roadmap.md) |
 

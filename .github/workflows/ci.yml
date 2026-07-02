@@ -640,7 +640,7 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - uses: ./.github/actions/install-protoc
       - run: cargo build -p spanda --release
-      - run: chmod +x scripts/later_differentiation_stable_promotion_gate.sh scripts/later_differentiation_smoke.sh
+      - run: chmod +x scripts/later_differentiation_stable_promotion_gate.sh scripts/later_differentiation_smoke.sh scripts/later_analytics_smoke.sh
       - run: SPANDA_BIN=${{ github.workspace }}/target/release/spanda SPANDA_LATER_SKIP_SOAK=1 ./scripts/later_differentiation_stable_promotion_gate.sh
 
   trust-framework-stable-gate:

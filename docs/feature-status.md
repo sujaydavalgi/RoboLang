@@ -84,6 +84,7 @@ Platform overview: [platform-overview.md](./platform-overview.md)
 | **Mission Time Travel** | `spanda replay --at` / `--inspect` — **Stable** — [stable-hardening-mission-time-travel.md](./stable-hardening-mission-time-travel.md) |
 | **Human/Robot Teaming** | `spanda team verify` — **Stable** — [stable-hardening-human-robot-teaming.md](./stable-hardening-human-robot-teaming.md) |
 | **Autonomous Governance** | `spanda governance` — **Stable** — [stable-hardening-autonomous-governance.md](./stable-hardening-autonomous-governance.md) |
+| **LATER Control Center analytics** | `/v1/analytics/{mission-twin,certification-pack,time-travel,human-teaming,governance}` + gRPC `GetAnalytics*` (proto **1.0.7**); Analytics tab |
 | **Mission assurance** | `knowledge_model`, `state_estimator`, `anomaly_detector`, `on anomaly`, `prognostics`, `mitigation`, `resilience_policy`, `assurance_case`; CLI `assure`, `anomaly scan`, `diagnose`, `state estimate`, `prognostics`, `mission verify`, `resilience check`, `mitigation plan`; `spanda demo assurance` |
 | **Weighted sensor fusion** | `observe { }`, `state_estimator`, `fusion.read()` with type-weighted confidence; `spanda-fusion` package |
 | **Learned anomaly runtime** | `learned backend assurance.anomaly`; EMA volatility; optional ONNX (`SPANDA_ANOMALY_ONNX_MODEL_PATH`) |

@@ -184,6 +184,11 @@ export function ControlCenterPanel({ apiBase }: Props) {
     mission_risk?: Record<string, unknown>;
     readiness_forecast?: Record<string, unknown>;
     trust_graph?: Record<string, unknown>;
+    mission_twin?: Record<string, unknown>;
+    certification_pack?: Record<string, unknown>;
+    time_travel?: Record<string, unknown>;
+    human_teaming?: Record<string, unknown>;
+    governance?: Record<string, unknown>;
   } | null>(null);
   const [digitalThread, setDigitalThread] = useState<Record<string, unknown> | null>(null);
   const [threadCapabilityFilter, setThreadCapabilityFilter] = useState("");
@@ -1099,11 +1104,26 @@ export function ControlCenterPanel({ apiBase }: Props) {
   const loadAnalytics = async () => {
     setBusy(true);
     try {
-      const [whatIfRes, riskRes, forecastRes, trustRes] = await Promise.all([
+      const [
+        whatIfRes,
+        riskRes,
+        forecastRes,
+        trustRes,
+        twinRes,
+        certRes,
+        travelRes,
+        teamRes,
+        govRes,
+      ] = await Promise.all([
         fetch(`${base}/v1/analytics/what-if?all=1`),
         fetch(`${base}/v1/analytics/mission-risk`),
         fetch(`${base}/v1/analytics/readiness-forecast?all=1`),
         fetch(`${base}/v1/analytics/trust-graph`),
+        fetch(`${base}/v1/analytics/mission-twin`),
+        fetch(`${base}/v1/analytics/certification-pack`),
+        fetch(`${base}/v1/analytics/time-travel?at=T%2B00%3A01&inspect=decisions`),
+        fetch(`${base}/v1/analytics/human-teaming`),
+        fetch(`${base}/v1/analytics/governance`),
       ]);
       const next: NonNullable<typeof analytics> = {};
       if (whatIfRes.ok) {
@@ -1121,6 +1141,26 @@ export function ControlCenterPanel({ apiBase }: Props) {
       if (trustRes.ok) {
         const body = await trustRes.json();
         next.trust_graph = (body.trust_graph ?? body) as Record<string, unknown>;
+      }
+      if (twinRes.ok) {
+        const body = await twinRes.json();
+        next.mission_twin = (body.mission_twin ?? body) as Record<string, unknown>;
+      }
+      if (certRes.ok) {
+        const body = await certRes.json();
+        next.certification_pack = (body.certification_pack ?? body) as Record<string, unknown>;
+      }
+      if (travelRes.ok) {
+        const body = await travelRes.json();
+        next.time_travel = (body.time_travel ?? body) as Record<string, unknown>;
+      }
+      if (teamRes.ok) {
+        const body = await teamRes.json();
+        next.human_teaming = (body.human_teaming ?? body) as Record<string, unknown>;
+      }
+      if (govRes.ok) {
+        const body = await govRes.json();
+        next.governance = (body.governance ?? body) as Record<string, unknown>;
       }
       setAnalytics(next);
     } catch (e) {
@@ -1851,8 +1891,9 @@ export function ControlCenterPanel({ apiBase }: Props) {
       {tab === "analytics" && (
         <div>
           <p className="demo-hint">
-            NEXT differentiation analytics for the loaded program — what-if, mission risk,
-            readiness forecast, and trust graph.
+            NEXT and LATER differentiation analytics for the loaded program — what-if, mission risk,
+            readiness forecast, trust graph, mission twin, certification pack, time travel, human
+            teaming, and governance.
           </p>
           <button type="button" onClick={() => void loadAnalytics()} disabled={busy}>
             Refresh analytics
@@ -1879,6 +1920,36 @@ export function ControlCenterPanel({ apiBase }: Props) {
             <>
               <h3>Trust graph</h3>
               <pre>{JSON.stringify(analytics.trust_graph, null, 2)}</pre>
+            </>
+          )}
+          {analytics?.mission_twin && (
+            <>
+              <h3>Mission twin</h3>
+              <pre>{JSON.stringify(analytics.mission_twin, null, 2)}</pre>
+            </>
+          )}
+          {analytics?.certification_pack && (
+            <>
+              <h3>Certification pack</h3>
+              <pre>{JSON.stringify(analytics.certification_pack, null, 2)}</pre>
+            </>
+          )}
+          {analytics?.time_travel && (
+            <>
+              <h3>Time travel</h3>
+              <pre>{JSON.stringify(analytics.time_travel, null, 2)}</pre>
+            </>
+          )}
+          {analytics?.human_teaming && (
+            <>
+              <h3>Human teaming</h3>
+              <pre>{JSON.stringify(analytics.human_teaming, null, 2)}</pre>
+            </>
+          )}
+          {analytics?.governance && (
+            <>
+              <h3>Governance</h3>
+              <pre>{JSON.stringify(analytics.governance, null, 2)}</pre>
             </>
           )}
           {!analytics && !busy && (

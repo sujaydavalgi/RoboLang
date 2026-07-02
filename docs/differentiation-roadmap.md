@@ -75,6 +75,8 @@ These six capabilities define Spanda's market identity. Protect them in every re
 
 Control Center REST `/v1/analytics/*` and gRPC `GetAnalytics*` RPCs (proto **1.0.6**) expose NEXT analytics with REST parity.
 
+LATER analytics REST `/v1/analytics/{mission-twin,certification-pack,time-travel,human-teaming,governance}` and gRPC `GetAnalyticsMissionTwin`, `GetAnalyticsCertificationPack`, `GetAnalyticsTimeTravel`, `GetAnalyticsHumanTeaming`, `GetAnalyticsGovernance` (proto **1.0.7**) mirror CLI parity; Analytics tab in Control Center UI loads all nine panels.
+
 ### LATER — digital twin, certification, teaming, governance
 
 | # | Area | CLI (target) | Crate | Status |

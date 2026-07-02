@@ -32,6 +32,7 @@ fi
 
 if [[ "${SPANDA_LATER_SKIP_SMOKE:-0}" != "1" ]]; then
   ./scripts/later_differentiation_smoke.sh
+  ./scripts/later_analytics_smoke.sh
 else
   echo "Skipping smoke (SPANDA_LATER_SKIP_SMOKE=1)"
 fi
