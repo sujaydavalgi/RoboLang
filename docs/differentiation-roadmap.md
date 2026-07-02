@@ -610,7 +610,7 @@ Single scripted demo covering the five NOW areas on `examples/showcase/different
 
 | Script | Covers |
 |--------|--------|
-| `scripts/differentiation_smoke.sh` | contract verify, safety-coverage, recovery-coverage, explain |
+| `scripts/differentiation_smoke.sh` | contract verify, safety-coverage, recovery-coverage, explain, decision trail audit/explain |
 | `scripts/what_if_smoke.sh` | what-if scenarios (NEXT) |
 | `scripts/scorecard_smoke.sh` | score rollup (NEXT) |
 

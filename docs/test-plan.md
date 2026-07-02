@@ -21,6 +21,7 @@
 | Policy cache CLI/API | `cache show|sync|clear`, REST + gRPC cache listing, SDK wrappers | `spanda decision cache`, `GET /v1/decision-policy-cache`, `ListDecisionPolicyCache`, smoke script |
 | Program sim traces | API sim emits v3 frames + mission trace | `program_simulation` with `decision_trace`/`record_trace`, Control Center button |
 | Distributed decisions demo | One-command evaluator path | `spanda demo distributed-decisions`, smoke script |
+| Differentiation decision trail | audit + explain decision on v3 trace | `examples/showcase/differentiation/decision_trail/`, `scripts/differentiation_smoke.sh` |
 | Decision diagnostics | `decision_tree` / `offline_policy` / authority parity Rust ↔ TS | `crates/spanda-decision/src/diagnostics.rs`, `src/decision-diagnostics.ts` |
 | Swarm continuity | member-lost handoff + mesh relay | `crates/spanda-fleet/src/swarm_continuity.rs`, `crates/spanda-fleet/tests/mesh_integration.rs` |
 | Self-healing runtime | auto-trigger, approval retry, mesh relay | `crates/spanda-interpreter/tests/recovery_runtime.rs`, `scripts/self_healing_smoke.sh` |
