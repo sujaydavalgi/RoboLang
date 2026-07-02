@@ -1,0 +1,52 @@
+// Certification pack showcase.
+//
+//   spanda certify pack examples/showcase/certify/deployment_bundle/rover.sd
+//   spanda certify pack examples/showcase/certify/deployment_bundle/rover.sd --bundle /tmp/spanda-cert-pack --json
+
+import trust.jetson;
+
+policy NightOps {
+    max_speed = 1.0 m/s;
+    requires_kill_switch;
+    min_readiness_score = 80;
+}
+
+hardware RoverV1 {
+  sensors [ GPS, Lidar, Camera ];
+  actuators [ DifferentialDrive ];
+}
+
+kill_switch EmergencyStop {
+  priority: critical;
+  action { emergency_stop; }
+}
+
+robot Rover {
+  uses hardware RoverV1;
+  sensor gps: GPS;
+  sensor lidar: Lidar;
+  sensor camera: Camera;
+  actuator wheels: DifferentialDrive;
+
+  exposes capabilities [ gps_navigation, obstacle_avoidance ];
+
+  mission Patrol {
+    requires capabilities [ gps_navigation, obstacle_avoidance ];
+    patrol;
+  }
+
+  safety {
+    max_speed = 0.8 m/s;
+    stop_if lidar.nearest_distance < 0.5 m;
+  }
+
+  behavior patrol() {
+    wheels.drive(linear: 0.2 m/s, angular: 0.0 rad/s);
+  }
+}
+
+recovery_policy ContinuityRecovery {
+    on robot.failed { reassign mission; }
+}
+
+deploy Rover to RoverV1;
