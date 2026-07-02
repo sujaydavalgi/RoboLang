@@ -116,6 +116,7 @@ type Tab =
   | "smart-spaces"
   | "executive"
   | "analytics"
+  | "twins"
   | "traceability";
 
 type SreSummary = {
@@ -192,6 +193,7 @@ export function ControlCenterPanel({ apiBase }: Props) {
     human_teaming?: Record<string, unknown>;
     governance?: Record<string, unknown>;
   } | null>(null);
+  const [twinCloud, setTwinCloud] = useState<Record<string, unknown> | null>(null);
   const [digitalThread, setDigitalThread] = useState<Record<string, unknown> | null>(null);
   const [threadCapabilityFilter, setThreadCapabilityFilter] = useState("");
   const [threadDeviceFilter, setThreadDeviceFilter] = useState("");
@@ -541,6 +543,7 @@ export function ControlCenterPanel({ apiBase }: Props) {
     if (tab === "decisions") void loadDecisions();
     if (tab === "executive") void loadExecutive();
     if (tab === "analytics") void loadAnalytics();
+    if (tab === "twins") void loadTwins();
     if (tab === "digital-thread") void loadDigitalThread();
     if (tab === "entities") void loadEntities();
     if (tab === "adas") void loadAdas();
@@ -1103,6 +1106,36 @@ export function ControlCenterPanel({ apiBase }: Props) {
     }
   };
 
+  const loadTwins = async () => {
+    setBusy(true);
+    try {
+      const listRes = await fetch(`${base}/v1/twins`);
+      if (listRes.ok) {
+        setTwinCloud(await listRes.json());
+      }
+    } catch (e) {
+      setError(String(e));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const syncTwinCloud = async () => {
+    setBusy(true);
+    try {
+      await fetch(`${base}/v1/twins/sync`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: "{}",
+      });
+      await loadTwins();
+    } catch (e) {
+      setError(String(e));
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const loadAnalytics = async () => {
     setBusy(true);
     try {
@@ -1239,6 +1272,7 @@ export function ControlCenterPanel({ apiBase }: Props) {
     if (name === "smart-spaces") return "Smart Spaces";
     if (name === "sre") return "SRE";
     if (name === "ota") return "OTA";
+    if (name === "twins") return "Twin Cloud";
     return name.charAt(0).toUpperCase() + name.slice(1).replace(/-/g, " ");
   };
 
@@ -1268,6 +1302,7 @@ export function ControlCenterPanel({ apiBase }: Props) {
     "smart-spaces",
     "executive",
     "analytics",
+    "twins",
     "traceability",
   ];
 
@@ -1959,6 +1994,31 @@ export function ControlCenterPanel({ apiBase }: Props) {
           )}
           {!analytics && !busy && (
             <p>Load a program with control-center serve --program to view analytics.</p>
+          )}
+        </div>
+      )}
+
+      {tab === "twins" && (
+        <div>
+          <p className="demo-hint">
+            Twin Cloud SaaS registry — persisted mission twin snapshots from edge push or sync.
+          </p>
+          <div className="toolbar">
+            <button type="button" onClick={() => void loadTwins()} disabled={busy}>
+              Refresh twins
+            </button>
+            <button type="button" onClick={() => void syncTwinCloud()} disabled={busy}>
+              Sync loaded program
+            </button>
+          </div>
+          {twinCloud && (
+            <>
+              <h3>Registered twins</h3>
+              <pre>{JSON.stringify(twinCloud, null, 2)}</pre>
+            </>
+          )}
+          {!twinCloud && !busy && (
+            <p>Push snapshots with <code>spanda twin cloud push</code> or sync a loaded program.</p>
           )}
         </div>
       )}

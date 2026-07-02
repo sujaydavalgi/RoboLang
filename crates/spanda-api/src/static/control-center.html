@@ -87,6 +87,7 @@
     <button type="button" data-tab="digital-thread">Digital Thread</button>
     <button type="button" data-tab="traceability">Traceability</button>
     <button type="button" data-tab="analytics" data-role-tier="govern">Analytics</button>
+    <button type="button" data-tab="twins">Twin Cloud</button>
     <button type="button" data-tab="operator" data-role-tier="ops">Operator</button>
     <button type="button" data-tab="assurance">Assurance</button>
     <button type="button" data-tab="diagnosis">Diagnosis</button>
@@ -122,12 +123,13 @@
   <section id="tab-digital-thread" class="panel" hidden></section>
   <section id="tab-traceability" class="panel" hidden></section>
   <section id="tab-analytics" class="panel" hidden></section>
+  <section id="tab-twins" class="panel" hidden></section>
   <section id="tab-adas" class="panel" hidden></section>
   <section id="tab-humans" class="panel" hidden></section>
   <section id="tab-smart-spaces" class="panel" hidden></section>
   <section id="tab-executive" class="panel" hidden></section>
   <script>
-    const tabs = ["dashboard", "entities", "devices", "fleet", "discovery", "provision", "mapping", "config", "health", "readiness", "drift", "alerts", "security", "ota", "sre", "compliance", "audit", "decisions", "digital-thread", "traceability", "analytics", "operator", "assurance", "diagnosis", "recovery", "adas", "humans", "smart-spaces", "executive"];
+    const tabs = ["dashboard", "entities", "devices", "fleet", "discovery", "provision", "mapping", "config", "health", "readiness", "drift", "alerts", "security", "ota", "sre", "compliance", "audit", "decisions", "digital-thread", "traceability", "analytics", "twins", "operator", "assurance", "diagnosis", "recovery", "adas", "humans", "smart-spaces", "executive"];
     const errEl = document.getElementById("error");
     const AUTH_STORAGE_PREFIX = "spanda.control_center.bearer_token.v1:";
     const RBAC_ACTIONS = ["Deploy", "Operate", "Approve", "Override", "Shutdown", "Recover", "Delete", "Provision"];
@@ -153,6 +155,7 @@
       "digital-thread": ["*"],
       traceability: ["*"],
       analytics: ["administrator", "supervisor", "developer", "auditor"],
+      twins: ["*"],
       operator: ["administrator", "supervisor", "operator", "safety_officer"],
       assurance: ["*"],
       diagnosis: ["*"],
@@ -316,6 +319,7 @@
         "digital-thread": loadDigitalThread,
         traceability: loadTraceability,
         analytics: loadAnalytics,
+        twins: loadTwins,
         adas: loadAdas,
         humans: loadHumans,
         "smart-spaces": loadSmartSpaces,
@@ -1173,6 +1177,32 @@
           <pre>${JSON.stringify(teaming, null, 2)}</pre>
           <h3>Governance</h3>
           <pre>${JSON.stringify(governance, null, 2)}</pre>`;
+      } catch (e) { showError(String(e)); }
+    }
+
+    async function loadTwins() {
+      try {
+        errEl.hidden = true;
+        const data = await api("/v1/twins");
+        const rows = (data.twins || []).map((t) =>
+          `<tr><td>${t.twin_id}</td><td>${t.program}</td><td>${t.readiness_score}</td><td>${t.mission_ready ? "yes" : "no"}</td><td>${t.captured_at_ms}</td></tr>`
+        ).join("") || "<tr><td colspan='5'>No twin snapshots — push or sync one</td></tr>";
+        document.getElementById("tab-twins").innerHTML = `
+          <h2>Twin Cloud</h2>
+          <p>Mission twin snapshot registry (persisted under SPANDA_CONTROL_CENTER_STATE_DIR).</p>
+          ${actionBar([
+            actionBtn("Refresh", "loadTwins()", "Operate"),
+            actionBtn("Sync loaded program", "syncTwinCloud()", "Operate"),
+          ])}
+          <table><thead><tr><th>Twin</th><th>Program</th><th>Readiness</th><th>Mission ready</th><th>Captured (ms)</th></tr></thead><tbody>${rows}</tbody></table>`;
+      } catch (e) { showError(String(e)); }
+    }
+
+    async function syncTwinCloud() {
+      try {
+        errEl.hidden = true;
+        await apiAuth("POST", "/v1/twins/sync", {});
+        await loadTwins();
       } catch (e) { showError(String(e)); }
     }
 
