@@ -160,6 +160,17 @@ pub fn reports_export(
 }
 
 pub fn reports_export_internal(state: &ControlCenterState, query: &str) -> HttpResponse {
+    if let Some(root) = state.project_root() {
+        if let Ok(mut manager) =
+            spanda_plugin::runtime::PluginManager::open(&root, env!("CARGO_PKG_VERSION"))
+        {
+            let _ = manager.dispatch_hook_to_enabled(
+                spanda_plugin::hooks::PluginHook::OnReportRequested,
+                serde_json::json!({ "path": "/v1/reports/export", "query": query }),
+            );
+        }
+    }
+
     let params = parse_query(query);
     let profile = params
         .get("profile")

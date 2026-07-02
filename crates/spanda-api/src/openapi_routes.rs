@@ -152,6 +152,14 @@ pub const REST_V1_ROUTES: &[ApiRoute] = &[
     },
     ApiRoute {
         method: "GET",
+        path: "/v1/plugins",
+    },
+    ApiRoute {
+        method: "GET",
+        path: "/v1/plugins/control-center",
+    },
+    ApiRoute {
+        method: "GET",
         path: "/v1/assurance/summary",
     },
     ApiRoute {

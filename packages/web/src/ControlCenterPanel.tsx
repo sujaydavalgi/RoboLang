@@ -182,6 +182,10 @@ export function ControlCenterPanel({ apiBase }: Props) {
   const [entitySearch, setEntitySearch] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [pluginPanels, setPluginPanels] = useState<
+    { plugin: string; id: string; title: string; component: string }[]
+  >([]);
+  const [pluginTab, setPluginTab] = useState<string | null>(null);
 
   const base = apiBase.replace(/\/$/, "");
   const apiKey =
@@ -231,6 +235,26 @@ export function ControlCenterPanel({ apiBase }: Props) {
       if (treeRes.ok) {
         const treeBody = await treeRes.json();
         setMapping(treeBody.mapping ?? null);
+      }
+      const pluginsRes = await fetch(`${base}/v1/plugins/control-center`, {
+        headers: authHeaders(),
+      });
+      if (pluginsRes.ok) {
+        const pluginsBody = await pluginsRes.json();
+        const panels: { plugin: string; id: string; title: string; component: string }[] = [];
+        for (const entry of pluginsBody.plugins ?? []) {
+          const pluginName =
+            entry.installed?.name ?? entry.manifest?.plugin?.name ?? "plugin";
+          for (const panel of entry.manifest?.control_center?.panels ?? []) {
+            panels.push({
+              plugin: pluginName,
+              id: panel.id,
+              title: panel.title,
+              component: panel.component,
+            });
+          }
+        }
+        setPluginPanels(panels);
       }
     } catch (e) {
       setError(String(e));
@@ -1087,18 +1111,53 @@ export function ControlCenterPanel({ apiBase }: Props) {
           <button
             key={name}
             type="button"
-            className={tab === name ? "primary" : undefined}
-            onClick={() => setTab(name)}
+            className={tab === name && !pluginTab ? "primary" : undefined}
+            onClick={() => {
+              setPluginTab(null);
+              setTab(name);
+            }}
           >
             {tabLabel(name)}
           </button>
         ))}
+        {pluginPanels.map((panel) => {
+          const key = `${panel.plugin}:${panel.id}`;
+          return (
+            <button
+              key={key}
+              type="button"
+              className={pluginTab === key ? "primary" : undefined}
+              onClick={() => setPluginTab(key)}
+            >
+              {panel.title}
+            </button>
+          );
+        })}
         <button type="button" onClick={() => void load()} disabled={busy}>
           Refresh
         </button>
       </div>
       {error && <div className="error">{error}</div>}
 
+      {pluginTab ? (
+        <section>
+          {(() => {
+            const panel = pluginPanels.find((p) => `${p.plugin}:${p.id}` === pluginTab);
+            if (!panel) return null;
+            return (
+              <>
+                <h3>{panel.title}</h3>
+                <p className="demo-hint">
+                  Plugin panel from <code>{panel.plugin}</code> — component{" "}
+                  <code>{panel.component}</code>. Host loads TypeScript bundles from the plugin
+                  install directory when a <code>index.js</code> artifact is present.
+                </p>
+              </>
+            );
+          })()}
+        </section>
+      ) : (
+        <>
       {tab === "dashboard" && pool && (
         <dl>
           <dt>Devices</dt>
@@ -2292,6 +2351,8 @@ export function ControlCenterPanel({ apiBase }: Props) {
             </li>
           ))}
         </ul>
+      )}
+        </>
       )}
     </div>
   );

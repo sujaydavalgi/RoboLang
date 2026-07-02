@@ -265,6 +265,18 @@
         "responses": { "200": { "description": "Health summary" } }
       }
     },
+    "/v1/plugins": {
+      "get": {
+        "summary": "List installed plugins",
+        "responses": { "200": { "description": "Plugin inventory" } }
+      }
+    },
+    "/v1/plugins/control-center": {
+      "get": {
+        "summary": "List enabled Control Center UI plugins",
+        "responses": { "200": { "description": "Control Center plugin manifests" } }
+      }
+    },
     "/v1/assurance/summary": {
       "get": {
         "summary": "Assurance policy summary",

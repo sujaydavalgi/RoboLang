@@ -18,6 +18,7 @@ pub mod integrations;
 pub mod observability;
 pub mod openapi_routes;
 pub mod persistence;
+pub mod plugins;
 pub mod program;
 pub mod report_scheduler;
 pub mod sdk_ops;

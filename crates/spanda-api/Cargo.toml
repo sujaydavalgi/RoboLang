@@ -23,6 +23,7 @@ spanda-lexer = { path = "../spanda-lexer" }
 spanda-ops = { path = "../spanda-ops" }
 spanda-ota = { path = "../spanda-ota" }
 spanda-package = { path = "../spanda-package" }
+spanda-plugin = { path = "../spanda-plugin", default-features = false, features = ["api-host"] }
 spanda-parser = { path = "../spanda-parser" }
 spanda-assurance = { path = "../spanda-assurance" }
 spanda-capability = { path = "../spanda-capability" }
