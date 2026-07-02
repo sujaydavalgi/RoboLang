@@ -10048,8 +10048,16 @@ impl Parser {
         while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof) {
             if self.check(TokenType::Ident) && self.peek().lexeme == "version" {
                 self.advance();
-                self.expect(TokenType::Eq, "Expected '=' after version")?;
-                version = Some(self.parse_label("Expected version string")?);
+                self.expect(TokenType::Assign, "Expected '=' after version")?;
+                version = if self.check(TokenType::String) {
+                    let tok = self.advance();
+                    Some(tok.lexeme.trim_matches('"').to_string())
+                } else {
+                    Some(self.parse_label("Expected version string")?)
+                };
+                if self.check(TokenType::Semicolon) {
+                    self.advance();
+                }
             } else if self.check(TokenType::When) {
                 self.advance();
                 let condition = self.parse_decision_tree_condition()?;

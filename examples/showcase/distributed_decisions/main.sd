@@ -15,19 +15,20 @@ robot Rover001 {
         update_firmware
     ];
 
-    sensor gps {
-        type GPS;
-    }
-    sensor lidar {
-        type Lidar;
-    }
-    actuator drive {
-        type Motor;
+    sensor gps: GPS;
+    sensor lidar: Lidar;
+    actuator drive: DifferentialDrive;
+    mode degraded { }
+    safety { max_speed = 1.0 m/s; }
+    behavior patrol() {
+        loop every 50ms {
+            let _ = gps.read();
+        }
     }
 }
 
 decision_tree GPSLossRecovery local {
-    version "1.0.0";
+    version = "1.0.0";
     when gps.status == Failed {
         if visual_odometry.available {
             switch_to visual_odometry;
@@ -72,12 +73,10 @@ continuity_policy FleetTakeover {
 }
 
 mission_plan PatrolMission {
-    steps [
-        patrol_route_a,
-        patrol_route_b
-    ];
+    step patrol_route_a;
+    step patrol_route_b;
 }
 
 fleet WarehouseFleet {
-    robots [Rover001];
+    Rover001;
 }

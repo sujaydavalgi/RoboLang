@@ -1,0 +1,28 @@
+//! Minimal distributed decisions smoke target (valid parser syntax).
+
+robot Rover001 {
+    local_decision_authority [degraded_mode, emergency_stop];
+    requires_central_approval [update_firmware];
+    sensor gps: GPS;
+    actuator drive: DifferentialDrive;
+    mode degraded { }
+    safety { max_speed = 1.0 m/s; }
+    behavior patrol() {
+        loop every 50ms {
+            let _ = gps.read();
+        }
+    }
+}
+
+decision_tree GPSLossRecovery local {
+    when gps.status == Failed {
+        enter degraded_mode;
+        reduce_speed 0.4 m/s;
+    }
+}
+
+offline_policy RoverOffline {
+    max_duration = 30 min;
+    allowed_actions [pause_mission, return_home];
+    forbidden_actions [disable_safety];
+}

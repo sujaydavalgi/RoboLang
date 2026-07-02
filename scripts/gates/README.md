@@ -20,6 +20,7 @@ Index of regression and promotion gates organized by **Platform Pillar** and **S
 | `self_healing_smoke.sh` | Recovery planner, heal/recover |
 | `readiness_smoke.sh` | Readiness engine |
 | `decision_explain_smoke.sh` | Explain + decision trace |
+| `distributed_decisions_smoke.sh` | Decision tree runtime traces, CLI inspect, sim audit |
 | `maturity_smoke.sh` | Platform maturity CLIs (graph, drift, chaos, …) |
 | `chaos_smoke.sh` | Chaos injection |
 | `scorecard_smoke.sh` | Autonomous systems scorecard |
