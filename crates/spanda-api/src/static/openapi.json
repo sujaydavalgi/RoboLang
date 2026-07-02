@@ -916,6 +916,41 @@
         "responses": { "200": { "description": "Readiness analytics" } }
       }
     },
+    "/v1/analytics/what-if": {
+      "get": {
+        "summary": "What-if failure scenario analysis",
+        "parameters": [
+          { "name": "scenario", "in": "query", "schema": { "type": "string" } },
+          { "name": "all", "in": "query", "schema": { "type": "boolean" } }
+        ],
+        "responses": { "200": { "description": "What-if report" } }
+      }
+    },
+    "/v1/analytics/mission-risk": {
+      "get": {
+        "summary": "Mission deployment risk score",
+        "responses": { "200": { "description": "Mission risk assessment" } }
+      }
+    },
+    "/v1/analytics/readiness-forecast": {
+      "get": {
+        "summary": "Readiness degradation forecast",
+        "parameters": [
+          { "name": "horizon", "in": "query", "schema": { "type": "string" } },
+          { "name": "all", "in": "query", "schema": { "type": "boolean" } }
+        ],
+        "responses": { "200": { "description": "Readiness forecast report" } }
+      }
+    },
+    "/v1/analytics/trust-graph": {
+      "get": {
+        "summary": "Trust-weighted dependency graph",
+        "parameters": [
+          { "name": "format", "in": "query", "schema": { "type": "string", "enum": ["json", "text", "mermaid", "dot"] } }
+        ],
+        "responses": { "200": { "description": "Trust graph payload" } }
+      }
+    },
     "/v1/reports/export": {
       "get": {
         "summary": "Combined executive report export",

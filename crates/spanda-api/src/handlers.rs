@@ -1,6 +1,7 @@
 //! REST v1 route handlers for Spanda Control Center.
 //!
 use crate::correlation::{correlation_from_headers, new_correlation_id};
+use crate::differentiation_ops;
 use crate::e3;
 use crate::e4;
 use crate::observability;
@@ -390,6 +391,18 @@ pub fn handle_request(
         ("/v1/digital-thread/query", "GET") => e4::digital_thread_query(state, query),
         ("/v1/executive/scorecard", "GET") => e4::executive_scorecard(state),
         ("/v1/analytics/readiness", "GET") => e4::analytics_readiness(state, query),
+        ("/v1/analytics/what-if", "GET") => {
+            differentiation_ops::analytics_what_if(state, query)
+        }
+        ("/v1/analytics/mission-risk", "GET") => {
+            differentiation_ops::analytics_mission_risk(state)
+        }
+        ("/v1/analytics/readiness-forecast", "GET") => {
+            differentiation_ops::analytics_readiness_forecast(state, query)
+        }
+        ("/v1/analytics/trust-graph", "GET") => {
+            differentiation_ops::analytics_trust_graph(state, query)
+        }
         ("/v1/reports/export", "GET") => e4::reports_export(state, query, ctx.as_ref()),
         ("/v1/reports/schedules", "GET") => crate::report_scheduler::report_schedules_list(state),
         ("/v1/reports/schedules", "POST") => {

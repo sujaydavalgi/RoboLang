@@ -35,6 +35,8 @@ spanda-trust = { path = "../spanda-trust" }
 spanda-driver = { path = "../spanda-driver" }
 spanda-interpreter = { path = "../spanda-interpreter" }
 spanda-score = { path = "../spanda-score" }
+spanda-risk = { path = "../spanda-risk" }
+spanda-whatif = { path = "../spanda-whatif" }
 spanda-security = { path = "../spanda-security" }
 spanda-ast = { path = "../spanda-ast" }
 spanda-telemetry-store = { path = "../spanda-telemetry-store" }

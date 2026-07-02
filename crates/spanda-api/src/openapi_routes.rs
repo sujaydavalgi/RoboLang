@@ -400,6 +400,22 @@ pub const REST_V1_ROUTES: &[ApiRoute] = &[
     },
     ApiRoute {
         method: "GET",
+        path: "/v1/analytics/what-if",
+    },
+    ApiRoute {
+        method: "GET",
+        path: "/v1/analytics/mission-risk",
+    },
+    ApiRoute {
+        method: "GET",
+        path: "/v1/analytics/readiness-forecast",
+    },
+    ApiRoute {
+        method: "GET",
+        path: "/v1/analytics/trust-graph",
+    },
+    ApiRoute {
+        method: "GET",
         path: "/v1/compliance/profiles",
     },
     ApiRoute {
