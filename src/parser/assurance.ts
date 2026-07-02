@@ -753,6 +753,9 @@ export function parseOfflinePolicy(ctx: AssuranceParseCtx): OfflinePolicyDecl {
   let maxDurationMinutes = 30;
   let allowedActions: string[] = [];
   let forbiddenActions: string[] = [];
+  let policyVersion: string | null = null;
+  let signature: string | null = null;
+  let expiresAtMs: number | null = null;
   while (!ctx.check("RBRACE") && !ctx.check("EOF")) {
     if (ctx.check("IDENT") && ctx.peek().lexeme === "max_duration") {
       ctx.advance();
@@ -771,10 +774,23 @@ export function parseOfflinePolicy(ctx: AssuranceParseCtx): OfflinePolicyDecl {
     } else if (ctx.check("IDENT") && ctx.peek().lexeme === "forbidden_actions") {
       ctx.advance();
       forbiddenActions = parseBracketNameList(ctx);
+    } else if (ctx.check("IDENT") && ctx.peek().lexeme === "policy_version") {
+      ctx.advance();
+      ctx.expect("ASSIGN", "Expected '=' after policy_version");
+      policyVersion = ctx.parseLabel("Expected policy_version string");
+    } else if (ctx.check("IDENT") && ctx.peek().lexeme === "signature") {
+      ctx.advance();
+      ctx.expect("ASSIGN", "Expected '=' after signature");
+      signature = ctx.parseLabel("Expected signature hex");
+    } else if (ctx.check("IDENT") && ctx.peek().lexeme === "expires_at") {
+      ctx.advance();
+      ctx.expect("ASSIGN", "Expected '=' after expires_at");
+      const numTok = ctx.advance();
+      expiresAtMs = Number.parseFloat(numTok.lexeme) || null;
     } else {
       const t = ctx.peek();
       throw new ParseError(
-        "Expected max_duration, allowed_actions, or forbidden_actions in offline_policy",
+        "Expected max_duration, allowed_actions, forbidden_actions, policy_version, signature, or expires_at in offline_policy",
         t.line,
         t.column,
       );
@@ -787,6 +803,9 @@ export function parseOfflinePolicy(ctx: AssuranceParseCtx): OfflinePolicyDecl {
     maxDurationMinutes,
     allowedActions,
     forbiddenActions,
+    policyVersion,
+    signature,
+    expiresAtMs,
     span: ctx.spanFrom(start, end),
   };
 }

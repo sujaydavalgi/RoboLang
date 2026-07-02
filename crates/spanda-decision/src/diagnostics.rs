@@ -66,6 +66,7 @@ pub fn collect_decision_diagnostics(program: &Program) -> Vec<VerificationDiagno
             allowed_actions,
             forbidden_actions,
             span,
+            ..
         } = policy;
         if *max_duration_minutes == 0 {
             diags.push(VerificationDiagnostic {

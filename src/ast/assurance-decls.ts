@@ -167,5 +167,8 @@ export type OfflinePolicyDecl = {
   maxDurationMinutes: number;
   allowedActions: string[];
   forbiddenActions: string[];
+  policyVersion?: string | null;
+  signature?: string | null;
+  expiresAtMs?: number | null;
   span: Span;
 };

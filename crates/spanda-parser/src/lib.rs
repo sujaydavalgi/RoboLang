@@ -10148,6 +10148,9 @@ impl Parser {
         let mut max_duration_minutes = 30u32;
         let mut allowed_actions = Vec::new();
         let mut forbidden_actions = Vec::new();
+        let mut policy_version = None;
+        let mut signature = None;
+        let mut expires_at_ms = None;
         while !self.check(TokenType::Rbrace) && !self.check(TokenType::Eof) {
             if self.check(TokenType::Ident) && self.peek().lexeme == "max_duration" {
                 self.advance();
@@ -10181,9 +10184,43 @@ impl Parser {
             } else if self.check(TokenType::Ident) && self.peek().lexeme == "forbidden_actions" {
                 self.advance();
                 forbidden_actions = self.parse_bracket_list("forbidden_actions")?;
+            } else if self.check(TokenType::Ident) && self.peek().lexeme == "policy_version" {
+                self.advance();
+                self.expect(TokenType::Assign, "Expected '=' after policy_version")?;
+                policy_version = if self.check(TokenType::String) {
+                    let tok = self.advance();
+                    Some(tok.lexeme.trim_matches('"').to_string())
+                } else {
+                    Some(self.parse_label("Expected policy_version string")?)
+                };
+                if self.check(TokenType::Semicolon) {
+                    self.advance();
+                }
+            } else if self.check(TokenType::Ident) && self.peek().lexeme == "signature" {
+                self.advance();
+                self.expect(TokenType::Assign, "Expected '=' after signature")?;
+                signature = if self.check(TokenType::String) {
+                    let tok = self.advance();
+                    Some(tok.lexeme.trim_matches('"').to_string())
+                } else {
+                    Some(self.parse_label("Expected signature hex")?)
+                };
+                if self.check(TokenType::Semicolon) {
+                    self.advance();
+                }
+            } else if self.check(TokenType::Ident) && self.peek().lexeme == "expires_at" {
+                self.advance();
+                self.expect(TokenType::Assign, "Expected '=' after expires_at")?;
+                if self.check(TokenType::Number) {
+                    let tok = self.advance();
+                    expires_at_ms = tok.lexeme.parse().ok();
+                }
+                if self.check(TokenType::Semicolon) {
+                    self.advance();
+                }
             } else {
                 return Err(SpandaError::Parse {
-                    message: "Expected max_duration, allowed_actions, or forbidden_actions in offline_policy".into(),
+                    message: "Expected max_duration, allowed_actions, forbidden_actions, policy_version, signature, or expires_at in offline_policy".into(),
                     line: self.peek().line,
                     column: self.peek().column,
                 });
@@ -10195,6 +10232,9 @@ impl Parser {
             max_duration_minutes,
             allowed_actions,
             forbidden_actions,
+            policy_version,
+            signature,
+            expires_at_ms,
             span: self.span_from(&start, &end),
         })
     }

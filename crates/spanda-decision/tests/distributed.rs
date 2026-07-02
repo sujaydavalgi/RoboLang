@@ -8,10 +8,23 @@ use spanda_decision::{
 use spanda_lexer::tokenize;
 use spanda_parser::parse;
 use std::collections::HashMap;
+use std::sync::Mutex;
+
+static OFFLINE_POLICY_ENV_LOCK: Mutex<()> = Mutex::new(());
 
 fn parse_sd(source: &str) -> spanda_ast::nodes::Program {
     let tokens = tokenize(source).expect("tokenize");
     parse(tokens).expect("parse")
+}
+
+fn clear_offline_policy_env() {
+    for key in [
+        "SPANDA_DECISION_POLICY_CACHE",
+        "SPANDA_DECISION_POLICY_TRUST_KEY",
+        "SPANDA_DECISION_REQUIRE_SIGNED_OFFLINE_POLICY",
+    ] {
+        std::env::remove_var(key);
+    }
 }
 
 #[test]
@@ -115,4 +128,126 @@ fn central_approval_blocks_action() {
     };
     let report = evaluate_distributed_decisions(&program, &ctx);
     assert!(!report.passed);
+}
+
+#[test]
+fn signed_offline_policy_verifies_with_trust_key() {
+    let _guard = OFFLINE_POLICY_ENV_LOCK.lock().unwrap();
+    clear_offline_policy_env();
+    use spanda_decision::{
+        extract_offline_policies, sign_offline_policy, validate_offline_policy_trust,
+        verify_offline_policy_signature, DecisionBackedRuntime,
+    };
+    use spanda_runtime::decision_runtime::DecisionRuntime;
+    let program = parse_sd(
+        r#"
+        offline_policy RoverOffline {
+            max_duration = 30 min;
+            allowed_actions [pause_mission];
+            forbidden_actions [disable_safety];
+            policy_version = "1.0.0";
+        }
+        "#,
+    );
+    let mut policies = extract_offline_policies(&program);
+    assert_eq!(policies.len(), 1);
+    let signing_key = "offline-policy-test-key";
+    let signature = sign_offline_policy(&policies[0], signing_key);
+    let program = parse_sd(&format!(
+        r#"
+        offline_policy RoverOffline {{
+            max_duration = 30 min;
+            allowed_actions [pause_mission];
+            forbidden_actions [disable_safety];
+            policy_version = "1.0.0";
+            signature = "{signature}";
+        }}
+        "#
+    ));
+    policies = extract_offline_policies(&program);
+    std::env::set_var("SPANDA_DECISION_POLICY_TRUST_KEY", signing_key);
+    std::env::set_var("SPANDA_DECISION_REQUIRE_SIGNED_OFFLINE_POLICY", "1");
+    assert!(verify_offline_policy_signature(&policies[0], signing_key));
+    assert!(validate_offline_policy_trust(&policies[0]).is_ok());
+    let runtime = DecisionBackedRuntime;
+    let verdict = runtime.authorize_action(
+        &program,
+        "Rover001",
+        "pause_mission",
+        5,
+        false,
+    );
+    assert!(verdict.permitted, "{}", verdict.reason);
+    clear_offline_policy_env();
+}
+
+#[test]
+fn unsigned_offline_policy_blocked_when_signature_required() {
+    let _guard = OFFLINE_POLICY_ENV_LOCK.lock().unwrap();
+    clear_offline_policy_env();
+    use spanda_decision::DecisionBackedRuntime;
+    use spanda_runtime::decision_runtime::DecisionRuntime;
+    let program = parse_sd(
+        r#"
+        offline_policy RoverOffline {
+            max_duration = 30 min;
+            allowed_actions [pause_mission];
+            forbidden_actions [disable_safety];
+        }
+        "#,
+    );
+    std::env::set_var("SPANDA_DECISION_REQUIRE_SIGNED_OFFLINE_POLICY", "1");
+    std::env::set_var("SPANDA_DECISION_POLICY_TRUST_KEY", "offline-policy-test-key");
+    let runtime = DecisionBackedRuntime;
+    let verdict = runtime.authorize_action(
+        &program,
+        "Rover001",
+        "pause_mission",
+        5,
+        false,
+    );
+    assert!(!verdict.permitted);
+    assert!(verdict.reason.contains("signed"));
+    clear_offline_policy_env();
+}
+
+#[test]
+fn persisted_policy_cache_merges_signatures_at_runtime() {
+    let _guard = OFFLINE_POLICY_ENV_LOCK.lock().unwrap();
+    clear_offline_policy_env();
+    use spanda_decision::{
+        extract_offline_policies, merge_offline_policies_with_cache, resolve_offline_policies,
+        sign_offline_policy, DecisionBackedRuntime, PersistedPolicyCache,
+        save_persisted_policy_cache,
+    };
+    use spanda_runtime::decision_runtime::DecisionRuntime;
+    let program = parse_sd(
+        r#"
+        offline_policy RoverOffline {
+            max_duration = 30 min;
+            allowed_actions [pause_mission];
+            forbidden_actions [disable_safety];
+            policy_version = "1.0.0";
+        }
+        "#,
+    );
+    let signing_key = "offline-cache-test-key";
+    let mut policies = extract_offline_policies(&program);
+    policies[0].signature = Some(sign_offline_policy(&policies[0], signing_key));
+    let mut cache = PersistedPolicyCache::new();
+    cache.upsert_offline_policy(policies[0].clone());
+    let temp = tempfile::tempdir().expect("tempdir");
+    let cache_path = temp.path().join("decision-policy-cache.json");
+    save_persisted_policy_cache(&mut cache, Some(&cache_path)).expect("save cache");
+    std::env::set_var("SPANDA_DECISION_POLICY_CACHE", cache_path.display().to_string());
+    std::env::set_var("SPANDA_DECISION_POLICY_TRUST_KEY", signing_key);
+    std::env::set_var("SPANDA_DECISION_REQUIRE_SIGNED_OFFLINE_POLICY", "1");
+    let merged = merge_offline_policies_with_cache(extract_offline_policies(&program), &cache);
+    assert!(merged[0].signature.is_some());
+    let resolved = resolve_offline_policies(&program);
+    assert!(resolved[0].signature.is_some());
+    let runtime = DecisionBackedRuntime;
+    let verdict = runtime.authorize_action(&program, "Rover001", "pause_mission", 5, false);
+    assert!(verdict.permitted, "{}", verdict.reason);
+    clear_offline_policy_env();
 }

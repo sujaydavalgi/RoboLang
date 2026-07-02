@@ -14,7 +14,9 @@ serde_json = "1"
 spanda-ast = { path = "../spanda-ast" }
 spanda-capability = { path = "../spanda-capability" }
 spanda-runtime = { path = "../spanda-runtime" }
+spanda-audit = { path = "../spanda-audit" }
 
 [dev-dependencies]
 spanda-lexer = { path = "../spanda-lexer" }
 spanda-parser = { path = "../spanda-parser" }
+tempfile = "3"

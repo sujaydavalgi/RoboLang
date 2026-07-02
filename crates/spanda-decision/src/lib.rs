@@ -33,10 +33,15 @@ pub use engine::{
 pub use emit::{decision_trace_enabled, v3_decision_payload};
 pub use escalation::{approve_escalation, build_escalation_chain, EscalationReason};
 pub use offline::{
-    extract_offline_policies, offline_to_decision_policy, validate_offline_action,
-    OfflinePolicySpec,
+    extract_offline_policies, offline_policy_signing_payload, offline_to_decision_policy,
+    resolve_offline_policies, sign_offline_policy, validate_offline_action,
+    validate_offline_policy_trust, verify_offline_policy_signature, OfflinePolicySpec,
 };
-pub use policy_cache::{build_policy_cache, LocalPolicyCache};
+pub use policy_cache::{
+    build_policy_cache, default_policy_cache_path, load_persisted_policy_cache,
+    merge_offline_policies_with_cache, save_persisted_policy_cache, LocalPolicyCache,
+    PersistedPolicyCache,
+};
 pub use runtime_bridge::{register_platform_runtime, DecisionBackedRuntime};
 pub use report::{
     format_decision_audit, format_decision_explanations, DecisionAuditReport, DecisionChain,

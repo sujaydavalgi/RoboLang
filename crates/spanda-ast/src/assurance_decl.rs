@@ -273,6 +273,9 @@ pub enum OfflinePolicyDecl {
         max_duration_minutes: u32,
         allowed_actions: Vec<String>,
         forbidden_actions: Vec<String>,
+        policy_version: Option<String>,
+        signature: Option<String>,
+        expires_at_ms: Option<f64>,
         span: Span,
     },
 }

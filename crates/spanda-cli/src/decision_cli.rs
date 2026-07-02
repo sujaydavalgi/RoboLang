@@ -4,8 +4,9 @@ use spanda_decision::{
     audit_decisions_from_trace, evaluate_distributed_decisions, extract_decision_authorities,
     extract_decision_trees, extract_offline_policies, format_decision_audit,
     format_decision_explanations, format_distributed_report, format_simulation_report,
-    security_audit, simulate_distributed_decisions, threat_model_summary, AttackScenario,
-    DecisionContext, DecisionLayer, SimulationOptions,
+    load_persisted_policy_cache, save_persisted_policy_cache, security_audit,
+    sign_offline_policy, simulate_distributed_decisions, threat_model_summary, AttackScenario,
+    DecisionContext, DecisionLayer, OfflinePolicySpec, PersistedPolicyCache, SimulationOptions,
 };
 use spanda_lexer::tokenize;
 use spanda_parser::parse;
@@ -198,6 +199,87 @@ pub fn cmd_decision_policy(args: &[String]) {
     }
 }
 
+/// `spanda decision sign-policy <file.sd> [--policy <name>] [--key <material>] [--write-cache] [--json]`
+pub fn cmd_decision_sign_policy(args: &[String]) {
+    let path = file_arg(args);
+    let program = read_and_parse(&path);
+    let policies = extract_offline_policies(&program);
+    if policies.is_empty() {
+        eprintln!("No offline_policy declarations in {path}");
+        process::exit(1);
+    }
+    let filter = flag_value(args, "--policy");
+    let signing_key = flag_value(args, "--key")
+        .or_else(|| std::env::var("SPANDA_DECISION_POLICY_SIGNING_KEY").ok())
+        .unwrap_or_else(|| {
+            eprintln!(
+                "Missing signing key: pass --key <material> or set SPANDA_DECISION_POLICY_SIGNING_KEY"
+            );
+            process::exit(1);
+        });
+    let write_cache = args.iter().any(|a| a == "--write-cache");
+    let mut cache = if write_cache {
+        load_persisted_policy_cache(None)
+    } else {
+        PersistedPolicyCache::new()
+    };
+    let targets: Vec<OfflinePolicySpec> = policies
+        .into_iter()
+        .filter(|p| filter.as_ref().map(|n| n == &p.name).unwrap_or(true))
+        .collect();
+    if targets.is_empty() {
+        eprintln!("No offline policy matching --policy filter");
+        process::exit(1);
+    }
+    let mut signed = Vec::new();
+    for spec in targets {
+        let signature = sign_offline_policy(&spec, &signing_key);
+        let mut signed_spec = spec.clone();
+        signed_spec.signature = Some(signature.clone());
+        if write_cache {
+            cache.upsert_offline_policy(signed_spec.clone());
+        }
+        signed.push(serde_json::json!({
+            "name": signed_spec.name,
+            "policy_version": signed_spec.policy_version,
+            "signature": signature,
+            "snippet": format!(
+                "    signature = \"{signature}\";",
+            ),
+        }));
+        if !json_output(args) {
+            println!("offline_policy {}:", signed_spec.name);
+            println!("  policy_version = \"{}\";", signed_spec.policy_version);
+            println!("  signature = \"{signature}\";");
+        }
+    }
+    if write_cache {
+        if let Err(err) = save_persisted_policy_cache(&mut cache, None) {
+            eprintln!("{err}");
+            process::exit(1);
+        }
+        if !json_output(args) {
+            println!("\nWrote signed policies to {}", cache_path_display());
+        }
+    }
+    if json_output(args) {
+        println!(
+            "{}",
+            serde_json::to_string_pretty(&serde_json::json!({
+                "policies": signed,
+                "cache_path": if write_cache { Some(cache_path_display()) } else { None },
+            }))
+            .unwrap_or_default()
+        );
+    }
+}
+
+fn cache_path_display() -> String {
+    spanda_decision::default_policy_cache_path()
+        .to_string_lossy()
+        .into_owned()
+}
+
 /// `spanda decision security-audit [--json]`
 pub fn cmd_decision_security_audit(args: &[String]) {
     let findings = security_audit();
@@ -265,6 +347,7 @@ pub fn decision_dispatch(args: &[String]) {
         "trace" => cmd_decision_trace(&args[1..]),
         "explain" => cmd_decision_explain(&args[1..]),
         "policy" => cmd_decision_policy(&args[1..]),
+        "sign-policy" => cmd_decision_sign_policy(&args[1..]),
         "security-audit" => cmd_decision_security_audit(&args[1..]),
         "threat-model" => cmd_decision_threat_model(&args[1..]),
         "simulate-attack" => cmd_decision_simulate_attack(&args[1..]),
@@ -277,6 +360,7 @@ pub fn decision_dispatch(args: &[String]) {
                  spanda decision trace <mission.trace> [--json]\n  \
                  spanda decision explain <mission.trace>\n  \
                  spanda decision policy <file.sd> [--json]\n  \
+                 spanda decision sign-policy <file.sd> [--policy <name>] [--key <material>] [--write-cache] [--json]\n  \
                  spanda decision security-audit [--json]\n  \
                  spanda decision threat-model\n  \
                  spanda decision simulate-attack <scenario>"

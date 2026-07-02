@@ -23,6 +23,10 @@ run_spanda decision list "$SHOWCASE" >/dev/null
 run_spanda decision inspect "$SHOWCASE" --entity Rover001 --action emergency_stop >/dev/null
 run_spanda decision simulate "$SHOWCASE" --offline >/dev/null
 
+echo "== decision sign-policy (dry run) =="
+export SPANDA_DECISION_POLICY_SIGNING_KEY="${SPANDA_DECISION_POLICY_SIGNING_KEY:-offline-smoke-signing-key}"
+run_spanda decision sign-policy examples/showcase/distributed_decisions/offline_mission_continue/main.sd --policy RoverOffline --json >/dev/null
+
 echo "== sim with decision trace + audit =="
 TRACE="${ROOT}/examples/showcase/distributed_decisions/main.trace"
 rm -f "$TRACE"

@@ -9,9 +9,9 @@ use std::sync::Arc;
 
 use crate::{
     build_escalation_chain, default_safety_boundaries, entity_may_decide_locally,
-    evaluate_tree, extract_decision_authorities, extract_decision_trees, extract_offline_policies,
-    resolve_consensus, validate_offline_action, ConsensusStrategy, ConsensusVote, DecisionLayer,
-    EscalationReason,
+    evaluate_tree, extract_decision_authorities, extract_decision_trees, resolve_offline_policies,
+    resolve_consensus, validate_offline_action, ConsensusStrategy,
+    ConsensusVote, DecisionLayer, EscalationReason,
 };
 
 fn normalize_decision_action_key(action: &str) -> String {
@@ -100,7 +100,16 @@ impl DecisionRuntime for DecisionBackedRuntime {
         let policy_version = "1.0.0".to_string();
 
         if !central_connected {
-            for policy in extract_offline_policies(program) {
+            for policy in resolve_offline_policies(program) {
+                if let Err(reason) = crate::offline::validate_offline_policy_trust(&policy) {
+                    return DecisionActionVerdict {
+                        permitted: false,
+                        reason,
+                        requires_escalation: false,
+                        escalation_id: None,
+                        policy_version: Some(policy.policy_version.clone()),
+                    };
+                }
                 if let Err(reason) =
                     validate_offline_action(&policy, &action_key, offline_minutes)
                 {
@@ -109,7 +118,7 @@ impl DecisionRuntime for DecisionBackedRuntime {
                         reason,
                         requires_escalation: false,
                         escalation_id: None,
-                        policy_version: Some(policy_version),
+                        policy_version: Some(policy.policy_version.clone()),
                     };
                 }
             }
