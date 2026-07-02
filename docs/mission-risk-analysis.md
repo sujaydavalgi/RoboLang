@@ -1,6 +1,6 @@
 # Mission Risk Analysis
 
-**Status:** Planned · **Horizon:** NEXT (3–6 months) · **Priority:** P1
+**Status:** Experimental · **Horizon:** NEXT (3–6 months) · **Priority:** P1
 
 Assess deployment risk before field operation.
 
