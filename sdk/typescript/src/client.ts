@@ -237,6 +237,37 @@ export class SpandaClient {
     return this.request("POST", "/v1/entities/sync", {}, true);
   }
 
+  async listDecisions(): Promise<JsonValue> {
+    return this.request("GET", "/v1/decisions");
+  }
+
+  async getEntityDecisions(entityId: string): Promise<JsonValue> {
+    return this.request("GET", `/v1/entities/${entityId}/decisions`);
+  }
+
+  async simulateDecision(body: JsonValue): Promise<JsonValue> {
+    return this.request("POST", "/v1/decisions/simulate", body);
+  }
+
+  async approveEscalation(body: JsonValue): Promise<JsonValue> {
+    return this.request("POST", "/v1/decisions/escalate", body, true);
+  }
+
+  async listDecisionPolicies(): Promise<JsonValue> {
+    return this.request("GET", "/v1/decision-policies");
+  }
+
+  async listDecisionTraces(query: {
+    file?: string;
+    trace?: string;
+  } = {}): Promise<JsonValue> {
+    const params = new URLSearchParams();
+    if (query.file) params.set("file", query.file);
+    if (query.trace) params.set("trace", query.trace);
+    const qs = params.toString();
+    return this.request("GET", `/v1/decisions/traces${qs ? `?${qs}` : ""}`);
+  }
+
   async getPackageTrust(packageName: string, version?: string): Promise<JsonValue> {
     let path = `/v1/trust/package?name=${encodeURIComponent(packageName)}`;
     if (version) {

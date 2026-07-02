@@ -41,6 +41,20 @@ describe("SpandaClient", () => {
     await client.entityRelationships("rover-001");
     expect(captured).toBe("GET /v1/entities/rover-001/relationships");
   });
+
+  it("listDecisionTraces uses traces path", async () => {
+    const client = SpandaClient.local();
+    let captured = "";
+    (client as unknown as { request: typeof client["request"] }).request = async (
+      method,
+      path,
+    ) => {
+      captured = `${method} ${path}`;
+      return {};
+    };
+    await client.listDecisionTraces({ file: "mission.sd" });
+    expect(captured).toBe("GET /v1/decisions/traces?file=mission.sd");
+  });
 });
 
 describe("ReadinessReport", () => {
