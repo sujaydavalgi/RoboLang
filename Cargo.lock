@@ -2449,6 +2449,7 @@ dependencies = [
  "spanda-policy",
  "spanda-providers",
  "spanda-readiness",
+ "spanda-recovery",
  "spanda-risk",
  "spanda-runtime",
  "spanda-runtime-faults",
@@ -2520,6 +2521,7 @@ dependencies = [
  "spanda-plugin",
  "spanda-policy",
  "spanda-readiness",
+ "spanda-recovery",
  "spanda-risk",
  "spanda-runtime",
  "spanda-score",
@@ -3241,6 +3243,26 @@ dependencies = [
  "spanda-runtime",
  "spanda-security",
  "spanda-telemetry-store",
+]
+
+[[package]]
+name = "spanda-recovery"
+version = "0.5.0"
+dependencies = [
+ "chrono",
+ "serde",
+ "serde_json",
+ "spanda-assurance",
+ "spanda-ast",
+ "spanda-audit",
+ "spanda-config",
+ "spanda-lexer",
+ "spanda-parser",
+ "spanda-readiness",
+ "spanda-runtime",
+ "spanda-runtime-faults",
+ "spanda-trust",
+ "toml",
 ]
 
 [[package]]
