@@ -1,0 +1,39 @@
+//! Decision audit trail — local + reflex trees with v3 trace frames for explain + audit.
+//!
+//!   spanda sim examples/showcase/differentiation/decision_trail/main.sd --record --inject-health-faults
+//!   spanda audit decisions examples/showcase/differentiation/decision_trail/main.trace
+//!   spanda explain decision examples/showcase/differentiation/decision_trail/main.trace
+
+robot Scanner001 {
+    local_decision_authority [emergency_stop, degraded_mode, obstacle_avoidance];
+    requires_central_approval [override_safety_policy];
+    sensor gps: GPS;
+    actuator drive: DifferentialDrive;
+    mode safe { }
+    safety { max_speed = 1.0 m/s; }
+    behavior patrol() {
+        loop every 50ms { }
+    }
+}
+
+decision_tree GPSLossReflex local {
+    version = "1.0.0";
+    when gps.status == Failed {
+        enter degraded_mode;
+        trigger emergency_stop;
+    }
+}
+
+decision_tree ObstacleReflex reflex {
+    when obstacle.detected {
+        stop_motor;
+        cut_actuator_power;
+        trigger emergency_stop;
+    }
+}
+
+offline_policy ScannerOffline {
+    max_duration = 15 min;
+    allowed_actions [pause_mission, return_home];
+    forbidden_actions [disable_safety, start_new_high_risk_mission];
+}

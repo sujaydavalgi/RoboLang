@@ -5,6 +5,8 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 FILE="${ROOT}/examples/showcase/differentiation/warehouse.sd"
+TRAIL="${ROOT}/examples/showcase/differentiation/decision_trail/main.sd"
+TRAIL_TRACE="${ROOT}/examples/showcase/differentiation/decision_trail/main.trace"
 
 if [[ -n "${SPANDA_BIN:-}" && -x "${SPANDA_BIN}" ]]; then
   run_spanda() { "$SPANDA_BIN" "$@"; }
@@ -30,7 +32,18 @@ run_spanda explain readiness --file "$FILE" >/dev/null
 run_spanda explain verify --file "$FILE" >/dev/null
 run_spanda explain safety --file "$FILE" >/dev/null
 
-echo "== record trace + audit decisions =="
+echo "== decision trail (audit + explain decision) =="
+run_spanda check "$TRAIL" >/dev/null
+rm -f "$TRAIL_TRACE"
+export SPANDA_DECISION_TRACE=1
+run_spanda sim "$TRAIL" --record --inject-health-faults >/dev/null
+if [[ -f "$TRAIL_TRACE" ]]; then
+  run_spanda audit decisions "$TRAIL_TRACE" >/dev/null
+  run_spanda explain decision "$TRAIL_TRACE" >/dev/null
+  run_spanda decision trace "$TRAIL_TRACE" >/dev/null
+fi
+
+echo "== record trace + audit decisions (warehouse) =="
 TRACE="${ROOT}/examples/showcase/differentiation/warehouse.trace"
 rm -f "$TRACE"
 run_spanda sim "$FILE" --record >/dev/null || true

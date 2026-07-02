@@ -758,17 +758,33 @@ fn demo_assurance(root: &Path) {
 }
 
 fn demo_differentiation(root: &Path) {
-    let path = showcase(root, &["differentiation", "warehouse.sd"]);
-    let file = require_file(&path);
-    let sd = file.to_str().unwrap();
+    let warehouse_path = showcase(root, &["differentiation", "warehouse.sd"]);
+    let diff_root = repo_root_containing_showcase(&["differentiation", "decision_trail", "main.sd"]);
+    let trail_path = showcase(&diff_root, &["differentiation", "decision_trail", "main.sd"]);
+    let warehouse = require_file(&warehouse_path);
+    let trail = require_file(&trail_path);
+    let warehouse_file = warehouse.to_str().unwrap();
+    let trail_file = trail.to_str().unwrap();
 
     println!("== Differentiation NOW — contracts, coverage, explainability ==\n");
-    run_spanda("check", file, &[]);
-    run_spanda_args(&["contract", "verify", sd]);
-    run_spanda_args(&["safety-coverage", sd]);
-    run_spanda_args(&["recovery-coverage", sd]);
-    run_spanda_args(&["explain", sd]);
-    run_spanda_args(&["explain", "readiness", "--file", sd]);
+    run_spanda("check", warehouse, &[]);
+    run_spanda_args(&["contract", "verify", warehouse_file]);
+    run_spanda_args(&["safety-coverage", warehouse_file]);
+    run_spanda_args(&["recovery-coverage", warehouse_file]);
+    run_spanda_args(&["explain", warehouse_file]);
+    run_spanda_args(&["explain", "readiness", "--file", warehouse_file]);
+
+    println!("\n== Decision audit trail — sim, audit, explain decision ==\n");
+    run_spanda("check", trail, &[]);
+    std::env::set_var("SPANDA_DECISION_TRACE", "1");
+    run_spanda_args(&["sim", trail_file, "--record", "--inject-health-faults"]);
+    let trace_path = trail.with_extension("trace");
+    if trace_path.is_file() {
+        let trace_file = trace_path.to_str().unwrap();
+        run_spanda_args(&["audit", "decisions", trace_file]);
+        run_spanda_args(&["explain", "decision", trace_file]);
+        run_spanda_args(&["decision", "trace", trace_file]);
+    }
 
     println!("\nDemo complete. See examples/showcase/differentiation/ and docs/differentiation-roadmap.md");
 }
