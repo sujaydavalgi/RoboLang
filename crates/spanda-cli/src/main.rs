@@ -3,10 +3,10 @@
 mod adr_cli;
 mod assurance_cli;
 mod assurance_runtime;
-mod comm_bus_runtime;
 mod bundled_registry;
 mod certify_cli;
 mod chaos_cli;
+mod comm_bus_runtime;
 mod compliance_cli;
 mod config_cli;
 mod config_load;
@@ -24,22 +24,23 @@ mod drift_cli;
 mod entity_cli;
 mod estimate_cli;
 mod explain_cli;
-mod fault_runtime;
 mod fault_cli;
+mod fault_runtime;
 mod generate_cli;
 mod graph_cli;
 mod integrity_cli;
 mod network_cli;
 mod package;
+mod plugin_cli;
 mod provider_runtime;
-mod security_runtime;
 mod readiness_cli;
 mod recovery_cli;
-mod runtime_hooks;
 mod replay_cli;
 mod ros2_cli;
+mod runtime_hooks;
 mod score_cli;
 mod security_assurance_cli;
+mod security_runtime;
 mod spoof_cli;
 mod swarm_cli;
 mod tamper_cli;
@@ -50,8 +51,6 @@ mod trace_cli;
 mod trust_cli;
 
 use serde::Serialize;
-use spanda_lib_registry::list_libraries;
-use spanda_runtime_host::core_type_check_host;
 use spanda_ast::comm_decl::PeerRobotDecl;
 use spanda_ast::foundations::{DeployDecl, TaskDecl};
 use spanda_ast::nodes::{BehaviorDecl, Program, RobotDecl};
@@ -71,11 +70,13 @@ use spanda_format::format_source;
 use spanda_hardware::{
     CompatItem, CompatSeverity, CompatibilityMatrix, CompatibilityReport, VerifyOptions,
 };
+use spanda_lib_registry::list_libraries;
 use spanda_lint::{lint, LintIssue, LintSeverity};
 #[cfg(feature = "llvm")]
 use spanda_llvm::{compile_native, emit_module_ir_with_options, CompileNativeOptions};
 use spanda_parser::parse;
 use spanda_runtime::scheduler::SchedulerClock;
+use spanda_runtime_host::core_type_check_host;
 use spanda_security::validate::{security_audit, security_check, SecurityReport, SecuritySeverity};
 use spanda_sir::SirProgram;
 use spanda_typecheck::Diagnostic;
@@ -250,6 +251,15 @@ fn usage() {
            spanda verify-adapter [--project <dir>] [--import <path>] [--package <name>]\n\
            spanda registry search <query>\n\
            spanda registry info <package>\n\n\
+         Plugin commands:\n\
+           spanda plugin search <query>\n\
+           spanda plugin install <name|path> [--path <dir>] [--approve-dangerous]\n\
+           spanda plugin uninstall <name>\n\
+           spanda plugin inspect <name> [--json]\n\
+           spanda plugin trust <name> <tier>\n\
+           spanda plugin enable <name>\n\
+           spanda plugin disable <name>\n\
+           spanda plugin list [--json]\n\n\
          Configuration commands:\n\
            spanda config resolve [--json] [--config <spanda.toml>]\n\
            spanda config validate [--json] [--config <spanda.toml>]\n\
@@ -1633,6 +1643,12 @@ fn main() {
 
     if command == "graph" {
         graph_cli::graph_dispatch(&args[2..]);
+        let _ = io::stdout().flush();
+        return;
+    }
+
+    if command == "plugin" {
+        plugin_cli::plugin_dispatch(&args[2..]);
         let _ = io::stdout().flush();
         return;
     }

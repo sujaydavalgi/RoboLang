@@ -74,6 +74,7 @@ spanda-llvm = { path = "../spanda-llvm", optional = true }
 spanda-modules = { path = "../spanda-modules" }
 spanda-ota = { path = "../spanda-ota" }
 spanda-package = { path = "../spanda-package" }
+spanda-plugin = { path = "../spanda-plugin" }
 spanda-parser = { path = "../spanda-parser" }
 spanda-providers = { path = "../spanda-providers" }
 spanda-runtime = { path = "../spanda-runtime" }
