@@ -277,8 +277,9 @@ Full analysis: [docs/differentiation-roadmap.md](docs/differentiation-roadmap.md
 | `decision_tree`, `offline_policy`, entity `local_decision_authority` | **Stable** |
 | Escalation, consensus, conflict resolution | **Stable** |
 | Runtime policy gates + live v3 trace emission | **Stable** |
-| CLI (`spanda decision list|inspect|simulate|trace|explain|policy|security-audit`) | **Stable** |
-| REST `/v1/decisions*`, `/v1/decisions/traces`, SDK methods, Control Center Decisions tab | **Stable** |
+| CLI (`spanda decision list|inspect|simulate|trace|explain|policy|sign-policy|cache|security-audit`) | **Stable** |
+| REST `/v1/decisions*`, `/v1/decisions/traces`, `/v1/decision-policy-cache`, SDK methods, Control Center Decisions tab | **Stable** |
+| `spanda demo distributed-decisions` | **Stable** |
 | Examples `examples/showcase/distributed_decisions/` | **Stable** |
 
 **Self-healing detail:**
