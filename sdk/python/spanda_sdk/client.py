@@ -404,6 +404,21 @@ class SpandaClient:
             path = f"{path}?policy={policy}"
         return self._request("GET", path)
 
+    def list_twins(self) -> Any:
+        return self._request("GET", "/v1/twins")
+
+    def get_twin(self, twin_id: str) -> Any:
+        return self._request("GET", f"/v1/twins/{twin_id}")
+
+    def sync_twin(self, *, twin_id: Optional[str] = None) -> Any:
+        path = "/v1/twins/sync"
+        if twin_id:
+            path = f"{path}?twin_id={twin_id}"
+        return self._request("POST", path, body={})
+
+    def push_twin_snapshot(self, twin_id: str, snapshot: Mapping[str, Any]) -> Any:
+        return self._request("POST", f"/v1/twins/{twin_id}/snapshots", body=snapshot)
+
     def rpc(self, method: str, params: Optional[Mapping[str, Any]] = None) -> Any:
         payload = self._request(
             "POST",

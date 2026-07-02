@@ -458,6 +458,23 @@ export class SpandaClient {
     return this.request("GET", `/v1/analytics/governance${qs}`);
   }
 
+  async listTwins(): Promise<JsonValue> {
+    return this.request("GET", "/v1/twins");
+  }
+
+  async getTwin(twinId: string): Promise<JsonValue> {
+    return this.request("GET", `/v1/twins/${encodeURIComponent(twinId)}`);
+  }
+
+  async syncTwin(twinId?: string): Promise<JsonValue> {
+    const qs = twinId ? `?twin_id=${encodeURIComponent(twinId)}` : "";
+    return this.request("POST", `/v1/twins/sync${qs}`, {});
+  }
+
+  async pushTwinSnapshot(twinId: string, snapshot: JsonValue): Promise<JsonValue> {
+    return this.request("POST", `/v1/twins/${encodeURIComponent(twinId)}/snapshots`, snapshot);
+  }
+
   async rpc(method: string, params: JsonValue = {}): Promise<JsonValue> {
     const payload = await this.request("POST", "/v1/rpc", {
       method,

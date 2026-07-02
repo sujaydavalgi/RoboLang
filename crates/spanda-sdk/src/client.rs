@@ -760,6 +760,46 @@ impl SpandaClient {
         self.request("GET", &path, None, false)
     }
 
+    /// List Twin Cloud mission twin snapshots (`GET /v1/twins`).
+    pub fn list_twins(&self) -> SpandaResult<Value> {
+        self.request("GET", "/v1/twins", None, false)
+    }
+
+    /// Fetch latest Twin Cloud snapshot (`GET /v1/twins/{id}`).
+    pub fn get_twin(&self, twin_id: &str) -> SpandaResult<Value> {
+        self.request(
+            "GET",
+            &format!("/v1/twins/{}", Self::encode_query_component(twin_id)),
+            None,
+            false,
+        )
+    }
+
+    /// Sync mission twin from loaded program (`POST /v1/twins/sync`).
+    pub fn sync_twin(&self, twin_id: Option<&str>) -> SpandaResult<Value> {
+        let path = match twin_id.filter(|value| !value.is_empty()) {
+            Some(id) => format!(
+                "/v1/twins/sync?twin_id={}",
+                Self::encode_query_component(id)
+            ),
+            None => "/v1/twins/sync".to_string(),
+        };
+        self.request("POST", &path, Some(&serde_json::json!({})), false)
+    }
+
+    /// Push a Twin Cloud snapshot envelope (`POST /v1/twins/{id}/snapshots`).
+    pub fn push_twin_snapshot(&self, twin_id: &str, snapshot: &Value) -> SpandaResult<Value> {
+        self.request(
+            "POST",
+            &format!(
+                "/v1/twins/{}/snapshots",
+                Self::encode_query_component(twin_id)
+            ),
+            Some(snapshot),
+            false,
+        )
+    }
+
     fn analytics_path(base: &str, named: Option<(&str, &str)>, all: bool) -> String {
         let mut params = Vec::new();
         if all {
