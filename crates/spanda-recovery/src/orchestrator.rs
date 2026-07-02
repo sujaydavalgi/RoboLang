@@ -30,12 +30,23 @@ use spanda_runtime::recovery_types::{RecoveryLevel, RecoveryPlan};
 #[derive(Debug, Clone, Default)]
 pub struct RecoveryOrchestrator {
     history: RecoveryHistoryStore,
+    plugins: Option<crate::plugin::RecoveryPluginRegistry>,
 }
 
 impl RecoveryOrchestrator {
     /// Create a new orchestrator with empty history.
     pub fn new() -> Self {
         Self::default()
+    }
+
+    /// Attach plugin-contributed recovery extensions.
+    pub fn with_plugins(mut self, plugins: crate::plugin::RecoveryPluginRegistry) -> Self {
+        self.plugins = Some(plugins);
+        self
+    }
+
+    fn plugin_registry(&self) -> Option<&crate::plugin::RecoveryPluginRegistry> {
+        self.plugins.as_ref()
     }
 
     /// Plan recovery for an entity failure without execution.
@@ -65,7 +76,15 @@ impl RecoveryOrchestrator {
 
         let mut req = request.clone();
         req.mode = RecoverySimulationMode::Plan;
-        run_simulation(program, registry, resolved, &req, &self.history, None)
+        run_simulation(
+            program,
+            registry,
+            resolved,
+            &req,
+            &self.history,
+            None,
+            self.plugin_registry(),
+        )
     }
 
     /// Simulate recovery with expected timelines and mission impact.
@@ -79,7 +98,15 @@ impl RecoveryOrchestrator {
     ) -> OrchestratorRecoveryReport {
         let mut req = request.clone();
         req.mode = RecoverySimulationMode::Simulate;
-        run_simulation(program, registry, resolved, &req, &self.history, telemetry)
+        run_simulation(
+            program,
+            registry,
+            resolved,
+            &req,
+            &self.history,
+            telemetry,
+            self.plugin_registry(),
+        )
     }
 
     /// Dry-run recovery — full pipeline without mutating runtime state.
@@ -92,7 +119,15 @@ impl RecoveryOrchestrator {
     ) -> OrchestratorRecoveryReport {
         let mut req = request.clone();
         req.mode = RecoverySimulationMode::DryRun;
-        run_simulation(program, registry, resolved, &req, &self.history, None)
+        run_simulation(
+            program,
+            registry,
+            resolved,
+            &req,
+            &self.history,
+            None,
+            self.plugin_registry(),
+        )
     }
 
     /// Validate a recovery plan against all required gates.
@@ -199,7 +234,11 @@ impl RecoveryOrchestrator {
 
     /// List available recovery playbooks.
     pub fn list_playbooks(&self, resolved: Option<&ResolvedSystemConfig>) -> Vec<RecoveryPlaybook> {
-        load_playbooks(resolved)
+        let mut playbooks = load_playbooks(resolved);
+        if let Some(registry) = self.plugin_registry() {
+            crate::playbook::merge_plugin_playbooks(&mut playbooks, registry);
+        }
+        playbooks
     }
 
     /// Get recovery history evidence records.

@@ -24,6 +24,8 @@ pub struct PluginManifest {
     pub control_center: ControlCenterSection,
     #[serde(default)]
     pub cli: CliSection,
+    #[serde(default)]
+    pub recovery: RecoverySection,
 }
 
 /// `[plugin]` metadata block.
@@ -144,6 +146,24 @@ pub struct UiRouteDecl {
 pub struct CliSection {
     #[serde(default)]
     pub commands: Vec<CliCommandDecl>,
+}
+
+/// `[recovery]` orchestrator extension contributions.
+#[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
+pub struct RecoverySection {
+    #[serde(default)]
+    pub extensions: Vec<RecoveryExtensionDecl>,
+}
+
+/// One recovery strategy, playbook, validator, or dashboard extension.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct RecoveryExtensionDecl {
+    pub kind: String,
+    pub name: String,
+    #[serde(default)]
+    pub description: Option<String>,
+    #[serde(default)]
+    pub trigger: Option<String>,
 }
 
 /// One namespaced CLI command exposed by a plugin.

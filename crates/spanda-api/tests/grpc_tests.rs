@@ -703,6 +703,71 @@ async fn grpc_decision_endpoints_with_showcase_program() {
 }
 
 #[tokio::test]
+async fn grpc_recovery_endpoints_with_self_healing_program() {
+    let _guard = GRPC_TEST_LOCK.lock().unwrap();
+    let program = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .unwrap()
+        .parent()
+        .unwrap()
+        .join("examples/showcase/self_healing/rover.sd");
+    assert!(program.exists(), "missing {}", program.display());
+    let http_port = pick_port();
+    let grpc_port = pick_port();
+    let options = ControlCenterOptions {
+        bind: format!("127.0.0.1:{http_port}"),
+        grpc_bind: Some(format!("127.0.0.1:{grpc_port}")),
+        program_path: Some(program),
+        once: true,
+        timeout_ms: 500,
+        ..Default::default()
+    };
+    let grpc_bind = spawn_control_center(options);
+    let mut client = connect(&grpc_bind).await;
+
+    let playbooks = client
+        .list_recovery_playbooks(spanda_api::grpc::spanda_v1::Empty {})
+        .await
+        .expect("list recovery playbooks")
+        .into_inner();
+    assert!(playbooks.json.contains("battery_low"));
+
+    let history = client
+        .get_recovery_history(spanda_api::grpc::spanda_v1::Empty {})
+        .await
+        .expect("recovery history")
+        .into_inner();
+    assert!(history.json.contains("history"));
+
+    let plan = client
+        .plan_recovery(spanda_api::grpc::spanda_v1::JsonBodyRequest {
+            body_json: r#"{"failure":"gps"}"#.into(),
+        })
+        .await
+        .expect("plan recovery")
+        .into_inner();
+    assert!(plan.json.contains("report"));
+
+    let simulate = client
+        .simulate_recovery(spanda_api::grpc::spanda_v1::JsonBodyRequest {
+            body_json: r#"{"failure":"gps"}"#.into(),
+        })
+        .await
+        .expect("simulate recovery")
+        .into_inner();
+    assert!(simulate.json.contains("report"));
+
+    let explain = client
+        .explain_recovery(spanda_api::grpc::spanda_v1::JsonBodyRequest {
+            body_json: r#"{"entity_id":"system","failure":"gps"}"#.into(),
+        })
+        .await
+        .expect("explain recovery")
+        .into_inner();
+    assert!(explain.json.contains("decision"));
+}
+
+#[tokio::test]
 async fn grpc_analytics_endpoints_with_forecast_program() {
     let _guard = GRPC_TEST_LOCK.lock().unwrap();
     let program = PathBuf::from(env!("CARGO_MANIFEST_DIR"))

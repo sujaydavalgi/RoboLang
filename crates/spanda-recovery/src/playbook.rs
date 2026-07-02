@@ -74,6 +74,36 @@ pub fn match_playbooks<'a>(
         .collect()
 }
 
+/// Merge plugin-contributed playbook extensions into the playbook list.
+pub fn merge_plugin_playbooks(
+    playbooks: &mut Vec<RecoveryPlaybook>,
+    registry: &crate::plugin::RecoveryPluginRegistry,
+) {
+    // Register plugin playbooks that are not already present by name.
+    for ext in registry.list(crate::plugin::PLUGIN_KIND_PLAYBOOK) {
+        if playbooks.iter().any(|pb| pb.name == ext.name) {
+            continue;
+        }
+        let trigger = ext.description.clone();
+        playbooks.push(RecoveryPlaybook {
+            name: ext.name.clone(),
+            version: "plugin".into(),
+            description: ext.description.clone(),
+            trigger,
+            steps: vec![PlaybookStep {
+                order: 1,
+                description: format!("Plugin playbook: {}", ext.name),
+                strategy: OrchestratorStrategy::Custom(ext.name.clone()),
+                escalation_level: RecoveryEscalationLevel::Level3RecoverDevice,
+                timeout_secs: 120,
+                requires_validation: true,
+            }],
+            entity_kinds: Vec::new(),
+        });
+    }
+    playbooks.sort_by(|a, b| a.name.cmp(&b.name));
+}
+
 fn battery_low_playbook() -> RecoveryPlaybook {
     RecoveryPlaybook {
         name: "battery_low".into(),

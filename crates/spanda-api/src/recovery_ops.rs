@@ -6,10 +6,11 @@ use spanda_deploy_http::HttpResponse;
 use spanda_lexer::tokenize;
 use spanda_parser::parse;
 use spanda_recovery::{
-    OrchestratorContext, RecoveryOrchestrator, RecoveryOrchestratorRequest, RecoverySimulationMode,
+    OrchestratorContext, RecoveryOrchestratorRequest, RecoverySimulationMode,
 };
 
 use crate::handlers::{bad_request, json_ok};
+use crate::recovery_plugins::{dispatch_recovery_completed_hook, orchestrator_for_state};
 use crate::state::ControlCenterState;
 
 const API_VERSION: &str = "v1";
@@ -60,7 +61,7 @@ fn orchestrator_request(
 /// GET /v1/recovery/plans
 pub fn list_recovery_plans(state: &ControlCenterState) -> HttpResponse {
     let registry = state.entity_registry();
-    let orchestrator = RecoveryOrchestrator::new();
+    let orchestrator = orchestrator_for_state(state);
     let resolved = state.resolved.as_ref();
     let (program, file) = match load_program_from_state(state, None) {
         Some(v) => v,
@@ -77,8 +78,8 @@ pub fn list_recovery_plans(state: &ControlCenterState) -> HttpResponse {
 }
 
 /// GET /v1/recovery/history
-pub fn recovery_history(_state: &ControlCenterState) -> HttpResponse {
-    let orchestrator = RecoveryOrchestrator::new();
+pub fn recovery_history(state: &ControlCenterState) -> HttpResponse {
+    let orchestrator = orchestrator_for_state(state);
     let history = orchestrator.get_history(100);
     json_ok(&serde_json::json!({
         "version": API_VERSION,
@@ -96,7 +97,7 @@ pub fn recovery_plan(state: &ControlCenterState, body: &str) -> HttpResponse {
         Some(v) => v,
         None => return bad_request("program not found"),
     };
-    let orchestrator = RecoveryOrchestrator::new();
+    let orchestrator = orchestrator_for_state(state);
     let request = orchestrator_request(&req, RecoverySimulationMode::Plan);
     let report = orchestrator.plan_recovery(&program, &registry, resolved, &request);
     json_ok(&serde_json::json!({
@@ -115,7 +116,7 @@ pub fn recovery_simulate(state: &ControlCenterState, body: &str) -> HttpResponse
         Some(v) => v,
         None => return bad_request("program not found"),
     };
-    let orchestrator = RecoveryOrchestrator::new();
+    let orchestrator = orchestrator_for_state(state);
     let request = orchestrator_request(&req, RecoverySimulationMode::Simulate);
     let report = orchestrator.simulate_recovery(&program, &registry, resolved, &request, None);
     json_ok(&serde_json::json!({
@@ -134,7 +135,7 @@ pub fn recovery_execute(state: &ControlCenterState, body: &str) -> HttpResponse 
         Some(v) => v,
         None => return bad_request("program not found"),
     };
-    let mut orchestrator = RecoveryOrchestrator::new();
+    let mut orchestrator = orchestrator_for_state(state);
     let request = orchestrator_request(&req, RecoverySimulationMode::Validate);
     let ctx = OrchestratorContext {
         dry_run: false,
@@ -142,6 +143,16 @@ pub fn recovery_execute(state: &ControlCenterState, body: &str) -> HttpResponse 
         ..Default::default()
     };
     let report = orchestrator.execute_recovery(&program, &registry, resolved, &request, &ctx);
+    dispatch_recovery_completed_hook(
+        state,
+        serde_json::json!({
+            "file": file,
+            "entity_id": req.entity_id,
+            "failure": req.failure,
+            "passed": report.passed,
+            "plan_count": report.plans.len(),
+        }),
+    );
     json_ok(&serde_json::json!({
         "version": API_VERSION,
         "file": file,
@@ -158,7 +169,7 @@ pub fn recovery_validate(state: &ControlCenterState, body: &str) -> HttpResponse
         Some(v) => v,
         None => return bad_request("program not found"),
     };
-    let orchestrator = RecoveryOrchestrator::new();
+    let orchestrator = orchestrator_for_state(state);
     let request = orchestrator_request(&req, RecoverySimulationMode::Validate);
     let report = orchestrator.dry_run_recovery(&program, &registry, resolved, &request);
     json_ok(&serde_json::json!({
@@ -171,7 +182,7 @@ pub fn recovery_validate(state: &ControlCenterState, body: &str) -> HttpResponse
 
 /// GET /v1/recovery/playbooks
 pub fn recovery_playbooks(state: &ControlCenterState) -> HttpResponse {
-    let orchestrator = RecoveryOrchestrator::new();
+    let orchestrator = orchestrator_for_state(state);
     let playbooks = orchestrator.list_playbooks(state.resolved.as_ref());
     json_ok(&serde_json::json!({
         "version": API_VERSION,
@@ -190,7 +201,7 @@ pub fn recovery_metrics(state: &ControlCenterState) -> HttpResponse {
             }))
         }
     };
-    let orchestrator = RecoveryOrchestrator::new();
+    let orchestrator = orchestrator_for_state(state);
     let metrics = orchestrator.get_metrics(&program);
     json_ok(&serde_json::json!({
         "version": API_VERSION,
@@ -202,7 +213,7 @@ pub fn recovery_metrics(state: &ControlCenterState) -> HttpResponse {
 /// GET /v1/recovery/graph — recovery graph for entity subtree.
 pub fn recovery_graph(state: &ControlCenterState, entity_id: Option<&str>) -> HttpResponse {
     let registry = state.entity_registry();
-    let orchestrator = RecoveryOrchestrator::new();
+    let orchestrator = orchestrator_for_state(state);
     let graph = orchestrator.build_graph(&registry, entity_id);
     json_ok(&serde_json::json!({
         "version": API_VERSION,
@@ -216,7 +227,7 @@ pub fn recovery_explain(state: &ControlCenterState, body: &str) -> HttpResponse 
     let registry = state.entity_registry();
     let entity_id = req.entity_id.unwrap_or_else(|| "system".into());
     let failure = req.failure.unwrap_or_else(|| "degraded".into());
-    let orchestrator = RecoveryOrchestrator::new();
+    let orchestrator = orchestrator_for_state(state);
     let decision =
         orchestrator.explain_recovery(&registry, state.resolved.as_ref(), &entity_id, &failure);
     json_ok(&serde_json::json!({
@@ -230,7 +241,7 @@ pub fn recovery_explain(state: &ControlCenterState, body: &str) -> HttpResponse 
 /// GET /v1/recovery/policies
 pub fn recovery_policies(state: &ControlCenterState) -> HttpResponse {
     let registry = state.entity_registry();
-    let orchestrator = RecoveryOrchestrator::new();
+    let orchestrator = orchestrator_for_state(state);
     let policies = state
         .resolved
         .as_ref()
@@ -240,4 +251,73 @@ pub fn recovery_policies(state: &ControlCenterState) -> HttpResponse {
         "version": API_VERSION,
         "policies": policies,
     }))
+}
+
+fn parse_query_param(query: &str, key: &str) -> Option<String> {
+    query.split('&').find_map(|pair| {
+        let mut parts = pair.splitn(2, '=');
+        let k = parts.next()?;
+        let v = parts.next().unwrap_or("");
+        if k == key {
+            Some(v.to_string())
+        } else {
+            None
+        }
+    })
+}
+
+/// JSON string helper for gRPC parity.
+pub fn list_recovery_plans_json(state: &ControlCenterState) -> String {
+    list_recovery_plans(state).body
+}
+
+/// JSON string helper for gRPC parity.
+pub fn recovery_history_json(state: &ControlCenterState) -> String {
+    recovery_history(state).body
+}
+
+/// JSON string helper for gRPC parity.
+pub fn recovery_plan_json(state: &ControlCenterState, body: &str) -> String {
+    recovery_plan(state, body).body
+}
+
+/// JSON string helper for gRPC parity.
+pub fn recovery_simulate_json(state: &ControlCenterState, body: &str) -> String {
+    recovery_simulate(state, body).body
+}
+
+/// JSON string helper for gRPC parity.
+pub fn recovery_execute_json(state: &ControlCenterState, body: &str) -> String {
+    recovery_execute(state, body).body
+}
+
+/// JSON string helper for gRPC parity.
+pub fn recovery_validate_json(state: &ControlCenterState, body: &str) -> String {
+    recovery_validate(state, body).body
+}
+
+/// JSON string helper for gRPC parity.
+pub fn recovery_playbooks_json(state: &ControlCenterState) -> String {
+    recovery_playbooks(state).body
+}
+
+/// JSON string helper for gRPC parity.
+pub fn recovery_metrics_json(state: &ControlCenterState) -> String {
+    recovery_metrics(state).body
+}
+
+/// JSON string helper for gRPC parity.
+pub fn recovery_graph_json(state: &ControlCenterState, query: &str) -> String {
+    let entity_id = parse_query_param(query, "entity_id");
+    recovery_graph(state, entity_id.as_deref()).body
+}
+
+/// JSON string helper for gRPC parity.
+pub fn recovery_explain_json(state: &ControlCenterState, body: &str) -> String {
+    recovery_explain(state, body).body
+}
+
+/// JSON string helper for gRPC parity.
+pub fn recovery_policies_json(state: &ControlCenterState) -> String {
+    recovery_policies(state).body
 }

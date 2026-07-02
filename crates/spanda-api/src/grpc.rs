@@ -1376,6 +1376,116 @@ impl ControlCenter for GrpcControlCenter {
         self.with_state(|state| crate::decision_ops::entity_decisions_json(state, &entity_id, ""))
             .map(Response::new)
     }
+
+    async fn list_recovery_plans(
+        &self,
+        request: Request<Empty>,
+    ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
+        let _ = request.into_inner();
+        self.with_state(|state| crate::recovery_ops::list_recovery_plans_json(state))
+            .map(Response::new)
+    }
+
+    async fn get_recovery_history(
+        &self,
+        request: Request<Empty>,
+    ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
+        let _ = request.into_inner();
+        self.with_state(|state| crate::recovery_ops::recovery_history_json(state))
+            .map(Response::new)
+    }
+
+    async fn plan_recovery(
+        &self,
+        request: Request<JsonBodyRequest>,
+    ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
+        let body = request.into_inner().body_json;
+        self.with_state(|state| crate::recovery_ops::recovery_plan_json(state, &body))
+            .map(Response::new)
+    }
+
+    async fn simulate_recovery(
+        &self,
+        request: Request<JsonBodyRequest>,
+    ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
+        let body = request.into_inner().body_json;
+        self.with_state(|state| crate::recovery_ops::recovery_simulate_json(state, &body))
+            .map(Response::new)
+    }
+
+    async fn execute_recovery(
+        &self,
+        request: Request<JsonBodyRequest>,
+    ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
+        let body = request.into_inner().body_json;
+        self.with_state(|state| crate::recovery_ops::recovery_execute_json(state, &body))
+            .map(Response::new)
+    }
+
+    async fn validate_recovery(
+        &self,
+        request: Request<JsonBodyRequest>,
+    ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
+        let body = request.into_inner().body_json;
+        self.with_state(|state| crate::recovery_ops::recovery_validate_json(state, &body))
+            .map(Response::new)
+    }
+
+    async fn list_recovery_playbooks(
+        &self,
+        request: Request<Empty>,
+    ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
+        let _ = request.into_inner();
+        self.with_state(|state| crate::recovery_ops::recovery_playbooks_json(state))
+            .map(Response::new)
+    }
+
+    async fn get_recovery_metrics(
+        &self,
+        request: Request<Empty>,
+    ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
+        let _ = request.into_inner();
+        self.with_state(|state| crate::recovery_ops::recovery_metrics_json(state))
+            .map(Response::new)
+    }
+
+    async fn get_recovery_graph(
+        &self,
+        request: Request<QueryRequest>,
+    ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
+        let query = request.into_inner().query;
+        self.with_state(|state| crate::recovery_ops::recovery_graph_json(state, &query))
+            .map(Response::new)
+    }
+
+    async fn list_recovery_policies(
+        &self,
+        request: Request<Empty>,
+    ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
+        let _ = request.into_inner();
+        self.with_state(|state| crate::recovery_ops::recovery_policies_json(state))
+            .map(Response::new)
+    }
+
+    async fn explain_recovery(
+        &self,
+        request: Request<JsonBodyRequest>,
+    ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
+        let body = request.into_inner().body_json;
+        self.with_state(|state| crate::recovery_ops::recovery_explain_json(state, &body))
+            .map(Response::new)
+    }
 }
 
 /// Start tonic gRPC server on `bind` (blocks the current thread's tokio runtime).

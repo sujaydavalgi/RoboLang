@@ -29,6 +29,7 @@ pub fn run_simulation(
     request: &RecoveryOrchestratorRequest,
     history: &RecoveryHistoryStore,
     telemetry: Option<&serde_json::Value>,
+    plugins: Option<&crate::plugin::RecoveryPluginRegistry>,
 ) -> OrchestratorRecoveryReport {
     // Run recovery simulation in the requested mode.
     //
@@ -52,7 +53,10 @@ pub fn run_simulation(
     let policies = resolved
         .map(|c| load_recovery_policies(c, registry))
         .unwrap_or_default();
-    let playbooks = load_playbooks(resolved);
+    let mut playbooks = load_playbooks(resolved);
+    if let Some(registry) = plugins {
+        crate::playbook::merge_plugin_playbooks(&mut playbooks, registry);
+    }
     let knowledge = load_knowledge(program);
     let graph = build_recovery_graph(registry, request.entity_id.as_deref());
     let predictive = scan_predictive_indicators(registry, telemetry);
@@ -90,7 +94,12 @@ pub fn run_simulation(
             let strategies: Vec<_> = if let Some(ref pb) = matched_playbook {
                 pb.steps.iter().map(|s| s.strategy.clone()).collect()
             } else {
-                vec![decision.recommended_strategy.clone()]
+                let recommended = plugins
+                    .and_then(|registry| {
+                        registry.resolve_strategy(decision.recommended_strategy.label())
+                    })
+                    .unwrap_or(decision.recommended_strategy.clone());
+                vec![recommended]
             };
 
             let ctx = RecoveryContext {

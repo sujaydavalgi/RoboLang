@@ -1,5 +1,5 @@
 syntax = "proto3";
-// Spanda Control Center gRPC API — proto semver 1.0.7 (package spanda.v1).
+// Spanda Control Center gRPC API — proto semver 1.0.8 (package spanda.v1).
 package spanda.v1;
 
 message Empty {}
@@ -176,4 +176,16 @@ service ControlCenter {
   rpc ListDecisionPolicyCache(QueryRequest) returns (JsonResponse);
   rpc SimulateDecisions(JsonBodyRequest) returns (JsonResponse);
   rpc GetEntityDecisions(EntityIdRequest) returns (JsonResponse);
+  // Recovery Orchestrator (mirrors /v1/recovery/*)
+  rpc ListRecoveryPlans(Empty) returns (JsonResponse);
+  rpc GetRecoveryHistory(Empty) returns (JsonResponse);
+  rpc PlanRecovery(JsonBodyRequest) returns (JsonResponse);
+  rpc SimulateRecovery(JsonBodyRequest) returns (JsonResponse);
+  rpc ExecuteRecovery(JsonBodyRequest) returns (JsonResponse);
+  rpc ValidateRecovery(JsonBodyRequest) returns (JsonResponse);
+  rpc ListRecoveryPlaybooks(Empty) returns (JsonResponse);
+  rpc GetRecoveryMetrics(Empty) returns (JsonResponse);
+  rpc GetRecoveryGraph(QueryRequest) returns (JsonResponse);
+  rpc ListRecoveryPolicies(Empty) returns (JsonResponse);
+  rpc ExplainRecovery(JsonBodyRequest) returns (JsonResponse);
 }

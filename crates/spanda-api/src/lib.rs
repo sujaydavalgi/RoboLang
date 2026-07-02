@@ -24,6 +24,7 @@ pub mod persistence;
 pub mod plugins;
 pub mod program;
 pub mod recovery_ops;
+pub mod recovery_plugins;
 pub mod report_scheduler;
 pub mod sdk_ops;
 pub mod server;

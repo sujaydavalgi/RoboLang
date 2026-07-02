@@ -6,7 +6,7 @@ use serde_json::{json, Value};
 pub const PROTO_PACKAGE: &str = "spanda.v1";
 
 /// Semver for the published `control_center.proto` contract (independent of crate version).
-pub const PROTO_SEMVER: &str = "1.0.7";
+pub const PROTO_SEMVER: &str = "1.0.8";
 
 /// Relative path to the proto file from the `spanda-api` crate root.
 pub const PROTO_FILE: &str = "proto/spanda/v1/control_center.proto";
@@ -42,9 +42,9 @@ mod tests {
     use super::*;
 
     #[test]
-    fn proto_declares_at_least_fifty_nine_rpcs() {
+    fn proto_declares_at_least_seventy_rpcs() {
         assert!(
-            control_center_rpc_count() >= 59,
+            control_center_rpc_count() >= 70,
             "unexpected rpc count: {}",
             control_center_rpc_count()
         );
