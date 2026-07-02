@@ -56,4 +56,11 @@ echo "== demo differentiation =="
 export SPANDA_ROOT="${ROOT}"
 run_spanda demo differentiation
 
+echo "== NEXT differentiation smokes =="
+./scripts/what_if_smoke.sh
+./scripts/risk_smoke.sh
+./scripts/trust_graph_smoke.sh
+./scripts/scorecard_smoke.sh
+./scripts/readiness_forecast_smoke.sh
+
 echo "Differentiation smoke OK"

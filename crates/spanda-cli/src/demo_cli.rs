@@ -750,6 +750,48 @@ fn demo_risk(root: &Path) {
     println!("\nDemo complete. See examples/showcase/risk/ and docs/mission-risk-analysis.md");
 }
 
+fn demo_trust_graph(root: &Path) {
+    let path = showcase(root, &["trust_graph", "rover.sd"]);
+    let file = require_file(&path);
+    let sd = file.to_str().unwrap();
+
+    println!("== Trust graph — mission-to-provider trust chain ==\n");
+    run_spanda("check", file, &[]);
+    run_spanda_args(&["trust-graph", sd]);
+    run_spanda_args(&["trust-graph", sd, "--json"]);
+    run_spanda_args(&["trust-graph", sd, "--format", "mermaid"]);
+
+    println!("\nDemo complete. See examples/showcase/trust_graph/ and docs/trust-graph.md");
+}
+
+fn demo_scorecard(root: &Path) {
+    let path = showcase(root, &["scorecard", "executive.sd"]);
+    let file = require_file(&path);
+    let sd = file.to_str().unwrap();
+
+    println!("== Executive scorecard — multi-pillar health rollup ==\n");
+    run_spanda("check", file, &[]);
+    run_spanda_args(&["score", sd]);
+    run_spanda_args(&["score", sd, "--json"]);
+    run_spanda_args(&["score", sd, "--format", "markdown"]);
+
+    println!("\nDemo complete. See examples/showcase/scorecard/ and docs/scorecards.md");
+}
+
+fn demo_readiness_forecast(root: &Path) {
+    let path = showcase(root, &["forecast", "degradation.sd"]);
+    let file = require_file(&path);
+    let sd = file.to_str().unwrap();
+
+    println!("== Readiness forecast — predicted degradation over time ==\n");
+    run_spanda("check", file, &[]);
+    run_spanda_args(&["readiness", sd, "--record"]);
+    run_spanda_args(&["readiness", "forecast", sd]);
+    run_spanda_args(&["readiness", "forecast", sd, "--all", "--json"]);
+
+    println!("\nDemo complete. See examples/showcase/forecast/ and docs/readiness-forecast.md");
+}
+
 fn demo_assurance(root: &Path) {
     // Description:
     //     Demo assurance.
@@ -1337,6 +1379,11 @@ pub fn demo_dispatch(args: &[String]) {
         }
         "what-if" | "whatif" => demo_what_if(&root),
         "risk" | "mission-risk" => demo_risk(&root),
+        "trust-graph" | "trust_graph" | "trustgraph" => demo_trust_graph(&root),
+        "scorecard" | "score" => demo_scorecard(&root),
+        "forecast" | "readiness-forecast" | "readiness_forecast" => {
+            demo_readiness_forecast(&root)
+        }
         "differentiation" | "diff" => demo_differentiation(&root),
         "maturity" | "platform-maturity" => demo_maturity(&root),
         "trust" | "tamper" | "security-trust" => demo_trust(&root),
@@ -1366,6 +1413,9 @@ pub fn demo_dispatch(args: &[String]) {
                    distributed-decisions — decision trees, offline policy, traces, policy cache\n\
                    what-if — failure scenario impact, risk, and recovery predictions\n\
                    risk — mission deployment risk score and mitigations\n\
+                   trust-graph — trust-weighted mission → provider dependency graph\n\
+                   scorecard — executive multi-pillar health rollup\n\
+                   forecast — readiness degradation predictions over time\n\
                    differentiation — mission contracts, safety/recovery coverage, explain\n\
                    maturity — Phase A graph, explain, trust, deployment gates\n\
                    trust — package/mission tampering, spoofing, runtime intrusion, tamper_policy\n\

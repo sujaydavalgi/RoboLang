@@ -195,6 +195,8 @@
 | [recovery-coverage.md](./recovery-coverage.md) | **Recovery path coverage reporting** |
 | [what-if-analysis.md](./what-if-analysis.md) | **What-if failure scenario analysis** |
 | [mission-risk-analysis.md](./mission-risk-analysis.md) | **Mission deployment risk scoring** |
+| [readiness-forecast.md](./readiness-forecast.md) | **Readiness degradation forecasting** |
+| [trust-graph.md](./trust-graph.md) | **Trust-weighted dependency graph** |
 | [digital-mission-twin.md](./digital-mission-twin.md) | **Digital mission twin — progress, health, risks** |
 | [certification-packs.md](./certification-packs.md) | **Deployment evidence bundles** |
 | [mission-time-travel.md](./mission-time-travel.md) | **Replay mission state at any timestamp** |

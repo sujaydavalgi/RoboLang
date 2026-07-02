@@ -69,9 +69,9 @@ These six capabilities define Spanda's market identity. Protect them in every re
 |---|------|--------------|-------|--------|
 | 6 | What-If Analysis | `spanda what-if <file>` | `spanda-whatif` | **Experimental** |
 | 7 | Mission Risk Analysis | `spanda risk <file>` | `spanda-risk` | **Experimental** |
-| 8 | Readiness Forecasting | `spanda readiness forecast` | extends `spanda-readiness` | **Planned** |
-| 9 | Trust Graph | `spanda trust-graph <file>` | `spanda-graph` + `spanda-trust` | **Planned** |
-| 10 | Scorecards | `spanda score <file>` | `spanda-score` | **Planned** |
+| 8 | Readiness Forecasting | `spanda readiness forecast` | extends `spanda-readiness` | **Experimental** |
+| 9 | Trust Graph | `spanda trust-graph <file>` | `spanda-graph` + `spanda-trust` | **Experimental** |
+| 10 | Scorecards | `spanda score <file>` | `spanda-score` | **Experimental** |
 
 ### LATER — digital twin, certification, teaming, governance
 
@@ -599,6 +599,7 @@ Single scripted demo covering the five NOW areas on `examples/showcase/different
 | `examples/showcase/differentiation/decision_trail/` | Decision audit + explain | NOW |
 | `examples/showcase/what_if/gps_failure.sd` | What-if GPS failure | NEXT |
 | `examples/showcase/risk/deployment_risk.sd` | Mission risk score | NEXT |
+| `examples/showcase/forecast/degradation.sd` | Readiness forecast | NEXT |
 | `examples/showcase/trust_graph/rover.sd` | Trust dependency graph | NEXT |
 | `examples/showcase/scorecard/executive.sd` | Executive scorecard | NEXT |
 | `examples/showcase/mission_twin/patrol.sd` | Digital mission twin | LATER |
@@ -613,6 +614,8 @@ Single scripted demo covering the five NOW areas on `examples/showcase/different
 | `scripts/differentiation_smoke.sh` | contract verify, safety-coverage, recovery-coverage, explain, decision trail audit/explain |
 | `scripts/what_if_smoke.sh` | what-if scenarios (NEXT) |
 | `scripts/risk_smoke.sh` | mission deployment risk score (NEXT) |
+| `scripts/readiness_forecast_smoke.sh` | readiness forecast horizons (NEXT) |
+| `scripts/trust_graph_smoke.sh` | trust-weighted dependency graph (NEXT) |
 | `scripts/scorecard_smoke.sh` | score rollup (NEXT) |
 
 ---

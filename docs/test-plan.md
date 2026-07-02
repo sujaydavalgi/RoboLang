@@ -24,6 +24,9 @@
 | Differentiation decision trail | audit + explain decision on v3 trace | `examples/showcase/differentiation/decision_trail/`, `scripts/differentiation_smoke.sh` |
 | What-if analysis | scenario impact, risk, recovery plan, probability | `crates/spanda-whatif/tests/gps_failure.rs`, `scripts/what_if_smoke.sh` |
 | Mission risk scoring | deployment risk score and mitigations | `crates/spanda-risk/tests/deployment_risk.rs`, `scripts/risk_smoke.sh` |
+| Readiness forecast | horizon predictions and degradation | `crates/spanda-readiness/tests/forecast_tests.rs`, `scripts/readiness_forecast_smoke.sh` |
+| Trust graph | trust-weighted mission → provider paths | `crates/spanda-graph/tests/graph_tests.rs`, `scripts/trust_graph_smoke.sh` |
+| Scorecard rollup | executive multi-pillar score | `scripts/scorecard_smoke.sh`, `examples/showcase/scorecard/executive.sd` |
 | Decision diagnostics | `decision_tree` / `offline_policy` / authority parity Rust ↔ TS | `crates/spanda-decision/src/diagnostics.rs`, `src/decision-diagnostics.ts` |
 | Swarm continuity | member-lost handoff + mesh relay | `crates/spanda-fleet/src/swarm_continuity.rs`, `crates/spanda-fleet/tests/mesh_integration.rs` |
 | Self-healing runtime | auto-trigger, approval retry, mesh relay | `crates/spanda-interpreter/tests/recovery_runtime.rs`, `scripts/self_healing_smoke.sh` |

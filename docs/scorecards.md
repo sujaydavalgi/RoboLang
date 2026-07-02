@@ -8,7 +8,7 @@ Executive-level visibility into system health across platform pillars.
 
 ```bash
 spanda score rover.sd
-spanda score rover.sd --json
+spanda score examples/showcase/scorecard/executive.sd --json
 spanda score rover.sd --format markdown
 ```
 
