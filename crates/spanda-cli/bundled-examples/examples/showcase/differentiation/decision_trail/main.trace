@@ -1,0 +1,289 @@
+{
+  "version": 2,
+  "source": "examples/showcase/differentiation/decision_trail/main.sd",
+  "deterministic": true,
+  "frames": [
+    {
+      "sim_time_ms": 0.0,
+      "event": "decision_tree_eval",
+      "payload": {
+        "alternatives_considered": [],
+        "decision": "local_decision",
+        "decision_id": "d-0-decision_tree_eval",
+        "entity_id": "Scanner001",
+        "evidence": {
+          "actions": [
+            "enter degraded_mode",
+            "trigger emergency_stop"
+          ],
+          "central_connected": true,
+          "condition": "gps.status == Failed",
+          "offline_minutes": 0,
+          "policy_version": "1.0.0",
+          "signals": {
+            "fleet.coordinator.failed": false,
+            "gps.status == Failed": true,
+            "obstacle.detected": false,
+            "operator.available": false,
+            "visual_odometry.available": false
+          },
+          "tree": "GPSLossReflex",
+          "tree_hash": "ed5ab10d175bde4d"
+        },
+        "layer": "local_entity",
+        "mission": "mission",
+        "policy_version": "1.0.0",
+        "reason": "tree 'GPSLossReflex' matched 'gps.status == Failed' → enter degraded_mode, trigger emergency_stop",
+        "rejected_alternatives": [],
+        "safety_checks": [
+          {
+            "passed": true,
+            "rule": "distributed_decision"
+          }
+        ],
+        "security_envelope": {
+          "audit_record_id": "d-0-decision_tree_eval",
+          "entity_id": "Scanner001",
+          "nonce": "n-0-d-0-decision_tree_eval",
+          "policy_version": "1.0.0",
+          "safety_validation_passed": true,
+          "tree_hash": "ed5ab10d175bde4d",
+          "trust_validation_passed": true
+        },
+        "tree_hash": "ed5ab10d175bde4d",
+        "version": 3
+      },
+      "state": {
+        "pose": {
+          "x": 0.0,
+          "y": 0.0,
+          "theta": 0.0,
+          "z": 0.0
+        },
+        "velocity": {
+          "linear": 0.0,
+          "angular": 0.0
+        },
+        "emergency_stop": false,
+        "active_mode": "normal"
+      }
+    },
+    {
+      "sim_time_ms": 0.0,
+      "event": "decision_tree_eval",
+      "payload": {
+        "alternatives_considered": [],
+        "decision": "local_decision",
+        "decision_id": "d-0-decision_tree_eval",
+        "entity_id": "Scanner001",
+        "evidence": {
+          "actions": [
+            "stop_motor",
+            "cut_actuator_power",
+            "trigger emergency_stop"
+          ],
+          "central_connected": true,
+          "condition": "obstacle.detected",
+          "offline_minutes": 0,
+          "policy_version": "1.0.0",
+          "signals": {
+            "fleet.coordinator.failed": false,
+            "gps.status == Failed": true,
+            "obstacle.detected": true,
+            "operator.available": false,
+            "visual_odometry.available": false
+          },
+          "tree": "ObstacleReflex",
+          "tree_hash": "a6405ff085c8c5e4"
+        },
+        "layer": "reflex",
+        "mission": "mission",
+        "policy_version": "1.0.0",
+        "reason": "tree 'ObstacleReflex' matched 'obstacle.detected' → stop_motor, cut_actuator_power, trigger emergency_stop",
+        "rejected_alternatives": [],
+        "safety_checks": [
+          {
+            "passed": true,
+            "rule": "distributed_decision"
+          }
+        ],
+        "security_envelope": {
+          "audit_record_id": "d-0-decision_tree_eval",
+          "entity_id": "Scanner001",
+          "nonce": "n-0-d-0-decision_tree_eval",
+          "policy_version": "1.0.0",
+          "safety_validation_passed": true,
+          "tree_hash": "a6405ff085c8c5e4",
+          "trust_validation_passed": true
+        },
+        "tree_hash": "a6405ff085c8c5e4",
+        "version": 3
+      },
+      "state": {
+        "pose": {
+          "x": 0.0,
+          "y": 0.0,
+          "theta": 0.0,
+          "z": 0.0
+        },
+        "velocity": {
+          "linear": 0.0,
+          "angular": 0.0
+        },
+        "emergency_stop": true,
+        "active_mode": "degraded"
+      }
+    },
+    {
+      "sim_time_ms": 0.0,
+      "event": "decision_escalation_pending",
+      "payload": {
+        "alternatives_considered": [],
+        "decision": "policy_gate",
+        "decision_id": "d-0-decision_escalation_pending",
+        "entity_id": "Scanner001",
+        "evidence": {
+          "action": "stop_motor",
+          "central_connected": true,
+          "escalation_id": "esc-Scanner001-local",
+          "offline_minutes": 0,
+          "policy_version": "1.0.0",
+          "rejected_alternatives": [
+            {
+              "action": "stop_motor",
+              "rejected_reason": "action 'motor' not in local_decision_authority"
+            }
+          ]
+        },
+        "layer": "control_center",
+        "mission": "mission",
+        "policy_version": "1.0.0",
+        "reason": "action 'motor' not in local_decision_authority",
+        "rejected_alternatives": [
+          {
+            "action": "stop_motor",
+            "rejected_reason": "action 'motor' not in local_decision_authority"
+          }
+        ],
+        "safety_checks": [
+          {
+            "passed": true,
+            "rule": "distributed_decision"
+          }
+        ],
+        "security_envelope": {
+          "audit_record_id": "d-0-decision_escalation_pending",
+          "entity_id": "Scanner001",
+          "nonce": "n-0-d-0-decision_escalation_pending",
+          "policy_version": "1.0.0",
+          "safety_validation_passed": true,
+          "tree_hash": null,
+          "trust_validation_passed": true
+        },
+        "tree_hash": null,
+        "version": 3
+      },
+      "state": {
+        "pose": {
+          "x": 0.0,
+          "y": 0.0,
+          "theta": 0.0,
+          "z": 0.0
+        },
+        "velocity": {
+          "linear": 0.0,
+          "angular": 0.0
+        },
+        "emergency_stop": true,
+        "active_mode": "degraded"
+      }
+    },
+    {
+      "sim_time_ms": 0.0,
+      "event": "decision_escalation_pending",
+      "payload": {
+        "alternatives_considered": [],
+        "decision": "policy_gate",
+        "decision_id": "d-0-decision_escalation_pending",
+        "entity_id": "Scanner001",
+        "evidence": {
+          "action": "cut_actuator_power",
+          "central_connected": true,
+          "escalation_id": "esc-Scanner001-local",
+          "offline_minutes": 0,
+          "policy_version": "1.0.0",
+          "rejected_alternatives": [
+            {
+              "action": "cut_actuator_power",
+              "rejected_reason": "action 'actuator_power' not in local_decision_authority"
+            }
+          ]
+        },
+        "layer": "control_center",
+        "mission": "mission",
+        "policy_version": "1.0.0",
+        "reason": "action 'actuator_power' not in local_decision_authority",
+        "rejected_alternatives": [
+          {
+            "action": "cut_actuator_power",
+            "rejected_reason": "action 'actuator_power' not in local_decision_authority"
+          }
+        ],
+        "safety_checks": [
+          {
+            "passed": true,
+            "rule": "distributed_decision"
+          }
+        ],
+        "security_envelope": {
+          "audit_record_id": "d-0-decision_escalation_pending",
+          "entity_id": "Scanner001",
+          "nonce": "n-0-d-0-decision_escalation_pending",
+          "policy_version": "1.0.0",
+          "safety_validation_passed": true,
+          "tree_hash": null,
+          "trust_validation_passed": true
+        },
+        "tree_hash": null,
+        "version": 3
+      },
+      "state": {
+        "pose": {
+          "x": 0.0,
+          "y": 0.0,
+          "theta": 0.0,
+          "z": 0.0
+        },
+        "velocity": {
+          "linear": 0.0,
+          "angular": 0.0
+        },
+        "emergency_stop": true,
+        "active_mode": "degraded"
+      }
+    },
+    {
+      "sim_time_ms": 50.0,
+      "event": "behavior_tick",
+      "payload": {
+        "interval_ms": 50.0,
+        "iteration": 1,
+        "sim_time_ms": 50.0
+      },
+      "state": {
+        "pose": {
+          "x": 0.0,
+          "y": 0.0,
+          "theta": 0.0,
+          "z": 0.0
+        },
+        "velocity": {
+          "linear": 0.0,
+          "angular": 0.0
+        },
+        "emergency_stop": true,
+        "active_mode": "degraded"
+      }
+    }
+  ]
+}

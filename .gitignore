@@ -50,6 +50,7 @@ rust_out
 *.trace
 !examples/**/*.trace
 !tests/golden/**/*.trace
+!crates/spanda-cli/bundled-examples/examples/showcase/differentiation/decision_trail/main.trace
 
 # python
 __pycache__/
