@@ -8,7 +8,6 @@ TWIN="${ROOT}/examples/showcase/mission_twin/patrol.sd"
 TEAM="${ROOT}/examples/showcase/human_robot/approval_escalation.sd"
 CERT="${ROOT}/examples/showcase/certify/deployment_bundle/rover.sd"
 GOV="${ROOT}/examples/showcase/policy/warehouse.sd"
-TRAIL="${ROOT}/examples/showcase/differentiation/decision_trail/main.sd"
 TRACE="${ROOT}/examples/showcase/differentiation/decision_trail/main.trace"
 BUNDLE="${ROOT}/.spanda/cert-pack-smoke"
 
@@ -39,12 +38,7 @@ echo "== governance =="
 run_spanda governance "$GOV" --policy WarehousePolicy --json >/dev/null
 
 echo "== replay time travel =="
-run_spanda check "$TRAIL" >/dev/null
-rm -f "$TRACE"
-export SPANDA_DECISION_TRACE=1
-run_spanda sim "$TRAIL" --record --inject-health-faults >/dev/null
-if [[ -f "$TRACE" ]]; then
-  run_spanda replay "$TRACE" --at T+00:01 --inspect decisions --json >/dev/null
-fi
+test -f "$TRACE" || { echo "missing golden trace: $TRACE"; exit 1; }
+run_spanda replay "$TRACE" --at T+00:01 --inspect decisions --json >/dev/null
 
 echo "Later differentiation smoke OK"

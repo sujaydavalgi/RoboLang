@@ -19,11 +19,11 @@ These six capabilities define Spanda's market identity. Protect them in every re
 | # | Capability | What it means | Current home |
 |---|------------|---------------|--------------|
 | 1 | **Safety-Typed AI** | `ActionProposal` cannot reach actuators; only `SafeAction` from `safety.validate()` can. Compile-time and runtime enforced. | `spanda-typecheck`, `spanda-safety`, runtime gate |
-| 2 | **Mission Contracts** | Missions as verifiable first-class entities with guarantees, constraints, assumptions, invariants, and objectives. | **Planned** — `spanda-contract` |
+| 2 | **Mission Contracts** | Missions as verifiable first-class entities with guarantees, constraints, assumptions, invariants, and objectives. | `spanda-contract` (**Stable**) |
 | 3 | **Readiness Engine** | Weighted go/no-go scoring across health, verify, safety, trust, and mission achievability. | `spanda-readiness` (**Stable**) |
 | 4 | **Continuity & Takeover** | Checkpoint resume, delegation, succession, safety-gated takeover across robots and fleet. | `spanda-assurance` continuity (**Stable**) |
-| 5 | **Trust Framework** | Composite trust scoring across packages, hardware, configuration, identity, and safety integrity. | **Planned** — `spanda-trust` |
-| 6 | **Explainability & Audit Trail** | Why did the system decide X? Decision → evidence → safety check → action, with trace replay. | **Planned** — `spanda-explain`, `spanda-decision` |
+| 5 | **Trust Framework** | Composite trust scoring across packages, hardware, configuration, identity, and safety integrity. | `spanda-trust` (**Experimental**) |
+| 6 | **Explainability & Audit Trail** | Why did the system decide X? Decision → evidence → safety check → action, with trace replay. | `spanda-explain`, `spanda-decision` (**Stable**) |
 
 ### Questions Spanda uniquely answers
 
@@ -57,11 +57,11 @@ These six capabilities define Spanda's market identity. Protect them in every re
 
 | # | Area | CLI (target) | Crate | Status |
 |---|------|--------------|-------|--------|
-| 1 | Mission Contracts | `spanda contract verify`, `spanda mission verify` (extended) | `spanda-contract` | **Planned** |
-| 2 | Explainability | `spanda explain <file>`, `spanda explain mission.trace` | `spanda-explain` | **Planned** |
-| 3 | Decision Audit Trail | embedded in traces; `spanda audit decisions` | `spanda-decision` | **Planned** |
-| 4 | Safety Coverage | `spanda safety-coverage <file>` | extends `spanda-readiness` | **Planned** |
-| 5 | Recovery Coverage | `spanda recovery-coverage <file>` | extends `spanda-assurance` | **Planned** |
+| 1 | Mission Contracts | `spanda contract verify`, `spanda mission verify` (extended) | `spanda-contract` | **Stable** |
+| 2 | Explainability | `spanda explain <file>`, `spanda explain mission.trace` | `spanda-explain` | **Stable** |
+| 3 | Decision Audit Trail | embedded in traces; `spanda audit decisions` | `spanda-decision` | **Stable** |
+| 4 | Safety Coverage | `spanda safety-coverage <file>` | extends `spanda-readiness` | **Stable** |
+| 5 | Recovery Coverage | `spanda recovery-coverage <file>` | extends `spanda-assurance` | **Stable** |
 
 ### NEXT — predictive operations and executive visibility
 

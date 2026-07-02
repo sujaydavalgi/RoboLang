@@ -31,6 +31,14 @@ for f in killer_demo.sd ai_safety_violation.sd hardware_compatibility.sd README.
   cp "${ROOT}/examples/showcase/${f}" "${DEST}/"
 done
 
+# Differentiation NOW/NEXT/LATER showcases (demo differentiation|later, smokes).
+for d in differentiation what_if risk trust_graph scorecard forecast mission_twin certify human_robot governance policy distributed_decisions; do
+  if [[ -d "${ROOT}/examples/showcase/${d}" ]]; then
+    rm -rf "${DEST}/${d}"
+    cp -R "${ROOT}/examples/showcase/${d}" "${DEST}/"
+  fi
+done
+
 # ADAS solution blueprint (spanda demo adas).
 ADAS_DEST="${ROOT}/crates/spanda-cli/bundled-examples/examples/solutions/adas"
 rm -rf "${ADAS_DEST}"

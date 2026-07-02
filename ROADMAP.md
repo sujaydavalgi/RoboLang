@@ -220,13 +220,17 @@ Full analysis: [docs/differentiation-roadmap.md](docs/differentiation-roadmap.md
 | Readiness Forecasting | **Experimental** | Next | Core |
 | Trust Graph | **Experimental** | Next | Core |
 | Scorecards | **Experimental** | Next | Core |
-| Digital Mission Twin | **Future** | Later | Core |
-| Certification Packs | **Future** | Later | Core |
-| Mission Time Travel | **Future** | Later | Core |
-| Human/Robot Teaming | **Future** | Later | Solution Blueprint |
-| Autonomous Governance | **Future** | Long Term | Core |
+| Digital Mission Twin | **Experimental** | Later | Core |
+| Certification Packs | **Experimental** | Later | Core |
+| Mission Time Travel | **Experimental** | Later | Core |
+| Human/Robot Teaming | **Experimental** | Later | Solution Blueprint |
+| Autonomous Governance | **Experimental** | Later | Core |
 
 **NOW deliverables (v0.5+):** `spanda-contract`, `spanda-explain`, `spanda-decision`, safety/recovery coverage — **Stable**. Exit: `spanda demo differentiation` + `scripts/differentiation_smoke.sh`.
+
+**NEXT deliverables (v0.6):** what-if, risk, readiness forecast, trust graph, scorecards — **Experimental** CLI plus Control Center REST/gRPC analytics (`/v1/analytics/*`, `GetAnalytics*`). Wired into `differentiation_smoke.sh`.
+
+**LATER deliverables (v0.7):** mission time travel, digital mission twin, certification packs, human/robot teaming, autonomous governance — **Experimental** CLI. Exit: `spanda demo later` + `scripts/later_differentiation_smoke.sh` (via `differentiation_smoke.sh`).
 
 **Topic guides:** [docs/mission-assurance.md](docs/mission-assurance.md) · [docs/self-healing.md](docs/self-healing.md) · [docs/mission-continuity.md](docs/mission-continuity.md) · [docs/readiness.md](docs/readiness.md) · [docs/replay.md](docs/replay.md) · [docs/mission-contracts.md](docs/mission-contracts.md) · [docs/explainability.md](docs/explainability.md) · [docs/tamper-detection.md](docs/tamper-detection.md)
 

@@ -29,7 +29,9 @@
 | Scorecard rollup | executive multi-pillar score | `scripts/scorecard_smoke.sh`, `examples/showcase/scorecard/executive.sd` |
 | Differentiation analytics API | what-if, risk, forecast, trust graph REST | `crates/spanda-api/tests/differentiation_analytics_api_tests.rs` |
 | Differentiation analytics gRPC | GetAnalytics* RPC parity | `crates/spanda-api/tests/grpc_tests.rs` (`grpc_analytics_endpoints_with_forecast_program`) |
+| Differentiation analytics SDK | REST + gRPC analytics wrappers | `crates/spanda-sdk`, `sdk/python`, `sdk/typescript` client tests |
 | LATER differentiation | twin mission, certify pack, team verify, governance, replay time travel | `scripts/later_differentiation_smoke.sh`, `crates/spanda-runtime/tests/time_travel_tests.rs` |
+| Bundled examples sync | NEXT/LATER showcases + decision-trail trace | `scripts/sync_bundled_examples.sh` |
 | Decision diagnostics | `decision_tree` / `offline_policy` / authority parity Rust ↔ TS | `crates/spanda-decision/src/diagnostics.rs`, `src/decision-diagnostics.ts` |
 | Swarm continuity | member-lost handoff + mesh relay | `crates/spanda-fleet/src/swarm_continuity.rs`, `crates/spanda-fleet/tests/mesh_integration.rs` |
 | Self-healing runtime | auto-trigger, approval retry, mesh relay | `crates/spanda-interpreter/tests/recovery_runtime.rs`, `scripts/self_healing_smoke.sh` |
