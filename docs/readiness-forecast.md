@@ -1,6 +1,6 @@
 # Readiness Forecasting
 
-**Status:** Experimental · **Horizon:** NEXT (3–6 months) · **Priority:** P1
+**Status:** Stable · **Horizon:** NEXT (promoted v0.5.0) · **Priority:** P1
 
 Predict future readiness scores from current evaluation, local history, and time-based degradation heuristics.
 

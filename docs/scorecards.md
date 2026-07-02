@@ -1,6 +1,6 @@
 # Autonomous Systems Scorecard
 
-**Status:** Experimental · **Phase:** Operate · **Priority:** P1.4
+**Status:** Stable · **Phase:** Operate · **Priority:** P1.4
 
 Executive-level visibility into system health across platform pillars.
 
