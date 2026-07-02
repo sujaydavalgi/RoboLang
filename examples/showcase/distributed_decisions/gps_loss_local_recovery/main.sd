@@ -6,9 +6,7 @@ robot Rover001 {
     mode degraded { }
     safety { max_speed = 1.0 m/s; }
     behavior patrol() {
-        loop every 50ms {
-            let _ = gps.read();
-        }
+        loop every 50ms { }
     }
 }
 

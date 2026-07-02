@@ -675,6 +675,55 @@ fn demo_continuity(root: &Path) {
     println!("\nDemo complete. See examples/showcase/continuity/ and docs/mission-continuity.md");
 }
 
+fn demo_distributed_decisions(root: &Path) {
+    let main_path = showcase(root, &["distributed_decisions", "main.sd"]);
+    let reflex_path = showcase(root, &["distributed_decisions", "obstacle_reflex_stop", "main.sd"]);
+    let offline_path = showcase(root, &["distributed_decisions", "offline_mission_continue", "main.sd"]);
+    let main_sd = require_file(&main_path);
+    let reflex_sd = require_file(&reflex_path);
+    let offline_sd = require_file(&offline_path);
+    let main_file = main_sd.to_str().unwrap();
+    let reflex_file = reflex_sd.to_str().unwrap();
+    let offline_file = offline_sd.to_str().unwrap();
+
+    println!("== Distributed decisions — layers, traces, signed policy cache ==\n");
+    run_spanda("check", main_sd, &[]);
+    run_spanda("check", reflex_sd, &[]);
+    run_spanda_args(&["decision", "list", main_file]);
+    run_spanda_args(&[
+        "decision",
+        "inspect",
+        main_file,
+        "--entity",
+        "Rover001",
+        "--action",
+        "emergency_stop",
+    ]);
+    run_spanda_args(&["decision", "simulate", main_file, "--offline"]);
+    std::env::set_var("SPANDA_DECISION_POLICY_SIGNING_KEY", "demo-offline-signing-key");
+    run_spanda_args(&[
+        "decision",
+        "sign-policy",
+        offline_file,
+        "--policy",
+        "RoverOffline",
+        "--write-cache",
+    ]);
+    run_spanda_args(&["decision", "cache", "show"]);
+    std::env::set_var("SPANDA_DECISION_TRACE", "1");
+    run_spanda_args(&["sim", reflex_file, "--record", "--inject-health-faults"]);
+    let trace_path = reflex_sd.with_extension("trace");
+    if trace_path.is_file() {
+        let trace_file = trace_path.to_str().unwrap();
+        run_spanda_args(&["decision", "trace", trace_file]);
+        run_spanda_args(&["audit", "decisions", trace_file]);
+    }
+
+    println!(
+        "\nDemo complete. See examples/showcase/distributed_decisions/ and docs/distributed-decisions.md"
+    );
+}
+
 fn demo_assurance(root: &Path) {
     // Description:
     //     Demo assurance.
@@ -1241,6 +1290,9 @@ pub fn demo_dispatch(args: &[String]) {
         "assurance" => demo_assurance(&root),
         "self-healing" | "selfhealing" | "healing" => demo_self_healing(&root),
         "continuity" | "takeover" | "succession" => demo_continuity(&root),
+        "distributed-decisions" | "distributed_decisions" | "decisions" => {
+            demo_distributed_decisions(&root)
+        }
         "differentiation" | "diff" => demo_differentiation(&root),
         "maturity" | "platform-maturity" => demo_maturity(&root),
         "trust" | "tamper" | "security-trust" => demo_trust(&root),
@@ -1267,6 +1319,7 @@ pub fn demo_dispatch(args: &[String]) {
                    assurance — mission assurance CLI suite (assure, anomaly, state)\n\
                    self-healing — recovery policies, heal/recover/sim, fleet recovery\n\
                    continuity — mission continuity, takeover, delegation, succession\n\
+                   distributed-decisions — decision trees, offline policy, traces, policy cache\n\
                    differentiation — mission contracts, safety/recovery coverage, explain\n\
                    maturity — Phase A graph, explain, trust, deployment gates\n\
                    trust — package/mission tampering, spoofing, runtime intrusion, tamper_policy\n\
