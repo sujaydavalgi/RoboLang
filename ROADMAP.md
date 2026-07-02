@@ -162,7 +162,7 @@ Unified Entity Model (all platform objects)
 | **Readiness** | Operational go/no-go scoring (`spanda readiness`) | **Stable** | Now | Core |
 | **Assurance** | Knowledge models, anomaly, prognostics, mitigation | **Stable** / learned **Experimental** | Now | Core |
 | **Diagnosis** | Root-cause analysis (`spanda diagnose`) | **Stable** | Now | Core |
-| **Recovery** | `recovery_policy`, `RecoveryPlanner`, fleet mesh relay | **Stable** | Now | Core |
+| **Recovery** | `recovery_policy`, `RecoveryPlanner`, fleet mesh relay; **Recovery Orchestrator** (`spanda-recovery`) | **Stable** | Now | Core |
 | **Mission Contracts** | Static contract verification | **Stable** | Now | Core |
 | **Trust** | Composite program trust, secure-boot attestation | **Experimental** → **Planned** hardening | Next | Core |
 | **Explainability** | `spanda explain`, decision traces | **Stable** | Now | Core |

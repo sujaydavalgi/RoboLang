@@ -14,7 +14,7 @@ use crate::state::ControlCenterState;
 
 const API_VERSION: &str = "v1";
 
-#[derive(Debug, Default, Deserialize)]
+#[derive(Debug, Default, Deserialize, serde::Serialize)]
 pub struct RecoveryRequest {
     #[serde(default)]
     pub file: Option<String>,

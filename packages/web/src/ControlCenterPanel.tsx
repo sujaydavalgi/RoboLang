@@ -12,6 +12,7 @@ import {
   type EntitySummary,
   type RegisterEntityInput,
 } from "./EntityGraphPanel";
+import { RecoveryPanel } from "./RecoveryPanel";
 
 type DecisionTraceFrame = {
   sim_time_ms?: number;
@@ -108,6 +109,7 @@ type Tab =
   | "compliance"
   | "audit"
   | "decisions"
+  | "recovery"
   | "digital-thread"
   | "adas"
   | "humans"
@@ -1259,6 +1261,7 @@ export function ControlCenterPanel({ apiBase }: Props) {
     "compliance",
     "audit",
     "decisions",
+    "recovery",
     "digital-thread",
     "adas",
     "humans",
@@ -1883,6 +1886,8 @@ export function ControlCenterPanel({ apiBase }: Props) {
           )}
         </div>
       )}
+
+      {tab === "recovery" && <RecoveryPanel baseUrl={base} />}
 
       {tab === "executive" && scorecard && (
         <pre>{JSON.stringify(scorecard, null, 2)}</pre>

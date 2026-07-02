@@ -192,6 +192,7 @@ See [tier-3-experimental.md](./tier-3-experimental.md) and [tier-3-golden-paths.
 | observe / fusion | **Stable** | Weighted fusion by sensor type; `state_estimator` runtime bindings |
 | mission assurance (static + CLI) | **Stable** | `spanda-assurance` crate; 9 official packages (includes `spanda-mission-continuity`) |
 | self-healing & recovery (static + CLI) | **Stable** | Recovery planner, validation gates, audit, knowledge store |
+| **Recovery Orchestrator** | **Stable** | `spanda-recovery` crate; escalation levels 0–8, graph, playbooks, policies, simulation; CLI `spanda recovery *`; REST `/v1/recovery/*`; SDK; Control Center Recovery tab — [recovery-orchestrator.md](./recovery-orchestrator.md) |
 | mission continuity (static + CLI + diagnostics) | **Stable** | `spanda-assurance` continuity module; CLI `continuity`, `takeover`, `delegate`, `succession`; `continuity:*` diagnostics in check JSON and LSP |
 | mission continuity runtime dispatch | **Stable** | Interpreter mode-specific takeover, durable checkpoints, auto-trigger on health faults, fleet agent `/v1/continuity/execute`, mesh relay, swarm `--failed` handoff |
 | self-healing runtime dispatch | **Stable** | Auto-trigger on health faults, approval polling/retry, fleet mesh relay with failure events, mission approval gating; `scripts/fleet_field_validation.sh` |

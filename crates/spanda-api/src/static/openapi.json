@@ -692,6 +692,150 @@
         "responses": { "200": { "description": "Recovery report" } }
       }
     },
+    "/v1/recovery/plans": {
+      "get": {
+        "summary": "List active recovery plans",
+        "responses": { "200": { "description": "Recovery plans" } }
+      }
+    },
+    "/v1/recovery/history": {
+      "get": {
+        "summary": "Recovery evidence history",
+        "responses": { "200": { "description": "Recovery history" } }
+      }
+    },
+    "/v1/recovery/plan": {
+      "post": {
+        "summary": "Plan recovery via orchestrator",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": { "type": "string" },
+                  "entity_id": { "type": "string" },
+                  "failure": { "type": "string" },
+                  "playbook": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Orchestrator recovery report" } }
+      }
+    },
+    "/v1/recovery/simulate": {
+      "post": {
+        "summary": "Simulate recovery without side effects",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": { "type": "string" },
+                  "entity_id": { "type": "string" },
+                  "failure": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Simulation report" } }
+      }
+    },
+    "/v1/recovery/execute": {
+      "post": {
+        "summary": "Execute recovery via orchestrator",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": { "type": "string" },
+                  "entity_id": { "type": "string" },
+                  "failure": { "type": "string" },
+                  "force_execute": { "type": "boolean" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Execution report" } }
+      }
+    },
+    "/v1/recovery/validate": {
+      "post": {
+        "summary": "Validate recovery plan (dry-run)",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": { "type": "string" },
+                  "entity_id": { "type": "string" },
+                  "failure": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Validation report" } }
+      }
+    },
+    "/v1/recovery/playbooks": {
+      "get": {
+        "summary": "List recovery playbooks",
+        "responses": { "200": { "description": "Playbook catalog" } }
+      }
+    },
+    "/v1/recovery/metrics": {
+      "get": {
+        "summary": "Aggregated recovery metrics",
+        "responses": { "200": { "description": "Recovery metrics" } }
+      }
+    },
+    "/v1/recovery/graph": {
+      "get": {
+        "summary": "Recovery graph for entity subtree",
+        "parameters": [
+          {
+            "name": "entity_id",
+            "in": "query",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": { "200": { "description": "Recovery graph" } }
+      }
+    },
+    "/v1/recovery/policies": {
+      "get": {
+        "summary": "Entity recovery policies",
+        "responses": { "200": { "description": "Recovery policies" } }
+      }
+    },
+    "/v1/recovery/explain": {
+      "post": {
+        "summary": "Explain recovery decision",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "entity_id": { "type": "string" },
+                  "failure": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Recovery decision" } }
+      }
+    },
     "/v1/programs/verify/hardware": {
       "post": {
         "summary": "Hardware compatibility verification (CLI parity)",

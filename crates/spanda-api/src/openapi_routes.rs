@@ -303,6 +303,50 @@ pub const REST_V1_ROUTES: &[ApiRoute] = &[
         path: "/v1/programs/recovery/heal",
     },
     ApiRoute {
+        method: "GET",
+        path: "/v1/recovery/plans",
+    },
+    ApiRoute {
+        method: "GET",
+        path: "/v1/recovery/history",
+    },
+    ApiRoute {
+        method: "POST",
+        path: "/v1/recovery/plan",
+    },
+    ApiRoute {
+        method: "POST",
+        path: "/v1/recovery/simulate",
+    },
+    ApiRoute {
+        method: "POST",
+        path: "/v1/recovery/execute",
+    },
+    ApiRoute {
+        method: "POST",
+        path: "/v1/recovery/validate",
+    },
+    ApiRoute {
+        method: "GET",
+        path: "/v1/recovery/playbooks",
+    },
+    ApiRoute {
+        method: "GET",
+        path: "/v1/recovery/metrics",
+    },
+    ApiRoute {
+        method: "GET",
+        path: "/v1/recovery/graph",
+    },
+    ApiRoute {
+        method: "GET",
+        path: "/v1/recovery/policies",
+    },
+    ApiRoute {
+        method: "POST",
+        path: "/v1/recovery/explain",
+    },
+    ApiRoute {
         method: "POST",
         path: "/v1/programs/verify/hardware",
     },
