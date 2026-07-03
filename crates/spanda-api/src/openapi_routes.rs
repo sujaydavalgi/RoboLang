@@ -548,6 +548,22 @@ pub const REST_V1_ROUTES: &[ApiRoute] = &[
     },
     ApiRoute {
         method: "GET",
+        path: "/v1/twins/{id}",
+    },
+    ApiRoute {
+        method: "GET",
+        path: "/v1/twins/{id}/history",
+    },
+    ApiRoute {
+        method: "POST",
+        path: "/v1/twins/{id}/snapshots",
+    },
+    ApiRoute {
+        method: "POST",
+        path: "/v1/twins/import-replay",
+    },
+    ApiRoute {
+        method: "GET",
         path: "/v1/twins",
     },
     ApiRoute {

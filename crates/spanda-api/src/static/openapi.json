@@ -1238,9 +1238,45 @@
         "responses": { "200": { "description": "Twin Cloud registry summaries" } }
       }
     },
+    "/v1/twins/{id}": {
+      "get": {
+        "summary": "Get latest mission twin snapshot",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Latest twin snapshot" } }
+      }
+    },
+    "/v1/twins/{id}/history": {
+      "get": {
+        "summary": "List mission twin snapshot history",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Twin snapshot history" } }
+      }
+    },
+    "/v1/twins/{id}/snapshots": {
+      "post": {
+        "summary": "Push mission twin snapshot",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Stored twin snapshot" } }
+      }
+    },
+    "/v1/twins/import-replay": {
+      "post": {
+        "summary": "Import legacy twin replay JSON as structured snapshot",
+        "security": [{ "bearerAuth": [] }],
+        "responses": { "200": { "description": "Imported twin snapshot" } }
+      }
+    },
     "/v1/twins/sync": {
       "post": {
         "summary": "Sync mission twin for loaded program",
+        "security": [{ "bearerAuth": [] }],
         "parameters": [
           { "name": "twin_id", "in": "query", "schema": { "type": "string" } }
         ],

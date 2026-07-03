@@ -98,6 +98,7 @@ fn runtime_state_persists_twin_cloud_snapshots() {
 
     let program = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("../../examples/showcase/mission_twin/patrol.sd");
+    std::env::set_var("SPANDA_API_KEY", "twin-cloud-persist-test");
     let mut state = ControlCenterState::new();
     state.program_path = Some(program);
     let (response, _) = handle_request(
@@ -106,7 +107,7 @@ fn runtime_state_persists_twin_cloud_snapshots() {
             method: "POST".into(),
             path: "/v1/twins/sync".into(),
             body: "{}".into(),
-            authorization: None,
+            authorization: Some("twin-cloud-persist-test".into()),
         },
         "",
     );

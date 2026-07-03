@@ -27,6 +27,16 @@ pub struct TwinCloudSummary {
     pub captured_at_ms: u64,
     pub mission_ready: bool,
     pub readiness_score: u32,
+    #[serde(default)]
+    pub history_count: usize,
+}
+
+/// History response envelope.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct TwinCloudHistoryResponse {
+    pub version: String,
+    pub twin_id: String,
+    pub snapshots: Vec<TwinCloudSnapshot>,
 }
 
 /// List twins response envelope.
@@ -85,6 +95,7 @@ impl TwinCloudSnapshot {
             captured_at_ms: self.captured_at_ms,
             mission_ready: self.mission_twin.risks.mission_ready,
             readiness_score: self.mission_twin.risks.readiness_score,
+            history_count: 0,
         }
     }
 }

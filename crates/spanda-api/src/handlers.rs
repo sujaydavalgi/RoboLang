@@ -334,9 +334,14 @@ pub fn handle_request(
         );
         return (response, correlation_id);
     }
-    if let Some(response) =
-        crate::twin_cloud::route_twin_cloud(state, path, &request.method, query, &request.body)
-    {
+    if let Some(response) = crate::twin_cloud::route_twin_cloud(
+        state,
+        path,
+        &request.method,
+        query,
+        &request.body,
+        ctx.as_ref(),
+    ) {
         e3::record_trace(
             state,
             &correlation_id,

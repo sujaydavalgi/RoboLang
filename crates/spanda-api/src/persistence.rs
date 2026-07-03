@@ -9,7 +9,12 @@ use std::path::{Path, PathBuf};
 
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
 struct PersistedTwins {
+    #[serde(default)]
     snapshots: Vec<TwinCloudSnapshot>,
+    #[serde(default)]
+    latest: Vec<TwinCloudSnapshot>,
+    #[serde(default)]
+    history: std::collections::HashMap<String, Vec<TwinCloudSnapshot>>,
 }
 
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
@@ -74,7 +79,13 @@ pub fn hydrate_runtime_state(state: &mut ControlCenterState) {
     }
     if let Ok(content) = fs::read_to_string(twins_path(&dir)) {
         if let Ok(persisted) = serde_json::from_str::<PersistedTwins>(&content) {
-            state.twin_cloud_store = spanda_twin_cloud::TwinCloudStore::from_records(persisted.snapshots);
+            let latest = if persisted.latest.is_empty() {
+                persisted.snapshots
+            } else {
+                persisted.latest
+            };
+            state.twin_cloud_store =
+                spanda_twin_cloud::TwinCloudStore::from_records(latest, persisted.history);
         }
     }
     crate::drift_scheduler::hydrate_drift_scans(state);
@@ -115,7 +126,9 @@ pub fn persist_runtime_state(state: &ControlCenterState) -> Result<(), String> {
     )
     .map_err(|error| error.to_string())?;
     let twins = PersistedTwins {
-        snapshots: state.twin_cloud_store.list_owned(),
+        snapshots: Vec::new(),
+        latest: state.twin_cloud_store.list_owned(),
+        history: state.twin_cloud_store.history_owned(),
     };
     fs::write(
         twins_path(&dir),

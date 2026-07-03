@@ -912,3 +912,52 @@ async fn grpc_admin_and_mission_endpoints() {
         .into_inner();
     assert!(traces.json.contains("traces"));
 }
+
+#[tokio::test]
+async fn grpc_twin_cloud_endpoints_with_patrol_program() {
+    let _guard = GRPC_TEST_LOCK.lock().unwrap();
+    std::env::set_var("SPANDA_API_KEY", "grpc-twin-cloud-key");
+    let program = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("../../examples/showcase/mission_twin/patrol.sd");
+    let http_port = pick_port();
+    let grpc_port = pick_port();
+    let options = ControlCenterOptions {
+        bind: format!("127.0.0.1:{http_port}"),
+        grpc_bind: Some(format!("127.0.0.1:{grpc_port}")),
+        program_path: Some(program),
+        once: true,
+        timeout_ms: 500,
+        ..Default::default()
+    };
+    let grpc_bind = spawn_control_center(options);
+    let mut client = connect(&grpc_bind).await;
+
+    let list = client
+        .list_twins(Empty {})
+        .await
+        .expect("list twins")
+        .into_inner();
+    assert!(list.json.contains("twins"));
+
+    let auth_header =
+        tonic::metadata::MetadataValue::try_from("Bearer grpc-twin-cloud-key").unwrap();
+    let mut sync_req = tonic::Request::new(QueryRequest {
+        query: String::new(),
+    });
+    sync_req.metadata_mut().insert("authorization", auth_header);
+    let synced = client
+        .sync_twin(sync_req)
+        .await
+        .expect("sync twin")
+        .into_inner();
+    assert!(synced.json.contains("patrol"));
+
+    let history = client
+        .get_twin_history(EntityIdRequest {
+            entity_id: "patrol".into(),
+        })
+        .await
+        .expect("twin history")
+        .into_inner();
+    assert!(history.json.contains("snapshots"));
+}

@@ -8,8 +8,8 @@ mod store;
 pub use client::TwinCloudClient;
 pub use config::TwinCloudConfig;
 pub use snapshot::{
-    build_snapshot_from_program, default_twin_id, TwinCloudListResponse, TwinCloudSnapshot,
-    TwinCloudSummary, TwinCloudSyncResponse, TWIN_CLOUD_API_VERSION,
+    build_snapshot_from_program, default_twin_id, TwinCloudHistoryResponse, TwinCloudListResponse,
+    TwinCloudSnapshot, TwinCloudSummary, TwinCloudSyncResponse, TWIN_CLOUD_API_VERSION,
 };
 pub use store::TwinCloudStore;
 

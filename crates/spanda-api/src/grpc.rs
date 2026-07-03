@@ -1704,6 +1704,85 @@ impl ControlCenter for GrpcControlCenter {
         self.with_state(|state| crate::sdk_ops::program_traces_list_json(state, &query))
             .map(Response::new)
     }
+
+    async fn list_twins(
+        &self,
+        request: Request<Empty>,
+    ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
+        self.with_state(crate::twin_cloud::list_twins_json)
+            .map(Response::new)
+    }
+
+    async fn get_twin(
+        &self,
+        request: Request<EntityIdRequest>,
+    ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
+        let twin_id = request.into_inner().entity_id;
+        self.with_state(|state| crate::twin_cloud::get_twin_json(state, &twin_id))
+            .map(Response::new)
+    }
+
+    async fn get_twin_history(
+        &self,
+        request: Request<EntityIdRequest>,
+    ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
+        let twin_id = request.into_inner().entity_id;
+        self.with_state(|state| crate::twin_cloud::get_twin_history_json(state, &twin_id))
+            .map(Response::new)
+    }
+
+    async fn sync_twin(
+        &self,
+        request: Request<QueryRequest>,
+    ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
+        let ctx = self.rbac_from_request(&request);
+        let query = request.into_inner().query;
+        let json = self
+            .with_state_mut(|state| {
+                crate::twin_cloud::sync_twin_json(state, &query, ctx.as_ref())
+            })?
+            .json;
+        self.respond_mutation("SyncTwin", json, ctx)
+    }
+
+    async fn push_twin_snapshot(
+        &self,
+        request: Request<EntityBodyRequest>,
+    ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
+        let ctx = self.rbac_from_request(&request);
+        let inner = request.into_inner();
+        let json = self
+            .with_state_mut(|state| {
+                crate::twin_cloud::push_twin_snapshot_json(
+                    state,
+                    &inner.entity_id,
+                    &inner.body_json,
+                    ctx.as_ref(),
+                )
+            })?
+            .json;
+        self.respond_mutation("PushTwinSnapshot", json, ctx)
+    }
+
+    async fn import_twin_replay(
+        &self,
+        request: Request<JsonBodyRequest>,
+    ) -> Result<Response<JsonResponse>, Status> {
+        self.guard_request(&request)?;
+        let ctx = self.rbac_from_request(&request);
+        let body = request.into_inner().body_json;
+        let json = self
+            .with_state_mut(|state| {
+                crate::twin_cloud::import_replay_json(state, &body, ctx.as_ref())
+            })?
+            .json;
+        self.respond_mutation("ImportTwinReplay", json, ctx)
+    }
 }
 
 /// Start tonic gRPC server on `bind` (blocks the current thread's tokio runtime).

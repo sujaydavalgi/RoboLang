@@ -206,4 +206,11 @@ service ControlCenter {
   rpc OperatorMissionResume(JsonBodyRequest) returns (JsonResponse);
   rpc OperatorMissionCancel(JsonBodyRequest) returns (JsonResponse);
   rpc ListProgramTraces(QueryRequest) returns (JsonResponse);
+  // Twin Cloud SaaS (mirrors /v1/twins/*)
+  rpc ListTwins(Empty) returns (JsonResponse);
+  rpc GetTwin(EntityIdRequest) returns (JsonResponse);
+  rpc GetTwinHistory(EntityIdRequest) returns (JsonResponse);
+  rpc SyncTwin(QueryRequest) returns (JsonResponse);
+  rpc PushTwinSnapshot(EntityBodyRequest) returns (JsonResponse);
+  rpc ImportTwinReplay(JsonBodyRequest) returns (JsonResponse);
 }

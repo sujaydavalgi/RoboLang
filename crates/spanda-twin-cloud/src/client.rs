@@ -87,6 +87,23 @@ impl TwinCloudClient {
         serde_json::from_value(value).map_err(|err| TwinCloudError::Parse(err.to_string()))
     }
 
+    pub fn import_replay(
+        &self,
+        program: &str,
+        twin_id: Option<&str>,
+    ) -> Result<serde_json::Value, TwinCloudError> {
+        let mut body = serde_json::json!({ "program": program });
+        if let Some(id) = twin_id {
+            body["twin_id"] = serde_json::Value::String(id.to_string());
+        }
+        self.request_json("POST", "/v1/twins/import-replay", Some(body))
+    }
+
+    pub fn twin_history(&self, twin_id: &str) -> Result<serde_json::Value, TwinCloudError> {
+        let path = format!("/v1/twins/{twin_id}/history");
+        self.request_json("GET", &path, None)
+    }
+
     fn request_json(
         &self,
         method: &str,
