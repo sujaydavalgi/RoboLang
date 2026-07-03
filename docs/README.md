@@ -207,6 +207,8 @@
 | [readiness-forecast.md](./readiness-forecast.md) | **Readiness degradation forecasting** |
 | [trust-graph.md](./trust-graph.md) | **Trust-weighted dependency graph** |
 | [digital-mission-twin.md](./digital-mission-twin.md) | **Digital mission twin — progress, health, risks** |
+| [twin-cloud.md](./twin-cloud.md) | **Twin Cloud SaaS — OSS snapshot registry (`/v1/twins/*`)** |
+| [hosted-twin-cloud.md](./hosted-twin-cloud.md) | **Hosted Twin Cloud — deploy scaffold and tenant runbook** |
 | [certification-packs.md](./certification-packs.md) | **Deployment evidence bundles** |
 | [mission-time-travel.md](./mission-time-travel.md) | **Replay mission state at any timestamp** |
 | [human-robot-teaming.md](./human-robot-teaming.md) | **Human approval, escalation, override paths** |

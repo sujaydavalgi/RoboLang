@@ -136,7 +136,7 @@ Platform overview: [platform-overview.md](./platform-overview.md)
 | **VS Code Marketplace publish** | VSIX CI + local install ready; marketplace listing pending maintainer `VSCE_PAT` |
 | **Production blockchain** | `spanda-ledger-ethereum` and related chain adapters |
 | **Full world models** | Knowledge graphs, beliefs, policies beyond minimal runtime |
-| **Twin cloud SaaS** | Managed digital-twin backend (golden-path upload script exists) |
+| **Twin cloud SaaS (hosted product)** | Managed multi-tenant Twin Cloud service (billing, SLA, multi-region) — OSS backend **Experimental** at `/v1/twins/*`; deploy scaffold at [deploy/twin-cloud-hosted/](../deploy/twin-cloud-hosted/) — [hosted-twin-cloud.md](./hosted-twin-cloud.md) |
 
 See [tier-3-experimental.md](./tier-3-experimental.md) and [tier-3-golden-paths.md](./tier-3-golden-paths.md).
 

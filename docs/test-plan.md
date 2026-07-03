@@ -32,7 +32,7 @@
 | Differentiation analytics SDK | REST + gRPC analytics wrappers (NEXT + LATER) | `crates/spanda-sdk`, `sdk/python`, `sdk/typescript` client tests |
 | LATER differentiation | twin mission, certify pack, team verify, governance, replay time travel | `scripts/later_differentiation_smoke.sh`, `crates/spanda-runtime/tests/time_travel_tests.rs` |
 | LATER analytics API | mission twin, certification pack, time travel, human teaming, governance REST + gRPC | `crates/spanda-api/tests/later_analytics_api_tests.rs`, `scripts/later_analytics_smoke.sh` |
-| Twin Cloud SaaS | push/pull/list/sync/import-replay + history + gRPC + RBAC | `crates/spanda-twin-cloud`, `scripts/twin_cloud_unified_path.sh`, `scripts/twin_cloud_stable_promotion_gate.sh`, `cargo test -p spanda-api twin_cloud`, `grpc_tests` (`grpc_twin_cloud_endpoints_with_patrol_program`) |
+| Twin Cloud SaaS | push/pull/list/sync/import-replay + history + gRPC + RBAC | `crates/spanda-twin-cloud`, `scripts/twin_cloud_unified_path.sh`, `scripts/hosted_twin_cloud_smoke.sh`, `deploy/twin-cloud-hosted/`, `cargo test -p spanda-api twin_cloud` |
 | Differentiation promotion gate | 15 pillars smoke + showcase check + topic guides | `scripts/differentiation_promotion_gate.sh` |
 | What-If Stable promotion | soak + smoke + analytics API + Control Center probe | `scripts/what_if_stable_promotion_gate.sh`, [stable-hardening-what-if.md](./stable-hardening-what-if.md) |
 | NEXT Stable promotion (risk, forecast, trust graph, scorecard) | per-pillar gates + Control Center probes | `scripts/{risk,forecast,trust_graph,scorecard}_stable_promotion_gate.sh`, CI `next-differentiation-stable-gates` |

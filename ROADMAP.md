@@ -177,7 +177,7 @@ Unified Entity Model (all platform objects)
 | **Minimum-hardware safety** | Compile-time analysis | **Stable** | Now | Core |
 | **Production verify (5+ profiles)** | Field hardware profiles | **Future** | Long Term | Core |
 | **Hardware adapter codegen** | Trait codegen | **Future** | Long Term | Core |
-| **Twin cloud SaaS** | Hosted twin service (`spanda-twin-cloud`, `/v1/twins/*`, `spanda twin cloud`) | **Experimental** | Next | Optional |
+| **Twin cloud SaaS** | OSS: `spanda-twin-cloud`, `/v1/twins/*`, `spanda twin cloud` (**Experimental**). Hosted product: [deploy/twin-cloud-hosted/](deploy/twin-cloud-hosted/), [docs/hosted-twin-cloud.md](docs/hosted-twin-cloud.md) | **Experimental** (OSS) | Next | Optional |
 | **Full physics** | Gazebo/Isaac class | **Out of scope** — package bridges | — | Package |
 
 #### Platform maturity (adoption & trust)

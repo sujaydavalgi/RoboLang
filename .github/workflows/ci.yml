@@ -118,11 +118,12 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - uses: ./.github/actions/install-protoc
       - run: cargo build -p spanda --release
-      - run: chmod +x scripts/twin_cloud_golden_path.sh scripts/twin_cloud_saas_smoke.sh scripts/twin_cloud_unified_path.sh
+      - run: chmod +x scripts/twin_cloud_golden_path.sh scripts/twin_cloud_saas_smoke.sh scripts/twin_cloud_unified_path.sh scripts/hosted_twin_cloud_smoke.sh
       - run: |
           export PATH="${{ github.workspace }}/target/release:$PATH"
           export SPANDA_BIN="${{ github.workspace }}/target/release/spanda"
           ./scripts/twin_cloud_unified_path.sh
+          ./scripts/hosted_twin_cloud_smoke.sh
 
   twin-cloud-stable-promotion-gate:
     runs-on: ubuntu-latest
