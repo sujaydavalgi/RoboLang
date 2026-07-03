@@ -12,5 +12,9 @@ required = [
   "cloud.invoke",
 ]
 
+[adapter]
+provides = ["twin.cloud"]
+requires = ["cloud.invoke"]
+
 [hardware]
 requirements = []

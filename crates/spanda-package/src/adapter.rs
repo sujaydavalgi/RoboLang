@@ -214,6 +214,12 @@ pub fn framework_packages() -> &'static [FrameworkPackage] {
             import_paths: &["cloud.remote"],
         },
         FrameworkPackage {
+            name: "spanda-twin-cloud",
+            description: "Twin Cloud SaaS mission twin snapshot sync",
+            category: super::category::PackageCategory::DigitalTwin,
+            import_paths: &["twin.cloud"],
+        },
+        FrameworkPackage {
             name: "spanda-openai",
             description: "OpenAI LLM provider via Python bridge",
             category: super::category::PackageCategory::Ai,
@@ -816,6 +822,14 @@ pub fn adapter_metadata_for_package(package_name: &str) -> Option<AdapterMetadat
         "spanda-ledger" => Some(AdapterMetadata {
             provides: vec!["LedgerProvider".into(), "audit.append".into()],
             requires: vec!["crypto.sign".into()],
+        }),
+        "spanda-twin-cloud" => Some(AdapterMetadata {
+            provides: vec![
+                "TwinCloudProvider".into(),
+                "twin.cloud".into(),
+                "twin.cloud.sync".into(),
+            ],
+            requires: vec!["cloud.invoke".into()],
         }),
         _ => None,
     }

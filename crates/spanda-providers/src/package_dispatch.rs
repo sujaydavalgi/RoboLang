@@ -93,6 +93,7 @@ pub fn official_package_for_module(module_path: &str) -> Option<&'static str> {
         "assurance.continuity" => Some("spanda-mission-continuity"),
         "assurance.resilience" => Some("spanda-resilience"),
         "assurance.fusion" => Some("spanda-fusion"),
+        "twin.cloud" => Some("spanda-twin-cloud"),
         "wearable.smartwatch" => Some("spanda-smartwatch"),
         "wearable.industrial" => Some("spanda-industrial-wearables"),
         "wearable.bodycam" => Some("spanda-bodycam"),

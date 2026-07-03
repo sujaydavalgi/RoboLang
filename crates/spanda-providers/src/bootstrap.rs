@@ -145,6 +145,12 @@ pub fn bootstrap_providers_for_packages(package_names: &[&str]) -> ProviderRegis
         registry.grant_capability("cloud.invoke");
         registry.register_cloud(Box::new(CloudPackageStub));
     }
+    if names.contains("spanda-twin-cloud") {
+        registry.grant_capability("cloud.invoke");
+        if !names.contains("spanda-cloud") {
+            registry.register_cloud(Box::new(CloudPackageStub));
+        }
+    }
     if names.contains("spanda-maintenance") {
         registry.grant_capability("maintenance.health");
         registry.register_maintenance(Box::new(MaintenancePackageStub));
