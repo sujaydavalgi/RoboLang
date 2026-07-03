@@ -75,3 +75,48 @@ def test_analytics_time_travel_path_encodes_timestamp():
     assert captured["path"] == (
         f"/v1/analytics/time-travel?{urlencode({'at': 'T+00:01', 'inspect': 'decisions'})}"
     )
+
+
+def test_sync_twin_uses_auth():
+    client = SpandaClient.local()
+    captured: dict[str, object] = {}
+
+    def fake_request(method, path, body=None, auth=False):
+        captured.update({"method": method, "path": path, "auth": auth})
+        return {}
+
+    client._request = fake_request  # type: ignore[method-assign]
+    client.sync_twin(twin_id="patrol")
+    assert captured == {
+        "method": "POST",
+        "path": "/v1/twins/sync?twin_id=patrol",
+        "auth": True,
+    }
+
+
+def test_get_twin_history_path():
+    client = SpandaClient.local()
+    captured: dict[str, str] = {}
+
+    def fake_request(method, path, body=None, auth=False):
+        captured["path"] = path
+        return {}
+
+    client._request = fake_request  # type: ignore[method-assign]
+    client.get_twin_history("patrol")
+    assert captured["path"] == "/v1/twins/patrol/history"
+
+
+def test_import_twin_replay_uses_auth():
+    client = SpandaClient.local()
+    captured: dict[str, object] = {}
+
+    def fake_request(method, path, body=None, auth=False):
+        captured.update({"method": method, "path": path, "auth": auth, "body": body})
+        return {}
+
+    client._request = fake_request  # type: ignore[method-assign]
+    client.import_twin_replay(program="patrol.sd", twin_id="patrol")
+    assert captured["method"] == "POST"
+    assert captured["path"] == "/v1/twins/import-replay"
+    assert captured["auth"] is True

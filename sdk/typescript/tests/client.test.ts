@@ -101,6 +101,37 @@ describe("SpandaClient", () => {
       "/v1/analytics/time-travel?at=T%2B00%3A01&inspect=decisions",
     );
   });
+
+  it("syncTwin sends auth", async () => {
+    const client = SpandaClient.local();
+    let auth = false;
+    (client as unknown as { request: typeof client["request"] }).request = async (
+      _method,
+      path,
+      _body,
+      useAuth,
+    ) => {
+      auth = useAuth ?? false;
+      expect(path).toBe("/v1/twins/sync?twin_id=patrol");
+      return {};
+    };
+    await client.syncTwin("patrol");
+    expect(auth).toBe(true);
+  });
+
+  it("getTwinHistory uses history path", async () => {
+    const client = SpandaClient.local();
+    let captured = "";
+    (client as unknown as { request: typeof client["request"] }).request = async (
+      _method,
+      path,
+    ) => {
+      captured = path;
+      return {};
+    };
+    await client.getTwinHistory("patrol");
+    expect(captured).toBe("/v1/twins/patrol/history");
+  });
 });
 
 describe("ReadinessReport", () => {

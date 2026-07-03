@@ -24,4 +24,4 @@ npm ci
 npm run build --workspace=@davalgi-spanda/web
 (cd packages/web && npm pack >/dev/null)
 echo "npm pack OK"
-echo "Publish readiness verified. Tag crates-sdk-v*, sdk-python-v*, npm-sdk-v*, or npm-web-v* to release."
+echo "Publish readiness verified. Tag with: ./scripts/publish_sdk_release.sh [--dry-run]"

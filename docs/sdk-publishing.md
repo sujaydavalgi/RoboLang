@@ -217,42 +217,50 @@ npm pack --prefix sdk/typescript
 
 ### 1. Bump versions
 
-Update version in **both** manifest files if releasing both SDKs together:
+Use the SDK stream bump helper (keeps Rust, Python, and TypeScript in sync):
 
+```bash
+python3 scripts/bump_version.py patch --stream sdk
+```
+
+Or edit manually:
+
+- `crates/spanda-sdk/Cargo.toml`
 - `sdk/python/pyproject.toml`
-- `sdk/typescript/package.json` (and run `npm install --prefix sdk/typescript` if lockfile needs refresh)
+- `sdk/typescript/package.json`
 
 Commit and push to `main`.
 
-### 2. Tag and push
+**Current release line:** **0.5.5** — Twin Cloud client methods (`list_twins`, `get_twin_history`, `import_twin_replay`, auth on mutations; Rust gRPC twins when `grpc` feature enabled).
 
-From repo root:
-
-```bash
-# Python → PyPI
-git tag sdk-python-v0.4.0
-git push origin sdk-python-v0.4.0
-
-# Rust → crates.io
-git tag crates-sdk-v0.4.0
-git push origin crates-sdk-v0.4.0
-
-# TypeScript → npm
-git tag npm-sdk-v0.4.1
-git push origin npm-sdk-v0.4.1
-```
-
-Tags can be pushed in one command:
+### 2. Verify locally
 
 ```bash
-git push origin sdk-python-v0.4.0 npm-sdk-v0.4.0
+./scripts/verify_sdk_publish_ready.sh
 ```
 
-### 3. Watch CI
+### 3. Tag and push (all three registries)
+
+```bash
+./scripts/publish_sdk_release.sh          # uses version from crates/spanda-sdk/Cargo.toml
+./scripts/publish_sdk_release.sh --dry-run  # preview tags only
+```
+
+Or tag manually:
+
+```bash
+VERSION=0.5.5
+git tag crates-sdk-v${VERSION}
+git tag sdk-python-v${VERSION}
+git tag npm-sdk-v${VERSION}
+git push origin crates-sdk-v${VERSION} sdk-python-v${VERSION} npm-sdk-v${VERSION}
+```
+
+### 4. Watch CI
 
 **GitHub → Actions** — confirm **Publish Rust SDK**, **Publish Python SDK**, and **Publish TypeScript SDK** succeed.
 
-### 4. Verify install
+### 5. Verify install
 
 ```bash
 pip install spanda-sdk
