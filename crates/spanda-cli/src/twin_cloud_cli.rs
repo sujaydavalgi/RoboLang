@@ -40,11 +40,15 @@ pub fn twin_cloud_dispatch(args: &[String]) {
         Some("push") => cmd_twin_cloud_push(&args[1..]),
         Some("pull") => cmd_twin_cloud_pull(&args[1..]),
         Some("list") => cmd_twin_cloud_list(&args[1..]),
+        Some("sync") => cmd_twin_cloud_sync(&args[1..]),
+        Some("import-replay") => cmd_twin_cloud_import_replay(&args[1..]),
         _ => {
             eprintln!(
                 "Usage: spanda twin cloud push <file.sd> [--url <base>] [--twin-id <id>] [--json]\n       \
                  spanda twin cloud pull <twin-id> [--url <base>] [--out <file>] [--json]\n       \
-                 spanda twin cloud list [--url <base>] [--json]"
+                 spanda twin cloud list [--url <base>] [--json]\n       \
+                 spanda twin cloud sync [--url <base>] [--twin-id <id>] [--json]\n       \
+                 spanda twin cloud import-replay <replay.json> [--program <file.sd>] [--json]"
             );
             process::exit(1);
         }
@@ -216,8 +220,108 @@ fn cmd_twin_cloud_list(args: &[String]) {
     }
     for twin in response.twins {
         println!(
-            "{} program={} readiness={} mission_ready={}",
-            twin.twin_id, twin.program, twin.readiness_score, twin.mission_ready
+            "{} program={} readiness={} mission_ready={} history={}",
+            twin.twin_id, twin.program, twin.readiness_score, twin.mission_ready, twin.history_count
+        );
+    }
+}
+
+fn cmd_twin_cloud_sync(args: &[String]) {
+    let mut url: Option<String> = None;
+    let mut twin_id: Option<String> = None;
+    let mut json = false;
+    let mut index = 0usize;
+    while index < args.len() {
+        match args[index].as_str() {
+            "--json" => json = true,
+            "--url" | "--twin-id" => {
+                let flag = args[index].as_str();
+                index += 1;
+                if index >= args.len() {
+                    eprintln!("{flag} requires a value");
+                    process::exit(1);
+                }
+                if flag == "--url" {
+                    url = Some(args[index].clone());
+                } else {
+                    twin_id = Some(args[index].clone());
+                }
+            }
+            other => {
+                eprintln!("Unknown argument: {other}");
+                process::exit(1);
+            }
+        }
+        index += 1;
+    }
+    let client = TwinCloudClient::new(cloud_config(url.as_deref()));
+    let response = client
+        .sync_program_snapshot(twin_id.as_deref())
+        .unwrap_or_else(|error| {
+            eprintln!("Twin cloud sync failed: {error}");
+            process::exit(1);
+        });
+    if json {
+        println!(
+            "{}",
+            serde_json::to_string_pretty(&response).unwrap_or_default()
+        );
+    } else {
+        println!("Twin cloud sync OK: {}", response.twin_id);
+    }
+}
+
+fn cmd_twin_cloud_import_replay(args: &[String]) {
+    let mut replay_path: Option<String> = None;
+    let mut program: Option<String> = None;
+    let mut url: Option<String> = None;
+    let mut twin_id: Option<String> = None;
+    let mut json = false;
+    let mut index = 0usize;
+    while index < args.len() {
+        match args[index].as_str() {
+            "--json" => json = true,
+            "--url" | "--program" | "--twin-id" => {
+                let flag = args[index].as_str();
+                index += 1;
+                if index >= args.len() {
+                    eprintln!("{flag} requires a value");
+                    process::exit(1);
+                }
+                match flag {
+                    "--url" => url = Some(args[index].clone()),
+                    "--program" => program = Some(args[index].clone()),
+                    _ => twin_id = Some(args[index].clone()),
+                }
+            }
+            other if !other.starts_with('-') && replay_path.is_none() => {
+                replay_path = Some(other.to_string());
+            }
+            other => {
+                eprintln!("Unknown argument: {other}");
+                process::exit(1);
+            }
+        }
+        index += 1;
+    }
+    let replay_path = replay_path.unwrap_or_else(|| {
+        eprintln!("Missing replay JSON path");
+        process::exit(1);
+    });
+    let program = program.unwrap_or(replay_path.clone());
+    let client = TwinCloudClient::new(cloud_config(url.as_deref()));
+    let response = client
+        .import_replay(&program, twin_id.as_deref())
+        .unwrap_or_else(|error| {
+            eprintln!("Twin cloud import-replay failed: {error}");
+            process::exit(1);
+        });
+    if json {
+        println!("{}", serde_json::to_string_pretty(&response).unwrap_or_default());
+    } else {
+        println!(
+            "Twin cloud import-replay OK: {}",
+            response["twin_id"].as_str().unwrap_or("unknown")
         );
     }
 }

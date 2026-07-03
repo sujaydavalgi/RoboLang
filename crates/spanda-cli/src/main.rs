@@ -879,7 +879,7 @@ fn twin_dispatch(args: &[String]) {
         eprintln!(
             "Usage: spanda twin export <file.sd> --out <replay.json>\n\
                    spanda twin mission <file.sd> [--json]\n\
-                   spanda twin cloud push|pull|list ...\n\
+                   spanda twin cloud push|pull|list|sync|import-replay ...\n\
                    spanda twin readiness <file.sd> [--trace <path>] [--json]"
         );
         process::exit(1);
