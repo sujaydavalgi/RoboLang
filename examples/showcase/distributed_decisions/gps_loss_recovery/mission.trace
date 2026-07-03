@@ -1,0 +1,788 @@
+{
+  "version": 2,
+  "source": "/Users/sujay/Code/Spanda/examples/showcase/distributed_decisions/gps_loss_recovery/mission.sd",
+  "deterministic": true,
+  "frames": [
+    {
+      "sim_time_ms": 0.0,
+      "event": "fleet_takeover",
+      "payload": {
+        "failed": "Rover001",
+        "progress": 0.0,
+        "successor": "NoSuccessor"
+      },
+      "state": {
+        "pose": {
+          "x": 0.0,
+          "y": 0.0,
+          "theta": 0.0,
+          "z": 0.0
+        },
+        "velocity": {
+          "linear": 0.0,
+          "angular": 0.0
+        },
+        "emergency_stop": false,
+        "active_mode": "normal"
+      }
+    },
+    {
+      "sim_time_ms": 0.0,
+      "event": "decision_tree_eval",
+      "payload": {
+        "alternatives_considered": [],
+        "audit_record": "d-0-decision_tree_eval",
+        "authority_scope": "local_entity",
+        "capability_validation": {
+          "passed": true
+        },
+        "decision": "local_decision",
+        "decision_id": "d-0-decision_tree_eval",
+        "entity_id": "Rover001",
+        "escalation_path": [],
+        "evidence": {
+          "actions": [
+            "pause_mission",
+            "enter safe_mode"
+          ],
+          "central_connected": true,
+          "condition": "else",
+          "offline_minutes": 0,
+          "policy_version": "1.0.0",
+          "signals": {
+            "fleet.coordinator.failed": false,
+            "gps.status == Failed": true,
+            "obstacle.detected": false,
+            "operator.available": false,
+            "visual_odometry.available": false
+          },
+          "tree": "GPSLossRecovery",
+          "tree_hash": "96206b83c1fc8068"
+        },
+        "input_signals": {
+          "actions": [
+            "pause_mission",
+            "enter safe_mode"
+          ],
+          "central_connected": true,
+          "condition": "else",
+          "offline_minutes": 0,
+          "policy_version": "1.0.0",
+          "signals": {
+            "fleet.coordinator.failed": false,
+            "gps.status == Failed": true,
+            "obstacle.detected": false,
+            "operator.available": false,
+            "visual_odometry.available": false
+          },
+          "tree": "GPSLossRecovery",
+          "tree_hash": "96206b83c1fc8068"
+        },
+        "layer": "local_entity",
+        "mission": "mission",
+        "policy_hash": null,
+        "policy_version": "1.0.0",
+        "reason": "tree 'GPSLossRecovery' matched 'else' → pause_mission, enter safe_mode",
+        "rejected_alternatives": [],
+        "result": null,
+        "safety_checks": [
+          {
+            "passed": true,
+            "rule": "distributed_decision"
+          }
+        ],
+        "safety_validation": {
+          "passed": true,
+          "rules": [
+            "distributed_decision"
+          ]
+        },
+        "security_envelope": {
+          "audit_record_id": "d-0-decision_tree_eval",
+          "authority_scope": "local_entity",
+          "entity_id": "Rover001",
+          "nonce": "n-0-d-0-decision_tree_eval",
+          "policy_hash": null,
+          "policy_version": "1.0.0",
+          "safety_validation_passed": true,
+          "timestamp_ms": 0.0,
+          "tree_hash": "96206b83c1fc8068",
+          "trust_validation_passed": true
+        },
+        "tree_hash": "96206b83c1fc8068",
+        "trust_validation": {
+          "passed": true
+        },
+        "version": 3
+      },
+      "state": {
+        "pose": {
+          "x": 0.0,
+          "y": 0.0,
+          "theta": 0.0,
+          "z": 0.0
+        },
+        "velocity": {
+          "linear": 0.0,
+          "angular": 0.0
+        },
+        "emergency_stop": false,
+        "active_mode": "normal"
+      }
+    },
+    {
+      "sim_time_ms": 0.0,
+      "event": "decision_escalation_pending",
+      "payload": {
+        "alternatives_considered": [],
+        "audit_record": "d-0-decision_escalation_pending",
+        "authority_scope": "control_center",
+        "capability_validation": {
+          "passed": true
+        },
+        "decision": "policy_gate",
+        "decision_id": "d-0-decision_escalation_pending",
+        "entity_id": "Rover001",
+        "escalation_path": [],
+        "evidence": {
+          "action": "pause_mission",
+          "central_connected": true,
+          "escalation_id": "esc-Rover001-local",
+          "offline_minutes": 0,
+          "policy_version": "1.0.0",
+          "rejected_alternatives": [
+            {
+              "action": "pause_mission",
+              "rejected_reason": "action 'pause_mission' not in local_decision_authority"
+            }
+          ]
+        },
+        "input_signals": {
+          "action": "pause_mission",
+          "central_connected": true,
+          "escalation_id": "esc-Rover001-local",
+          "offline_minutes": 0,
+          "policy_version": "1.0.0",
+          "rejected_alternatives": [
+            {
+              "action": "pause_mission",
+              "rejected_reason": "action 'pause_mission' not in local_decision_authority"
+            }
+          ]
+        },
+        "layer": "control_center",
+        "mission": "mission",
+        "policy_hash": null,
+        "policy_version": "1.0.0",
+        "reason": "action 'pause_mission' not in local_decision_authority",
+        "rejected_alternatives": [
+          {
+            "action": "pause_mission",
+            "rejected_reason": "action 'pause_mission' not in local_decision_authority"
+          }
+        ],
+        "result": null,
+        "safety_checks": [
+          {
+            "passed": true,
+            "rule": "distributed_decision"
+          }
+        ],
+        "safety_validation": {
+          "passed": true,
+          "rules": [
+            "distributed_decision"
+          ]
+        },
+        "security_envelope": {
+          "audit_record_id": "d-0-decision_escalation_pending",
+          "authority_scope": "control_center",
+          "entity_id": "Rover001",
+          "nonce": "n-0-d-0-decision_escalation_pending",
+          "policy_hash": null,
+          "policy_version": "1.0.0",
+          "safety_validation_passed": true,
+          "timestamp_ms": 0.0,
+          "tree_hash": null,
+          "trust_validation_passed": true
+        },
+        "tree_hash": null,
+        "trust_validation": {
+          "passed": true
+        },
+        "version": 3
+      },
+      "state": {
+        "pose": {
+          "x": 0.0,
+          "y": 0.0,
+          "theta": 0.0,
+          "z": 0.0
+        },
+        "velocity": {
+          "linear": 0.0,
+          "angular": 0.0
+        },
+        "emergency_stop": false,
+        "active_mode": "normal"
+      }
+    },
+    {
+      "sim_time_ms": 0.0,
+      "event": "decision_escalation_pending",
+      "payload": {
+        "alternatives_considered": [],
+        "audit_record": "d-0-decision_escalation_pending",
+        "authority_scope": "control_center",
+        "capability_validation": {
+          "passed": true
+        },
+        "decision": "policy_gate",
+        "decision_id": "d-0-decision_escalation_pending",
+        "entity_id": "Rover001",
+        "escalation_path": [],
+        "evidence": {
+          "action": "enter safe_mode",
+          "central_connected": true,
+          "escalation_id": "esc-Rover001-local",
+          "offline_minutes": 0,
+          "policy_version": "1.0.0",
+          "rejected_alternatives": [
+            {
+              "action": "enter safe_mode",
+              "rejected_reason": "action 'safe_mode' not in local_decision_authority"
+            }
+          ]
+        },
+        "input_signals": {
+          "action": "enter safe_mode",
+          "central_connected": true,
+          "escalation_id": "esc-Rover001-local",
+          "offline_minutes": 0,
+          "policy_version": "1.0.0",
+          "rejected_alternatives": [
+            {
+              "action": "enter safe_mode",
+              "rejected_reason": "action 'safe_mode' not in local_decision_authority"
+            }
+          ]
+        },
+        "layer": "control_center",
+        "mission": "mission",
+        "policy_hash": null,
+        "policy_version": "1.0.0",
+        "reason": "action 'safe_mode' not in local_decision_authority",
+        "rejected_alternatives": [
+          {
+            "action": "enter safe_mode",
+            "rejected_reason": "action 'safe_mode' not in local_decision_authority"
+          }
+        ],
+        "result": null,
+        "safety_checks": [
+          {
+            "passed": true,
+            "rule": "distributed_decision"
+          }
+        ],
+        "safety_validation": {
+          "passed": true,
+          "rules": [
+            "distributed_decision"
+          ]
+        },
+        "security_envelope": {
+          "audit_record_id": "d-0-decision_escalation_pending",
+          "authority_scope": "control_center",
+          "entity_id": "Rover001",
+          "nonce": "n-0-d-0-decision_escalation_pending",
+          "policy_hash": null,
+          "policy_version": "1.0.0",
+          "safety_validation_passed": true,
+          "timestamp_ms": 0.0,
+          "tree_hash": null,
+          "trust_validation_passed": true
+        },
+        "tree_hash": null,
+        "trust_validation": {
+          "passed": true
+        },
+        "version": 3
+      },
+      "state": {
+        "pose": {
+          "x": 0.0,
+          "y": 0.0,
+          "theta": 0.0,
+          "z": 0.0
+        },
+        "velocity": {
+          "linear": 0.0,
+          "angular": 0.0
+        },
+        "emergency_stop": false,
+        "active_mode": "normal"
+      }
+    },
+    {
+      "sim_time_ms": 50.0,
+      "event": "behavior_tick",
+      "payload": {
+        "interval_ms": 50.0,
+        "iteration": 1,
+        "sim_time_ms": 50.0
+      },
+      "state": {
+        "pose": {
+          "x": 0.0,
+          "y": 0.0,
+          "theta": 0.0,
+          "z": 0.0
+        },
+        "velocity": {
+          "linear": 0.0,
+          "angular": 0.0
+        },
+        "emergency_stop": false,
+        "active_mode": "normal"
+      }
+    },
+    {
+      "sim_time_ms": 100.0,
+      "event": "behavior_tick",
+      "payload": {
+        "interval_ms": 50.0,
+        "iteration": 2,
+        "sim_time_ms": 100.0
+      },
+      "state": {
+        "pose": {
+          "x": 0.0,
+          "y": 0.0,
+          "theta": 0.0,
+          "z": 0.0
+        },
+        "velocity": {
+          "linear": 0.0,
+          "angular": 0.0
+        },
+        "emergency_stop": false,
+        "active_mode": "normal"
+      }
+    },
+    {
+      "sim_time_ms": 150.0,
+      "event": "behavior_tick",
+      "payload": {
+        "interval_ms": 50.0,
+        "iteration": 3,
+        "sim_time_ms": 150.0
+      },
+      "state": {
+        "pose": {
+          "x": 0.0,
+          "y": 0.0,
+          "theta": 0.0,
+          "z": 0.0
+        },
+        "velocity": {
+          "linear": 0.0,
+          "angular": 0.0
+        },
+        "emergency_stop": false,
+        "active_mode": "normal"
+      }
+    },
+    {
+      "sim_time_ms": 200.0,
+      "event": "behavior_tick",
+      "payload": {
+        "interval_ms": 50.0,
+        "iteration": 4,
+        "sim_time_ms": 200.0
+      },
+      "state": {
+        "pose": {
+          "x": 0.0,
+          "y": 0.0,
+          "theta": 0.0,
+          "z": 0.0
+        },
+        "velocity": {
+          "linear": 0.0,
+          "angular": 0.0
+        },
+        "emergency_stop": false,
+        "active_mode": "normal"
+      }
+    },
+    {
+      "sim_time_ms": 250.0,
+      "event": "behavior_tick",
+      "payload": {
+        "interval_ms": 50.0,
+        "iteration": 5,
+        "sim_time_ms": 250.0
+      },
+      "state": {
+        "pose": {
+          "x": 0.0,
+          "y": 0.0,
+          "theta": 0.0,
+          "z": 0.0
+        },
+        "velocity": {
+          "linear": 0.0,
+          "angular": 0.0
+        },
+        "emergency_stop": false,
+        "active_mode": "normal"
+      }
+    },
+    {
+      "sim_time_ms": 300.0,
+      "event": "behavior_tick",
+      "payload": {
+        "interval_ms": 50.0,
+        "iteration": 6,
+        "sim_time_ms": 300.0
+      },
+      "state": {
+        "pose": {
+          "x": 0.0,
+          "y": 0.0,
+          "theta": 0.0,
+          "z": 0.0
+        },
+        "velocity": {
+          "linear": 0.0,
+          "angular": 0.0
+        },
+        "emergency_stop": false,
+        "active_mode": "normal"
+      }
+    },
+    {
+      "sim_time_ms": 350.0,
+      "event": "behavior_tick",
+      "payload": {
+        "interval_ms": 50.0,
+        "iteration": 7,
+        "sim_time_ms": 350.0
+      },
+      "state": {
+        "pose": {
+          "x": 0.0,
+          "y": 0.0,
+          "theta": 0.0,
+          "z": 0.0
+        },
+        "velocity": {
+          "linear": 0.0,
+          "angular": 0.0
+        },
+        "emergency_stop": false,
+        "active_mode": "normal"
+      }
+    },
+    {
+      "sim_time_ms": 400.0,
+      "event": "behavior_tick",
+      "payload": {
+        "interval_ms": 50.0,
+        "iteration": 8,
+        "sim_time_ms": 400.0
+      },
+      "state": {
+        "pose": {
+          "x": 0.0,
+          "y": 0.0,
+          "theta": 0.0,
+          "z": 0.0
+        },
+        "velocity": {
+          "linear": 0.0,
+          "angular": 0.0
+        },
+        "emergency_stop": false,
+        "active_mode": "normal"
+      }
+    },
+    {
+      "sim_time_ms": 450.0,
+      "event": "behavior_tick",
+      "payload": {
+        "interval_ms": 50.0,
+        "iteration": 9,
+        "sim_time_ms": 450.0
+      },
+      "state": {
+        "pose": {
+          "x": 0.0,
+          "y": 0.0,
+          "theta": 0.0,
+          "z": 0.0
+        },
+        "velocity": {
+          "linear": 0.0,
+          "angular": 0.0
+        },
+        "emergency_stop": false,
+        "active_mode": "normal"
+      }
+    },
+    {
+      "sim_time_ms": 500.0,
+      "event": "behavior_tick",
+      "payload": {
+        "interval_ms": 50.0,
+        "iteration": 10,
+        "sim_time_ms": 500.0
+      },
+      "state": {
+        "pose": {
+          "x": 0.0,
+          "y": 0.0,
+          "theta": 0.0,
+          "z": 0.0
+        },
+        "velocity": {
+          "linear": 0.0,
+          "angular": 0.0
+        },
+        "emergency_stop": false,
+        "active_mode": "normal"
+      }
+    },
+    {
+      "sim_time_ms": 550.0,
+      "event": "behavior_tick",
+      "payload": {
+        "interval_ms": 50.0,
+        "iteration": 11,
+        "sim_time_ms": 550.0
+      },
+      "state": {
+        "pose": {
+          "x": 0.0,
+          "y": 0.0,
+          "theta": 0.0,
+          "z": 0.0
+        },
+        "velocity": {
+          "linear": 0.0,
+          "angular": 0.0
+        },
+        "emergency_stop": false,
+        "active_mode": "normal"
+      }
+    },
+    {
+      "sim_time_ms": 600.0,
+      "event": "behavior_tick",
+      "payload": {
+        "interval_ms": 50.0,
+        "iteration": 12,
+        "sim_time_ms": 600.0
+      },
+      "state": {
+        "pose": {
+          "x": 0.0,
+          "y": 0.0,
+          "theta": 0.0,
+          "z": 0.0
+        },
+        "velocity": {
+          "linear": 0.0,
+          "angular": 0.0
+        },
+        "emergency_stop": false,
+        "active_mode": "normal"
+      }
+    },
+    {
+      "sim_time_ms": 650.0,
+      "event": "behavior_tick",
+      "payload": {
+        "interval_ms": 50.0,
+        "iteration": 13,
+        "sim_time_ms": 650.0
+      },
+      "state": {
+        "pose": {
+          "x": 0.0,
+          "y": 0.0,
+          "theta": 0.0,
+          "z": 0.0
+        },
+        "velocity": {
+          "linear": 0.0,
+          "angular": 0.0
+        },
+        "emergency_stop": false,
+        "active_mode": "normal"
+      }
+    },
+    {
+      "sim_time_ms": 700.0,
+      "event": "behavior_tick",
+      "payload": {
+        "interval_ms": 50.0,
+        "iteration": 14,
+        "sim_time_ms": 700.0
+      },
+      "state": {
+        "pose": {
+          "x": 0.0,
+          "y": 0.0,
+          "theta": 0.0,
+          "z": 0.0
+        },
+        "velocity": {
+          "linear": 0.0,
+          "angular": 0.0
+        },
+        "emergency_stop": false,
+        "active_mode": "normal"
+      }
+    },
+    {
+      "sim_time_ms": 750.0,
+      "event": "behavior_tick",
+      "payload": {
+        "interval_ms": 50.0,
+        "iteration": 15,
+        "sim_time_ms": 750.0
+      },
+      "state": {
+        "pose": {
+          "x": 0.0,
+          "y": 0.0,
+          "theta": 0.0,
+          "z": 0.0
+        },
+        "velocity": {
+          "linear": 0.0,
+          "angular": 0.0
+        },
+        "emergency_stop": false,
+        "active_mode": "normal"
+      }
+    },
+    {
+      "sim_time_ms": 800.0,
+      "event": "behavior_tick",
+      "payload": {
+        "interval_ms": 50.0,
+        "iteration": 16,
+        "sim_time_ms": 800.0
+      },
+      "state": {
+        "pose": {
+          "x": 0.0,
+          "y": 0.0,
+          "theta": 0.0,
+          "z": 0.0
+        },
+        "velocity": {
+          "linear": 0.0,
+          "angular": 0.0
+        },
+        "emergency_stop": false,
+        "active_mode": "normal"
+      }
+    },
+    {
+      "sim_time_ms": 850.0,
+      "event": "behavior_tick",
+      "payload": {
+        "interval_ms": 50.0,
+        "iteration": 17,
+        "sim_time_ms": 850.0
+      },
+      "state": {
+        "pose": {
+          "x": 0.0,
+          "y": 0.0,
+          "theta": 0.0,
+          "z": 0.0
+        },
+        "velocity": {
+          "linear": 0.0,
+          "angular": 0.0
+        },
+        "emergency_stop": false,
+        "active_mode": "normal"
+      }
+    },
+    {
+      "sim_time_ms": 900.0,
+      "event": "behavior_tick",
+      "payload": {
+        "interval_ms": 50.0,
+        "iteration": 18,
+        "sim_time_ms": 900.0
+      },
+      "state": {
+        "pose": {
+          "x": 0.0,
+          "y": 0.0,
+          "theta": 0.0,
+          "z": 0.0
+        },
+        "velocity": {
+          "linear": 0.0,
+          "angular": 0.0
+        },
+        "emergency_stop": false,
+        "active_mode": "normal"
+      }
+    },
+    {
+      "sim_time_ms": 950.0,
+      "event": "behavior_tick",
+      "payload": {
+        "interval_ms": 50.0,
+        "iteration": 19,
+        "sim_time_ms": 950.0
+      },
+      "state": {
+        "pose": {
+          "x": 0.0,
+          "y": 0.0,
+          "theta": 0.0,
+          "z": 0.0
+        },
+        "velocity": {
+          "linear": 0.0,
+          "angular": 0.0
+        },
+        "emergency_stop": false,
+        "active_mode": "normal"
+      }
+    },
+    {
+      "sim_time_ms": 1000.0,
+      "event": "behavior_tick",
+      "payload": {
+        "interval_ms": 50.0,
+        "iteration": 20,
+        "sim_time_ms": 1000.0
+      },
+      "state": {
+        "pose": {
+          "x": 0.0,
+          "y": 0.0,
+          "theta": 0.0,
+          "z": 0.0
+        },
+        "velocity": {
+          "linear": 0.0,
+          "angular": 0.0
+        },
+        "emergency_stop": false,
+        "active_mode": "normal"
+      }
+    }
+  ]
+}

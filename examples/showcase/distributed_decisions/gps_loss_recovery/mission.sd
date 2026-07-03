@@ -1,0 +1,109 @@
+//! GPS loss recovery — flagship distributed decision demo.
+
+hardware RoverPlatform {
+    sensors [GPS, Lidar];
+    actuators [DifferentialDrive];
+}
+
+robot Rover001 {
+    local_decision_authority [
+        emergency_stop,
+        sensor_failover,
+        degraded_mode,
+        return_home,
+        reduce_speed
+    ];
+    requires_central_approval [
+        resume_high_risk_mission,
+        override_safety_policy,
+        disable_kill_switch,
+        update_firmware
+    ];
+
+    sensor gps: GPS;
+    sensor lidar: Lidar;
+    actuator drive: DifferentialDrive;
+    mode degraded { }
+    mode safe { }
+    safety { max_speed = 1.0 m/s; }
+
+    behavior patrol_mission() {
+        loop every 50ms { }
+    }
+}
+
+decision_tree ObstacleReflex reflex {
+    when obstacle.detected {
+        stop_motor;
+        cut_actuator_power;
+    }
+}
+
+decision_tree GPSLossRecovery local {
+    version = "1.0.0";
+    when gps.status == Failed {
+        if visual_odometry.available {
+            switch_to visual_odometry;
+            reduce_speed 0.5 m/s;
+            enter degraded_mode;
+        } else if operator.available {
+            request_takeover;
+        } else {
+            pause_mission;
+            enter safe_mode;
+        }
+    }
+}
+
+offline_policy RoverOffline {
+    max_duration = 30 min;
+    policy_version = "1.0.0";
+    allowed_actions [
+        continue_current_safe_mission,
+        return_home,
+        pause_mission,
+        enter_degraded_mode,
+        reduce_speed
+    ];
+    forbidden_actions [
+        start_new_high_risk_mission,
+        disable_safety,
+        accept_unknown_device
+    ];
+}
+
+continuity_policy FleetTakeover {
+    on robot.failed {
+        reassign mission;
+        promote backup coordinator;
+    }
+}
+
+mission_plan GpsLossPatrol {
+    step patrol_route_a;
+    step patrol_route_b;
+}
+
+fleet WarehouseFleet {
+    Rover001;
+}
+
+continuity_policy GpsLossEscalation {
+    on gps_health.degraded {
+        notify fleet;
+        escalate to control center;
+    }
+}
+
+knowledge_model GpsLossRecovery {
+    component gps;
+    component visual_odometry;
+    dependency navigation requires [gps];
+    dependency degraded_navigation requires [visual_odometry];
+}
+
+assurance_case GpsLossAssurance {
+    evidence simulation_replay;
+    evidence health_checks;
+    evidence capability_traceability;
+}
