@@ -4,7 +4,7 @@ use crate::types::{DecisionLayer, DecisionPolicy};
 use serde::{Deserialize, Serialize};
 use spanda_ast::assurance_decl::OfflinePolicyDecl;
 use spanda_ast::nodes::Program;
-use spanda_audit::{sign, verify_signature};
+use spanda_audit::{sign_with_backend, verify_signature};
 
 /// Offline operation policy extracted from program.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -70,7 +70,7 @@ pub fn offline_policy_signing_payload(spec: &OfflinePolicySpec) -> String {
 
 /// Sign an offline policy with a trust key (for CI, control center, or tests).
 pub fn sign_offline_policy(spec: &OfflinePolicySpec, signing_key: &str) -> String {
-    sign(&offline_policy_signing_payload(spec), signing_key)
+    sign_with_backend(&offline_policy_signing_payload(spec), signing_key)
 }
 
 /// Verify an offline policy signature against a trust key (hex pubkey or key material).

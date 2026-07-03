@@ -4,7 +4,7 @@ use crate::types::DecisionLayer;
 use serde::{Deserialize, Serialize};
 use spanda_ast::assurance_decl::{DecisionTreeBranch, DecisionTreeDecl};
 use spanda_ast::nodes::Program;
-use spanda_audit::{sign, verify_signature};
+use spanda_audit::{sign_with_backend, verify_signature};
 
 /// Evaluated branch result from a decision tree.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -136,7 +136,7 @@ pub fn decision_tree_signing_payload(spec: &DecisionTreeSpec) -> String {
 
 /// Sign a decision tree with a trust key.
 pub fn sign_decision_tree(spec: &DecisionTreeSpec, signing_key: &str) -> String {
-    sign(&decision_tree_signing_payload(spec), signing_key)
+    sign_with_backend(&decision_tree_signing_payload(spec), signing_key)
 }
 
 /// Verify a decision tree Ed25519 signature.

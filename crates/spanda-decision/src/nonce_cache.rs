@@ -99,9 +99,67 @@ pub fn register_persisted_nonce(nonce: &str) -> Result<(), String> {
     let _guard = registry_lock()
         .lock()
         .map_err(|_| "nonce registry lock poisoned".to_string())?;
+
+    if let Some(mesh_url) = fleet_mesh_nonce_url() {
+        match register_mesh_nonce(&mesh_url, nonce) {
+            Ok(()) => {
+                let mut registry = load_nonce_registry(None);
+                let _ = registry.register(nonce);
+                let _ = save_nonce_registry(&mut registry, None);
+                return Ok(());
+            }
+            Err(error) if mesh_nonce_required() => return Err(error),
+            Err(error) => {
+                eprintln!("decision nonce mesh register failed, falling back to local: {error}");
+            }
+        }
+    }
+
     let mut registry = load_nonce_registry(None);
     registry.register(nonce)?;
     save_nonce_registry(&mut registry, None)
+}
+
+fn fleet_mesh_nonce_url() -> Option<String> {
+    std::env::var("SPANDA_DECISION_NONCE_MESH_URL")
+        .ok()
+        .filter(|v| !v.is_empty())
+        .or_else(|| {
+            std::env::var("SPANDA_FLEET_MESH_URL")
+                .ok()
+                .filter(|v| !v.is_empty())
+        })
+}
+
+fn mesh_nonce_required() -> bool {
+    std::env::var("SPANDA_DECISION_NONCE_MESH_REQUIRED")
+        .map(|v| matches!(v.as_str(), "1" | "true" | "yes" | "on"))
+        .unwrap_or(false)
+}
+
+fn register_mesh_nonce(mesh_url: &str, nonce: &str) -> Result<(), String> {
+    use spanda_deploy_http::{
+        register_fleet_decision_nonce, FleetDecisionNonceRegisterRequest,
+    };
+    let token = std::env::var("SPANDA_FLEET_MESH_TOKEN").ok();
+    let entity_id = std::env::var("SPANDA_ROBOT_NAME")
+        .ok()
+        .or_else(|| std::env::var("SPANDA_ACTIVE_ROBOT").ok());
+    let response = register_fleet_decision_nonce(
+        mesh_url,
+        &FleetDecisionNonceRegisterRequest {
+            nonce: nonce.to_string(),
+            entity_id,
+        },
+        token.as_deref(),
+    )?;
+    if response.accepted {
+        Ok(())
+    } else {
+        Err(response
+            .error
+            .unwrap_or_else(|| "fleet mesh nonce registration rejected".into()))
+    }
 }
 
 /// Clear persisted nonce registry (tests only).

@@ -10,6 +10,7 @@ pub mod error;
 pub mod platform_event;
 pub mod record;
 pub mod runtime;
+pub mod signing;
 
 pub use backend::{
     AuditBackend, JsonAuditBackend, LedgerBackend, LocalAuditBackend, MockLedgerBackend,
@@ -22,3 +23,6 @@ pub use record::{
     TransactionId,
 };
 pub use runtime::AuditRuntime;
+pub use signing::{
+    active_signing_backend_label, resolve_signing_key_ref, sign_with_backend, SigningBackendKind,
+};

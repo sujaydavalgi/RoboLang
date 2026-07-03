@@ -1,7 +1,7 @@
 //! v3 decision trace payload helpers for mission trace emission.
 
 use serde_json::{json, Value};
-use spanda_audit::{sign, verify_signature};
+use spanda_audit::{sign_with_backend, verify_signature};
 
 /// Optional enrichment fields for distributed decision trace records.
 #[derive(Debug, Clone, Default)]
@@ -72,7 +72,7 @@ pub fn decision_envelope_signing_payload(
 
 /// Sign a v3 decision envelope when signing key is configured.
 pub fn sign_decision_envelope(payload: &str, signing_key: &str) -> String {
-    sign(payload, signing_key)
+    sign_with_backend(payload, signing_key)
 }
 
 /// Verify a v3 decision envelope signature.
