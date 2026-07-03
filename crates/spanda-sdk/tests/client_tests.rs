@@ -24,3 +24,23 @@ fn client_builder_sets_url() {
         .build();
     assert!(client.health_check().is_err());
 }
+
+#[test]
+fn twin_sync_path_includes_optional_twin_id() {
+    let client = SpandaClient::builder()
+        .base_url("http://example:9090")
+        .api_key("test-key")
+        .build();
+    assert!(client.sync_twin(Some("patrol")).is_err());
+    assert!(client.sync_twin(None).is_err());
+}
+
+#[test]
+fn twin_history_and_import_paths_build() {
+    let client = SpandaClient::builder()
+        .base_url("http://example:9090")
+        .api_key("test-key")
+        .build();
+    assert!(client.get_twin_history("patrol").is_err());
+    assert!(client.import_twin_replay("patrol.sd", Some("patrol")).is_err());
+}

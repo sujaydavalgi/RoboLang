@@ -559,11 +559,31 @@ export class SpandaClient {
 
   async syncTwin(twinId?: string): Promise<JsonValue> {
     const qs = twinId ? `?twin_id=${encodeURIComponent(twinId)}` : "";
-    return this.request("POST", `/v1/twins/sync${qs}`, {});
+    return this.request("POST", `/v1/twins/sync${qs}`, {}, true);
   }
 
   async pushTwinSnapshot(twinId: string, snapshot: JsonValue): Promise<JsonValue> {
-    return this.request("POST", `/v1/twins/${encodeURIComponent(twinId)}/snapshots`, snapshot);
+    return this.request(
+      "POST",
+      `/v1/twins/${encodeURIComponent(twinId)}/snapshots`,
+      snapshot,
+      true,
+    );
+  }
+
+  async getTwinHistory(twinId: string): Promise<JsonValue> {
+    return this.request("GET", `/v1/twins/${encodeURIComponent(twinId)}/history`);
+  }
+
+  async importTwinReplay(
+    program: string,
+    twinId?: string,
+  ): Promise<JsonValue> {
+    const body: JsonValue = { program };
+    if (twinId) {
+      body.twin_id = twinId;
+    }
+    return this.request("POST", "/v1/twins/import-replay", body, true);
   }
 
   async rpc(method: string, params: JsonValue = {}): Promise<JsonValue> {

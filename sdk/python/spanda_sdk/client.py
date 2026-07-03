@@ -484,10 +484,23 @@ class SpandaClient:
         path = "/v1/twins/sync"
         if twin_id:
             path = f"{path}?twin_id={twin_id}"
-        return self._request("POST", path, body={})
+        return self._request("POST", path, body={}, auth=True)
 
     def push_twin_snapshot(self, twin_id: str, snapshot: Mapping[str, Any]) -> Any:
-        return self._request("POST", f"/v1/twins/{twin_id}/snapshots", body=snapshot)
+        return self._request(
+            "POST", f"/v1/twins/{twin_id}/snapshots", body=snapshot, auth=True
+        )
+
+    def get_twin_history(self, twin_id: str) -> Any:
+        return self._request("GET", f"/v1/twins/{twin_id}/history")
+
+    def import_twin_replay(
+        self, *, program: str, twin_id: Optional[str] = None
+    ) -> Any:
+        body: dict[str, str] = {"program": program}
+        if twin_id:
+            body["twin_id"] = twin_id
+        return self._request("POST", "/v1/twins/import-replay", body=body, auth=True)
 
     def rpc(self, method: str, params: Optional[Mapping[str, Any]] = None) -> Any:
         payload = self._request(

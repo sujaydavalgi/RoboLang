@@ -902,7 +902,7 @@ impl SpandaClient {
             ),
             None => "/v1/twins/sync".to_string(),
         };
-        self.request("POST", &path, Some(&serde_json::json!({})), false)
+        self.request("POST", &path, Some(&serde_json::json!({})), true)
     }
 
     /// Push a Twin Cloud snapshot envelope (`POST /v1/twins/{id}/snapshots`).
@@ -914,8 +914,30 @@ impl SpandaClient {
                 Self::encode_query_component(twin_id)
             ),
             Some(snapshot),
+            true,
+        )
+    }
+
+    /// Twin snapshot history (`GET /v1/twins/{id}/history`).
+    pub fn get_twin_history(&self, twin_id: &str) -> SpandaResult<Value> {
+        self.request(
+            "GET",
+            &format!(
+                "/v1/twins/{}/history",
+                Self::encode_query_component(twin_id)
+            ),
+            None,
             false,
         )
+    }
+
+    /// Import legacy replay JSON (`POST /v1/twins/import-replay`).
+    pub fn import_twin_replay(&self, program: &str, twin_id: Option<&str>) -> SpandaResult<Value> {
+        let mut body = serde_json::json!({ "program": program });
+        if let Some(id) = twin_id.filter(|value| !value.is_empty()) {
+            body["twin_id"] = serde_json::Value::String(id.to_string());
+        }
+        self.request("POST", "/v1/twins/import-replay", Some(&body), true)
     }
 
     fn analytics_path(base: &str, named: Option<(&str, &str)>, all: bool) -> String {

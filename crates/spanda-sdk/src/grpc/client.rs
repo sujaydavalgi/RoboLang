@@ -786,4 +786,75 @@ impl GrpcClient {
             .map_err(|e| SpandaError::connection(e.to_string()))?;
         Self::parse_json(resp.into_inner().json)
     }
+
+    /// List Twin Cloud snapshots via `ListTwins`.
+    pub async fn list_twins(&mut self) -> SpandaResult<Value> {
+        let resp = self
+            .inner
+            .list_twins(spanda_v1::Empty {})
+            .await
+            .map_err(|e| SpandaError::connection(e.to_string()))?;
+        Self::parse_json(resp.into_inner().json)
+    }
+
+    /// Latest Twin Cloud snapshot via `GetTwin`.
+    pub async fn get_twin(&mut self, twin_id: &str) -> SpandaResult<Value> {
+        let resp = self
+            .inner
+            .get_twin(EntityIdRequest {
+                entity_id: twin_id.into(),
+            })
+            .await
+            .map_err(|e| SpandaError::connection(e.to_string()))?;
+        Self::parse_json(resp.into_inner().json)
+    }
+
+    /// Twin snapshot history via `GetTwinHistory`.
+    pub async fn get_twin_history(&mut self, twin_id: &str) -> SpandaResult<Value> {
+        let resp = self
+            .inner
+            .get_twin_history(EntityIdRequest {
+                entity_id: twin_id.into(),
+            })
+            .await
+            .map_err(|e| SpandaError::connection(e.to_string()))?;
+        Self::parse_json(resp.into_inner().json)
+    }
+
+    /// Sync loaded program twin via `SyncTwin`.
+    pub async fn sync_twin(&mut self, query: &str) -> SpandaResult<Value> {
+        let resp = self
+            .inner
+            .sync_twin(QueryRequest {
+                query: query.into(),
+            })
+            .await
+            .map_err(|e| SpandaError::connection(e.to_string()))?;
+        Self::parse_json(resp.into_inner().json)
+    }
+
+    /// Push Twin Cloud snapshot via `PushTwinSnapshot`.
+    pub async fn push_twin_snapshot(&mut self, twin_id: &str, body: &Value) -> SpandaResult<Value> {
+        let resp = self
+            .inner
+            .push_twin_snapshot(EntityBodyRequest {
+                entity_id: twin_id.into(),
+                body_json: body.to_string(),
+            })
+            .await
+            .map_err(|e| SpandaError::connection(e.to_string()))?;
+        Self::parse_json(resp.into_inner().json)
+    }
+
+    /// Import legacy replay JSON via `ImportTwinReplay`.
+    pub async fn import_twin_replay(&mut self, body: &Value) -> SpandaResult<Value> {
+        let resp = self
+            .inner
+            .import_twin_replay(JsonBodyRequest {
+                body_json: body.to_string(),
+            })
+            .await
+            .map_err(|e| SpandaError::connection(e.to_string()))?;
+        Self::parse_json(resp.into_inner().json)
+    }
 }
