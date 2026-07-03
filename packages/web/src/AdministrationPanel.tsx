@@ -28,6 +28,14 @@ type ScheduleRow = {
   last_status?: string;
 };
 
+type TwinSummary = {
+  twin_id: string;
+  program: string;
+  readiness_score: number;
+  mission_ready: boolean;
+  history_count?: number;
+};
+
 type Props = {
   baseUrl: string;
   authHeaders: () => HeadersInit;
@@ -52,6 +60,7 @@ export function AdministrationPanel({ baseUrl, authHeaders, can, hasToken }: Pro
   const [secrets, setSecrets] = useState<Record<string, unknown>[]>([]);
   const [schedules, setSchedules] = useState<ScheduleRow[]>([]);
   const [integrations, setIntegrations] = useState<Record<string, unknown> | null>(null);
+  const [twins, setTwins] = useState<TwinSummary[]>([]);
   const [alertChannelsJson, setAlertChannelsJson] = useState("[]");
   const [persistPath, setPersistPath] = useState("");
   const [usersPath, setUsersPath] = useState("");
@@ -77,7 +86,7 @@ export function AdministrationPanel({ baseUrl, authHeaders, can, hasToken }: Pro
     setError(null);
     try {
       const headers = authHeaders();
-      const [keysRes, usersRes, secretsRes, schedulesRes, integrationsRes, channelsRes] =
+      const [keysRes, usersRes, secretsRes, schedulesRes, integrationsRes, channelsRes, twinsRes] =
         await Promise.all([
           fetch(`${baseUrl}/v1/admin/api-keys`, { headers }),
           fetch(`${baseUrl}/v1/admin/users`, { headers }),
@@ -87,6 +96,7 @@ export function AdministrationPanel({ baseUrl, authHeaders, can, hasToken }: Pro
             ? fetch(`${baseUrl}/v1/admin/integrations`, { headers })
             : Promise.resolve(null),
           fetch(`${baseUrl}/v1/admin/alert-channels`, { headers }),
+          fetch(`${baseUrl}/v1/twins`, { headers }),
         ]);
       if (keysRes.ok) {
         const body = await keysRes.json();
@@ -111,12 +121,34 @@ export function AdministrationPanel({ baseUrl, authHeaders, can, hasToken }: Pro
         const body = await channelsRes.json();
         setAlertChannelsJson(JSON.stringify(body.channels ?? [], null, 2));
       }
+      if (twinsRes.ok) {
+        const body = await twinsRes.json();
+        setTwins(body.twins ?? []);
+      }
     } catch (e) {
       setError(String(e));
     } finally {
       setBusy(false);
     }
   }, [authHeaders, baseUrl, can, hasToken]);
+
+  const syncTwinCloud = async () => {
+    if (!can("Operate")) return;
+    setBusy(true);
+    try {
+      const res = await fetch(`${baseUrl}/v1/twins/sync`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...authHeaders() },
+        body: "{}",
+      });
+      if (!res.ok) throw new Error(`sync twin ${res.status}`);
+      await load();
+    } catch (e) {
+      setError(String(e));
+    } finally {
+      setBusy(false);
+    }
+  };
 
   useEffect(() => {
     void load();
@@ -496,6 +528,48 @@ export function AdministrationPanel({ baseUrl, authHeaders, can, hasToken }: Pro
           <button type="button" onClick={() => void createSchedule()} disabled={busy}>Add schedule</button>
         </div>
       )}
+
+      <h4>Twin Cloud registry</h4>
+      <p className="demo-hint">
+        Mission twin snapshots from edge push or sync. Mutations require Operate permission.
+      </p>
+      <div className="digital-thread-filters">
+        <button type="button" onClick={() => void load()} disabled={busy}>
+          Refresh twins
+        </button>
+        {can("Operate") && (
+          <button type="button" onClick={() => void syncTwinCloud()} disabled={busy}>
+            Sync loaded program
+          </button>
+        )}
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Twin</th>
+            <th>Program</th>
+            <th>Readiness</th>
+            <th>Mission ready</th>
+            <th>History</th>
+          </tr>
+        </thead>
+        <tbody>
+          {twins.map((twin) => (
+            <tr key={twin.twin_id}>
+              <td><code>{twin.twin_id}</code></td>
+              <td>{twin.program}</td>
+              <td>{twin.readiness_score}</td>
+              <td>{twin.mission_ready ? "yes" : "no"}</td>
+              <td>{twin.history_count ?? 1}</td>
+            </tr>
+          ))}
+          {twins.length === 0 && (
+            <tr>
+              <td colSpan={5}>No twins registered — use Twin Cloud tab or CLI push.</td>
+            </tr>
+          )}
+        </tbody>
+      </table>
 
       <h4>Integrations summary</h4>
       {integrations ? <pre>{JSON.stringify(integrations, null, 2)}</pre> : <p className="demo-hint">Loading…</p>}

@@ -1204,7 +1204,7 @@ export function ControlCenterPanel({ apiBase }: Props) {
     try {
       await fetch(`${base}/v1/twins/sync`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...authHeaders() },
         body: "{}",
       });
       await loadTwins();
