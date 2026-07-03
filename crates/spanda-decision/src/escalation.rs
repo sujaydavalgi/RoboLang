@@ -64,15 +64,10 @@ pub fn build_escalation_chain(
         .collect()
 }
 
-/// Approve a pending escalation at control center.
+/// Approve a pending escalation at control center (delegates to persistent store).
 pub fn approve_escalation(
     escalation: &mut DecisionEscalation,
     approver: &str,
 ) -> Result<(), String> {
-    if !escalation.pending_approval {
-        return Err("escalation does not require approval".into());
-    }
-    escalation.pending_approval = false;
-    escalation.reason = format!("{} (approved by {approver})", escalation.reason);
-    Ok(())
+    crate::escalation_store::approve_escalation_with_store(escalation, approver)
 }

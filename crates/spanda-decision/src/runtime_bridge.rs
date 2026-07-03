@@ -9,9 +9,9 @@ use std::sync::Arc;
 
 use crate::{
     build_escalation_chain, default_safety_boundaries, entity_may_decide_locally, evaluate_tree,
-    extract_decision_authorities, extract_decision_trees, resolve_consensus,
-    resolve_offline_policies, validate_offline_action, ConsensusStrategy, ConsensusVote,
-    DecisionLayer, EscalationReason,
+    extract_decision_authorities, resolve_consensus, resolve_decision_trees,
+    resolve_offline_policies, validate_decision_tree_trust, validate_offline_action,
+    ConsensusStrategy, ConsensusVote, DecisionLayer, EscalationReason,
 };
 
 fn normalize_decision_action_key(action: &str) -> String {
@@ -50,9 +50,14 @@ impl DecisionRuntime for DecisionBackedRuntime {
         program: &Program,
         signals: &HashMap<String, bool>,
     ) -> Vec<DecisionTreeEvalResult> {
-        extract_decision_trees(program)
+        resolve_decision_trees(program)
             .iter()
-            .filter_map(|spec| evaluate_tree(spec, signals))
+            .filter_map(|spec| {
+                if validate_decision_tree_trust(spec).is_err() {
+                    return None;
+                }
+                evaluate_tree(spec, signals)
+            })
             .map(|r| DecisionTreeEvalResult {
                 tree_name: r.tree_name,
                 layer: format!("{:?}", r.layer).to_lowercase(),

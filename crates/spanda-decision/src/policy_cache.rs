@@ -46,6 +46,8 @@ impl LocalPolicyCache {
 pub struct PersistedPolicyCache {
     pub version: u32,
     pub policies: HashMap<String, OfflinePolicySpec>,
+    #[serde(default)]
+    pub decision_trees: HashMap<String, crate::trees::DecisionTreeSpec>,
     pub updated_at_ms: f64,
 }
 
@@ -62,6 +64,17 @@ impl PersistedPolicyCache {
     pub fn upsert_offline_policy(&mut self, spec: OfflinePolicySpec) {
         self.policies.insert(spec.name.clone(), spec);
         self.updated_at_ms = current_time_ms();
+    }
+
+    /// Upsert a signed decision tree entry.
+    pub fn upsert_decision_tree(&mut self, spec: crate::trees::DecisionTreeSpec) {
+        self.decision_trees.insert(spec.name.clone(), spec);
+        self.updated_at_ms = current_time_ms();
+    }
+
+    /// Look up a cached decision tree by name.
+    pub fn get_decision_tree(&self, name: &str) -> Option<&crate::trees::DecisionTreeSpec> {
+        self.decision_trees.get(name)
     }
 
     /// Look up a cached offline policy by name.
@@ -143,6 +156,30 @@ pub fn merge_offline_policies_with_cache(
         }
     }
     policies
+}
+
+/// Merge program decision trees with last-known-valid signed entries from disk.
+pub fn merge_decision_trees_with_cache(
+    mut trees: Vec<crate::trees::DecisionTreeSpec>,
+    cache: &PersistedPolicyCache,
+) -> Vec<crate::trees::DecisionTreeSpec> {
+    for tree in &mut trees {
+        let Some(cached) = cache.get_decision_tree(&tree.name) else {
+            continue;
+        };
+        if tree
+            .signature
+            .as_ref()
+            .map(|s| s.is_empty())
+            .unwrap_or(true)
+        {
+            tree.signature = cached.signature.clone();
+        }
+        if tree.version == "1" && cached.version != "1" {
+            tree.version = cached.version.clone();
+        }
+    }
+    trees
 }
 
 /// Populate cache from program-extracted policies.
