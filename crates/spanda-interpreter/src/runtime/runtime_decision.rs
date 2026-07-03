@@ -1,9 +1,12 @@
 //! Live distributed decision tree evaluation and fleet consensus recording.
 
+use super::super::super::fleet_http::{
+    fetch_fleet_decision_conflict, ingest_fleet_decision_vote, FleetDecisionVoteIngestRequest,
+};
 use super::{Interpreter, MotionCommand, RobotBackend};
 use spanda_decision::{
     escalation_is_approved, layer_str_precedence_key, register_pending_escalation,
-    resolve_conflict, CompetingDecision,
+    resolve_conflict, CompetingDecision, ConflictResolution,
 };
 use spanda_error::SpandaError;
 use spanda_runtime::decision_runtime::{DecisionActionVerdict, DecisionTreeEvalResult};
@@ -157,7 +160,8 @@ impl<B: RobotBackend> Interpreter<B> {
                         ),
                     })
                     .collect();
-                if let Some(resolution) = resolve_conflict(&competing) {
+                let mesh_winner = self.resolve_decision_via_fleet_mesh(&entity, &competing);
+                if let Some(resolution) = mesh_winner.or_else(|| resolve_conflict(&competing)) {
                     let winner = resolution.winner.clone();
                     let rejected: Vec<serde_json::Value> = resolution
                         .rejected
@@ -354,6 +358,51 @@ impl<B: RobotBackend> Interpreter<B> {
         condition.contains(changed) || self.decision_signals.get(changed).copied().unwrap_or(false)
     }
 
+    fn resolve_decision_via_fleet_mesh(
+        &self,
+        entity: &str,
+        competing: &[CompetingDecision],
+    ) -> Option<ConflictResolution> {
+        let url = std::env::var("SPANDA_FLEET_MESH_URL").ok()?;
+        let token = std::env::var("SPANDA_FLEET_MESH_TOKEN").ok();
+        let round_id = format!("local-{entity}-{}", self.sim_time_ms as u64);
+        for vote in competing {
+            let _ = ingest_fleet_decision_vote(
+                &url,
+                &FleetDecisionVoteIngestRequest {
+                    round_id: round_id.clone(),
+                    entity_id: vote.entity_id.clone(),
+                    action: vote.action.clone(),
+                    layer_precedence: vote.layer_precedence.clone(),
+                    reason: vote.reason.clone(),
+                    fleet_name: None,
+                },
+                token.as_deref(),
+            );
+        }
+        let conflict = fetch_fleet_decision_conflict(&url, &round_id, token.as_deref()).ok()?;
+        Some(ConflictResolution {
+            winner: CompetingDecision {
+                layer_precedence: conflict.resolution.winner.layer_precedence,
+                entity_id: conflict.resolution.winner.entity_id,
+                action: conflict.resolution.winner.action,
+                reason: conflict.resolution.winner.reason,
+            },
+            rejected: conflict
+                .resolution
+                .rejected
+                .into_iter()
+                .map(|d| CompetingDecision {
+                    layer_precedence: d.layer_precedence,
+                    entity_id: d.entity_id,
+                    action: d.action,
+                    reason: d.reason,
+                })
+                .collect(),
+            precedence_applied: conflict.resolution.precedence_applied,
+        })
+    }
+
     /// Record fleet mesh consensus decision after coordinator relay.
     pub(super) fn record_fleet_mesh_consensus(
         &mut self,
@@ -363,13 +412,48 @@ impl<B: RobotBackend> Interpreter<B> {
         relayed: u32,
         failed: u32,
     ) {
+        let round_id = format!("{event}-{}", self.sim_time_ms as u64);
+        let mesh_url = std::env::var("SPANDA_FLEET_MESH_URL").ok();
+        let mesh_token = std::env::var("SPANDA_FLEET_MESH_TOKEN").ok();
+        let mut resolved_action = selected_action.to_string();
+        let mut mesh_resolution: Option<serde_json::Value> = None;
+
+        if let Some(url) = mesh_url.as_deref() {
+            for member in members {
+                let member_action = member_fleet_vote_action(member, selected_action);
+                let _ = ingest_fleet_decision_vote(
+                    url,
+                    &FleetDecisionVoteIngestRequest {
+                        round_id: round_id.clone(),
+                        entity_id: member.clone(),
+                        action: member_action,
+                        layer_precedence: "fleet_coordination".into(),
+                        reason: format!("{event} fleet vote"),
+                        fleet_name: None,
+                    },
+                    mesh_token.as_deref(),
+                );
+            }
+            if let Ok(conflict) =
+                fetch_fleet_decision_conflict(url, &round_id, mesh_token.as_deref())
+            {
+                resolved_action = conflict.resolution.winner.action.clone();
+                mesh_resolution = Some(serde_json::json!({
+                    "round_id": conflict.round_id,
+                    "winner": conflict.resolution.winner,
+                    "rejected": conflict.resolution.rejected,
+                    "precedence_applied": conflict.resolution.precedence_applied,
+                }));
+            }
+        }
+
         let votes: Vec<(String, String, f64)> = members
             .iter()
             .enumerate()
             .map(|(i, m)| {
                 (
                     m.clone(),
-                    selected_action.to_string(),
+                    resolved_action.clone(),
                     1.0 - (i as f64 * 0.1),
                 )
             })
@@ -401,6 +485,7 @@ impl<B: RobotBackend> Interpreter<B> {
                 "relayed": relayed,
                 "failed": failed,
                 "members": members,
+                "mesh_resolution": mesh_resolution,
                 "policy_version": "1.0.0",
             }),
         );
@@ -412,4 +497,12 @@ impl<B: RobotBackend> Interpreter<B> {
         self.evaluate_live_decision_trees(None);
         Ok(())
     }
+}
+
+fn member_fleet_vote_action(member: &str, default_action: &str) -> String {
+    let key = format!(
+        "SPANDA_FLEET_MEMBER_VOTE_{}",
+        member.to_ascii_uppercase().replace('-', "_")
+    );
+    std::env::var(&key).unwrap_or_else(|_| default_action.to_string())
 }

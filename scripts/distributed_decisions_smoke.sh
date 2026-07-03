@@ -43,6 +43,9 @@ run_spanda decision simulate-attack offline-abuse >/dev/null
 echo "== stable gap-fix tests =="
 cargo test -p spanda-decision --test stable_gaps --quiet
 
+echo "== fleet mesh decision aggregation + shared nonce =="
+cargo test -p spanda-fleet mesh_coordinator_resolves_decision_conflicts_and_shared_nonce -q
+
 echo "== decision sign-policy, sign-tree, and cache sync =="
 export SPANDA_DECISION_POLICY_SIGNING_KEY="${SPANDA_DECISION_POLICY_SIGNING_KEY:-offline-smoke-signing-key}"
 run_spanda decision sign-policy "$OFFLINE" --policy RoverOffline --json >/dev/null

@@ -99,14 +99,17 @@ Static catalog documents mitigations. Live simulations (`simulate-attack`) produ
 | Decision tree Ed25519 signing | **Stable** — `sign-tree` + cache |
 | Persisted nonce registry | **Stable** — disk-backed replay protection |
 | v3 envelope signatures | **Stable** — Ed25519 when signing key configured |
+| Fleet mesh conflict aggregation | **Stable** — `POST /v1/fleet/decisions/vote/ingest`, `GET /v1/fleet/decisions/conflicts` |
+| Shared fleet nonce registry | **Stable** — `POST /v1/fleet/decisions/nonce/register` (+ local mirror) |
+| Pluggable signing backend | **Stable** — `SPANDA_CRYPTO_BACKEND=software|mock_hsm`, `SPANDA_DECISION_SIGNING_KEY_ID` |
 
-## Remaining enhancements (not blocking Stable)
+## Former enhancements (resolved)
 
-| Enhancement | Notes |
-|-------------|-------|
-| Fleet mesh coordinator aggregation | Conflict resolution runs on interpreter after relay; optional mesh-side aggregation for multi-host |
-| Distributed nonce store | File-backed per node; shared store for multi-node fleets is operational follow-up |
-| Hardware-backed signing keys | Software Ed25519 via `spanda-audit`; HSM integration planned separately |
+| Enhancement | Resolution |
+|-------------|------------|
+| Fleet mesh coordinator aggregation | Mesh ingest + conflict resolution; runtime uses coordinator winner when `SPANDA_FLEET_MESH_URL` set |
+| Distributed nonce store | Shared mesh registry with local file fallback |
+| Hardware-backed signing keys | `sign_with_backend` abstraction in `spanda-audit` (`mock_hsm` for CI; production HSM via key id) |
 
 ## Former gaps (resolved)
 

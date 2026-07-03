@@ -2,8 +2,9 @@
 
 #[cfg(feature = "fleet-http")]
 pub use spanda_deploy_http::{
-    ingest_fleet_tamper_trace, relay_continuity_via_mesh, relay_recovery_via_mesh,
-    FleetContinuityRequest, FleetRecoveryRequest, FleetTamperIngestRequest,
+    fetch_fleet_decision_conflict, ingest_fleet_decision_vote, ingest_fleet_tamper_trace,
+    relay_continuity_via_mesh, relay_recovery_via_mesh, FleetContinuityRequest,
+    FleetDecisionVoteIngestRequest, FleetRecoveryRequest, FleetTamperIngestRequest,
 };
 
 #[cfg(not(feature = "fleet-http"))]
@@ -110,5 +111,66 @@ pub fn ingest_fleet_tamper_trace(
     _request: &FleetTamperIngestRequest,
     _token: Option<&str>,
 ) -> Result<FleetTamperIngestResponse, String> {
+    Err("fleet mesh HTTP is disabled in this build".into())
+}
+
+/// Decision vote posted to a fleet mesh coordinator.
+#[cfg(not(feature = "fleet-http"))]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct FleetDecisionVoteIngestRequest {
+    pub round_id: String,
+    pub entity_id: String,
+    pub action: String,
+    pub layer_precedence: String,
+    pub reason: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub fleet_name: Option<String>,
+}
+
+/// Resolved fleet decision conflict from mesh coordinator.
+#[cfg(not(feature = "fleet-http"))]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct FleetDecisionConflictResponse {
+    pub ok: bool,
+    pub round_id: String,
+    #[serde(default)]
+    pub fleet_name: String,
+    pub resolution: FleetConflictResolution,
+}
+
+#[cfg(not(feature = "fleet-http"))]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct FleetCompetingDecision {
+    pub layer_precedence: String,
+    pub entity_id: String,
+    pub action: String,
+    pub reason: String,
+}
+
+#[cfg(not(feature = "fleet-http"))]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct FleetConflictResolution {
+    pub winner: FleetCompetingDecision,
+    pub rejected: Vec<FleetCompetingDecision>,
+    pub precedence_applied: String,
+}
+
+/// Ingest a decision vote into the fleet mesh coordinator.
+#[cfg(not(feature = "fleet-http"))]
+pub fn ingest_fleet_decision_vote(
+    _mesh_url: &str,
+    _request: &FleetDecisionVoteIngestRequest,
+    _token: Option<&str>,
+) -> Result<serde_json::Value, String> {
+    Err("fleet mesh HTTP is disabled in this build".into())
+}
+
+/// Fetch resolved fleet decision conflict for a round.
+#[cfg(not(feature = "fleet-http"))]
+pub fn fetch_fleet_decision_conflict(
+    _mesh_url: &str,
+    _round_id: &str,
+    _token: Option<&str>,
+) -> Result<FleetDecisionConflictResponse, String> {
     Err("fleet mesh HTTP is disabled in this build".into())
 }
