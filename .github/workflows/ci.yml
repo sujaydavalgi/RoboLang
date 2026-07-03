@@ -118,12 +118,24 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - uses: ./.github/actions/install-protoc
       - run: cargo build -p spanda --release
-      - run: chmod +x scripts/twin_cloud_golden_path.sh scripts/twin_cloud_saas_smoke.sh
+      - run: chmod +x scripts/twin_cloud_golden_path.sh scripts/twin_cloud_saas_smoke.sh scripts/twin_cloud_unified_path.sh
       - run: |
           export PATH="${{ github.workspace }}/target/release:$PATH"
           export SPANDA_BIN="${{ github.workspace }}/target/release/spanda"
-          ./scripts/twin_cloud_golden_path.sh
-          ./scripts/twin_cloud_saas_smoke.sh
+          ./scripts/twin_cloud_unified_path.sh
+
+  twin-cloud-stable-promotion-gate:
+    runs-on: ubuntu-latest
+    needs: rust
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - uses: ./.github/actions/install-protoc
+      - run: cargo build -p spanda --release
+      - run: chmod +x scripts/twin_cloud_stable_promotion_gate.sh scripts/twin_cloud_unified_path.sh scripts/twin_cloud_golden_path.sh scripts/twin_cloud_saas_smoke.sh
+      - run: SPANDA_BIN=${{ github.workspace }}/target/release/spanda SPANDA_TWIN_CLOUD_SKIP_SOAK=1 ./scripts/twin_cloud_stable_promotion_gate.sh
 
   llvm-golden-path:
     runs-on: ubuntu-latest

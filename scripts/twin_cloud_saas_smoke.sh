@@ -11,6 +11,8 @@ PROGRAM="$ROOT/examples/showcase/mission_twin/patrol.sd"
 PULL_FILE="${TMPDIR:-/tmp}/spanda-twin-cloud-pull.json"
 STATE_DIR="$(mktemp -d "${TMPDIR:-/tmp}/spanda-twin-cloud-state.XXXXXX")"
 export SPANDA_CONTROL_CENTER_STATE_DIR="$STATE_DIR"
+export SPANDA_API_KEY="${SPANDA_API_KEY:-twin-cloud-smoke-key}"
+export SPANDA_TWIN_CLOUD_API_KEY="$SPANDA_API_KEY"
 
 if [[ -n "${SPANDA_BIN:-}" && -x "${SPANDA_BIN}" ]]; then
   run_spanda() { "$SPANDA_BIN" "$@"; }
@@ -51,7 +53,11 @@ test -s "$PULL_FILE"
 grep -q '"mission_twin"' "$PULL_FILE"
 
 echo "== REST sync + get =="
-curl -sf -X POST "$BASE/v1/twins/sync" -H 'Content-Type: application/json' -d '{}' >/dev/null
+curl -sf -X POST "$BASE/v1/twins/sync" \
+  -H 'Content-Type: application/json' \
+  -H "Authorization: Bearer ${SPANDA_API_KEY}" \
+  -d '{}' >/dev/null
+curl -sf "$BASE/v1/twins/patrol/history" | grep -q '"snapshots"'
 curl -sf "$BASE/v1/twins/patrol" | grep -q '"mission_twin"'
 
 echo "== Restart Control Center and verify persisted twin =="
